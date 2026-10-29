@@ -747,6 +747,10 @@ function updateTradeSummary() {
 
 function renderDeadCapRows() {
   const year = activeSeason;
+  // Only the first two salary sheets have a dead-cap table; later years show none.
+  const tracked = deadCapSeasons.includes(year);
+  document.querySelector("#dead-cap-panel").hidden = !tracked;
+  document.querySelector("#dead-cap-card").hidden = !tracked;
   const records = deadCapSeasons.includes(year) ? selectedTeamData().deadCap[year] : [];
   const body = deadCapRows;
   body.replaceChildren();

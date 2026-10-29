@@ -116,7 +116,7 @@
           <div class="season-tabs" id="season-tabs" role="tablist" aria-label="Team front-office sections"></div>
           <div id="salary-year-content">
           <div class="cap-overview" aria-label="Selected team season salary overview">
-            <article class="cap-stat"><span>DEAD CAP · <span id="dead-cap-card-year">2026</span></span><strong id="dead-cap-card-total">$0</strong><small>Recorded for this salary year</small></article>
+            <article class="cap-stat" id="dead-cap-card"><span>DEAD CAP · <span id="dead-cap-card-year">2026</span></span><strong id="dead-cap-card-total">$0</strong><small>Recorded for this salary year</small></article>
             <article class="cap-stat"><span>BASE SALARY CAP</span><strong id="base-cap-value">Not set</strong><small>Shared league-wide base · <a href="admin.html">Set in Admin</a></small></article>
             <article class="cap-stat"><span>CAP ROLLOVER</span><strong id="cap-rollover">$0</strong><small>Previous season's remaining cap</small></article>
             <article class="cap-stat adjustment-stat"><span>MANUAL ADJUSTMENT</span><label class="cap-limit-input" for="cap-adjustment"><span aria-hidden="true">±</span><input id="cap-adjustment" type="text" inputmode="decimal" maxlength="14" value="$0" aria-label="Manual cap space adjustment in dollars" data-currency="true" data-allow-negative="true"></label><small>Fines, rewards, or league corrections</small></article>
@@ -173,10 +173,10 @@
             <p class="empty-state" id="salary-empty">No players on this salary sheet yet. Add a player below.</p>
           </div>
 
-          <div class="management-panel picks-panel">
+          <div class="management-panel picks-panel" id="dead-cap-panel">
             <div class="panel-heading">
               <div><span class="panel-index">02 / CONTRACT MOVES</span><h3><span id="dead-cap-ledger-year">2026</span> Dead Cap</h3></div>
-              <p>Dead-cap entries shown here follow the selected salary-year tab. Trade or release a player from the current sheet to record dead cap. Every salary year has its own dead-cap table, and dead cap that lands in the next season is added to that year's table automatically.</p>
+              <p>Dead-cap entries shown here follow the selected salary-year tab. Trade or release a player from the current sheet to record dead cap. Only the first two salary years have dead-cap tables.</p>
             </div>
             <details class="salary-import-panel dead-cap-import-panel">
               <summary>Paste dead-cap spreadsheet rows</summary>

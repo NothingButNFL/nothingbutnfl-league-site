@@ -1331,3 +1331,4 @@ body > .site-header .team-menu-fallback { font-size: 10px; }
 @media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { max-height: none; overflow: visible; } }
 body .cap-room-stat.is-over > strong { color: #ff9299; }
 .trade-projected-room.is-negative-room { color: #ff9299; font-weight: 700; }
+#dead-cap-panel[hidden], #dead-cap-card[hidden] { display: none !important; }
