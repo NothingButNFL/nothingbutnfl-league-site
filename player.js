@@ -143,7 +143,6 @@ function fillBioForm(entry) {
   f.weight.value = profile.weight ?? "";
   f.photoUrl.value = profile.photoUrl;
   document.querySelector("#photo-remove").hidden = !profile.photoData;
-  document.querySelector("#photo-upload-label").textContent = profile.photoData ? "Replace uploaded photo" : "Upload photo";
   f.retired.checked = profile.retired;
   f.notes.value = profile.notes;
   for (const element of bioForm.elements) element.disabled = !canSave;
@@ -153,7 +152,6 @@ bioForm.addEventListener("change", (event) => {
   const entry = located();
   if (!entry || !canSave) return;
   const input = event.target;
-  if (input.name === "photoFile") return;
   const { player } = entry;
   const profile = playerProfile(player);
   const value = input.type === "checkbox" ? input.checked : input.value.trim();
@@ -205,49 +203,7 @@ bioForm.addEventListener("change", (event) => {
   if (input.name === "name") fillBioForm(entry);
 });
 
-// ---------- uploaded photo ----------
-// Shrinks the picture to a 300px square-ish JPEG and stores it with the profile.
-function shrinkPhoto(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, 300 / Math.max(img.naturalWidth, img.naturalHeight));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#174477";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("unreadable")); };
-    img.src = url;
-  });
-}
-
-document.querySelector("#photo-file").addEventListener("change", async (event) => {
-  const input = event.target;
-  const file = input.files && input.files[0];
-  input.value = "";
-  const entry = located();
-  if (!file || !entry || !canSave) return;
-  if (!file.type.startsWith("image/")) { statusEl.textContent = "That file isn't an image. Choose a JPG, PNG or WebP."; return; }
-  try {
-    const data = await shrinkPhoto(file);
-    const profile = playerProfile(entry.player);
-    profile.photoData = data;
-    entry.player.profile = profile;
-    save(`${entry.player.name}'s photo saved.`);
-    renderHero(entry);
-    fillBioForm(entry);
-  } catch {
-    statusEl.textContent = "That image couldn't be read. Try a JPG or PNG.";
-  }
-});
-
+// ---------- uploaded photo (older saves) ----------
 document.querySelector("#photo-remove").addEventListener("click", () => {
   const entry = located();
   if (!entry || !canSave) return;

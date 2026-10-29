@@ -98,15 +98,8 @@
                 <label>Draft Pick #<input name="draftPick" type="number" min="1" max="400" step="1" placeholder="Overall pick"></label>
                 <label>Height (e.g. 6'2")<input name="height" maxlength="10" placeholder="6'2&quot;"></label>
                 <label>Weight (lbs)<input name="weight" type="number" min="100" max="500" step="1"></label>
-                <div class="is-wide player-photo-field">
-                  <span class="player-photo-label">Photo</span>
-                  <div class="player-photo-actions">
-                    <label class="workspace-button player-photo-upload"><span id="photo-upload-label">Upload photo</span><input id="photo-file" name="photoFile" type="file" accept="image/*"></label>
-                    <button class="workspace-button" id="photo-remove" type="button" hidden>Remove uploaded photo</button>
-                  </div>
-                  <small>An uploaded photo always shows. Photo URLs from other sites can be blocked in the live preview, but work on your GitHub site.</small>
-                </div>
                 <label class="is-wide">Photo URL<input name="photoUrl" type="url" maxlength="500" placeholder="https://… (an image link you choose)"></label>
+                <button class="workspace-button player-photo-remove" id="photo-remove" type="button" hidden>Remove uploaded photo</button>
                 <label class="player-retired"><input name="retired" type="checkbox"> Retired</label>
                 <label class="is-wide">Notes<textarea name="notes" rows="3" maxlength="1000" placeholder="e.g. Matched RFA offer, no trade clause"></textarea></label>
               </form>

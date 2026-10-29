@@ -1311,7 +1311,7 @@ body > .site-header .brand-copy strong { color: #8fd0ff; font-weight: 700; }
 @media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { max-height: none; overflow: visible; } body > .site-header .teams-chevron { transform: rotate(90deg); } }
 /* Center the links in the bar on wide screens; logo stays at the left. */
 @media (min-width: 1181px) {
-  body > .site-header, body > .site-header:hover, body > .site-header:focus-within, body > .site-header.is-open { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  body > .site-header, body > .site-header:hover, body > .site-header:focus-within, body > .site-header.is-open { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); }
   body > .site-header .brand { grid-column: 1; justify-self: start; }
   body > .site-header .primary-nav { grid-column: 2; flex: none; justify-content: center; }
 }
@@ -1320,3 +1320,5 @@ body > .site-header .brand-logo { width: 42px; height: 42px; flex-basis: 42px; }
 body > .site-header .brand-copy { font-size: 17px !important; letter-spacing: .06em; font-weight: 600; }
 @media (max-width: 1420px) and (min-width: 1181px) { body > .site-header .brand-copy { font-size: 14px !important; } }
 @media (max-width: 420px) { body > .site-header .brand-copy { font-size: 14px !important; } }
+.player-photo-remove { justify-self: start; }
+.player-photo-remove[hidden] { display: none !important; }
