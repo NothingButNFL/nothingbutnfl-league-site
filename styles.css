@@ -1329,3 +1329,5 @@ body > .site-header .team-menu-logo { width: 34px; height: 34px; }
 body > .site-header .team-menu-fallback { font-size: 10px; }
 @media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { width: 100%; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } }
 @media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { max-height: none; overflow: visible; } }
+body .cap-room-stat.is-over > strong { color: #ff9299; }
+.trade-projected-room.is-negative-room { color: #ff9299; font-weight: 700; }

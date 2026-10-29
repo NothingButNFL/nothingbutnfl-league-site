@@ -719,6 +719,7 @@ function updateTradeSummary() {
       remaining.textContent = impact.remaining === null
         ? "Projected cap room: base cap not set"
         : `Projected cap room: ${formatSignedCurrency(impact.remaining + impact.net)}`;
+      if (impact.remaining !== null && impact.remaining + impact.net < 0) remaining.classList.add("is-negative-room");
       card.append(title, details, remaining);
       impactContainer.append(card);
     }
