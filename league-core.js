@@ -3,7 +3,7 @@
 const firstSeason = 2026;
 const seasonCount = 8;
 const seasons = Array.from({ length: seasonCount }, (_, index) => firstSeason + index);
-const deadCapSeasons = seasons.slice(0, 2);
+const deadCapSeasons = seasons; // every contract season (2026–2033) has its own dead-cap table
 const pendingTradeStatuses = ["awaiting-teams", "awaiting-admin", "approved", "rejected", "declined", "withdrawn"];
 
 function emptySeasonData(position = "", rosterType = "") {
