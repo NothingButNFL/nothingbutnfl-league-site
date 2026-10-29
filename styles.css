@@ -1322,3 +1322,10 @@ body > .site-header .brand-copy { font-size: 17px !important; letter-spacing: .0
 @media (max-width: 420px) { body > .site-header .brand-copy { font-size: 14px !important; } }
 .player-photo-remove { justify-self: start; }
 .player-photo-remove[hidden] { display: none !important; }
+/* Larger team names and logos in the Teams dropdown */
+body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { width: min(780px, calc(100vw - 32px)); max-height: min(78vh, 640px); gap: 4px 6px; padding: 10px; }
+body > .site-header .team-menu-link { min-height: 46px; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 6px 8px; font-size: 14px; font-weight: 600; }
+body > .site-header .team-menu-logo { width: 34px; height: 34px; }
+body > .site-header .team-menu-fallback { font-size: 10px; }
+@media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { width: 100%; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } }
+@media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { max-height: none; overflow: visible; } }
