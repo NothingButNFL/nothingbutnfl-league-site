@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="Nothing But NFL player and team stats.">
+    <title>Stats — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js" defer></script>
+    <script src="league-core.js" defer></script>
+    <script src="nfl-experience.js" defer></script>
+    <script src="stat-totals.js" defer></script>
+    <script src="stats.js" defer></script>
+    <script src="boxscores.js" defer></script>
+  </head>
+  <body class="stats-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Overview</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <a href="contracts.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9z"/></svg></span><span class="nav-label">Player Contracts</span></a>
+        <a href="injuries.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><defs><mask id="star-of-life-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path d="M9.10 1.80 L14.90 1.80 L14.90 6.98 L19.38 4.39 L22.28 9.41 L17.80 12.00 L22.28 14.59 L19.38 19.61 L14.90 17.02 L14.90 22.20 L9.10 22.20 L9.10 17.02 L4.62 19.61 L1.72 14.59 L6.20 12.00 L1.72 9.41 L4.62 4.39 L9.10 6.98Z" fill="#fff"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M12 5.4v14.2" stroke-width="1.3"/><path d="M12.9 6.3c-1.3-.5-2.6.4-1.6 1.5 1 1 2.8 1 2.7 2.3-.1 1.4-3.1 1.3-3.1 2.7s3.1 1.3 3.1 2.7-2.6 1.4-2.6 2.6" stroke-width="1"/></g><circle cx="13.3" cy="6.4" r=".8" fill="#000"/></mask></defs><rect width="24" height="24" fill="currentColor" mask="url(#star-of-life-cut)"/></svg></span><span class="nav-label">Injury Report</span></a>
+        <a href="stats.html" aria-current="page"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 21h18"/><path d="M6 17V11M11 17V6M16 17v-4M20 17V8"/></svg></span><span class="nav-label">Stats</span></a>
+        <a href="standings.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M8.5 21V4.5h7V21"/><path d="M2.5 21V10.5h6M15.5 13.5h6V21"/><path d="M1.5 21h21"/><path d="M11.1 9 12.3 8v5.5" stroke-width="1.5"/></svg></span><span class="nav-label">Standings</span></a>
+        <a href="transactions.html"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-label">Transaction Log</span></a>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-trades" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="standings-section stats-section" id="stats" aria-labelledby="stats-title">
+        <div class="section-wrap">
+          <div class="section-kicker light-kicker"><span>01</span> THE NUMBERS</div>
+          <div class="section-heading-row">
+            <div>
+              <h2 id="stats-title"><span id="stats-season">2026</span> Stats</h2>
+              <p class="section-subtitle">League leaders and full stat tables, pasted from your simulation or spreadsheet.</p>
+            </div>
+            <button class="workspace-button standings-edit-toggle" id="stats-edit" type="button" aria-pressed="false">Update stats</button>
+          </div>
+          <div class="standings-toolbar">
+            <div class="tab-list" role="tablist" aria-label="Stat category" id="stats-tabs"></div>
+            <span class="standings-note" id="stats-note"></span>
+          </div>
+
+          <div class="standings-editor" id="stats-editor" hidden>
+            <p class="workspace-status" id="stats-status" role="status" aria-live="polite"></p>
+            <div class="standings-editor-row">
+              <label>Season<input id="stats-season-input" type="number" min="2000" max="2100" step="1"></label>
+              <button class="workspace-button" id="stats-clear" type="button">Clear this category</button>
+            </div>
+            <details class="salary-import-panel game-import-panel" id="game-import-panel" open>
+              <summary><b>Add a game from box score</b> <span>Adds to season totals and standings</span></summary>
+              <div class="stats-shot game-shot" id="game-shot" hidden>
+                <label class="button button-lime stats-shot-button" for="game-shot-input">Upload game screenshots <span aria-hidden="true">↑</span></label>
+                <input id="game-shot-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+                <span id="game-shot-note">Upload every screenshot from one game's box score: the team stats pages and each player stats page (passing, rushing, receiving, defense, kicking). You can also drop or paste them here. Claude reads them, then you check the numbers before the game is added.</span>
+                <button class="workspace-button" id="game-shot-stop" type="button" hidden>Stop</button>
+              </div>
+              <p class="game-unavailable" id="game-unavailable">Reading box score screenshots works when this page is opened in Claude.</p>
+              <div class="game-review" id="game-review" hidden></div>
+              <div class="game-log" id="game-log"></div>
+            </details>
+            <details class="salary-import-panel" id="stats-import-panel">
+              <summary><b>Paste <b id="stats-import-category">Passing</b> stats</b> <span>Updates matching teams and players</span></summary>
+              <div class="stats-shot" id="stats-shot" hidden>
+                <label class="button button-lime stats-shot-button" for="stats-shot-input">Upload screenshot <span aria-hidden="true">↑</span></label>
+                <input id="stats-shot-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+                <span id="stats-shot-note">Claude reads the stat table in your screenshot and fills it in below for you to check. You can also paste a screenshot into the box or drop one here. Several screenshots of one long table can be uploaded together.</span>
+                <button class="workspace-button" id="stats-shot-stop" type="button" hidden>Stop</button>
+              </div>
+              <label for="stats-paste-input">Copy the whole table from your sim or spreadsheet, including the header row</label>
+              <textarea id="stats-paste-input" rows="6" spellcheck="false" placeholder="Player&#9;Team&#9;Pos&#9;GP&#9;Cmp&#9;Att&#9;Yds&#9;TD&#9;Int&#9;Rate"></textarea>
+              <p>Any columns work: the page keeps your headers as they are. Include a Player column (or Team for team stats) and, if you can, a Team column so players link to their team. Each paste or screenshot updates the rows it contains: a team (or player) already in the table is replaced with the new numbers, new ones are added, and everyone else is kept. So you can add 11 teams from one screenshot, then the next 11 from another.</p>
+              <label class="stats-replace"><input type="checkbox" id="stats-replace-all"> Clear this category first (start a fresh table, e.g. for a new season)</label>
+              <button class="button button-lime" id="stats-paste-import" type="button">Import stats</button>
+            </details>
+          </div>
+
+          <div class="stats-leaders" id="stats-leaders"></div>
+          <div class="scores-view" id="scores-view" hidden></div>
+
+          <div class="contracts-toolbar stats-filters">
+            <label>Search<input id="stats-search" type="search" placeholder="Player or team" maxlength="60"></label>
+            <label>Team<select id="stats-team"></select></label>
+            <div class="contracts-total"><span>ROWS</span><strong id="stats-count">0</strong></div>
+          </div>
+          <div class="stats-table-wrap">
+            <table class="stats-table" id="stats-table"></table>
+          </div>
+          <p class="empty-state" id="stats-empty" hidden></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>

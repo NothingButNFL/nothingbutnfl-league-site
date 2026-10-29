@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="Manage Nothing But NFL league-wide salary cap settings.">
+    <title>League Cap Directory — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js" defer></script>
+    <script src="league-core.js" defer></script>
+    <script src="admin.js" defer></script>
+    <script src="sample-league.js" defer></script>
+    <script src="sample-admin.js" defer></script>
+  </head>
+  <body class="admin-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Overview</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <a href="contracts.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9z"/></svg></span><span class="nav-label">Player Contracts</span></a>
+        <a href="injuries.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><defs><mask id="star-of-life-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path d="M9.10 1.80 L14.90 1.80 L14.90 6.98 L19.38 4.39 L22.28 9.41 L17.80 12.00 L22.28 14.59 L19.38 19.61 L14.90 17.02 L14.90 22.20 L9.10 22.20 L9.10 17.02 L4.62 19.61 L1.72 14.59 L6.20 12.00 L1.72 9.41 L4.62 4.39 L9.10 6.98Z" fill="#fff"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M12 5.4v14.2" stroke-width="1.3"/><path d="M12.9 6.3c-1.3-.5-2.6.4-1.6 1.5 1 1 2.8 1 2.7 2.3-.1 1.4-3.1 1.3-3.1 2.7s3.1 1.3 3.1 2.7-2.6 1.4-2.6 2.6" stroke-width="1"/></g><circle cx="13.3" cy="6.4" r=".8" fill="#000"/></mask></defs><rect width="24" height="24" fill="currentColor" mask="url(#star-of-life-cut)"/></svg></span><span class="nav-label">Injury Report</span></a>
+        <a href="stats.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 21h18"/><path d="M6 17V11M11 17V6M16 17v-4M20 17V8"/></svg></span><span class="nav-label">Stats</span></a>
+        <a href="standings.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M8.5 21V4.5h7V21"/><path d="M2.5 21V10.5h6M15.5 13.5h6V21"/><path d="M1.5 21h21"/><path d="M11.1 9 12.3 8v5.5" stroke-width="1.5"/></svg></span><span class="nav-label">Standings</span></a>
+        <a href="transactions.html"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-label">Transaction Log</span></a>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-trades" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem" aria-current="page"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="team-page-intro admin-page-intro">
+        <div class="section-wrap">
+          <a class="team-back-link" href="index.html#top"><span aria-hidden="true">←</span> LEAGUE HOME</a>
+          <div class="team-page-title">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-dot"></span> LEAGUE-WIDE SETTINGS</p>
+              <h1>League Cap Directory</h1>
+              <p class="team-page-subtitle">Set the shared base salary cap for each contract season.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="front-office-section admin-section" aria-labelledby="admin-title">
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>01</span> COMMISSIONER SETTINGS</div>
+              <h2 id="admin-title">League cap <span>settings.</span></h2>
+              <p class="section-subtitle">These base caps are shared across all 32 team sheets. Changes are saved in this browser and reflected on each team's cap overview.</p>
+            </div>
+            <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
+          </div>
+
+          <p class="storage-notice" id="admin-storage-notice" role="status">Edits are saved in this browser only. This workspace has no league sync or live NFL data.</p>
+          <p class="workspace-status" id="admin-status" role="status" aria-live="polite"></p>
+
+          <div class="management-panel admin-cap-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">2026 — 2033</span><h3>Base salary caps</h3></div>
+              <p>Enter each season's league-wide cap in USD. Team adjustments and rollover stay on their individual salary sheets.</p>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table admin-cap-table">
+                <thead><tr><th scope="col">SEASON</th><th scope="col">LEAGUE-WIDE BASE SALARY CAP (USD)</th></tr></thead>
+                <tbody id="admin-cap-rows"></tbody>
+              </table>
+            </div>
+            <p class="workspace-footnote">Leave a field blank when the base cap has not been set. Team cap space is calculated from this value, that team's adjustment, prior-year rollover, and roster cap hits.</p>
+          </div>
+
+          <div class="management-panel sample-panel" id="sample-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">TRY IT OUT</span><h3>Sample league</h3></div>
+              <p>A made-up season five weeks in, so you can see how every page looks with data in it.</p>
+            </div>
+            <p class="sample-copy" id="sample-copy">Loads 80 games of box scores (all stats, leaders and game scores), standings for all 32 teams, transactions, an injury report and key dates. Player names are real; the games, numbers and moves are invented. Your salary sheets, contracts, caps and draft picks stay as they are. A copy of everything you have now is kept, and <strong>Remove sample league</strong> puts it all back exactly.</p>
+            <div class="sample-actions">
+              <button class="button button-lime" id="sample-load" type="button">Load 5-week sample league</button>
+              <button class="workspace-button" id="sample-remove" type="button" hidden>Remove sample league and restore my data</button>
+            </div>
+            <p class="workspace-status" id="sample-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>

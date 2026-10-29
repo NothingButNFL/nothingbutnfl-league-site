@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="Nothing But NFL team salary sheets and draft-pick ledgers.">
+    <title>NFL Team Salary Sheet — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js" defer></script>
+    <script src="league-core.js" defer></script>
+    <script src="front-office.js" defer></script>
+  </head>
+  <body class="team-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Overview</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <a href="contracts.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9z"/></svg></span><span class="nav-label">Player Contracts</span></a>
+        <a href="injuries.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><defs><mask id="star-of-life-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path d="M9.10 1.80 L14.90 1.80 L14.90 6.98 L19.38 4.39 L22.28 9.41 L17.80 12.00 L22.28 14.59 L19.38 19.61 L14.90 17.02 L14.90 22.20 L9.10 22.20 L9.10 17.02 L4.62 19.61 L1.72 14.59 L6.20 12.00 L1.72 9.41 L4.62 4.39 L9.10 6.98Z" fill="#fff"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M12 5.4v14.2" stroke-width="1.3"/><path d="M12.9 6.3c-1.3-.5-2.6.4-1.6 1.5 1 1 2.8 1 2.7 2.3-.1 1.4-3.1 1.3-3.1 2.7s3.1 1.3 3.1 2.7-2.6 1.4-2.6 2.6" stroke-width="1"/></g><circle cx="13.3" cy="6.4" r=".8" fill="#000"/></mask></defs><rect width="24" height="24" fill="currentColor" mask="url(#star-of-life-cut)"/></svg></span><span class="nav-label">Injury Report</span></a>
+        <a href="stats.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 21h18"/><path d="M6 17V11M11 17V6M16 17v-4M20 17V8"/></svg></span><span class="nav-label">Stats</span></a>
+        <a href="standings.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M8.5 21V4.5h7V21"/><path d="M2.5 21V10.5h6M15.5 13.5h6V21"/><path d="M1.5 21h21"/><path d="M11.1 9 12.3 8v5.5" stroke-width="1.5"/></svg></span><span class="nav-label">Standings</span></a>
+        <a href="transactions.html"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-label">Transaction Log</span></a>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-trades" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="team-page-intro">
+        <div class="section-wrap">
+          <a class="team-back-link" href="index.html#top"><span aria-hidden="true">←</span> LEAGUE HOME</a>
+          <div class="team-page-title">
+            <span class="team-page-brand">
+              <img id="team-page-logo" class="team-page-logo" src="" alt="" width="68" height="68">
+              <span id="team-page-fallback" class="team-page-fallback" aria-hidden="true" hidden></span>
+            </span>
+            <div>
+              <p class="eyebrow"><span class="eyebrow-dot"></span> NFL TEAM FRONT OFFICE</p>
+              <h1 id="team-page-name">Team salary sheet</h1>
+              <p class="team-page-subtitle" id="team-page-subtitle">A local working sheet for your franchise.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="front-office-section" id="front-office" aria-labelledby="front-office-title">
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>01</span> THE FRONT OFFICE</div>
+              <h2 id="front-office-title"><span id="team-heading-name">Team</span> Rosters &amp; Salaries</h2>
+              <p class="section-subtitle">Update player cap hits, track your cap room, and manage the picks your team owns.</p>
+            </div>
+            <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
+          </div>
+
+          <div class="workspace-toolbar">
+            <div class="franchise-picker">
+              <span>TEAM SALARY SHEET</span>
+              <strong class="selected-team-name" id="selected-team-name"></strong>
+            </div>
+            <div class="data-actions">
+              <button class="workspace-button" id="export-data" type="button">Export backup <span aria-hidden="true">↓</span></button>
+              <label class="workspace-button import-button" for="import-data">Import backup <span aria-hidden="true">↑</span></label>
+              <input id="import-data" type="file" accept="application/json,.json" hidden>
+              <button class="workspace-button reset-button" id="reset-data" type="button">Reset local data</button>
+            </div>
+          </div>
+          <p class="storage-notice" id="storage-notice" role="status">Edits are saved in this browser only. This workspace has no league sync or live NFL data.</p>
+          <p class="workspace-status" id="workspace-status" role="status" aria-live="polite"></p>
+
+          <div class="season-tabs" id="season-tabs" role="tablist" aria-label="Team front-office sections"></div>
+          <div id="salary-year-content">
+          <div class="cap-overview" aria-label="Selected team season salary overview">
+            <article class="cap-stat"><span>DEAD CAP · <span id="dead-cap-card-year">2026</span></span><strong id="dead-cap-card-total">$0</strong><small>Recorded for this salary year</small></article>
+            <article class="cap-stat"><span>BASE SALARY CAP</span><strong id="base-cap-value">Not set</strong><small>Shared league-wide base · <a href="admin.html">Set in Admin</a></small></article>
+            <article class="cap-stat"><span>CAP ROLLOVER</span><strong id="cap-rollover">$0</strong><small>Previous season's remaining cap</small></article>
+            <article class="cap-stat adjustment-stat"><span>MANUAL ADJUSTMENT</span><label class="cap-limit-input" for="cap-adjustment"><span aria-hidden="true">±</span><input id="cap-adjustment" type="text" inputmode="decimal" maxlength="14" value="$0" aria-label="Manual cap space adjustment in dollars" data-currency="true" data-allow-negative="true"></label><small>Fines, rewards, or league corrections</small></article>
+            <article class="cap-stat"><span>TOTAL CAP SPACE</span><strong id="total-cap-space">Not set</strong><small>Base cap + rollover + adjustment</small></article>
+            <article class="cap-stat cap-room-stat"><span>REMAINING CAP ROOM</span><strong id="cap-room">Not set</strong><small>Total cap space minus season cap hit and dead cap</small></article>
+            <article class="cap-stat"><span>OWNED DRAFT PICKS</span><strong id="owned-pick-count">0</strong><small>Assets assigned to this team</small></article>
+          </div>
+
+          <div class="management-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index" id="salary-panel-index">01 / CONTRACTS</span><h3><span id="salary-season-heading">2026</span> Salaries</h3></div>
+              <p>Years remaining counts this and future seasons with a base salary over $0. On the current league year's sheet, penalties auto-calculate: March 1–May 31 includes current and future prorated bonuses (plus guaranteed salary for releases); June 1–February 28 shows only current-year penalties here, with future amounts added to next year's dead-cap ledger when traded or released.</p>
+            </div>
+            <details class="salary-import-panel" id="salary-import-panel">
+              <summary>Paste spreadsheet rows <span>Import to <strong id="salary-import-season">2026</strong></span></summary>
+              <label for="salary-paste-input">Copy and paste player rows from your spreadsheet</label>
+              <textarea id="salary-paste-input" rows="5" spellcheck="false" placeholder="Player Name&#9;POS&#9;Roster Type&#9;Base Salary&#9;Prorated Bonus&#9;Roster Bonus&#9;GTD Salary&#9;Cap Hit&#9;Cap %&#9;Base Paid&#9;Years Left&#9;Trade Penalty&#9;Net Savings&#9;Release Penalty&#9;Net Savings"></textarea>
+              <p>Paste rows with their header row for the most reliable column matching. Without headers, include Player Name, Position, Roster Type, and the four salary columns first, followed by Years Left and the four Trade/Release values; calculated columns such as Cap Hit, Cap %, and Base Paid may be included or omitted. Years of experience is entered on the Player Contracts page. Cap Hit, Cap %, Years Remaining, and current-year penalties are calculated automatically. Players are added or updated only for this season; import them separately for any other season.</p>
+              <button class="button button-lime" id="import-salary-paste" type="button">Import to <span id="salary-import-button-season">2026</span></button>
+            </details>
+            <form class="management-form salary-form" id="add-player-form">
+              <label>Player name<input name="name" required maxlength="70" placeholder="e.g. Player name"></label>
+              <label>Position<input name="position" required maxlength="8" placeholder="e.g. QB"></label>
+              <label>Roster type<input name="rosterType" required maxlength="30" placeholder="e.g. Active"></label>
+              <button class="button button-lime add-button" type="submit">Add player <span aria-hidden="true">+</span></button>
+            </form>
+            <div class="management-table-wrap">
+              <table class="management-table salary-table">
+                <colgroup>
+                  <col class="salary-col-player"><col class="salary-col-position"><col class="salary-col-roster"><col class="salary-col-exp">
+                  <col class="salary-col-base"><col class="salary-col-prorated"><col class="salary-col-roster-bonus">
+                  <col class="salary-col-guaranteed"><col class="salary-col-hit"><col class="salary-col-percent">
+                  <col class="salary-col-years"><col class="salary-col-trade-penalty"><col class="salary-col-trade-savings">
+                  <col class="salary-col-release-penalty"><col class="salary-col-release-savings"><col class="salary-col-actions">
+                </colgroup>
+                <thead>
+                  <tr class="salary-groups">
+                    <th scope="colgroup" colspan="11">CONTRACT INFORMATION</th>
+                    <th scope="colgroup" colspan="2">TRADE</th>
+                    <th scope="colgroup" colspan="2">RELEASE</th>
+                    <th rowspan="2"><span class="sr-only">Actions</span></th>
+                  </tr>
+                  <tr>
+                    <th scope="col">PLAYER NAME</th><th scope="col">POSITION</th><th scope="col">ROSTER TYPE</th><th scope="col" title="Accrued seasons from the Player Contracts page (rookies = 0)">YRS EXP</th>
+                    <th scope="col">BASE SALARY</th><th scope="col">PRORATED BONUS</th><th scope="col">ROSTER BONUS</th>
+                    <th scope="col">GUARANTEED SALARY</th><th scope="col">CAP HIT</th><th scope="col">CAP %</th>
+                    <th scope="col">YEARS REMAINING</th><th scope="col">TRADE PENALTY</th><th scope="col">TRADE NET SAVINGS</th>
+                    <th scope="col">RELEASE PENALTY</th><th scope="col">RELEASE NET SAVINGS</th>
+                  </tr>
+                </thead>
+                <tbody id="salary-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="salary-empty">No players on this salary sheet yet. Add a player below.</p>
+          </div>
+
+          <div class="management-panel picks-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">02 / CONTRACT MOVES</span><h3><span id="dead-cap-ledger-year">2026</span> Dead Cap</h3></div>
+              <p>Dead-cap entries shown here follow the selected salary-year tab. Trade or release a player from the current sheet to record dead cap. Tracking is available for the first two salary years.</p>
+            </div>
+            <details class="salary-import-panel dead-cap-import-panel">
+              <summary>Paste dead-cap spreadsheet rows</summary>
+              <label for="dead-cap-paste-input">Copy and paste Player Name, Position, and Cap Hit columns</label>
+              <textarea id="dead-cap-paste-input" rows="4" spellcheck="false" placeholder="Player Name&#9;Position&#9;Cap Hit&#10;Player name&#9;QB&#9;$5,000,000"></textarea>
+              <p>Paste a header row followed by data, or paste headerless rows in Player Name, Position, Cap Hit order. Imported rows are added to the selected year's ledger.</p>
+              <button class="button button-lime" id="import-dead-cap-paste" type="button">Import to <span id="dead-cap-ledger-year-button">2026</span></button>
+            </details>
+            <div class="management-table-wrap">
+              <table class="management-table dead-cap-table">
+                <thead><tr><th scope="col">TRANSACTION</th><th scope="col">PLAYER</th><th scope="col">POSITION</th><th scope="col">TRANSACTION YEAR</th><th scope="col">DEAD CAP</th><th scope="col">DATE RECORDED</th><th scope="col"><span class="sr-only">ACTIONS</span></th></tr></thead>
+                <tbody id="dead-cap-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="dead-cap-empty">No trade or release dead cap recorded for this table year.</p>
+          </div>
+
+          </div>
+
+          <div class="management-panel picks-panel" id="draft-picks-panel" role="tabpanel" aria-labelledby="season-tab-draft-picks" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">03 / DRAFT CAPITAL</span><h3>Owned draft picks</h3></div>
+              <p>Picks this team currently owns, from the league's <a href="draft-picks.html">Draft Pick Manager</a>. Ownership changes when the commissioner approves a trade.</p>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table picks-table">
+                <thead><tr><th scope="col">Year</th><th scope="col">Current</th><th scope="col">Round</th><th scope="col">Original</th><th scope="col">Notes</th></tr></thead>
+                <tbody id="pick-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="picks-empty">This team doesn't own any draft picks yet. Picks are added on Admin › Draft Pick Manager.</p>
+          </div>
+          <div class="management-panel trade-panel" id="trade-panel" role="tabpanel" aria-labelledby="season-tab-trade" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">04 / TRADE DESK</span><h3>Trades</h3></div>
+              <p>Choose up to two partner teams, assign players or picks to each destination, review each team's cap impact, and propose the trade. Every partner team must accept, then the commissioner approves it on the Admin › Pending Trades page before players and picks move. Traded players' prorated bonuses stay with the sending team as dead cap: March 1–May 31, all remaining prorated bonuses hit this year's dead cap; June 1–February 28, this year's prorated bonus hits this year and future prorated bonuses go to next year's dead-cap table. The receiving team takes on the contract without prorated bonuses.</p>
+            </div>
+            <div class="trade-offers" id="trade-offers" aria-live="polite"></div>
+            <h4 class="trade-offers-heading">Build a trade</h4>
+            <div class="trade-partners">
+              <label>Trade partner 1<select id="trade-partner-one" aria-label="First trade partner"></select></label>
+              <label>Trade partner 2 <span>(optional)</span><select id="trade-partner-two" aria-label="Second trade partner"></select></label>
+            </div>
+            <div class="trade-team-sections" id="trade-team-sections"></div>
+            <p class="empty-state" id="trade-empty">Select at least one partner team and add the assets each team will send.</p>
+            <div class="trade-impact" id="trade-impact" aria-live="polite"></div>
+            <p class="trade-validation" id="trade-validation" role="status" aria-live="polite"></p>
+            <button class="button button-lime trade-execute" id="propose-trade" type="button" disabled>Propose trade</button>
+          </div>
+          <p class="workspace-footnote">Cap and pick records start blank. Enter your league's figures; no salaries, cap limits, or NFL transactions are preloaded as official data.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>

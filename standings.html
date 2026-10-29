@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="Nothing But NFL league, conference and division standings.">
+    <title>Standings — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js" defer></script>
+    <script src="league-core.js" defer></script>
+    <script src="standings.js" defer></script>
+  </head>
+  <body class="standings-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Overview</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <a href="contracts.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9z"/></svg></span><span class="nav-label">Player Contracts</span></a>
+        <a href="injuries.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><defs><mask id="star-of-life-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path d="M9.10 1.80 L14.90 1.80 L14.90 6.98 L19.38 4.39 L22.28 9.41 L17.80 12.00 L22.28 14.59 L19.38 19.61 L14.90 17.02 L14.90 22.20 L9.10 22.20 L9.10 17.02 L4.62 19.61 L1.72 14.59 L6.20 12.00 L1.72 9.41 L4.62 4.39 L9.10 6.98Z" fill="#fff"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M12 5.4v14.2" stroke-width="1.3"/><path d="M12.9 6.3c-1.3-.5-2.6.4-1.6 1.5 1 1 2.8 1 2.7 2.3-.1 1.4-3.1 1.3-3.1 2.7s3.1 1.3 3.1 2.7-2.6 1.4-2.6 2.6" stroke-width="1"/></g><circle cx="13.3" cy="6.4" r=".8" fill="#000"/></mask></defs><rect width="24" height="24" fill="currentColor" mask="url(#star-of-life-cut)"/></svg></span><span class="nav-label">Injury Report</span></a>
+        <a href="stats.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 21h18"/><path d="M6 17V11M11 17V6M16 17v-4M20 17V8"/></svg></span><span class="nav-label">Stats</span></a>
+        <a href="standings.html" aria-current="page"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M8.5 21V4.5h7V21"/><path d="M2.5 21V10.5h6M15.5 13.5h6V21"/><path d="M1.5 21h21"/><path d="M11.1 9 12.3 8v5.5" stroke-width="1.5"/></svg></span><span class="nav-label">Standings</span></a>
+        <a href="transactions.html"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-label">Transaction Log</span></a>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-trades" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="standings-section" id="standings" aria-labelledby="standings-title">
+        <div class="section-wrap">
+          <div class="section-kicker light-kicker"><span>01</span> THE SCOREBOARD</div>
+          <div class="section-heading-row">
+            <div>
+              <h2 id="standings-title">League Standings</h2>
+              <p class="section-subtitle">League, conference and division standings for all 32 teams.</p>
+            </div>
+            <button class="workspace-button standings-edit-toggle" id="standings-edit" type="button" aria-pressed="false">Edit records</button>
+          </div>
+          <div class="standings-toolbar">
+            <div class="tab-list" role="tablist" aria-label="Standings view">
+              <button class="tab-button is-active" id="tab-league" role="tab" aria-selected="true" aria-controls="standings-panel" data-view="league">League</button>
+              <button class="tab-button" id="tab-conference" role="tab" aria-selected="false" aria-controls="standings-panel" data-view="conference" tabindex="-1">Conference</button>
+              <button class="tab-button" id="tab-division" role="tab" aria-selected="false" aria-controls="standings-panel" data-view="division" tabindex="-1">Division</button>
+            </div>
+            <span class="standings-note" id="standings-note">Sorted by win percentage, then wins, then point differential</span>
+          </div>
+          <div class="standings-editor" id="standings-editor" hidden>
+            <p class="workspace-status" id="standings-status" role="status" aria-live="polite"></p>
+            <div class="standings-editor-row">
+              <label>Season<input id="standings-season-input" type="number" min="2000" max="2100" step="1"></label>
+              <button class="workspace-button" id="standings-reset" type="button">Reset every record to 0-0</button>
+            </div>
+            <details class="salary-import-panel" id="standings-import-panel">
+              <summary>Paste standings rows <span>Team, W, L, T, PF, PA, Streak</span></summary>
+              <label for="standings-paste-input">Copy and paste rows from your spreadsheet, including the header row</label>
+              <textarea id="standings-paste-input" rows="5" spellcheck="false" placeholder="Team&#9;W&#9;L&#9;T&#9;PF&#9;PA&#9;Streak"></textarea>
+              <p>Teams can be abbreviations (KC), nicknames (Chiefs) or full names. A "W-L-T" record column such as 10-6-1 also works. Only the columns you paste are changed.</p>
+              <button class="button button-lime" id="standings-paste-import" type="button">Import standings</button>
+            </details>
+          </div>
+          <div class="standings-panel" id="standings-panel" role="tabpanel" aria-labelledby="tab-league" tabindex="0"></div>
+          <div class="table-footnote" id="standings-footnote"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>
