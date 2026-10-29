@@ -1315,3 +1315,8 @@ body > .site-header .brand-copy strong { color: #8fd0ff; font-weight: 700; }
   body > .site-header .brand { grid-column: 1; justify-self: start; }
   body > .site-header .primary-nav { grid-column: 2; flex: none; justify-content: center; }
 }
+/* Larger league name in the top bar */
+body > .site-header .brand-logo { width: 42px; height: 42px; flex-basis: 42px; }
+body > .site-header .brand-copy { font-size: 17px !important; letter-spacing: .06em; font-weight: 600; }
+@media (max-width: 1420px) and (min-width: 1181px) { body > .site-header .brand-copy { font-size: 14px !important; } }
+@media (max-width: 420px) { body > .site-header .brand-copy { font-size: 14px !important; } }
