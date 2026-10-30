@@ -1611,12 +1611,47 @@ function isSampleLeagueActive() {
   return Boolean(localStorage.getItem(sampleBackupKey)) && String(localStorage.getItem(officeStorageKey) || "").includes('"sampleLeague":true');
 }
 
-function restoreFromSampleBackup() {
-  const backup = localStorage.getItem(sampleBackupKey);
-  if (backup === null) throw new Error("no saved copy was found");
-  if (backup === sampleNoDataMarker) localStorage.removeItem(officeStorageKey);
-  else localStorage.setItem(officeStorageKey, backup);
+// The copy of the user's data is kept in IndexedDB (lots of room), with a small marker in localStorage.
+// The full sample league is about 4 MB, so a second copy in localStorage would not fit.
+const sampleBackupInDb = "__in-indexeddb__";
+function sampleBackupDb() {
+  return new Promise((resolve, reject) => {
+    if (!globalThis.indexedDB) { reject(new Error("this browser can't keep a backup copy")); return; }
+    const request = indexedDB.open("nbf-sample-backup", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("backup");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("the backup store couldn't be opened"));
+  });
+}
+async function sampleBackupDo(mode, value) {
+  const db = await sampleBackupDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("backup", mode === "get" ? "readonly" : "readwrite");
+    const store = tx.objectStore("backup");
+    const request = mode === "get" ? store.get("office") : mode === "put" ? store.put(value, "office") : store.delete("office");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => db.close();
+  });
+}
+
+// Saves the current data (or "no data") before the sample is loaded.
+async function saveSampleBackup(raw) {
+  await sampleBackupDo("put", raw === null ? sampleNoDataMarker : raw);
+  const check = await sampleBackupDo("get");
+  if (check !== (raw === null ? sampleNoDataMarker : raw)) throw new Error("the backup copy couldn't be checked");
+  localStorage.setItem(sampleBackupKey, sampleBackupInDb);
+}
+
+async function restoreFromSampleBackup() {
+  const marker = localStorage.getItem(sampleBackupKey);
+  if (marker === null) throw new Error("no saved copy was found");
+  const backup = marker === sampleBackupInDb ? await sampleBackupDo("get") : marker;
+  if (backup === undefined || backup === null) throw new Error("the saved copy is missing");
+  localStorage.removeItem(officeStorageKey); // free the room the sample used before putting the copy back
+  if (backup !== sampleNoDataMarker) localStorage.setItem(officeStorageKey, backup);
   localStorage.removeItem(sampleBackupKey);
+  if (marker === sampleBackupInDb) await sampleBackupDo("delete").catch(() => {});
   globalThis.refreshNavNotifications?.();
 }
 
@@ -1631,7 +1666,7 @@ function showSampleBanner() {
   banner.className = "sample-banner";
   banner.setAttribute("role", "note");
   const text = document.createElement("span");
-  text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up season five weeks in. ";
+  text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up full season with made-up rosters and contracts. ";
   const link = document.createElement("a");
   link.href = "admin.html#sample-panel";
   link.textContent = "Remove it in Admin";

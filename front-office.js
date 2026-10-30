@@ -1289,3 +1289,8 @@ window.addEventListener("storage", (event) => {
 });
 
 renderFrontOffice();
+
+// Following a #depth-chart link while already on the sheet switches to that tab.
+window.addEventListener("hashchange", () => {
+  if (location.hash === "#depth-chart" && activeTab !== "depth-chart") { activeTab = "depth-chart"; renderFrontOffice(); }
+});
