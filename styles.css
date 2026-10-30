@@ -1332,3 +1332,4 @@ body > .site-header .team-menu-fallback { font-size: 10px; }
 body .cap-room-stat.is-over > strong { color: #ff9299; }
 .trade-projected-room.is-negative-room { color: #ff9299; font-weight: 700; }
 #dead-cap-panel[hidden], #dead-cap-card[hidden] { display: none !important; }
+body .cap-room-stat.is-under > strong { color: #75e28b; } .trade-projected-room.is-positive-room { color: #75e28b; font-weight: 700; }

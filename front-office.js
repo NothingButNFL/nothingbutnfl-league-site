@@ -229,10 +229,11 @@ function updateCapOverview() {
   const roomCard = document.querySelector(".cap-room-stat");
   if (figures.remaining === null) {
     room.textContent = "Set base cap";
-    roomCard.classList.remove("is-over");
+    roomCard.classList.remove("is-over", "is-under");
   } else {
     room.textContent = `${figures.remaining < 0 ? "−" : ""}${formatCurrency(Math.abs(figures.remaining))}`;
     roomCard.classList.toggle("is-over", figures.remaining < 0);
+    roomCard.classList.toggle("is-under", figures.remaining > 0);
   }
   document.querySelector("#salary-season-heading").textContent = String(activeSeason);
   document.querySelector("#salary-import-season").textContent = String(activeSeason);
@@ -720,6 +721,7 @@ function updateTradeSummary() {
         ? "Projected cap room: base cap not set"
         : `Projected cap room: ${formatSignedCurrency(impact.remaining + impact.net)}`;
       if (impact.remaining !== null && impact.remaining + impact.net < 0) remaining.classList.add("is-negative-room");
+      if (impact.remaining !== null && impact.remaining + impact.net > 0) remaining.classList.add("is-positive-room");
       card.append(title, details, remaining);
       impactContainer.append(card);
     }
