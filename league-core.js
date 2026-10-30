@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates);
 }
 
 function migrateLegacyData(data) {
@@ -1470,6 +1470,47 @@ function validDepthCharts(charts) {
     }
   }
   return true;
+}
+
+// ---- Stream updates (Admin → Stream Updates) ----
+// When a team changes its depth chart, the changes are queued here for the commissioner to apply in Madden.
+// data.streamUpdates = [{ id, teamId, createdAt, updatedAt, done, doneAt?, changes: [{ slot, index, from, to }] }]
+// slot is a depth chart spot (QB, WR, …) with index 0-based, or "scheme:<field>" for Team Schemes (index -1).
+function validStreamUpdates(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 3000) return false;
+  const ids = new Set();
+  for (const u of list) {
+    if (!u || typeof u.id !== "string" || !u.id || ids.has(u.id) || !nflTeams.some(({ id }) => id === u.teamId) ||
+        typeof u.createdAt !== "string" || typeof u.done !== "boolean" || !Array.isArray(u.changes) || u.changes.length > 400 ||
+        u.changes.some((c) => !c || typeof c.slot !== "string" || c.slot.length > 40 || !Number.isInteger(c.index) ||
+          typeof c.from !== "string" || typeof c.to !== "string" || c.from.length > 100 || c.to.length > 100)) return false;
+    ids.add(u.id);
+  }
+  return true;
+}
+
+// Adds depth chart changes for a team to the stream queue. Changes made within 30 minutes of the team's last
+// open update are merged into it, keeping each spot's original "from"; a spot changed back is dropped.
+function recordStreamUpdate(data, teamId, changes) {
+  if (!changes.length) return null;
+  if (!Array.isArray(data.streamUpdates)) data.streamUpdates = [];
+  const now = new Date();
+  let update = data.streamUpdates.find((u) => u.teamId === teamId && !u.done && now - new Date(u.updatedAt || u.createdAt) < 30 * 60 * 1000);
+  if (!update) {
+    if (data.streamUpdates.length >= 3000) data.streamUpdates = data.streamUpdates.filter((u) => !u.done).slice(-2500);
+    update = { id: newRecordId("stream"), teamId, createdAt: now.toISOString(), done: false, changes: [] };
+    data.streamUpdates.push(update);
+  }
+  for (const change of changes) {
+    const existing = update.changes.find((c) => c.slot === change.slot && c.index === change.index);
+    if (existing) existing.to = change.to;
+    else update.changes.push({ ...change });
+  }
+  update.changes = update.changes.filter((c) => c.from !== c.to).slice(0, 400);
+  update.updatedAt = now.toISOString();
+  if (!update.changes.length) data.streamUpdates = data.streamUpdates.filter((u) => u !== update);
+  return update;
 }
 
 // ---- Key dates (Overview card) ----

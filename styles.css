@@ -1517,3 +1517,25 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .depth-scheme-row input::placeholder { color: #8ca5c5; font-style: italic; }
 .depth-count { margin: 6px 0 0; color: #8ca5c5; font-size: 12px; line-height: 1.45; }
 @media (max-width: 1100px) { .depth-layout { grid-template-columns: 1fr; } .depth-schemes { position: static; order: -1; } }
+/* Stream updates */
+.su-toolbar { align-items: end; }
+.su-list { display: grid; gap: 12px; margin-top: 12px; }
+.su-card { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid #31527a; border-left: 3px solid #f2b950; background: #0c2b50; }
+.su-card.is-done { border-left-color: #75e28b; opacity: .72; }
+.su-card header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.su-team { display: flex; align-items: baseline; gap: 8px; color: #fff; font: 700 18px var(--display); text-decoration: none; }
+.su-team b { color: #8fd0ff; font: 700 11px var(--mono); }
+.su-team:hover, .su-team:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.su-meta { color: #8ca5c5; font: 11px var(--mono); }
+.su-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px 18px; }
+.su-group h4 { margin: 0 0 4px; color: #c5d5e8; font: 700 10px var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+.su-group ul { margin: 0; padding: 0; list-style: none; }
+.su-group li { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto minmax(0, 1fr); align-items: baseline; gap: 8px; padding: 5px 0; border-top: 1px solid #1d3a5f; font-size: 13px; }
+.su-slot { color: #fff; font: 700 12px var(--body); }
+.su-from { overflow: hidden; color: #8ca5c5; text-decoration: line-through; text-decoration-color: rgba(255, 146, 153, .7); text-overflow: ellipsis; white-space: nowrap; }
+.su-from.is-empty, .su-to.is-empty { font-style: italic; text-decoration: none; }
+.su-arrow { color: #8ca5c5; }
+.su-to { overflow: hidden; color: #fff; text-overflow: ellipsis; white-space: nowrap; }
+.su-to.is-empty { color: #ff9299; font-weight: 400; }
+.su-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.su-copy-fallback { display: block; width: 100%; min-height: 120px; margin-top: 8px; padding: 8px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 12px var(--mono); }

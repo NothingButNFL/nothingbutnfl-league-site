@@ -10,7 +10,7 @@ const salaryEmpty = document.querySelector("#salary-empty");
 const requestedTeamId = new URLSearchParams(window.location.search).get("team")?.toUpperCase();
 let activeTeamId = nflTeams.some(({ id }) => id === requestedTeamId) ? requestedTeamId : nflTeams[0].id;
 let activeSeason = firstSeason;
-let activeTab = "salary";
+let activeTab = location.hash === "#depth-chart" ? "depth-chart" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
 let officeData = emptyOfficeData(activeTeamId);
 let storageIsAvailable = true;
 let tradePartnerIds = ["", ""];

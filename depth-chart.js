@@ -183,26 +183,54 @@ function renderDepthChart() {
 }
 globalThis.renderDepthChart = renderDepthChart;
 
+// ---- Stream updates: every depth chart change is queued for the commissioner (Admin → Stream Updates). ----
+function depthName(id) {
+  if (!id) return "";
+  const found = findPlayerById(officeData, id);
+  return found ? found.player.name : "Removed player";
+}
+const copySlots = (chart) => JSON.parse(JSON.stringify(chart.slots || {}));
+function slotChanges(before, after) {
+  const changes = [];
+  for (const [, rows] of depthChartSections) {
+    for (const [slot, size] of rows) {
+      for (let i = 0; i < size; i += 1) {
+        const from = (before[slot] || [])[i] || "";
+        const to = (after[slot] || [])[i] || "";
+        if (from !== to) changes.push({ slot, index: i, from: depthName(from), to: depthName(to) });
+      }
+    }
+  }
+  return changes;
+}
+function queueStream(changes) {
+  if (typeof recordStreamUpdate === "function") recordStreamUpdate(officeData, activeTeamId, changes);
+}
+
 depthPanel?.addEventListener("change", (event) => {
   const chart = depthChartFor(activeTeamId);
   const select = event.target.closest("[data-slot]");
   if (select) {
     const slot = select.dataset.slot;
+    const before = copySlots(chart);
     const ids = [...(chart.slots[slot] || [])];
     while (ids.length < depthSlotSizes[slot]) ids.push("");
     ids[Number(select.dataset.index)] = select.value;
     while (ids.length && !ids[ids.length - 1]) ids.pop();
     if (ids.length) chart.slots[slot] = ids; else delete chart.slots[slot];
     const player = select.value ? select.selectedOptions[0].textContent : "empty";
-    saveOfficeData(`${slot} ${Number(select.dataset.index) + 1}: ${player}.`);
+    queueStream(slotChanges(before, chart.slots));
+    saveOfficeData(`${slot} ${Number(select.dataset.index) + 1}: ${player}. Sent to the commissioner's stream updates.`);
     renderDepthChart();
     return;
   }
   const input = event.target.closest("[data-scheme]");
   if (input) {
     const value = input.value.trim().slice(0, depthSchemeFields[input.dataset.scheme]);
+    const previous = chart.schemes[input.dataset.scheme] || "";
     if (value) chart.schemes[input.dataset.scheme] = value; else delete chart.schemes[input.dataset.scheme];
-    saveOfficeData("Team schemes saved.");
+    if (previous !== value) queueStream([{ slot: `scheme:${input.dataset.scheme}`, index: -1, from: previous, to: value }]);
+    saveOfficeData("Team schemes saved. Sent to the commissioner's stream updates.");
   }
 });
 
@@ -212,7 +240,9 @@ depthPanel?.addEventListener("click", async (event) => {
   const chart = depthChartFor(activeTeamId);
   if (button.dataset.action === "clear") {
     if (!await confirmAction("Clear every spot on this depth chart? Team schemes are kept.", { confirmLabel: "Clear depth chart", danger: true })) return;
+    const before = copySlots(chart);
     chart.slots = {};
+    queueStream(slotChanges(before, chart.slots));
     saveOfficeData("Depth chart cleared.");
     renderDepthChart();
     return;
@@ -220,6 +250,7 @@ depthPanel?.addEventListener("click", async (event) => {
   // Autofill. Starters first: exact position matches, then close fits, each player starting at one spot where possible.
   // Then backups, which may repeat a player listed elsewhere (as Madden allows).
   const roster = depthRoster();
+  const beforeFill = copySlots(chart);
   const starters = new Set();
   const slotList = depthChartSections.flatMap(([section, rows]) => rows.map(([slot, size]) => ({ slot, size, shareable: section !== "Offense" && section !== "Defense" })));
   for (const { slot } of slotList) { const first = (chart.slots[slot] || [])[0]; if (first) starters.add(first); }
@@ -256,6 +287,7 @@ depthPanel?.addEventListener("click", async (event) => {
     while (list.length && !list[list.length - 1]) list.pop();
     if (list.length) chart.slots[slot] = list; else delete chart.slots[slot];
   }
+  queueStream(slotChanges(beforeFill, chart.slots));
   saveOfficeData(added ? `Filled ${added} empty ${added === 1 ? "spot" : "spots"} by position. Change any of them with the dropdowns.` : "No empty spots could be filled: no more players fit those positions.");
   renderDepthChart();
 });

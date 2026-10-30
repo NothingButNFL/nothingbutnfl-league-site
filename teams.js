@@ -196,22 +196,26 @@ if (mobileMenuToggle && siteNavigation) {
 // Red counters for trades awaiting commissioner approval. They sit on the Admin
 // trigger (visible even when the menu is closed) and on the Pending Trades link.
 function refreshNavNotifications() {
-  let count = 0;
+  let trades = 0;
+  let stream = 0;
   try {
     const data = JSON.parse(localStorage.getItem(officeStorageKey) || "null");
-    if (Array.isArray(data?.pendingTrades)) {
-      count = data.pendingTrades.filter((trade) => trade?.status === "awaiting-admin").length;
-    }
+    if (Array.isArray(data?.pendingTrades)) trades = data.pendingTrades.filter((trade) => trade?.status === "awaiting-admin").length;
+    if (Array.isArray(data?.streamUpdates)) stream = data.streamUpdates.filter((update) => update && !update.done).length;
   } catch {
-    count = 0;
+    trades = 0;
+    stream = 0;
   }
-  const label = `${count} ${count === 1 ? "trade" : "trades"} awaiting admin approval`;
-  document.querySelectorAll('[data-badge="admin-trades"]').forEach((badge) => {
+  const show = (key, count, label) => document.querySelectorAll(`[data-badge="${key}"]`).forEach((badge) => {
     badge.textContent = count > 99 ? "99+" : String(count);
     badge.hidden = count === 0;
     badge.setAttribute("aria-label", label);
     badge.title = label;
   });
+  show("admin-trades", trades, `${trades} ${trades === 1 ? "trade" : "trades"} awaiting admin approval`);
+  show("admin-stream", stream, `${stream} depth chart ${stream === 1 ? "update" : "updates"} for the stream`);
+  const total = trades + stream;
+  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
 }
 
 window.addEventListener("storage", (event) => {
