@@ -1487,3 +1487,8 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .rb-team-button b { min-width: 30px; color: #8fd0ff; font: 700 10px var(--mono); }
 .rb-team-button:hover, .rb-team-button:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 .cs-table td:last-child, .cs-table th:last-child { padding-right: 12px; } .cs-used { min-width: 130px; }
+/* One color design everywhere: dark navy page header band, blue content area (same as the Front Office pages). */
+.standings-page .standings-section, .stats-page .standings-section,
+main > .leaders-section { background: #123f73; }
+.standings-page .standings-section, .stats-page .standings-section { padding-top: 70px; }
+main > .hero { border-bottom: 1px solid #264a75; }
