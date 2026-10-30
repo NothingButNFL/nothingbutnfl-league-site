@@ -1,4 +1,4 @@
-// Overview: League Leaders cards, read from the Stats page's tables.
+// Overview: League Leaders cards, read from the Season Stats page's tables.
 const leaderCardsSpec = [
   { title: "Pass Yards", category: "passing", pattern: /^(PASS)?(YDS|YARDS)$/, empty: "passing" },
   { title: "Rush Yards", category: "rushing", pattern: /^(RUSH)?(YDS|YARDS)$/, empty: "rushing" },
@@ -47,7 +47,7 @@ function renderLeaders() {
   const fromGames = (data.games || []).length;
   document.querySelector("#leaders-subtitle").textContent = fromGames
     ? `Top 5 in each category · season totals from ${fromGames} ${fromGames === 1 ? "game" : "games"}.`
-    : "Top 5 in each category, from the Stats page.";
+    : "Top 5 in each category, from the Season Stats page.";
   grid.replaceChildren(...leaderCardsSpec.map((spec) => {
     const leaders = statLeaders(data, spec.category, spec.pattern, 5);
     const card = document.createElement("article");

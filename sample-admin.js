@@ -38,9 +38,10 @@ sampleLoadButton.addEventListener("click", async () => {
     data.tradeNumberNext = copy.tradeNumberNext;
     data.injuries = copy.injuries;
     data.keyDates = copy.keyDates;
+    data.schedule = copy.schedule || [];
     data.sampleLeague = true;
     writeStoredOffice(data);
-    sampleStatus.textContent = `Sample league loaded: ${copy.games.length} games through week ${copy.weeks}. Open the Overview, Stats, Standings, Transaction Log or Injury Report to look around.`;
+    sampleStatus.textContent = `Sample league loaded: ${copy.games.length} games through week ${copy.weeks}. Open the Overview or anything under Season Information to look around.`;
   } catch (error) {
     sampleStatus.textContent = error instanceof SyntaxError
       ? "Your saved data couldn't be read, so the sample wasn't loaded. Nothing was changed."

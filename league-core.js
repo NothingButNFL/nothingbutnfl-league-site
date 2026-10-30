@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule);
 }
 
 function migrateLegacyData(data) {
@@ -1343,6 +1343,59 @@ function validMedia(media) {
     ids.add(post.id);
   }
   return true;
+}
+
+// ---- Awards ----
+// data.awards = [{ id, season, award, winner, teamId?, position?, notes? }]
+const awardPresets = ["Most Valuable Player", "Offensive Player of the Year", "Defensive Player of the Year", "Offensive Rookie of the Year",
+  "Defensive Rookie of the Year", "Comeback Player of the Year", "Coach of the Year", "GM of the Year", "Super Bowl Champion", "Super Bowl MVP"];
+const awardTextLimits = { award: 60, winner: 70, position: 10, notes: 200 };
+
+function validAwards(awards) {
+  if (awards === undefined) return true;
+  if (!Array.isArray(awards) || awards.length > 2000) return false;
+  const ids = new Set();
+  for (const entry of awards) {
+    if (!entry || typeof entry.id !== "string" || !entry.id || ids.has(entry.id) || !isIntegerInRange(entry.season, 1920, 2100) ||
+        typeof entry.award !== "string" || !entry.award.trim() || entry.award.length > awardTextLimits.award ||
+        typeof entry.winner !== "string" || !entry.winner.trim() || entry.winner.length > awardTextLimits.winner ||
+        (entry.teamId !== undefined && entry.teamId !== "" && !nflTeams.some(({ id }) => id === entry.teamId))) return false;
+    for (const field of ["position", "notes"]) {
+      if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > awardTextLimits[field])) return false;
+    }
+    ids.add(entry.id);
+  }
+  return true;
+}
+
+// ---- Schedule ----
+// data.schedule = [{ id, season, week (1–18 regular season, 19 Wild Card, 20 Divisional, 21 Conference, 22 Super Bowl), away, home, date?, time?, note? }]
+const scheduleWeekLabels = { 19: "Wild Card", 20: "Divisional", 21: "Conference Championships", 22: "Super Bowl" };
+const scheduleWeekName = (week) => scheduleWeekLabels[week] || `Week ${week}`;
+
+function validSchedule(schedule) {
+  if (schedule === undefined) return true;
+  if (!Array.isArray(schedule) || schedule.length > 3000) return false;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const ids = new Set();
+  for (const game of schedule) {
+    if (!game || typeof game.id !== "string" || !game.id || ids.has(game.id) || !isIntegerInRange(game.season, 2000, 2100) ||
+        !isIntegerInRange(game.week, 1, 22) || !teamIds.has(game.away) || !teamIds.has(game.home) || game.away === game.home ||
+        (game.date !== undefined && (typeof game.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(game.date))) ||
+        (game.time !== undefined && (typeof game.time !== "string" || game.time.length > 20)) ||
+        (game.note !== undefined && (typeof game.note !== "string" || game.note.length > 80))) return false;
+    ids.add(game.id);
+  }
+  return true;
+}
+
+// The box score (from the Season Stats page) for a scheduled game, if one was added.
+function resultForScheduled(data, game) {
+  return (data.games || []).find((played) => {
+    const teams = played.teams.map(({ team }) => team);
+    return teams.includes(game.away) && teams.includes(game.home) &&
+      (played.week == null || played.week === game.week);
+  }) || null;
 }
 
 // ---- Key dates (Overview card) ----

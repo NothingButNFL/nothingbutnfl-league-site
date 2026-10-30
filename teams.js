@@ -70,8 +70,8 @@ if (teamsDropdown) {
 
 const teamsMenu = document.querySelector(".teams-menu");
 const teamsTrigger = document.querySelector(".teams-trigger");
-const adminMenu = document.querySelector(".admin-menu");
-const adminTrigger = document.querySelector(".admin-trigger");
+const adminMenu = document.querySelector(".admin-menu:not(.season-menu)");
+const adminTrigger = adminMenu?.querySelector(".admin-trigger");
 const adminDropdown = document.querySelector("#admin-dropdown");
 const mobileMenuToggle = document.querySelector(".menu-toggle");
 const siteNavigation = document.querySelector("#primary-nav");
@@ -140,6 +140,38 @@ if (adminMenu && adminTrigger && adminDropdown) {
   });
 }
 
+// "Season Information" dropdown: Injury Report, Standings, Season Stats, Awards, Schedule.
+const seasonMenu = document.querySelector(".season-menu");
+const seasonTrigger = seasonMenu?.querySelector(".season-trigger");
+const seasonDropdown = document.querySelector("#season-dropdown");
+function closeSeasonMenu() {
+  if (!seasonMenu || !seasonTrigger) return;
+  seasonMenu.classList.remove("is-open");
+  seasonTrigger.setAttribute("aria-expanded", "false");
+}
+if (seasonMenu && seasonTrigger && seasonDropdown) {
+  seasonDropdown.setAttribute("role", "menu");
+  seasonTrigger.addEventListener("click", () => {
+    const open = seasonTrigger.getAttribute("aria-expanded") === "true";
+    seasonTrigger.setAttribute("aria-expanded", String(!open));
+    seasonMenu.classList.toggle("is-open", !open);
+  });
+  seasonTrigger.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      seasonTrigger.setAttribute("aria-expanded", "true");
+      seasonMenu.classList.add("is-open");
+      seasonDropdown.querySelector("a")?.focus();
+    }
+  });
+  seasonMenu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") { closeSeasonMenu(); seasonTrigger.focus(); }
+  });
+  document.addEventListener("click", (event) => {
+    if (!seasonMenu.contains(event.target)) closeSeasonMenu();
+  });
+}
+
 if (mobileMenuToggle && siteNavigation) {
   mobileMenuToggle.addEventListener("click", () => {
     const isExpanded = mobileMenuToggle.getAttribute("aria-expanded") === "true";
@@ -154,6 +186,7 @@ if (mobileMenuToggle && siteNavigation) {
       document.querySelector(".site-header")?.classList.remove("is-open");
       closeTeamsMenu();
       closeAdminMenu();
+      closeSeasonMenu();
     }
   });
 }

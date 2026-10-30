@@ -444,7 +444,7 @@ function render() {
     title.textContent = "Player not found";
     const note = document.createElement("p");
     note.className = "team-page-subtitle";
-    note.textContent = "This player isn't on a salary sheet or Player Contracts in this browser. Open a profile from Player Contracts or the Stats page.";
+    note.textContent = "This player isn't on a salary sheet or Player Contracts in this browser. Open a profile from Player Contracts or the Season Stats page.";
     heroEl.append(title, note);
     document.querySelector("#player-body").hidden = true;
     return;
