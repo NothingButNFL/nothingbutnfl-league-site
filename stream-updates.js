@@ -39,10 +39,12 @@ function when(iso) {
   return sameDay ? `Today, ${time}` : `${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${time}`;
 }
 
-const changeLabel = (c) => (c.slot.startsWith("scheme:") ? schemeLabels[c.slot.slice(7)] || "Scheme" : `${c.slot} ${c.index + 1}`);
+const changeLabel = (c) => (c.slot.startsWith("scheme:") ? schemeLabels[c.slot.slice(7)] || "Scheme"
+  : c.slot.startsWith("sub:") ? `${c.slot.split(":")[1]} ${c.slot.split(":")[2] === "in" ? "In" : "Out"}` : `${c.slot} ${c.index + 1}`);
 const sortedChanges = (changes) => [...changes].sort((a, b) => {
-  const sa = a.slot.startsWith("scheme:") ? -1 : slotOrder.indexOf(a.slot);
-  const sb = b.slot.startsWith("scheme:") ? -1 : slotOrder.indexOf(b.slot);
+  const rank = (c) => (c.slot.startsWith("scheme:") ? -1 : c.slot.startsWith("sub:") ? 1000 + autoSubKeys.indexOf(c.slot.split(":")[1]) * 2 + (c.slot.endsWith(":out") ? 1 : 0) : slotOrder.indexOf(c.slot));
+  const sa = rank(a);
+  const sb = rank(b);
   return sa - sb || a.index - b.index;
 });
 
@@ -79,7 +81,7 @@ function renderUpdates() {
     // Changes, grouped by section.
     const groups = new Map();
     for (const c of sortedChanges(u.changes)) {
-      const section = c.slot.startsWith("scheme:") ? "Team Schemes" : sectionOf[c.slot] || "Other";
+      const section = c.slot.startsWith("scheme:") ? "Team Schemes" : c.slot.startsWith("sub:") ? "Auto Subs" : sectionOf[c.slot] || "Other";
       if (!groups.has(section)) groups.set(section, []);
       groups.get(section).push(c);
     }

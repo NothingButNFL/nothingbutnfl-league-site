@@ -13,8 +13,9 @@ const depthFits = {
   "3DRB": ["RB", "HB"], GAD: ["RB", "HB", "WR"], PWHB: ["RB", "HB", "FB"], SLWR: ["WR"], RLE: ["DE", "EDGE", "OLB", "LE"], RRE: ["DE", "EDGE", "OLB", "RE"],
   RDT: ["DT", "DE", "DL"], NT: ["NT", "DT", "DL"], SUBLB: ["LB", "MLB", "ILB", "OLB"], SLCB: ["CB", "NB", "DB"]
 };
-const offenseSchemes = ["Multiple Power Run", "West Coast Zone Run", "Spread", "Air Raid", "Run and Shoot", "Pro Style", "Option", "Multiple", "Vertical Zone Run"];
-const defenseSchemes = ["3-4 Under", "3-4 Two Gap", "3-4 Multiple", "4-3 Cover 3", "4-3 Cover 2", "4-3 Multiple", "4-3 Under", "Multiple 3-4", "Multiple 4-3", "Hybrid"];
+// The league's Madden scheme lists.
+const offenseSchemes = ["Multiple Power Run", "Multiple Zone Run", "Vertical Zone Run", "Vertical Power Run", "Spread", "Run And Shoot", "Air Raid", "Pistol", "West Coast Spread", "West Coast Zone Run", "West Coast Power Run"];
+const defenseSchemes = ["3-4 Under", "Tampa 2", "4-3 Quarters", "Disguise 3-4", "3-4 Storm", "4-3 Cover 3", "46 Defense", "Base 4-3", "4-3 Under", "Base 3-4"];
 
 function depthChartFor(teamId) {
   if (!officeData.depthCharts) officeData.depthCharts = {};
@@ -150,25 +151,28 @@ function renderDepthChart() {
     row.className = "depth-scheme-row";
     const span = document.createElement("span");
     span.textContent = label;
-    const input = document.createElement("input");
+    let input;
+    if (list) {
+      // Dropdown of the league's schemes (an older typed value outside the list is kept as its own choice).
+      input = document.createElement("select");
+      input.className = "depth-scheme-select";
+      const current = chart.schemes[field] || "";
+      input.append(new Option("Choose a scheme", ""), ...list.map((v) => new Option(v, v)));
+      if (current && !list.includes(current)) input.append(new Option(`${current} (not in list)`, current));
+      input.value = current;
+      input.classList.toggle("is-empty", !current);
+    } else {
+      input = document.createElement("input");
+      input.maxLength = depthSchemeFields[field];
+      input.value = chart.schemes[field] || "";
+      input.placeholder = "Team Name";
+    }
     input.dataset.scheme = field;
-    input.maxLength = depthSchemeFields[field];
-    input.value = chart.schemes[field] || "";
-    input.placeholder = list ? list[0] : "Team Name";
     input.disabled = !storageIsAvailable;
-    if (list) input.setAttribute("list", `depth-${field}-list`);
+    input.setAttribute("aria-label", label.replace(":", ""));
     row.append(span, input);
     schemes.append(row);
   }
-  const lists = document.createElement("div");
-  lists.hidden = true;
-  for (const [field, list] of [["offense", offenseSchemes], ["defense", defenseSchemes]]) {
-    const dl = document.createElement("datalist");
-    dl.id = `depth-${field}-list`;
-    dl.append(...list.map((v) => new Option(v, v)));
-    lists.append(dl);
-  }
-  schemes.append(lists);
   const counts = document.createElement("p");
   counts.className = "depth-count";
   const filled = Object.values(chart.slots).reduce((t, ids) => t + ids.filter(Boolean).length, 0);
@@ -178,10 +182,89 @@ function renderDepthChart() {
     : `No players on this team's ${currentLeagueYear()} salary sheet yet. Add players on the ${currentLeagueYear()} tab to build the depth chart.`;
   schemes.append(counts);
 
+  sections.append(autoSubsSection(chart));
   layout.append(sections, schemes);
   depthPanel.replaceChildren(head, layout);
 }
 globalThis.renderDepthChart = renderDepthChart;
+
+// ---- Auto subs: In / Out thresholds (0–100) per position group, like Madden's auto-sub sliders. ----
+function autoSubsSection(chart) {
+  chart.autoSubs = chart.autoSubs || {};
+  const section = document.createElement("section");
+  section.className = "depth-section depth-subs";
+  const h4 = document.createElement("h4");
+  h4.textContent = "Auto Subs";
+  const note = document.createElement("p");
+  note.className = "depth-subs-note";
+  note.textContent = "Drag a slider or type a number from 0 to 100. Blank means not set.";
+  const tables = document.createElement("div");
+  tables.className = "depth-subs-tables";
+  for (const [side, groups] of autoSubGroups) {
+    const table = document.createElement("table");
+    table.className = "depth-subs-table";
+    const cap = document.createElement("caption");
+    cap.textContent = side;
+    const head = table.createTHead().insertRow();
+    for (const label of ["Position", "In (0-100)", "Out (0-100)"]) {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = label;
+      head.append(th);
+    }
+    const body = table.createTBody();
+    for (const group of groups) {
+      const row = body.insertRow();
+      const th = document.createElement("th");
+      th.scope = "row";
+      th.textContent = group;
+      row.append(th);
+      for (const dir of ["in", "out"]) {
+        const cell = row.insertCell();
+        const value = chart.autoSubs[group]?.[dir];
+        const wrap = document.createElement("div");
+        wrap.className = `depth-sub${value == null ? " is-unset" : ""}`;
+        const range = document.createElement("input");
+        range.type = "range";
+        range.min = "0";
+        range.max = "100";
+        range.step = "1";
+        range.value = String(value ?? 50);
+        range.dataset.sub = group;
+        range.dataset.dir = dir;
+        range.setAttribute("aria-label", `${group} auto sub ${dir}`);
+        range.disabled = !storageIsAvailable;
+        const number = document.createElement("input");
+        number.type = "number";
+        number.min = "0";
+        number.max = "100";
+        number.step = "1";
+        number.inputMode = "numeric";
+        number.value = value == null ? "" : String(value);
+        number.placeholder = "—";
+        number.dataset.sub = group;
+        number.dataset.dir = dir;
+        number.setAttribute("aria-label", `${group} auto sub ${dir} value`);
+        number.disabled = !storageIsAvailable;
+        wrap.append(range, number);
+        cell.append(wrap);
+      }
+    }
+    table.prepend(cap);
+    tables.append(table);
+  }
+  section.append(h4, note, tables);
+  return section;
+}
+
+// Live readout while dragging; saved on release (the change event).
+depthPanel?.addEventListener("input", (event) => {
+  const range = event.target.closest('input[type="range"][data-sub]');
+  if (!range) return;
+  const wrap = range.parentElement;
+  wrap.classList.remove("is-unset");
+  wrap.querySelector('input[type="number"]').value = range.value;
+});
 
 // ---- Stream updates: every depth chart change is queued for the commissioner (Admin → Stream Updates). ----
 function depthName(id) {
@@ -221,6 +304,27 @@ depthPanel?.addEventListener("change", (event) => {
     const player = select.value ? select.selectedOptions[0].textContent : "empty";
     queueStream(slotChanges(before, chart.slots));
     saveOfficeData(`${slot} ${Number(select.dataset.index) + 1}: ${player}. Sent to the commissioner's stream updates.`);
+    renderDepthChart();
+    return;
+  }
+  const sub = event.target.closest("[data-sub]");
+  if (sub) {
+    const group = sub.dataset.sub;
+    const dir = sub.dataset.dir;
+    chart.autoSubs = chart.autoSubs || {};
+    const raw = sub.value.trim();
+    const previous = chart.autoSubs[group]?.[dir];
+    let value = raw === "" ? null : Math.round(Number(raw));
+    if (value !== null && (!Number.isFinite(value) || value < 0 || value > 100)) {
+      saveOfficeData("Auto sub values go from 0 to 100.");
+      renderDepthChart();
+      return;
+    }
+    const entry = { ...(chart.autoSubs[group] || {}) };
+    if (value === null) delete entry[dir]; else entry[dir] = value;
+    if (Object.keys(entry).length) chart.autoSubs[group] = entry; else delete chart.autoSubs[group];
+    if ((previous ?? null) !== value) queueStream([{ slot: `sub:${group}:${dir}`, index: -1, from: previous == null ? "" : String(previous), to: value === null ? "" : String(value) }]);
+    saveOfficeData(`${group} auto sub ${dir === "in" ? "In" : "Out"}: ${value === null ? "not set" : value}. Sent to the commissioner's stream updates.`);
     renderDepthChart();
     return;
   }
@@ -291,3 +395,6 @@ depthPanel?.addEventListener("click", async (event) => {
   saveOfficeData(added ? `Filled ${added} empty ${added === 1 ? "spot" : "spots"} by position. Change any of them with the dropdowns.` : "No empty spots could be filled: no more players fit those positions.");
   renderDepthChart();
 });
+
+// The team sheet may already be on this tab (team.html#depth-chart) before this script loaded.
+if (depthPanel && !depthPanel.hidden) renderDepthChart();

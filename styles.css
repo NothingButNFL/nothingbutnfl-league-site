@@ -1539,3 +1539,19 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .su-to.is-empty { color: #ff9299; font-weight: 400; }
 .su-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .su-copy-fallback { display: block; width: 100%; min-height: 120px; margin-top: 8px; padding: 8px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 12px var(--mono); }
+/* Scheme dropdowns and auto subs */
+.depth-scheme-row select { min-width: 0; padding: 6px 10px; border: 1px solid #31527a; border-radius: 12px; background: #071a33; color: #fff; font: 12px var(--body); color-scheme: dark; cursor: pointer; }
+.depth-scheme-row select.is-empty { color: #8ca5c5; font-style: italic; }
+.depth-subs-note { margin: -4px 0 10px; color: #8ca5c5; font-size: 12px; }
+.depth-subs-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.depth-subs-table { width: 100%; border-collapse: collapse; border: 1px solid #31527a; background: #0a2647; }
+.depth-subs-table caption { padding: 8px; border: 1px solid #31527a; border-bottom: 0; background: #174477; color: #fff; font: 800 16px var(--display); text-align: center; }
+.depth-subs-table thead th { padding: 7px 8px; border-bottom: 1px solid #31527a; color: #c5d5e8; font: 700 11px var(--body); text-align: center; }
+.depth-subs-table tbody th { width: 70px; padding: 6px 10px; color: #fff; font: 700 12px var(--body); text-align: center; }
+.depth-subs-table td { padding: 6px 10px; border-left: 1px solid #1d3a5f; }
+.depth-subs-table tbody tr + tr th, .depth-subs-table tbody tr + tr td { border-top: 1px solid #1d3a5f; }
+.depth-sub { display: grid; grid-template-columns: minmax(0, 1fr) 52px; align-items: center; gap: 8px; }
+.depth-sub input[type="range"] { width: 100%; min-width: 0; accent-color: #8fd0ff; cursor: pointer; }
+.depth-sub.is-unset input[type="range"] { opacity: .35; }
+.depth-sub input[type="number"] { width: 52px; min-width: 0; padding: 4px 6px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 12px var(--body); text-align: center; color-scheme: dark; }
+@media (max-width: 900px) { .depth-subs-tables { grid-template-columns: 1fr; } }

@@ -1449,6 +1449,8 @@ const depthChartSections = [
 ];
 const depthSlotSizes = Object.fromEntries(depthChartSections.flatMap(([, rows]) => rows));
 const depthSchemeFields = { offense: 60, defense: 60, offPlaybook: 60, defPlaybook: 60 };
+const autoSubGroups = [["Offense", ["QB", "HB", "WR", "TE/FB", "OL"]], ["Defense", ["DE", "DT", "LB", "CB", "S"]]];
+const autoSubKeys = autoSubGroups.flatMap(([, groups]) => groups);
 
 function validDepthCharts(charts) {
   if (charts === undefined) return true;
@@ -1460,6 +1462,15 @@ function validDepthCharts(charts) {
       for (const [slot, ids] of Object.entries(chart.slots)) {
         if (!Object.hasOwn(depthSlotSizes, slot) || !Array.isArray(ids) || ids.length > depthSlotSizes[slot] ||
             ids.some((id) => typeof id !== "string" || id.length > 100)) return false;
+      }
+    }
+    if (chart.autoSubs !== undefined) {
+      if (!chart.autoSubs || typeof chart.autoSubs !== "object") return false;
+      for (const [group, values] of Object.entries(chart.autoSubs)) {
+        if (!autoSubKeys.includes(group) || !values || typeof values !== "object") return false;
+        for (const [dir, value] of Object.entries(values)) {
+          if (!["in", "out"].includes(dir) || !isIntegerInRange(value, 0, 100)) return false;
+        }
       }
     }
     if (chart.schemes !== undefined) {
