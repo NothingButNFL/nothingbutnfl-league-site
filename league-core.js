@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock);
 }
 
 function migrateLegacyData(data) {
@@ -1396,6 +1396,47 @@ function resultForScheduled(data, game) {
     return teams.includes(game.away) && teams.includes(game.home) &&
       (played.week == null || played.week === game.week);
   }) || null;
+}
+
+// ---- Trade block ----
+// data.tradeBlock = [{ id, player, playerId?, teamId, position?, asking?, notes?, date }]
+const tradeBlockLimits = { player: 70, position: 10, asking: 120, notes: 300 };
+
+function validTradeBlock(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 2000) return false;
+  const ids = new Set();
+  for (const entry of list) {
+    if (!entry || typeof entry.id !== "string" || !entry.id || ids.has(entry.id) ||
+        typeof entry.player !== "string" || !entry.player.trim() || entry.player.length > tradeBlockLimits.player ||
+        !nflTeams.some(({ id }) => id === entry.teamId) ||
+        typeof entry.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) ||
+        (entry.playerId !== undefined && typeof entry.playerId !== "string")) return false;
+    for (const field of ["position", "asking", "notes"]) {
+      if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > tradeBlockLimits[field])) return false;
+    }
+    ids.add(entry.id);
+  }
+  return true;
+}
+
+// ---- Position groups (Roster Breakdown) ----
+const rosterPositionGroups = [
+  ["QB", "Quarterbacks", ["QB"]],
+  ["RB", "Running backs", ["RB", "HB", "FB"]],
+  ["WR", "Wide receivers", ["WR"]],
+  ["TE", "Tight ends", ["TE"]],
+  ["OL", "Offensive line", ["OL", "OT", "T", "LT", "RT", "OG", "G", "LG", "RG", "C", "IOL"]],
+  ["DL", "Defensive line", ["DL", "DE", "DT", "NT", "EDGE", "ED", "IDL"]],
+  ["LB", "Linebackers", ["LB", "OLB", "ILB", "MLB", "WLB", "SLB"]],
+  ["DB", "Defensive backs", ["DB", "CB", "S", "FS", "SS", "NB", "SAF"]],
+  ["ST", "Special teams", ["K", "P", "LS", "PK"]]
+];
+
+function positionGroupFor(position) {
+  const first = String(position || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
+  const group = rosterPositionGroups.find(([, , list]) => list.includes(first));
+  return group ? group[0] : "OTHER";
 }
 
 // ---- Key dates (Overview card) ----

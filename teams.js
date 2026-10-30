@@ -140,35 +140,37 @@ if (adminMenu && adminTrigger && adminDropdown) {
   });
 }
 
-// "Season Information" dropdown: Injury Report, Standings, Season Stats, Awards, Schedule.
-const seasonMenu = document.querySelector(".season-menu");
-const seasonTrigger = seasonMenu?.querySelector(".season-trigger");
-const seasonDropdown = document.querySelector("#season-dropdown");
-function closeSeasonMenu() {
-  if (!seasonMenu || !seasonTrigger) return;
-  seasonMenu.classList.remove("is-open");
-  seasonTrigger.setAttribute("aria-expanded", "false");
+// Grouped dropdowns ("Front Office", "Season Information"): every .season-menu works the same way.
+const groupMenus = [...document.querySelectorAll(".season-menu")].map((menu) => ({
+  menu, trigger: menu.querySelector(".season-trigger"), dropdown: menu.querySelector(".season-dropdown")
+})).filter(({ trigger, dropdown }) => trigger && dropdown);
+function closeGroupMenu({ menu, trigger }) {
+  menu.classList.remove("is-open");
+  trigger.setAttribute("aria-expanded", "false");
 }
-if (seasonMenu && seasonTrigger && seasonDropdown) {
-  seasonDropdown.setAttribute("role", "menu");
-  seasonTrigger.addEventListener("click", () => {
-    const open = seasonTrigger.getAttribute("aria-expanded") === "true";
-    seasonTrigger.setAttribute("aria-expanded", String(!open));
-    seasonMenu.classList.toggle("is-open", !open);
+function closeSeasonMenu() { groupMenus.forEach(closeGroupMenu); }
+for (const group of groupMenus) {
+  const { menu, trigger, dropdown } = group;
+  dropdown.setAttribute("role", "menu");
+  trigger.addEventListener("click", () => {
+    const open = trigger.getAttribute("aria-expanded") === "true";
+    groupMenus.forEach((other) => { if (other !== group) closeGroupMenu(other); });
+    trigger.setAttribute("aria-expanded", String(!open));
+    menu.classList.toggle("is-open", !open);
   });
-  seasonTrigger.addEventListener("keydown", (event) => {
+  trigger.addEventListener("keydown", (event) => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      seasonTrigger.setAttribute("aria-expanded", "true");
-      seasonMenu.classList.add("is-open");
-      seasonDropdown.querySelector("a")?.focus();
+      trigger.setAttribute("aria-expanded", "true");
+      menu.classList.add("is-open");
+      dropdown.querySelector("a")?.focus();
     }
   });
-  seasonMenu.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") { closeSeasonMenu(); seasonTrigger.focus(); }
+  menu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") { closeGroupMenu(group); trigger.focus(); }
   });
   document.addEventListener("click", (event) => {
-    if (!seasonMenu.contains(event.target)) closeSeasonMenu();
+    if (!menu.contains(event.target)) closeGroupMenu(group);
   });
 }
 

@@ -49,7 +49,19 @@
           </button>
           <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
         </div>
-        <a href="contracts.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.5 4 5.6 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.6-4-9s1.4-6.5 4-9z"/></svg></span><span class="nav-label">Player Contracts</span></a>
+        <div class="admin-menu season-menu frontoffice-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="frontoffice-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M3 12.5h18"/><path d="M11 12.5v2h2v-2"/></svg></span><span class="nav-label">Front Office</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="frontoffice-dropdown" aria-label="Front office pages">
+            <a class="admin-menu-link" href="contracts.html" role="menuitem"><span>Player Contracts</span></a>
+            <a class="admin-menu-link" href="trade-block.html" role="menuitem"><span>Trade Block</span></a>
+            <a class="admin-menu-link" href="free-agency.html" role="menuitem"><span>Free Agency</span></a>
+            <a class="admin-menu-link" href="transactions.html" role="menuitem"><span>Transaction Log</span></a>
+            <a class="admin-menu-link" href="cap-summary.html" role="menuitem"><span>Cap Summary</span></a>
+            <a class="admin-menu-link" href="roster-breakdown.html" role="menuitem"><span>Roster Breakdown</span></a>
+          </div>
+        </div>
         <div class="admin-menu season-menu is-current">
           <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="season-dropdown">
             <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/></svg></span><span class="nav-label">Season Information</span><span class="admin-chevron" aria-hidden="true">›</span>
@@ -62,7 +74,6 @@
             <a class="admin-menu-link" href="schedule.html" role="menuitem"><span>Schedule</span></a>
           </div>
         </div>
-        <a href="transactions.html"><span class="nav-icon" aria-hidden="true">⇄</span><span class="nav-label">Transaction Log</span></a>
         <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
         <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
         <div class="admin-menu">
