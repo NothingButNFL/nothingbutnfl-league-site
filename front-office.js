@@ -161,7 +161,7 @@ function transactionButton(player, transaction) {
 function renderSeasonTabs() {
   const tabs = document.querySelector("#season-tabs");
   tabs.replaceChildren();
-  const tabItems = [...seasons.map((year) => ({ id: String(year), label: String(year) })), {
+  const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
     id: "draft-picks",
     label: "DRAFT PICKS"
   }, {
@@ -178,7 +178,7 @@ function renderSeasonTabs() {
       ? activeTab === "salary" && Number(id) === activeSeason
       : activeTab === id;
     tab.setAttribute("aria-selected", String(active));
-    tab.setAttribute("aria-controls", id === "draft-picks" ? "draft-picks-panel" :
+    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "draft-picks" ? "draft-picks-panel" :
       id === "trade" ? "trade-panel" : "salary-year-content");
     tab.tabIndex = active ? 0 : -1;
     tab.textContent = label;
@@ -194,7 +194,7 @@ function renderSeasonTabs() {
       }
     }
     tab.addEventListener("click", () => {
-      activeTab = id === "draft-picks" || id === "trade" ? id : "salary";
+      activeTab = id === "draft-picks" || id === "trade" || id === "depth-chart" ? id : "salary";
       if (activeTab === "salary") activeSeason = Number(id);
       renderFrontOffice();
     });
@@ -217,6 +217,12 @@ function updateCapOverview() {
   document.querySelector("#salary-year-content").hidden = activeTab !== "salary";
   document.querySelector("#draft-picks-panel").hidden = activeTab !== "draft-picks";
   document.querySelector("#trade-panel").hidden = activeTab !== "trade";
+  const depthPanel = document.querySelector("#depth-chart-panel");
+  if (depthPanel) {
+    depthPanel.hidden = activeTab !== "depth-chart";
+    // The cap cards and salary tables belong to the salary-year tabs only.
+    if (activeTab === "depth-chart") globalThis.renderDepthChart?.();
+  }
   const team = selectedTeamData();
   const figures = seasonCapFigures(activeTeamId, activeSeason);
   document.querySelector("#dead-cap-card-total").textContent = formatCurrency(figures.deadCap);

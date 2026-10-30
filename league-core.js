@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts);
 }
 
 function migrateLegacyData(data) {
@@ -1437,6 +1437,39 @@ function positionGroupFor(position) {
   const first = String(position || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
   const group = rosterPositionGroups.find(([, , list]) => list.includes(first));
   return group ? group[0] : "OTHER";
+}
+
+// ---- Depth charts (team sheet "Depth Chart" tab) ----
+// data.depthCharts = { [teamId]: { slots: { QB: [playerId or "", …], … }, schemes: { offense, defense, offPlaybook, defPlaybook } } }
+const depthChartSections = [
+  ["Offense", [["QB", 3], ["HB", 4], ["FB", 3], ["WR", 6], ["TE", 4], ["LT", 3], ["LG", 3], ["C", 3], ["RG", 3], ["RT", 3]]],
+  ["Defense", [["LE", 3], ["DT", 6], ["RE", 3], ["SAM", 3], ["MIKE", 4], ["WILL", 3], ["CB", 6], ["FS", 3], ["SS", 3]]],
+  ["Special Teams", [["K", 3], ["P", 3], ["LS", 3], ["KR", 5], ["PR", 5], ["KOS", 3]]],
+  ["Specialists", [["3DRB", 3], ["GAD", 3], ["PWHB", 3], ["SLWR", 3], ["RLE", 3], ["RRE", 3], ["RDT", 3], ["NT", 3], ["SUBLB", 3], ["SLCB", 3]]]
+];
+const depthSlotSizes = Object.fromEntries(depthChartSections.flatMap(([, rows]) => rows));
+const depthSchemeFields = { offense: 60, defense: 60, offPlaybook: 60, defPlaybook: 60 };
+
+function validDepthCharts(charts) {
+  if (charts === undefined) return true;
+  if (!charts || typeof charts !== "object" || Array.isArray(charts)) return false;
+  for (const [teamId, chart] of Object.entries(charts)) {
+    if (!nflTeams.some(({ id }) => id === teamId) || !chart || typeof chart !== "object") return false;
+    if (chart.slots !== undefined) {
+      if (!chart.slots || typeof chart.slots !== "object") return false;
+      for (const [slot, ids] of Object.entries(chart.slots)) {
+        if (!Object.hasOwn(depthSlotSizes, slot) || !Array.isArray(ids) || ids.length > depthSlotSizes[slot] ||
+            ids.some((id) => typeof id !== "string" || id.length > 100)) return false;
+      }
+    }
+    if (chart.schemes !== undefined) {
+      if (!chart.schemes || typeof chart.schemes !== "object") return false;
+      for (const [field, value] of Object.entries(chart.schemes)) {
+        if (!Object.hasOwn(depthSchemeFields, field) || typeof value !== "string" || value.length > depthSchemeFields[field]) return false;
+      }
+    }
+  }
+  return true;
 }
 
 // ---- Key dates (Overview card) ----
