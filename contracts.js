@@ -34,6 +34,7 @@ const columns = [
   { key: "age", label: "AGE" },
   { key: "experience", label: "YRS EXP", title: "Accrued seasons: completed NFL seasons, rookies = 0" },
   { key: "faType", label: "FA TYPE" },
+  { key: "fifthYear", label: "5TH YEAR OPTION", title: "The season that is this player's 5th-year option (first-round rookies). It's added to his team salary sheet with a 5th Year badge." },
   ...seasons.map((year) => ({ key: `cap${year}`, label: String(year), title: `${year} cap hit from the team salary sheet` })),
   { key: "length", label: "LENGTH (YRS)" },
   { key: "totalValue", label: "TOTAL VALUE" },
@@ -73,6 +74,7 @@ function allPlayers() {
       team: teamId,
       position: playerDisplayPosition(player, year),
       experience: player.experience ?? null,
+      fifthYear: seasons.find((season) => isPlayerOnSeason(player, season) && isFifthYearOption(seasonEntry(player, season))) ?? null,
       ...contractFields(player)
     };
     for (const season of seasons) {
@@ -89,6 +91,7 @@ function allPlayers() {
       team: player.team,
       position: player.position || "",
       experience: player.experience ?? null,
+      fifthYear: null,
       ...contractFields(player)
     };
     for (const season of seasons) row[`cap${season}`] = null;
@@ -248,11 +251,32 @@ function renderContracts() {
     faInput.setAttribute("list", "fa-type-options");
     tr.insertCell().append(faInput);
 
+    const fifthCell = tr.insertCell();
+    if (directory) {
+      fifthCell.textContent = "—";
+      fifthCell.title = "Add him to his team's salary sheet to set a 5th-year option";
+    } else {
+      const select = document.createElement("select");
+      select.className = "contracts-fifth-year";
+      select.dataset.fifthYear = "true";
+      select.setAttribute("aria-label", `${row.name} 5th-year option season`);
+      select.append(new Option("None", ""), ...seasons.map((season) => new Option(String(season), String(season))));
+      select.value = row.fifthYear === null ? "" : String(row.fifthYear);
+      if (row.fifthYear !== null) select.classList.add("is-set");
+      fifthCell.append(select);
+    }
+
     for (const season of seasons) {
       const cell = tr.insertCell();
       cell.className = "contracts-money";
       const value = row[`cap${season}`];
       cell.textContent = value === null ? "—" : formatCurrency(value);
+      if (row.fifthYear === season) {
+        const tag = document.createElement("span");
+        tag.className = "vmb-mark fifth-year-mark";
+        tag.textContent = "5th Year";
+        cell.prepend(tag, " ");
+      }
       if (directory && season === firstSeason) cell.title = "Cap hits appear once this player is added to his team's salary sheet";
     }
     tr.insertCell().append(numberInput(row.length, "length", `${row.name} original contract length in years`, { max: 15 }));
@@ -310,6 +334,40 @@ function mergeAndReport(player) {
   }
   return false;
 }
+
+// 5th-year option: marks the chosen season on his team salary sheet (adding it at $0 if he isn't on that season yet)
+// and clears any other season he had marked.
+contractsRows.addEventListener("change", (event) => {
+  const select = event.target.closest("[data-fifth-year]");
+  const tr = select?.closest("tr");
+  if (!select || !tr || !canSave || tr.dataset.source === "directory") return;
+  const player = findRowPlayer(tr);
+  if (!player) return;
+  const year = select.value ? Number(select.value) : null;
+  const latest = [...player.activeSeasons].sort((a, b) => b - a)[0];
+  for (const season of seasons) {
+    const entry = seasonEntry(player, season);
+    if (!isFifthYearOption(entry) || season === year) continue;
+    delete entry.fifthYearOption;
+    // A season that only existed for the option (all $0) comes off his sheet again.
+    const money = entry.baseSalary + entry.proratedBonus + entry.rosterBonus + entry.guaranteedSalary;
+    if (!money && player.activeSeasons.length > 1) player.activeSeasons = player.activeSeasons.filter((s) => s !== season);
+  }
+  let added = false;
+  if (year !== null) {
+    if (!isPlayerOnSeason(player, year)) {
+      const source = seasonEntry(player, latest);
+      player.seasons[year] = emptySeasonData(source.position, source.rosterType || "Active");
+      player.activeSeasons.push(year);
+      added = true;
+    }
+    seasonEntry(player, year).fifthYearOption = true;
+  }
+  save(year === null
+    ? `${player.name} no longer has a 5th-year option.`
+    : `${year} set as ${player.name}'s 5th-year option${added ? ` and added to his ${year} ${tr.dataset.teamId} salary sheet at $0` : ""}.`);
+  renderContracts();
+});
 
 contractsRows.addEventListener("change", (event) => {
   const input = event.target.closest("[data-field]");

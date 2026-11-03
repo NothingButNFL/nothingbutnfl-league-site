@@ -1903,3 +1903,4 @@ form.is-minimum input[readonly] { opacity: .75; }
 .fifth-year-mark:hover, .fifth-year-mark:focus-visible { background: rgba(255, 179, 107, .15); }
 .multi-year-table .fifth-year-mark { margin: 0 4px 0 0; cursor: default; }
 .salary-table td[data-label="Player name"] { white-space: normal; overflow-wrap: anywhere; } .salary-table td[data-label="Player name"] .vmb-mark { margin: 2px 4px 0 0; }
+.contracts-fifth-year { min-width: 90px; } .contracts-fifth-year.is-set { border-color: #ffb36b; color: #ffb36b; } .contracts-money .fifth-year-mark { margin-right: 4px; }
