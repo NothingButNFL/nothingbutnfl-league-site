@@ -108,10 +108,11 @@ window.addEventListener("storage", (event) => {
 const adminMinHead = document.querySelector("#admin-min-head");
 const adminMinRows = document.querySelector("#admin-min-rows");
 const minimumYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+const minimumSeasons = seasons.filter((year) => year !== 2033); // the table stops at 2032
 
 function renderMinimums(data) {
   const head = document.createElement("tr");
-  for (const label of ["YEARS OF EXPERIENCE", ...seasons.map(String)]) {
+  for (const label of ["YEARS OF EXPERIENCE", ...minimumSeasons.map(String)]) {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = label;
@@ -125,7 +126,7 @@ function renderMinimums(data) {
     th.scope = "row";
     th.textContent = tier === "0" ? "0 (rookies)" : tier === "7+" ? "7+" : tier;
     row.append(th);
-    for (const year of seasons) {
+    for (const year of minimumSeasons) {
       const cell = row.insertCell();
       cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
       const input = document.createElement("input");
@@ -195,7 +196,7 @@ document.querySelector("#admin-min-copy").addEventListener("click", () => {
   if (!minimumTiers.some((tier) => source[tier] != null)) { adminStatus.textContent = `Enter the ${from} minimums first.`; return; }
   const table = JSON.parse(JSON.stringify(officeData.minimumSalaries || {}));
   let filled = 0;
-  for (const year of seasons.filter((y) => y > from)) {
+  for (const year of minimumSeasons.filter((y) => y > from)) {
     table[year] = { ...(table[year] || {}) };
     for (const tier of minimumTiers) {
       if (table[year][tier] == null && source[tier] != null) { table[year][tier] = source[tier]; filled += 1; }
