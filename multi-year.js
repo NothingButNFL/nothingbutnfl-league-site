@@ -33,7 +33,15 @@ function renderMultiYear() {
     for (const year of seasons) {
       const cell = tr.insertCell();
       cell.className = `my-money${year === current ? " is-current" : ""}`;
-      if (isPlayerOnSeason(player, year)) cell.textContent = formatCurrency(capHitFor(seasonEntry(player, year)));
+      if (isPlayerOnSeason(player, year)) {
+        cell.textContent = formatCurrency(capHitFor(seasonEntry(player, year)));
+        if (isFifthYearOption(seasonEntry(player, year))) {
+          const tag = document.createElement("span");
+          tag.className = "vmb-mark fifth-year-mark";
+          tag.textContent = "5th Year";
+          cell.prepend(tag, " ");
+        }
+      }
       else { cell.textContent = "—"; cell.classList.add("is-empty"); }
     }
     return tr;

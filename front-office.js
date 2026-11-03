@@ -391,6 +391,34 @@ function parseSalaryPaste(text) {
   return importedRows;
 }
 
+// Reads "VMB"/"Vet Ben" and "5YO"/"5th Year Option" out of a season's roster type and sets the matching flags.
+// Returns a status message when something was tagged, else "".
+function applyRosterTypeTags(player, year) {
+  const entry = seasonEntry(player, year);
+  const type = entry.rosterType || "";
+  const notes = [];
+  vmbRosterTypePattern.lastIndex = 0;
+  fifthYearRosterTypePattern.lastIndex = 0;
+  const wantsVmb = new RegExp(vmbRosterTypePattern.source, "i").test(type);
+  const wantsFifth = new RegExp(fifthYearRosterTypePattern.source, "i").test(type);
+  if (!wantsVmb && !wantsFifth) return "";
+  entry.rosterType = type.replace(vmbRosterTypePattern, " ").replace(fifthYearRosterTypePattern, " ").replace(/\s+/g, " ").trim() || "Active";
+  if (wantsFifth) {
+    entry.fifthYearOption = true;
+    if (!isPlayerOnSeason(player, year)) player.activeSeasons.push(year);
+    notes.push(`${player.name}'s ${year} season is marked as his 5th-year option.`);
+  }
+  if (wantsVmb && !isVmbSeason(entry)) {
+    const capBase = officeData.minimumSalaries?.[year]?.["2"];
+    if (capBase === null || capBase === undefined) notes.push(`Set the ${year} minimum for 2 years of experience on Admin › League Cap Directory to charge ${player.name} as a Veteran Minimum Benefit player.`);
+    else {
+      entry.vmbCapBase = capBase;
+      notes.push(`${player.name} is on a Veteran Minimum Benefit deal for ${year}: his cap hit counts ${formatCurrency(capBase)} (the 2-year minimum) instead of his base salary.`);
+    }
+  }
+  return notes.join(" ") || `${player.name}'s roster type updated.`;
+}
+
 function importSalaryPaste() {
   let importedRows;
   try {
@@ -434,6 +462,7 @@ function importSalaryPaste() {
   }
 
   selectedTeamData().roster = stagedRoster;
+  for (const player of stagedRoster) applyRosterTypeTags(player, activeSeason);
   salaryPasteInput.value = "";
   renderFrontOffice();
   salaryImportPanel.open = false;
@@ -580,6 +609,16 @@ function renderSalaryRows() {
       vmb.title = `Veteran Minimum Benefit: paid ${formatCurrency(entry.baseSalary)} in base salary, charged ${formatCurrency(entry.vmbCapBase)} (the 2-year minimum) against the cap. Click to remove.`;
       vmb.setAttribute("aria-label", `${player.name}: Veteran Minimum Benefit. Click to remove`);
       nameCell.append(vmb);
+    }
+    if (isFifthYearOption(entry)) {
+      const fifth = document.createElement("button");
+      fifth.type = "button";
+      fifth.className = "vmb-mark fifth-year-mark";
+      fifth.dataset.action = "remove-5yo";
+      fifth.textContent = "5th Year";
+      fifth.title = `${activeSeason} is ${player.name}'s 5th-year option. Click to remove the tag.`;
+      fifth.setAttribute("aria-label", `${player.name}: 5th-year option. Click to remove`);
+      nameCell.append(fifth);
     }
     const injury = injuryForPlayer(officeData, player, activeTeamId);
     if (injury) {
@@ -1258,6 +1297,17 @@ document.querySelector("#add-player-form").addEventListener("submit", (event) =>
 document.querySelector("#import-salary-paste").addEventListener("click", importSalaryPaste);
 
 salaryRows.addEventListener("click", async (event) => {
+  const fifth = event.target.closest('[data-action="remove-5yo"]');
+  const fifthRow = fifth?.closest("[data-player-id]");
+  const fifthPlayer = fifthRow && selectedTeamData().roster.find(({ id }) => id === fifthRow.dataset.playerId);
+  if (fifthPlayer) {
+    const ok = await confirmAction(`Remove the 5th-year option tag from ${fifthPlayer.name}'s ${activeSeason} season?`, { confirmLabel: "Remove tag" });
+    if (!ok) return;
+    delete seasonEntry(fifthPlayer, activeSeason).fifthYearOption;
+    renderSalaryRows();
+    saveOfficeData(`${fifthPlayer.name}'s ${activeSeason} season is no longer marked as a 5th-year option.`);
+    return;
+  }
   const badge = event.target.closest('[data-action="remove-vmb"]');
   const row = badge?.closest("[data-player-id]");
   const player = row && selectedTeamData().roster.find(({ id }) => id === row.dataset.playerId);
@@ -1291,24 +1341,17 @@ salaryRows.addEventListener("change", (event) => {
     }
     if (field === "name") player.name = value;
     else seasonEntry(player, activeSeason)[field] = field === "position" ? value.toUpperCase() : value;
-    // Typing "VMB" or "Veteran Minimum" as the roster type marks the season as Veteran Minimum Benefit (charged at the 2-year
-    // minimum); the roster type itself goes back to "Active" and the gold VMB badge shows instead. Click the badge to remove it.
-    if (field === "rosterType" && /\bvmb\b|veteran minimum/i.test(value)) {
-      const entry = seasonEntry(player, activeSeason);
-      const cleaned = value.replace(/\(?\s*(vmb|veteran minimum( benefit)?)\s*\)?/ig, "").trim();
-      entry.rosterType = cleaned || "Active";
-      const capBase = officeData.minimumSalaries?.[activeSeason]?.["2"];
-      if (capBase === null || capBase === undefined) {
+    // Roster-type tags: "VMB"/"Vet Ben" marks a Veteran Minimum Benefit season and "5YO"/"5th Year Option" a 5th-year option.
+    // The tag text is taken out of the roster type and shown as a badge instead (click the badge to remove it).
+    if (field === "rosterType") {
+      const message = applyRosterTypeTags(player, activeSeason);
+      if (message) {
         renderSalaryRows();
-        workspaceStatus.textContent = `Set the ${activeSeason} minimum for 2 years of experience on Admin › League Cap Directory to charge ${player.name} as a Veteran Minimum Benefit player.`;
+        updateCapOverview();
+        updateTradeSummary();
+        saveOfficeData(message);
         return;
       }
-      entry.vmbCapBase = capBase;
-      renderSalaryRows();
-      updateCapOverview();
-      updateTradeSummary();
-      saveOfficeData(`${player.name} is on a Veteran Minimum Benefit deal for ${activeSeason}: his cap hit counts ${formatCurrency(capBase)} (the 2-year minimum) instead of his base salary.`);
-      return;
     }
   } else {
     const min = field.endsWith("NetSavings") ? -999999999 : 0;

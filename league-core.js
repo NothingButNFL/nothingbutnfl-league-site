@@ -102,7 +102,8 @@ function validateOfficeData(data) {
             !isIntegerInRange(entry.tradePenalty) || !Number.isSafeInteger(entry.tradeNetSavings) ||
             Math.abs(entry.tradeNetSavings) > 999999999 || !isIntegerInRange(entry.releasePenalty) ||
             !Number.isSafeInteger(entry.releaseNetSavings) || Math.abs(entry.releaseNetSavings) > 999999999 ||
-            (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999))) return false;
+            (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999)) ||
+            (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean")) return false;
       }
     }
   }
@@ -337,6 +338,10 @@ function capHitFor(entry) {
   return base + entry.proratedBonus + entry.rosterBonus;
 }
 const isVmbSeason = (entry) => Number.isSafeInteger(entry?.vmbCapBase);
+// A first-round rookie's 5th-year option season (often all $0 until it's exercised).
+const isFifthYearOption = (entry) => entry?.fifthYearOption === true;
+const vmbRosterTypePattern = /\(?\s*\b(vmb|vet\s*ben|veteran minimum( benefit)?)\b\s*\)?/ig;
+const fifthYearRosterTypePattern = /\(?\s*\b(5\s*yo|5th[\s-]*year( option)?|fifth[\s-]*year( option)?)\b\s*\)?/ig;
 
 function seasonCapFigures(teamId, year, data = officeData) {
   const team = data.teams[teamId];

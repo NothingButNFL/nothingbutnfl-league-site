@@ -1899,3 +1899,7 @@ form.is-minimum input[readonly] { opacity: .75; }
 .salary-table .computed-cell.is-vmb::after { content: " *"; }
 .fao-announcement { border-color: #75e28b; }
 .fao-announcement-text { margin: 0 0 12px; padding: 14px 16px; border-left: 3px solid #75e28b; background: #071a33; color: #fff; font: 14px/1.6 var(--body); white-space: pre-wrap; }
+.fifth-year-mark { border-color: #ffb36b; color: #ffb36b; }
+.fifth-year-mark:hover, .fifth-year-mark:focus-visible { background: rgba(255, 179, 107, .15); }
+.multi-year-table .fifth-year-mark { margin: 0 4px 0 0; cursor: default; }
+.salary-table td[data-label="Player name"] { white-space: normal; overflow-wrap: anywhere; } .salary-table td[data-label="Player name"] .vmb-mark { margin: 2px 4px 0 0; }
