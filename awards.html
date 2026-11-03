@@ -166,7 +166,13 @@
           <div class="management-panel">
             <div class="panel-heading">
               <div><span class="panel-index">HISTORY</span><h3>Every award</h3></div>
-              <p>All seasons, newest first.</p>
+              <p>Filter by season, award or both. Newest first.</p>
+            </div>
+            <div class="awards-toolbar awards-filters">
+              <label>Season<select id="awards-filter-season"></select></label>
+              <label>Award<select id="awards-filter-award"></select></label>
+              <button class="button awards-filter-clear" id="awards-filter-clear" type="button" hidden>Clear filters</button>
+              <span class="awards-filter-count" id="awards-filter-count" aria-live="polite"></span>
             </div>
             <div class="management-table-wrap">
               <table class="management-table awards-table">

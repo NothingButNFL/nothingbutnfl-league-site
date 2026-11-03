@@ -123,7 +123,12 @@ function renderAwards() {
   }));
 
   // History table.
-  const all = [...officeData.awards].sort((a, b) => b.season - a.season || presetRank(a.award) - presetRank(b.award) || a.award.localeCompare(b.award));
+  const sortedAll = [...officeData.awards].sort((a, b) => b.season - a.season || presetRank(a.award) - presetRank(b.award) || a.award.localeCompare(b.award));
+  fillFilters();
+  const all = sortedAll.filter((a) => (!filterSeason.value || a.season === Number(filterSeason.value)) && (!filterAward.value || a.award === filterAward.value));
+  const filtering = Boolean(filterSeason.value || filterAward.value);
+  document.querySelector("#awards-filter-clear").hidden = !filtering;
+  document.querySelector("#awards-filter-count").textContent = filtering ? `${all.length} of ${sortedAll.length} award${sortedAll.length === 1 ? "" : "s"}` : `${sortedAll.length} award${sortedAll.length === 1 ? "" : "s"}`;
   awardsRows.replaceChildren(...all.map((entry) => {
     const tr = document.createElement("tr");
     tr.dataset.awardId = entry.id;
@@ -157,8 +162,27 @@ function renderAwards() {
     return tr;
   }));
   awardsEmpty.hidden = all.length > 0;
-  awardsEmpty.textContent = "No awards yet. Click an award above to name its first winner.";
+  awardsEmpty.textContent = sortedAll.length ? "No awards match these filters." : "No awards yet. Click an award above to name its first winner.";
 }
+
+// ---- History filters ----
+const filterSeason = document.querySelector("#awards-filter-season");
+const filterAward = document.querySelector("#awards-filter-award");
+function fillFilters() {
+  const keepSeason = filterSeason.value, keepAward = filterAward.value;
+  const years = [...new Set(officeData.awards.map((a) => a.season))].sort((a, b) => b - a);
+  filterSeason.replaceChildren(new Option("All seasons", ""), ...years.map((y) => new Option(String(y), String(y))));
+  filterSeason.value = years.includes(Number(keepSeason)) ? keepSeason : "";
+  const names = [...new Set([...awardPresets, ...officeData.awards.map((a) => a.award)])].sort((a, b) => presetRank(a) - presetRank(b) || a.localeCompare(b));
+  filterAward.replaceChildren(new Option("All awards", ""), ...names.map((name) => {
+    const info = awardDetails(name);
+    return new Option(info ? `${name} (${info.about || info.short})` : name, name);
+  }));
+  filterAward.value = names.includes(keepAward) ? keepAward : "";
+}
+filterSeason.addEventListener("change", renderAwards);
+filterAward.addEventListener("change", renderAwards);
+document.querySelector("#awards-filter-clear").addEventListener("click", () => { filterSeason.value = ""; filterAward.value = ""; renderAwards(); });
 
 function showSeason(year) {
   viewSeason = year;

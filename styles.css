@@ -1644,3 +1644,8 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .award-stats-fields .stat-input-group-name { color: #8fd0ff; }
 .award-card .stat-tiles { margin-top: 4px; }
 .award-cell-stats { min-width: 220px; }
+.awards-filters { margin-top: 0; }
+.awards-filters select { min-width: 220px; }
+.awards-filter-clear { min-height: 40px; padding: 0 14px; }
+.awards-filter-clear[hidden] { display: none; }
+.awards-filter-count { align-self: center; margin-left: auto; color: #8ca5c5; font: 12px var(--mono); }
