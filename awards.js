@@ -112,7 +112,8 @@ function renderAwards() {
     meta.className = "award-meta";
     meta.textContent = entry ? [entry.position, entry.teamId ? teamName(entry.teamId) : ""].filter(Boolean).join(" · ") : "Click to set the winner";
     card.append(label, winner, meta);
-    if (entry?.notes) {
+    if (entry && statTiles(entry.line).length) card.append(statTilesNode(entry.line));
+    else if (entry?.notes) {
       const notes = document.createElement("span");
       notes.className = "award-notes";
       notes.textContent = entry.notes;
@@ -140,7 +141,10 @@ function renderAwards() {
       winner.append(pos);
     }
     tr.insertCell().append(teamTag(entry.teamId));
-    tr.insertCell().textContent = entry.notes || "—";
+    const stats = tr.insertCell();
+    stats.className = "award-cell-stats";
+    if (statTiles(entry.line).length) stats.append(statTilesNode(entry.line));
+    else stats.textContent = entry.notes || "—";
     const actions = tr.insertCell();
     const remove = document.createElement("button");
     remove.type = "button";
@@ -181,7 +185,8 @@ function openForm(award, entry) {
   f.winner.value = entry?.winner || "";
   f.team.value = entry?.teamId || "";
   f.position.value = entry?.position || "";
-  f.notes.value = entry?.notes || "";
+  showStatBoxes(award);
+  writeStatInputs(awardsForm, allStatKeys, entry?.line);
   document.querySelector("#awards-form-title").textContent = entry ? `Change the ${viewSeason} ${award}` : `Set the ${viewSeason} ${award}`;
   document.querySelector("#awards-editor").scrollIntoView({ behavior: "smooth", block: "center" });
   f.winner.focus({ preventScroll: true });
@@ -244,6 +249,57 @@ awardsForm.elements.winner.addEventListener("change", () => {
   if (!awardsForm.elements.position.value && match.position && match.position.length <= 10) awardsForm.elements.position.value = match.position;
 });
 
+// ---- Stat boxes ----
+// Coach and GM awards record the team's season; every other award records the player's season.
+const allStatKeys = [...playerStatKeys, ...recordStatKeys];
+const isTeamAward = (award) => awardDetails(award)?.kind === "team";
+const statKeysFor = (award) => isTeamAward(award) ? recordStatKeys : playerStatKeys;
+const statFill = document.querySelector("#award-stats-fill");
+let shownKind = null;
+
+function showStatBoxes(award) {
+  const kind = isTeamAward(award) ? "team" : "player";
+  if (kind !== shownKind) {
+    const keep = readStatInputs(awardsForm, allStatKeys);
+    document.querySelector("#award-stat-inputs").replaceChildren(statInputsNode(kind === "team" ? recordStatGroups : playerStatGroups));
+    writeStatInputs(awardsForm, allStatKeys, keep);
+    shownKind = kind;
+  }
+  document.querySelector("#award-stats-legend").textContent = kind === "team" ? "Team record" : "Season stats";
+  updateStatFill();
+}
+
+// What "Fill" can use: this season's standings (team awards) or logged box scores (player awards).
+function fillSource() {
+  const f = awardsForm.elements;
+  const season = Number(f.season.value);
+  if (shownKind === "team") {
+    const record = f.team.value && officeData.standings?.season === season ? officeData.standings.teams?.[f.team.value] : null;
+    return record ? { label: `Fill from ${season} standings`, values: Object.fromEntries(recordStatKeys.filter((k) => record[k] !== undefined).map((k) => [k, record[k]])) } : null;
+  }
+  if (season !== thisSeason() || !f.winner.value.trim()) return null;
+  const found = seasonBoxScoreStats(officeData, f.winner.value);
+  return found ? { label: `Fill from ${found.games} box score${found.games === 1 ? "" : "s"}`, values: found.values } : null;
+}
+
+function updateStatFill() {
+  const source = canSave ? fillSource() : null;
+  statFill.hidden = !source;
+  if (source) statFill.textContent = source.label;
+}
+
+statFill.addEventListener("click", () => {
+  const source = fillSource();
+  if (!source) return;
+  writeStatInputs(awardsForm, allStatKeys, source.values);
+  awardsStatus.textContent = shownKind === "team" ? "Record filled from the standings." : "Season totals filled from the logged box scores. Check them against your league's stats.";
+});
+awardsForm.elements.award.addEventListener("input", () => showStatBoxes(awardsForm.elements.award.value.trim()));
+for (const name of ["winner", "team", "season"]) {
+  awardsForm.elements[name].addEventListener("input", updateStatFill);
+  awardsForm.elements[name].addEventListener("change", updateStatFill);
+}
+
 awardsForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!canSave || !awardsForm.reportValidity()) return;
@@ -255,15 +311,16 @@ awardsForm.addEventListener("submit", (event) => {
   const entry = existing || { id: newRecordId("award"), season, award };
   entry.winner = f.winner.value.trim().slice(0, awardTextLimits.winner);
   entry.teamId = f.team.value;
-  for (const field of ["position", "notes"]) {
-    const value = f[field].value.trim();
-    if (value) entry[field] = value.slice(0, awardTextLimits[field]); else delete entry[field];
-  }
+  const position = f.position.value.trim();
+  if (position) entry.position = position.slice(0, awardTextLimits.position); else delete entry.position;
+  const line = readStatInputs(awardsForm, statKeysFor(award));
+  if (line) { entry.line = line; delete entry.notes; } else delete entry.line;
   if (!existing) officeData.awards.push(entry);
   viewSeason = season;
   save(`${entry.winner} named the ${season} ${entry.award}.`);
   awardsForm.reset();
   f.season.value = String(viewSeason);
+  showStatBoxes("");
   document.querySelector("#awards-form-title").textContent = "Add an award";
   renderAwards();
 });
@@ -282,4 +339,5 @@ window.addEventListener("storage", (event) => {
 
 if (!canSave) for (const element of awardsForm.elements) element.disabled = true;
 awardsForm.elements.season.value = String(viewSeason);
+showStatBoxes("");
 renderAwards();

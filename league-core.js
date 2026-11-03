@@ -1348,7 +1348,7 @@ function validMedia(media) {
 }
 
 // ---- Awards ----
-// data.awards = [{ id, season, award, winner, teamId?, position?, notes? }]
+// data.awards = [{ id, season, award, winner, teamId?, position?, line? (stat boxes), notes? (older saves) }]
 // The league's own awards, in display order. short = abbreviation; about = what a named award honors.
 const awardInfo = [
   { name: "Most Valuable Player", short: "MVP" },
@@ -1357,8 +1357,8 @@ const awardInfo = [
   { name: "Offensive Rookie Of The Year", short: "OROY" },
   { name: "Defensive Rookie Of The Year", short: "DROY" },
   { name: "Comeback Player Of The Year", short: "CPOY" },
-  { name: "Coach Of The Year", short: "COTY" },
-  { name: "General Manager Of The Year", short: "GMOY" },
+  { name: "Coach Of The Year", short: "COTY", kind: "team" },
+  { name: "General Manager Of The Year", short: "GMOY", kind: "team" },
   { name: "Kurt Warner Award", short: "Overachiever", about: "Overachiever Of The Year" },
   { name: "Shaq Barrett Award", short: "Best Value", about: "Best Value Signing" },
   { name: "Hershel Walker Award", short: "Fleece", about: "Fleece Of The Year" }
@@ -1389,9 +1389,153 @@ function validAwards(awards) {
     for (const field of ["position", "notes"]) {
       if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > awardTextLimits[field])) return false;
     }
+    if (!validStatLine(entry.line, [...playerStatKeys, ...recordStatKeys])) return false;
     ids.add(entry.id);
   }
   return true;
+}
+
+// ---- Stat boxes (Awards and Super Bowl MVP) ----
+// A stat line is a plain object of numbers, e.g. { passYds: 4812, passTd: 41 }.
+const playerStatGroups = [
+  { name: "Passing", stats: [["cmp", "CMP"], ["att", "ATT"], ["passYds", "PASS YDS"], ["passTd", "PASS TD"], ["int", "INT"]] },
+  { name: "Rushing", stats: [["rushAtt", "CAR"], ["rushYds", "RUSH YDS"], ["rushTd", "RUSH TD"]] },
+  { name: "Receiving", stats: [["rec", "REC"], ["recYds", "REC YDS"], ["recTd", "REC TD"]] },
+  { name: "Defense", stats: [["tackles", "TKL"], ["sacks", "SACKS"], ["defInt", "INT"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["defTd", "DEF TD"]] },
+  { name: "Kicking", stats: [["fgm", "FGM"], ["fga", "FGA"], ["fgLong", "FG LONG"], ["xpm", "XPM"], ["xpa", "XPA"]] }
+];
+const playerStatKeys = playerStatGroups.flatMap((group) => group.stats.map(([key]) => key));
+// Coach and GM awards record the team's season instead.
+const recordStatGroups = [{ name: "Record", stats: [["w", "W"], ["l", "L"], ["t", "T"], ["pf", "PF"], ["pa", "PA"]] }];
+const recordStatKeys = recordStatGroups.flatMap((group) => group.stats.map(([key]) => key));
+
+function validStatLine(line, keys) {
+  return line === undefined || (!!line && typeof line === "object" && !Array.isArray(line) &&
+    Object.entries(line).every(([key, value]) => keys.includes(key) && typeof value === "number" && Number.isFinite(value) && value >= -200 && value <= 20000));
+}
+
+// Boxes to show, in order: [value, label]. Pairs (CMP/ATT, FGM/FGA, XPM/XPA, W-L-T) share one box.
+function statTiles(line) {
+  if (!line) return [];
+  const has = (key) => line[key] !== undefined;
+  const tiles = [];
+  if (["w", "l", "t"].some(has)) tiles.push([`${line.w ?? 0}-${line.l ?? 0}${line.t ? `-${line.t}` : ""}`, "RECORD"]);
+  if (has("pf")) tiles.push([String(line.pf), "PF"]);
+  if (has("pa")) tiles.push([String(line.pa), "PA"]);
+  const pairs = { cmp: ["att", "C/ATT"], fgm: ["fga", "FG"], xpm: ["xpa", "XP"] };
+  const paired = new Set(Object.values(pairs).map(([key]) => key));
+  for (const group of playerStatGroups) {
+    for (const [key, label] of group.stats) {
+      if (pairs[key]) {
+        const [other, pairLabel] = pairs[key];
+        if (has(key) && has(other)) tiles.push([`${line[key]}/${line[other]}`, pairLabel]);
+        else if (has(key)) tiles.push([String(line[key]), label]);
+        else if (has(other)) tiles.push([String(line[other]), group.stats.find(([k]) => k === other)[1]]);
+      } else if (!paired.has(key) && has(key)) tiles.push([String(line[key]), label]);
+    }
+  }
+  return tiles.map(([value, label]) => [/^-?\d+$/.test(value) && Math.abs(Number(value)) >= 1000 ? Number(value).toLocaleString("en-US") : value, label]);
+}
+
+function statTilesNode(line) {
+  const grid = document.createElement("span");
+  grid.className = "stat-tiles";
+  grid.append(...statTiles(line).map(([value, label]) => {
+    const tile = document.createElement("span");
+    tile.className = "stat-tile";
+    const v = document.createElement("b");
+    v.textContent = value;
+    const l = document.createElement("span");
+    l.textContent = label;
+    tile.append(v, l);
+    return tile;
+  }));
+  return grid;
+}
+
+// Number inputs for a set of stat groups, named "stat-<key>".
+function statInputsNode(groups, labelPrefix = "") {
+  const wrap = document.createDocumentFragment();
+  for (const group of groups) {
+    const row = document.createElement("div");
+    row.className = "stat-input-group";
+    const title = document.createElement("span");
+    title.className = "stat-input-group-name";
+    title.textContent = group.name;
+    row.append(title, ...group.stats.map(([key, label]) => {
+      const field = document.createElement("label");
+      field.textContent = label;
+      const input = document.createElement("input");
+      input.type = "number";
+      input.name = `stat-${key}`;
+      input.step = key === "sacks" ? "0.5" : "1";
+      input.min = /Yds$/.test(key) ? "-200" : "0";
+      input.max = "20000";
+      input.inputMode = "decimal";
+      input.setAttribute("aria-label", `${labelPrefix}${group.name.toLowerCase()} ${label}`);
+      field.append(input);
+      return field;
+    }));
+    wrap.append(row);
+  }
+  return wrap;
+}
+
+function readStatInputs(form, keys) {
+  const line = {};
+  for (const key of keys) {
+    const input = form.elements[`stat-${key}`];
+    const raw = input ? input.value.trim() : "";
+    if (raw !== "" && Number.isFinite(Number(raw))) line[key] = Number(raw);
+  }
+  return Object.keys(line).length ? line : null;
+}
+
+function writeStatInputs(form, keys, line) {
+  for (const key of keys) {
+    const input = form.elements[`stat-${key}`];
+    if (input) input.value = line?.[key] ?? "";
+  }
+}
+
+// A player's numbers in one box score, as stat-box values.
+function boxScoreStats(game, playerName) {
+  const key = normalizePlayerName(playerName);
+  const line = (category) => (game.players?.[category] || []).find((l) => normalizePlayerName(l.player) === key);
+  const n = (v) => Number(v) || 0;
+  const values = {};
+  let team = "";
+  const p = line("passing");
+  if (p) { team = p.team; Object.assign(values, { cmp: n(p.cmp), att: n(p.att), passYds: n(p.yds), passTd: n(p.td), int: n(p.int) }); }
+  const r = line("rushing");
+  if (r && (n(r.att) || n(r.yds))) { team ||= r.team; Object.assign(values, { rushAtt: n(r.att), rushYds: n(r.yds), rushTd: n(r.td) }); }
+  const c = line("receiving");
+  if (c) { team ||= c.team; Object.assign(values, { rec: n(c.rec), recYds: n(c.yds), recTd: n(c.td) }); }
+  const d = line("defense");
+  if (d) {
+    team ||= d.team;
+    values.tackles = n(d.tackles);
+    for (const [from, to] of [["sacks", "sacks"], ["int", "defInt"], ["ff", "ff"], ["fr", "fr"], ["pd", "pd"], ["td", "defTd"]]) if (n(d[from])) values[to] = n(d[from]);
+  }
+  const k = line("kicking");
+  if (k) { team ||= k.team; Object.assign(values, { fgm: n(k.fgm), fga: n(k.fga), xpm: n(k.xpm), xpa: n(k.xpa) }); if (k.long) values.fgLong = n(k.long); }
+  return Object.keys(values).length ? { values, team, position: p ? "QB" : k ? "K" : "" } : null;
+}
+
+// A player's regular-season totals from every logged box score (weeks 1–18).
+function seasonBoxScoreStats(data, playerName) {
+  let total = null;
+  for (const game of data.games || []) {
+    if (game.week != null && (game.week < 1 || game.week > 18)) continue;
+    const found = boxScoreStats(game, playerName);
+    if (!found) continue;
+    if (!total) total = { values: {}, team: found.team, position: found.position, games: 0 };
+    total.games += 1;
+    for (const [key, value] of Object.entries(found.values)) {
+      total.values[key] = key === "fgLong" ? Math.max(total.values[key] || 0, value) : Math.round(((total.values[key] || 0) + value) * 10) / 10;
+    }
+  }
+  return total;
 }
 
 // ---- Super Bowl champions ----
@@ -1400,14 +1544,8 @@ function validAwards(awards) {
 // Older entries may also carry mvpStats (a typed stat line) and notes.
 const championshipLimits = { mvp: 70, mvpPosition: 10, gm: 70 };
 const championshipLegacyLimits = { mvpStats: 200, notes: 300 };
-const mvpStatGroups = [
-  { name: "Passing", stats: [["cmp", "CMP"], ["att", "ATT"], ["passYds", "PASS YDS"], ["passTd", "PASS TD"], ["int", "INT"]] },
-  { name: "Rushing", stats: [["rushAtt", "CAR"], ["rushYds", "RUSH YDS"], ["rushTd", "RUSH TD"]] },
-  { name: "Receiving", stats: [["rec", "REC"], ["recYds", "REC YDS"], ["recTd", "REC TD"]] },
-  { name: "Defense", stats: [["tackles", "TKL"], ["sacks", "SACKS"], ["defInt", "INT"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["defTd", "DEF TD"]] },
-  { name: "Kicking", stats: [["fgm", "FGM"], ["fga", "FGA"], ["fgLong", "FG LONG"], ["xpm", "XPM"], ["xpa", "XPA"]] }
-];
-const mvpStatKeys = mvpStatGroups.flatMap((group) => group.stats.map(([key]) => key));
+const mvpStatGroups = playerStatGroups;
+const mvpStatKeys = playerStatKeys;
 
 function validChampionships(list) {
   if (list === undefined) return true;
@@ -1425,8 +1563,7 @@ function validChampionships(list) {
     for (const [field, limit] of Object.entries({ ...championshipLimits, ...championshipLegacyLimits })) {
       if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > limit)) return false;
     }
-    if (entry.mvpLine !== undefined && (!entry.mvpLine || typeof entry.mvpLine !== "object" || Array.isArray(entry.mvpLine) ||
-        Object.entries(entry.mvpLine).some(([key, value]) => !mvpStatKeys.includes(key) || typeof value !== "number" || !Number.isFinite(value) || value < -200 || value > 2000))) return false;
+    if (!validStatLine(entry.mvpLine, playerStatKeys)) return false;
     ids.add(entry.id);
     seasonsSeen.add(entry.season);
   }

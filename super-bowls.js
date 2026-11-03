@@ -78,21 +78,8 @@ function mvpNode(entry) {
     head.append(pos);
   }
   wrap.append(head);
-  const tiles = statTiles(entry.mvpLine);
-  if (tiles.length) {
-    const grid = document.createElement("span");
-    grid.className = "sb-stat-tiles";
-    grid.append(...tiles.map(([value, label]) => {
-      const tile = document.createElement("span");
-      tile.className = "sb-stat-tile";
-      const v = document.createElement("b");
-      v.textContent = value;
-      const l = document.createElement("span");
-      l.textContent = label;
-      tile.append(v, l);
-      return tile;
-    }));
-    wrap.append(grid);
+  if (statTiles(entry.mvpLine).length) {
+    wrap.append(statTilesNode(entry.mvpLine));
   } else if (entry.mvpStats) {
     const stats = document.createElement("span");
     stats.className = "sb-mvp-stats";
@@ -100,26 +87,6 @@ function mvpNode(entry) {
     wrap.append(stats);
   }
   return wrap;
-}
-
-// Stat boxes to show, in order: [value, label]. Pairs (CMP/ATT, FGM/FGA, XPM/XPA) share one box.
-function statTiles(line) {
-  if (!line) return [];
-  const has = (key) => line[key] !== undefined;
-  const pairs = { cmp: ["att", "C/ATT"], fgm: ["fga", "FG"], xpm: ["xpa", "XP"] };
-  const paired = new Set(Object.values(pairs).map(([key]) => key));
-  const tiles = [];
-  for (const group of mvpStatGroups) {
-    for (const [key, label] of group.stats) {
-      if (pairs[key]) {
-        const [other, pairLabel] = pairs[key];
-        if (has(key) && has(other)) tiles.push([`${line[key]}/${line[other]}`, pairLabel]);
-        else if (has(key)) tiles.push([String(line[key]), label]);
-        else if (has(other)) tiles.push([String(line[other]), group.stats.find(([k]) => k === other)[1]]);
-      } else if (!paired.has(key) && has(key)) tiles.push([String(line[key]), label]);
-    }
-  }
-  return tiles;
 }
 
 function titleCount(teamId, upTo) {
@@ -246,28 +213,7 @@ function render() {
 
 // ---- Form ----
 const f = sbForm.elements;
-document.querySelector("#sb-stat-inputs").replaceChildren(...mvpStatGroups.map((group) => {
-  const row = document.createElement("div");
-  row.className = "sb-stat-group";
-  const title = document.createElement("span");
-  title.className = "sb-stat-group-name";
-  title.textContent = group.name;
-  row.append(title, ...group.stats.map(([key, label]) => {
-    const field = document.createElement("label");
-    field.textContent = label;
-    const input = document.createElement("input");
-    input.type = "number";
-    input.name = `stat-${key}`;
-    input.step = key === "sacks" ? "0.5" : "1";
-    input.min = /Yds$/.test(key) ? "-200" : "0";
-    input.max = "2000";
-    input.inputMode = "decimal";
-    input.setAttribute("aria-label", `MVP ${group.name.toLowerCase()} ${label}`);
-    field.append(input);
-    return field;
-  }));
-  return row;
-}));
+document.querySelector("#sb-stat-inputs").replaceChildren(statInputsNode(playerStatGroups, "MVP "));
 const teamOptions = (blank) => [new Option(blank, ""), ...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id))];
 f.champion.append(...teamOptions("Choose a team"));
 f.runnerUp.append(...teamOptions("Not set"));
@@ -308,7 +254,7 @@ function openForm(entry) {
   f.runnerUpScore.value = entry.runnerUpScore ?? "";
   f.mvp.value = entry.mvp || "";
   f.mvpPosition.value = entry.mvpPosition || "";
-  for (const key of mvpStatKeys) f[`stat-${key}`].value = entry.mvpLine?.[key] ?? "";
+  writeStatInputs(sbForm, playerStatKeys, entry.mvpLine);
   f.gm.value = entry.gm || "";
   document.querySelector("#sb-form-title").textContent = `Change the ${entry.season} champion`;
   showBoxScoreHint();
@@ -346,30 +292,6 @@ function showBoxScoreHint() {
   });
   sbBoxScore.replaceChildren(text, button);
 }
-// A player's Super Bowl numbers from a box score, as stat-box values.
-function boxScoreStats(game, playerName) {
-  const key = normalizePlayerName(playerName);
-  const line = (category) => (game.players[category] || []).find((l) => normalizePlayerName(l.player) === key);
-  const n = (v) => Number(v) || 0;
-  const values = {};
-  let team = "";
-  const p = line("passing");
-  if (p) { team = p.team; Object.assign(values, { cmp: n(p.cmp), att: n(p.att), passYds: n(p.yds), passTd: n(p.td), int: n(p.int) }); }
-  const r = line("rushing");
-  if (r && (n(r.att) || n(r.yds))) { team ||= r.team; Object.assign(values, { rushAtt: n(r.att), rushYds: n(r.yds), rushTd: n(r.td) }); }
-  const c = line("receiving");
-  if (c) { team ||= c.team; Object.assign(values, { rec: n(c.rec), recYds: n(c.yds), recTd: n(c.td) }); }
-  const d = line("defense");
-  if (d) {
-    team ||= d.team;
-    values.tackles = n(d.tackles);
-    for (const [from, to] of [["sacks", "sacks"], ["int", "defInt"], ["ff", "ff"], ["fr", "fr"], ["pd", "pd"], ["td", "defTd"]]) if (n(d[from])) values[to] = n(d[from]);
-  }
-  const k = line("kicking");
-  if (k) { team ||= k.team; Object.assign(values, { fgm: n(k.fgm), fga: n(k.fga), xpm: n(k.xpm), xpa: n(k.xpa) }); if (k.long) values.fgLong = n(k.long); }
-  return Object.keys(values).length ? { values, team, position: p ? "QB" : k ? "K" : "" } : null;
-}
-
 const mvpFill = document.querySelector("#sb-mvp-fill");
 function showMvpFill() {
   const game = superBowlGame();
@@ -378,7 +300,7 @@ function showMvpFill() {
 mvpFill.addEventListener("click", () => {
   const found = boxScoreStats(superBowlGame(), f.mvp.value);
   if (!found) return;
-  for (const key of mvpStatKeys) f[`stat-${key}`].value = found.values[key] ?? "";
+  writeStatInputs(sbForm, playerStatKeys, found.values);
   if (!f.mvpPosition.value) {
     const player = findPlayerByName(officeData, f.mvp.value, found.team || undefined)?.player;
     f.mvpPosition.value = (player?.seasons?.[currentLeagueYear()]?.position || found.position || "").slice(0, 10);
@@ -415,11 +337,7 @@ sbForm.addEventListener("submit", (event) => {
     const value = f[field].value.trim();
     if (value) entry[field] = value.slice(0, championshipLimits[field]); else delete entry[field];
   }
-  const line = {};
-  for (const key of mvpStatKeys) {
-    const raw = f[`stat-${key}`].value.trim();
-    if (raw !== "" && Number.isFinite(Number(raw))) line[key] = Number(raw);
-  }
+  const line = readStatInputs(sbForm, playerStatKeys) || {};
   if (Object.keys(line).length) { entry.mvpLine = line; delete entry.mvpStats; } else delete entry.mvpLine;
   if (!entry.mvp) { delete entry.mvpLine; delete entry.mvpStats; delete entry.mvpPosition; }
   if (!existing) officeData.championships.push(entry);

@@ -153,7 +153,12 @@
               <datalist id="award-players"></datalist>
               <label>Team<select name="team" id="award-team"></select></label>
               <label>Position<input name="position" id="award-position" maxlength="10" placeholder="e.g. QB"></label>
-              <label class="awards-notes-field">Notes<input name="notes" maxlength="200" placeholder="e.g. 4,812 yards, 41 TD, or the trade or signing"></label>
+              <fieldset class="award-stats-fields">
+                <legend id="award-stats-legend">Season stats</legend>
+                <p class="award-stats-hint" id="award-stats-hint">Fill in only the stats that apply. Empty boxes aren't shown.</p>
+                <button class="button award-stats-fill" id="award-stats-fill" type="button" hidden></button>
+                <div class="award-stat-inputs" id="award-stat-inputs"></div>
+              </fieldset>
               <button class="button button-lime add-button" type="submit">Save award <span aria-hidden="true">+</span></button>
             </form>
           </div>
@@ -165,7 +170,7 @@
             </div>
             <div class="management-table-wrap">
               <table class="management-table awards-table">
-                <thead><tr><th scope="col">SEASON</th><th scope="col">AWARD</th><th scope="col">WINNER</th><th scope="col">TEAM</th><th scope="col">NOTES</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">SEASON</th><th scope="col">AWARD</th><th scope="col">WINNER</th><th scope="col">TEAM</th><th scope="col">STATS</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody id="awards-rows"></tbody>
               </table>
             </div>
