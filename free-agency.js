@@ -79,13 +79,22 @@ function renderFreeAgents() {
     tr.insertCell().textContent = p.experience == null ? "—" : String(p.experience);
     tr.insertCell().textContent = p.faType || "—";
     tr.insertCell().textContent = lastContract(p);
+    const offers = pendingFaOffers(officeData).filter((o) => o.playerId === p.id);
+    const offerCell = tr.insertCell();
+    if (offers.length) {
+      const badge = document.createElement("span");
+      badge.className = "fa-offer-count";
+      badge.textContent = `${offers.length} open`;
+      badge.title = offers.map((o) => o.teamId).join(", ");
+      offerCell.append(badge);
+    } else offerCell.textContent = "—";
     const action = tr.insertCell();
     const sign = document.createElement("button");
     sign.type = "button";
     sign.className = "row-transaction";
     sign.dataset.action = "sign";
-    sign.textContent = "Sign";
-    sign.setAttribute("aria-label", `Sign ${p.name}`);
+    sign.textContent = "Make offer";
+    sign.setAttribute("aria-label", `Make an offer to ${p.name}`);
     sign.disabled = !canSave;
     action.append(sign);
     return tr;
@@ -93,6 +102,8 @@ function renderFreeAgents() {
   document.querySelector("#fa-count").textContent = String(shown.length);
   faEmpty.hidden = shown.length > 0;
   faEmpty.textContent = all.length ? "No free agents match these filters." : "No free agents yet. On Player Contracts, set a player's team to FA to list him here.";
+
+  renderOffers();
 
   // Recent signings from the Transaction Log.
   const signings = [...(officeData.transactions || [])].filter((t) => t.type === "signing")
@@ -135,9 +146,10 @@ faRows.addEventListener("click", (event) => {
   const player = tr && freeAgents().find((p) => p.id === tr.dataset.playerId);
   if (!player || !canSave) return;
   signingId = player.id;
-  document.querySelector("#fa-sign-title").textContent = `Sign ${player.name}`;
+  document.querySelector("#fa-sign-title").textContent = `Offer ${player.name} a contract`;
   signForm.reset();
-  signForm.elements.date.value = localDateString();
+  const home = new URLSearchParams(location.search).get("team");
+  if (nflTeams.some(({ id }) => id === home)) signForm.elements.team.value = home;
   signPanel.hidden = false;
   signPanel.scrollIntoView({ behavior: "smooth", block: "center" });
   signForm.elements.team.focus({ preventScroll: true });
@@ -150,10 +162,10 @@ signForm.elements.team.append(new Option("Choose a team", ""), ...nflTeams.map((
 signForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!canSave || !signForm.reportValidity()) return;
+  try { officeData = readStoredOffice() || officeData; } catch { /* keep the copy we have */ }
   const player = freeAgents().find((p) => p.id === signingId);
-  if (!player) { faStatus.textContent = "That player is no longer a free agent."; signPanel.hidden = true; return; }
+  if (!player) { faStatus.textContent = "That player is no longer a free agent."; signPanel.hidden = true; renderFreeAgents(); return; }
   const f = signForm.elements;
-  const length = Number(f.years.value);
   const values = {};
   for (const field of ["totalValue", "signingBonus", "guaranteed"]) {
     const v = money(f[field].value);
@@ -161,21 +173,102 @@ signForm.addEventListener("submit", (event) => {
     values[field] = v;
   }
   if (values.totalValue === null) { faStatus.textContent = "Enter the contract's total value."; return; }
-  const before = JSON.parse(JSON.stringify(player));
+  if (!Array.isArray(officeData.faOffers)) officeData.faOffers = [];
   const teamId = f.team.value;
-  player.team = teamId;
-  player.contract = { length, totalValue: values.totalValue, signingBonus: values.signingBonus, guaranteed: values.guaranteed };
-  delete player.faType;
-  const terms = [`${length} year${length === 1 ? "" : "s"}, ${formatCurrency(values.totalValue)}`,
-    values.signingBonus ? `${formatCurrency(values.signingBonus)} signing bonus` : "", values.guaranteed ? `${formatCurrency(values.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
-  logTransaction(officeData, { date: f.date.value, type: "signing", teams: [freeAgentTeamId, teamId], player: player.name, details: `Signed ${terms}` });
-  if (!save(`${player.name} signed with the ${teamName(teamId)}: ${terms}. Add his cap hits on the ${teamId} salary sheet.`)) {
-    Object.assign(player, before);
-    officeData.transactions.pop();
+  const now = new Date().toISOString();
+  // A team's newer offer for the same player replaces its open one.
+  const replaced = pendingFaOffers(officeData).find((o) => o.playerId === player.id && o.teamId === teamId);
+  if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer offer" });
+  if (officeData.faOffers.length >= 3000) officeData.faOffers = officeData.faOffers.filter((o) => o.status === "pending").concat(officeData.faOffers.filter((o) => o.status !== "pending").slice(-2000));
+  const offer = { id: newRecordId("faoffer"), playerId: player.id, playerName: player.name.slice(0, faOfferLimits.playerName), teamId,
+    years: Number(f.years.value), totalValue: values.totalValue, status: "pending", createdAt: now };
+  if (values.signingBonus) offer.signingBonus = values.signingBonus;
+  if (values.guaranteed) offer.guaranteed = values.guaranteed;
+  if (f.notes.value.trim()) offer.notes = f.notes.value.trim().slice(0, faOfferLimits.notes);
+  officeData.faOffers.push(offer);
+  if (!save(`${replaced ? "Updated offer" : "Offer"} sent: the ${teamName(teamId)} offered ${player.name} ${faOfferTerms(offer)}. It's waiting for the commissioner.`)) {
+    officeData.faOffers.pop();
+    if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
     return;
   }
+  refreshNavNotifications();
   signPanel.hidden = true;
   signingId = null;
+  renderFreeAgents();
+});
+
+function offerCard(offer, { withdraw = false } = {}) {
+  const card = document.createElement("article");
+  card.className = `fa-offer is-${offer.status}`;
+  card.dataset.offerId = offer.id;
+  const head = document.createElement("div");
+  head.className = "fa-offer-head";
+  const who = document.createElement("strong");
+  const link = document.createElement("a");
+  link.className = "player-name-link";
+  link.href = profileUrl(offer.playerId);
+  link.textContent = offer.playerName;
+  who.append(link);
+  const team = document.createElement("a");
+  team.className = "txn-team";
+  team.href = `team.html?team=${encodeURIComponent(offer.teamId)}`;
+  team.textContent = offer.teamId;
+  team.title = teamName(offer.teamId);
+  const status = document.createElement("span");
+  status.className = "fa-offer-status";
+  status.textContent = { pending: "Waiting", accepted: "Accepted", declined: "Declined", withdrawn: "Withdrawn" }[offer.status];
+  head.append(who, team, status);
+  const terms = document.createElement("p");
+  terms.className = "fa-offer-terms";
+  terms.textContent = faOfferTerms(offer);
+  const meta = document.createElement("p");
+  meta.className = "fa-offer-meta";
+  const when = new Date(offer.decidedAt || offer.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  meta.textContent = [`${offer.status === "pending" ? "Sent" : "Decided"} ${when}`, offer.decisionNote || ""].filter(Boolean).join(" · ");
+  card.append(head, terms);
+  if (offer.notes) {
+    const notes = document.createElement("p");
+    notes.className = "fa-offer-notes-text";
+    notes.textContent = `“${offer.notes}”`;
+    card.append(notes);
+  }
+  card.append(meta);
+  if (withdraw && canSave) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "workspace-button fa-offer-withdraw";
+    button.dataset.action = "withdraw";
+    button.textContent = "Withdraw";
+    button.setAttribute("aria-label", `Withdraw the ${offer.teamId} offer to ${offer.playerName}`);
+    card.append(button);
+  }
+  return card;
+}
+
+function renderOffers() {
+  const open = pendingFaOffers(officeData).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const openBox = document.querySelector("#fa-open-offers");
+  openBox.replaceChildren(...open.map((o) => offerCard(o, { withdraw: true })));
+  if (!open.length) { const p = document.createElement("p"); p.className = "empty-state"; p.textContent = "No open offers."; openBox.append(p); }
+  const decided = (officeData.faOffers || []).filter((o) => o.status !== "pending")
+    .sort((a, b) => (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 15);
+  const decidedBox = document.querySelector("#fa-decided-offers");
+  decidedBox.replaceChildren(...decided.map((o) => offerCard(o)));
+  if (!decided.length) { const p = document.createElement("p"); p.className = "empty-state"; p.textContent = "No decisions yet."; decidedBox.append(p); }
+}
+
+document.querySelector("#fa-open-offers").addEventListener("click", async (event) => {
+  const button = event.target.closest('[data-action="withdraw"]');
+  const id = button?.closest("[data-offer-id]")?.dataset.offerId;
+  if (!id || !canSave) return;
+  try { officeData = readStoredOffice() || officeData; } catch { /* keep the copy we have */ }
+  const offer = pendingFaOffers(officeData).find((o) => o.id === id);
+  if (!offer) { faStatus.textContent = "That offer has already been decided."; renderFreeAgents(); return; }
+  const ok = await confirmAction(`Withdraw the ${teamName(offer.teamId)} offer to ${offer.playerName}?`, { confirmLabel: "Withdraw offer", danger: true });
+  if (!ok) return;
+  Object.assign(offer, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: "Withdrawn by the team" });
+  save(`The ${teamName(offer.teamId)} offer to ${offer.playerName} was withdrawn.`);
+  refreshNavNotifications();
   renderFreeAgents();
 });
 

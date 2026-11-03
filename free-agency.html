@@ -91,6 +91,7 @@
           <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
             <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
             <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="admin-fa-offers.html" role="menuitem"><span>Free Agent Offers</span><span class="nav-badge" data-badge="admin-fa" hidden></span></a>
             <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
             <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
           </div>
@@ -118,7 +119,7 @@
             <div>
               <div class="section-kicker"><span>01</span> THE MARKET</div>
               <h2>Free <span>agents.</span></h2>
-              <p class="section-subtitle">Free agents are the players marked FA on Player Contracts. Signing one moves him to his new team there and logs the signing in the Transaction Log.</p>
+              <p class="section-subtitle">Free agents are the players marked FA on Player Contracts. Click Make offer to send your team's offer to the commissioner. When it's accepted on Admin › Free Agent Offers, the player moves to your team and the signing is logged.</p>
             </div>
             <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
           </div>
@@ -133,7 +134,7 @@
           </div>
           <div class="management-table-wrap">
             <table class="management-table fa-table">
-              <thead><tr><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">AGE</th><th scope="col">YRS EXP</th><th scope="col">FA TYPE</th><th scope="col">LAST CONTRACT</th><th scope="col"><span class="sr-only">Sign</span></th></tr></thead>
+              <thead><tr><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">AGE</th><th scope="col">YRS EXP</th><th scope="col">FA TYPE</th><th scope="col">LAST CONTRACT</th><th scope="col">OFFERS</th><th scope="col"><span class="sr-only">Make offer</span></th></tr></thead>
               <tbody id="fa-rows"></tbody>
             </table>
           </div>
@@ -141,21 +142,37 @@
 
           <div class="management-panel fa-sign-panel" id="fa-sign-panel" hidden>
             <div class="panel-heading">
-              <div><span class="panel-index">SIGN</span><h3 id="fa-sign-title">Sign a free agent</h3></div>
-              <p>Sets the new contract on Player Contracts. Add his season-by-season cap hits on the team’s salary sheet.</p>
+              <div><span class="panel-index">MAKE AN OFFER</span><h3 id="fa-sign-title">Offer a contract</h3></div>
+              <p>Your offer goes to the commissioner's Free Agent Offers inbox. Nothing changes until it's accepted. If your team already has an open offer for this player, this one replaces it.</p>
             </div>
             <form class="management-form fa-sign-form" id="fa-sign-form">
-              <label>Team<select name="team" required></select></label>
+              <label>Your team<select name="team" required></select></label>
               <label>Years<input name="years" type="number" min="1" max="10" step="1" required></label>
               <label>Total value<input name="totalValue" inputmode="decimal" placeholder="$0" required></label>
               <label>Signing bonus<input name="signingBonus" inputmode="decimal" placeholder="$0"></label>
               <label>Guaranteed<input name="guaranteed" inputmode="decimal" placeholder="$0"></label>
-              <label>Date<input name="date" type="date" required></label>
+              <label class="fa-offer-notes">Message to the commissioner<input name="notes" maxlength="300" placeholder="Optional, e.g. incentives or a deadline"></label>
               <div class="fa-sign-actions">
-                <button class="button button-lime" type="submit">Sign player <span aria-hidden="true">✓</span></button>
+                <button class="button button-lime" type="submit">Send offer <span aria-hidden="true">→</span></button>
                 <button class="workspace-button" type="button" id="fa-sign-cancel">Cancel</button>
               </div>
             </form>
+          </div>
+
+          <div class="management-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">OFFERS</span><h3>Open offers</h3></div>
+              <p>Offers waiting for the commissioner, newest first. A team can withdraw its own offer until it's decided.</p>
+            </div>
+            <div class="fa-offer-list" id="fa-open-offers"></div>
+          </div>
+
+          <div class="management-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">DECISIONS</span><h3>Recent decisions</h3></div>
+              <p>The last 15 accepted, declined or withdrawn offers.</p>
+            </div>
+            <div class="fa-offer-list" id="fa-decided-offers"></div>
           </div>
 
           <div class="management-panel">

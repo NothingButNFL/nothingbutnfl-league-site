@@ -198,13 +198,16 @@ if (mobileMenuToggle && siteNavigation) {
 function refreshNavNotifications() {
   let trades = 0;
   let stream = 0;
+  let fa = 0;
   try {
     const data = JSON.parse(localStorage.getItem(officeStorageKey) || "null");
     if (Array.isArray(data?.pendingTrades)) trades = data.pendingTrades.filter((trade) => trade?.status === "awaiting-admin").length;
     if (Array.isArray(data?.streamUpdates)) stream = data.streamUpdates.filter((update) => update && !update.done).length;
+    if (Array.isArray(data?.faOffers)) fa = data.faOffers.filter((offer) => offer?.status === "pending").length;
   } catch {
     trades = 0;
     stream = 0;
+    fa = 0;
   }
   const show = (key, count, label) => document.querySelectorAll(`[data-badge="${key}"]`).forEach((badge) => {
     badge.textContent = count > 99 ? "99+" : String(count);
@@ -214,8 +217,9 @@ function refreshNavNotifications() {
   });
   show("admin-trades", trades, `${trades} ${trades === 1 ? "trade" : "trades"} awaiting admin approval`);
   show("admin-stream", stream, `${stream} depth chart ${stream === 1 ? "update" : "updates"} for the stream`);
-  const total = trades + stream;
-  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
+  show("admin-fa", fa, `${fa} free agent ${fa === 1 ? "offer" : "offers"} waiting`);
+  const total = trades + stream + fa;
+  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", fa ? `${fa} free agent ${fa === 1 ? "offer" : "offers"}` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
 }
 
 window.addEventListener("storage", (event) => {

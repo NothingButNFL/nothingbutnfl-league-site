@@ -1666,3 +1666,37 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .multi-year-table tfoot tr.my-room th { font-size: 11px; }
 .multi-year-table tfoot tr.my-room td.is-positive { color: #75e28b; }
 .multi-year-table tfoot tr.my-room td.is-negative { color: #ff9299; }
+
+/* ---- Free agent offers ---- */
+.fa-sign-form .fa-offer-notes { grid-column: span 1; }
+.fa-offer-count { display: inline-block; padding: 2px 7px; border: 1px solid #8fd0ff; color: #8fd0ff; font: 700 10px var(--mono); letter-spacing: .04em; white-space: nowrap; }
+.fa-offer-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px; }
+.fa-offer { display: grid; gap: 6px; align-content: start; padding: 14px 16px; border: 1px solid #31527a; border-left: 3px solid #8fd0ff; background: #0c2b50; color: #fff; }
+.fa-offer.is-accepted { border-left-color: #75e28b; }
+.fa-offer.is-declined { border-left-color: #ff9299; }
+.fa-offer.is-withdrawn { border-left-color: #6d84a3; opacity: .85; }
+.fa-offer-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.fa-offer-head strong { font-size: 15px; }
+.fa-offer-status { margin-left: auto; color: #8ca5c5; font: 700 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.fa-offer.is-accepted .fa-offer-status { color: #75e28b; }
+.fa-offer.is-declined .fa-offer-status { color: #ff9299; }
+.fa-offer-terms { margin: 0; color: #fff; font: 600 14px var(--body); }
+.fa-offer-notes-text { margin: 0; color: #c9d8ea; font: italic 13px var(--body); }
+.fa-offer-meta { margin: 0; color: #8ca5c5; font: 12px var(--mono); }
+.fa-offer-meta.is-over { color: #ff9299; }
+.fa-offer-withdraw { justify-self: start; margin-top: 4px; }
+.fao-groups { display: grid; gap: 14px; }
+.fao-group { border: 1px solid #31527a; background: #0a2647; }
+.fao-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #31527a; }
+.fao-group-head .player-name-link { color: #fff; font: 700 18px var(--display); }
+.fao-group-meta { color: #8ca5c5; font: 12px var(--mono); }
+.fao-group-head .fa-offer-count { margin-left: auto; }
+.fao-warning { flex-basis: 100%; color: #ff9299; font: 13px var(--body); }
+.fao-offer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid rgba(49, 82, 122, .5); }
+.fao-offer:first-of-type { border-top: 0; }
+.fao-offer-body { display: grid; gap: 4px; min-width: 0; flex: 1 1 320px; }
+.fao-team { display: inline-flex; align-items: baseline; gap: 8px; color: #fff; font-weight: 600; text-decoration: none; }
+.fao-team b { color: #8fd0ff; font: 700 11px var(--mono); }
+.fao-team:hover, .fao-team:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.fao-actions { display: flex; gap: 8px; }
+.fao-actions .button, .fao-actions .workspace-button { min-height: 38px; padding: 0 16px; }

@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers);
 }
 
 function migrateLegacyData(data) {
@@ -1906,4 +1906,48 @@ if (typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showSampleBanner);
   else showSampleBanner();
   window.addEventListener("storage", (event) => { if (event.key === officeStorageKey || event.key === sampleBackupKey) showSampleBanner(); });
+}
+
+// ---- Free agent offers ----
+// data.faOffers = [{ id, playerId, playerName, teamId, years, totalValue, signingBonus?, guaranteed?, notes?,
+//   status: "pending" | "accepted" | "declined" | "withdrawn", createdAt, decidedAt?, decisionNote? }]
+// Teams make offers on Free Agency; the commissioner accepts or declines them on Admin › Free Agent Offers.
+const faOfferStatuses = ["pending", "accepted", "declined", "withdrawn"];
+const faOfferLimits = { playerName: 70, notes: 300, decisionNote: 200 };
+
+function validFaOffers(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 3000) return false;
+  const ids = new Set();
+  for (const o of list) {
+    if (!o || typeof o.id !== "string" || !o.id || ids.has(o.id) || typeof o.playerId !== "string" || !o.playerId ||
+        typeof o.playerName !== "string" || !o.playerName || o.playerName.length > faOfferLimits.playerName ||
+        !nflTeams.some(({ id }) => id === o.teamId) || !isIntegerInRange(o.years, 1, 10) || !isIntegerInRange(o.totalValue, 0, 999999999) ||
+        ["signingBonus", "guaranteed"].some((k) => o[k] !== undefined && o[k] !== null && !isIntegerInRange(o[k], 0, 999999999)) ||
+        !faOfferStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
+        (o.decidedAt !== undefined && typeof o.decidedAt !== "string") ||
+        ["notes", "decisionNote"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > faOfferLimits[k]))) return false;
+    ids.add(o.id);
+  }
+  return true;
+}
+
+const pendingFaOffers = (data) => (data.faOffers || []).filter((o) => o.status === "pending");
+
+function faOfferTerms(offer) {
+  return [`${offer.years} year${offer.years === 1 ? "" : "s"}, ${formatCurrency(offer.totalValue)}`,
+    offer.signingBonus ? `${formatCurrency(offer.signingBonus)} signing bonus` : "",
+    offer.guaranteed ? `${formatCurrency(offer.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
+}
+
+// Signs a free agent: moves him to the team on Player Contracts, sets the contract and logs the signing.
+// Returns the transaction, or null if he isn't a free agent any more.
+function signFreeAgent(data, playerId, teamId, contract, date = localDateString(), extraDetails = "") {
+  const player = (data.contractPlayers || []).find((p) => p.id === playerId && p.team === freeAgentTeamId);
+  if (!player) return null;
+  player.team = teamId;
+  player.contract = { length: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus ?? null, guaranteed: contract.guaranteed ?? null };
+  delete player.faType;
+  return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: player.name,
+    details: `Signed ${faOfferTerms({ years: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus, guaranteed: contract.guaranteed })}${extraDetails}` });
 }
