@@ -1395,8 +1395,8 @@ function validAwards(awards) {
 }
 
 // ---- Super Bowl champions ----
-// data.championships = [{ id, season, champion, runnerUp?, championScore?, runnerUpScore?, mvp?, gm?, notes? }]
-const championshipLimits = { mvp: 70, gm: 70, notes: 300 };
+// data.championships = [{ id, season, champion, runnerUp?, championScore?, runnerUpScore?, mvp?, mvpPosition?, mvpStats?, gm?, notes? }]
+const championshipLimits = { mvp: 70, mvpPosition: 10, mvpStats: 200, gm: 70, notes: 300 };
 
 function validChampionships(list) {
   if (list === undefined) return true;

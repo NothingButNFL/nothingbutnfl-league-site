@@ -60,6 +60,33 @@ function teamLink(teamId) {
   return link;
 }
 
+// MVP name (linked to their profile when known), position, and stat line.
+function mvpNode(entry) {
+  const wrap = document.createElement("span");
+  wrap.className = "sb-mvp-line";
+  const head = document.createElement("span");
+  head.className = "sb-mvp-name";
+  const found = findPlayerByName(officeData, entry.mvp, entry.champion);
+  const name = found ? document.createElement("a") : document.createElement("strong");
+  if (found) { name.className = "player-name-link"; name.href = profileUrl(found.player.id); }
+  name.textContent = entry.mvp;
+  head.append(name);
+  if (entry.mvpPosition) {
+    const pos = document.createElement("span");
+    pos.className = "sb-mvp-pos";
+    pos.textContent = entry.mvpPosition;
+    head.append(pos);
+  }
+  wrap.append(head);
+  if (entry.mvpStats) {
+    const stats = document.createElement("span");
+    stats.className = "sb-mvp-stats";
+    stats.textContent = entry.mvpStats;
+    wrap.append(stats);
+  }
+  return wrap;
+}
+
 function titleCount(teamId, upTo) {
   return officeData.championships.filter((c) => c.champion === teamId && c.season <= upTo).length;
 }
@@ -85,11 +112,18 @@ function renderLatest() {
   const parts = [];
   if (latest.runnerUp) parts.push(`Beat the ${teamName(latest.runnerUp)}${hasScore(latest) ? ` ${scoreText(latest)}` : ""}`);
   else if (hasScore(latest)) parts.push(`Won ${scoreText(latest)}`);
-  if (latest.mvp) parts.push(`SB MVP ${latest.mvp}`);
   if (latest.gm) parts.push(`GM ${latest.gm}`);
   parts.push(count === 1 ? "First league title" : `League title No. ${count}`);
   detail.textContent = parts.join(" · ");
   text.append(kicker, name, detail);
+  if (latest.mvp) {
+    const mvp = document.createElement("div");
+    mvp.className = "sb-latest-mvp";
+    const tag = document.createElement("b");
+    tag.textContent = "SB MVP";
+    mvp.append(tag, mvpNode(latest));
+    text.append(mvp);
+  }
   box.replaceChildren(teamLogo(latest.champion, "sb-latest-logo"), text);
 }
 
@@ -116,7 +150,9 @@ function renderTable() {
     tr.insertCell().textContent = scoreText(entry) || "—";
     const runner = tr.insertCell();
     if (entry.runnerUp) runner.append(teamLink(entry.runnerUp)); else runner.textContent = "—";
-    tr.insertCell().textContent = entry.mvp || "—";
+    const mvpCell = tr.insertCell();
+    mvpCell.className = "sb-mvp";
+    if (entry.mvp) mvpCell.append(mvpNode(entry)); else mvpCell.textContent = "—";
     tr.insertCell().textContent = entry.gm || "—";
     const notes = tr.insertCell();
     notes.className = "sb-notes";
@@ -207,6 +243,7 @@ function resetForm() {
   f.season.value = String(thisSeason());
   document.querySelector("#sb-form-title").textContent = "Add a Super Bowl champion";
   showBoxScoreHint();
+  showMvpFill();
 }
 
 function openForm(entry) {
@@ -216,10 +253,13 @@ function openForm(entry) {
   f.championScore.value = entry.championScore ?? "";
   f.runnerUpScore.value = entry.runnerUpScore ?? "";
   f.mvp.value = entry.mvp || "";
+  f.mvpPosition.value = entry.mvpPosition || "";
+  f.mvpStats.value = entry.mvpStats || "";
   f.gm.value = entry.gm || "";
   f.notes.value = entry.notes || "";
   document.querySelector("#sb-form-title").textContent = `Change the ${entry.season} champion`;
   showBoxScoreHint();
+  showMvpFill();
   document.querySelector("#sb-editor").scrollIntoView({ behavior: "smooth", block: "center" });
   f.champion.focus({ preventScroll: true });
 }
@@ -248,12 +288,65 @@ function showBoxScoreHint() {
     f.championScore.value = String(winner.score);
     f.runnerUpScore.value = String(loser.score);
     if (!f.gm.value) f.gm.value = gmFor(winner.team);
-    sbStatus.textContent = "Filled from the box score. Add the Super Bowl MVP and save.";
+    sbStatus.textContent = "Filled from the box score. Add the Super Bowl MVP, then use \"Fill stats from box score\" for their line.";
     f.mvp.focus();
   });
   sbBoxScore.replaceChildren(text, button);
 }
-f.season.addEventListener("input", showBoxScoreHint);
+// A player's stat line from a box score, e.g. "24/31, 312 yds, 3 TD, 0 INT · 6 car, 41 yds".
+function statLine(game, playerName) {
+  const key = normalizePlayerName(playerName);
+  const line = (category) => (game.players[category] || []).find((l) => normalizePlayerName(l.player) === key);
+  const n = (v) => Number(v) || 0;
+  const parts = [];
+  let team = "";
+  const p = line("passing");
+  if (p) { team = p.team; parts.push(`${n(p.cmp)}/${n(p.att)}, ${n(p.yds)} yds, ${n(p.td)} TD, ${n(p.int)} INT`); }
+  const r = line("rushing");
+  if (r && (n(r.att) || n(r.yds))) { team ||= r.team; parts.push(`${n(r.att)} car, ${n(r.yds)} yds${n(r.td) ? `, ${n(r.td)} TD` : ""}`); }
+  const c = line("receiving");
+  if (c) { team ||= c.team; parts.push(`${n(c.rec)} rec, ${n(c.yds)} yds${n(c.td) ? `, ${n(c.td)} TD` : ""}`); }
+  const d = line("defense");
+  if (d) {
+    team ||= d.team;
+    const bits = [`${n(d.tackles)} tkl`];
+    if (n(d.sacks)) bits.push(`${n(d.sacks)} sack${n(d.sacks) === 1 ? "" : "s"}`);
+    if (n(d.int)) bits.push(`${n(d.int)} INT`);
+    if (n(d.ff)) bits.push(`${n(d.ff)} FF`);
+    if (n(d.fr)) bits.push(`${n(d.fr)} FR`);
+    if (n(d.pd)) bits.push(`${n(d.pd)} PD`);
+    if (n(d.td)) bits.push(`${n(d.td)} TD`);
+    parts.push(bits.join(", "));
+  }
+  const k = line("kicking");
+  if (k) { team ||= k.team; parts.push(`${n(k.fgm)}/${n(k.fga)} FG${k.long ? ` (long ${n(k.long)})` : ""}, ${n(k.xpm)}/${n(k.xpa)} XP`); }
+  return parts.length ? { stats: parts.join(" · "), team, position: p ? "QB" : k ? "K" : "" } : null;
+}
+
+const mvpFill = document.querySelector("#sb-mvp-fill");
+function showMvpFill() {
+  const game = superBowlGame();
+  mvpFill.hidden = !(game && canSave && Number(f.season.value) === thisSeason() && f.mvp.value.trim() && statLine(game, f.mvp.value));
+}
+mvpFill.addEventListener("click", () => {
+  const found = statLine(superBowlGame(), f.mvp.value);
+  if (!found) return;
+  f.mvpStats.value = found.stats.slice(0, championshipLimits.mvpStats);
+  if (!f.mvpPosition.value) {
+    const player = findPlayerByName(officeData, f.mvp.value, found.team || undefined)?.player;
+    f.mvpPosition.value = (player?.seasons?.[currentLeagueYear()]?.position || found.position || "").slice(0, 10);
+  }
+  sbStatus.textContent = `${f.mvp.value.trim()}'s Super Bowl stats filled from the box score.`;
+});
+f.mvp.addEventListener("input", showMvpFill);
+f.mvp.addEventListener("change", () => {
+  showMvpFill();
+  if (f.mvpPosition.value) return;
+  const player = findPlayerByName(officeData, f.mvp.value, f.champion.value || undefined)?.player;
+  const position = player?.seasons?.[currentLeagueYear()]?.position;
+  if (position && position.length <= 10) f.mvpPosition.value = position;
+});
+f.season.addEventListener("input", () => { showBoxScoreHint(); showMvpFill(); });
 f.champion.addEventListener("change", () => { if (!f.gm.value && f.champion.value) f.gm.value = gmFor(f.champion.value); });
 
 sbForm.addEventListener("submit", (event) => {

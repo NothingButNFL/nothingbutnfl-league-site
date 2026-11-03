@@ -140,10 +140,16 @@
               <label>Runner-up<select name="runnerUp"></select></label>
               <label>Champion score<input name="championScore" type="number" min="0" max="200" step="1" placeholder="e.g. 31"></label>
               <label>Runner-up score<input name="runnerUpScore" type="number" min="0" max="200" step="1" placeholder="e.g. 24"></label>
-              <label>Super Bowl MVP<input name="mvp" maxlength="70" list="sb-players" placeholder="Player" autocomplete="off"></label>
-              <datalist id="sb-players"></datalist>
               <label>Winning GM<input name="gm" maxlength="70" list="sb-gms" placeholder="League member" autocomplete="off"></label>
               <datalist id="sb-gms"></datalist>
+              <fieldset class="sb-mvp-fields">
+                <legend>Super Bowl MVP</legend>
+                <label>Player<input name="mvp" maxlength="70" list="sb-players" placeholder="Player" autocomplete="off"></label>
+                <datalist id="sb-players"></datalist>
+                <label>Position<input name="mvpPosition" maxlength="10" placeholder="e.g. QB"></label>
+                <label class="sb-mvp-stats-field">Stats<input name="mvpStats" maxlength="200" placeholder="e.g. 24/31, 312 yds, 3 TD, 0 INT · 6 car, 41 yds"></label>
+                <button class="button sb-mvp-fill" id="sb-mvp-fill" type="button" hidden>Fill stats from box score</button>
+              </fieldset>
               <label class="sb-notes-field">Notes<input name="notes" maxlength="300" placeholder="e.g. First title in franchise history"></label>
               <button class="button button-lime add-button" type="submit">Save champion <span aria-hidden="true">+</span></button>
             </form>
