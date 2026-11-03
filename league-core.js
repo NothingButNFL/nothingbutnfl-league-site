@@ -1975,16 +1975,53 @@ function withdrawFaOffer(offer, note = "Withdrawn by the team") {
   Object.assign(offer, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: note });
 }
 
-// Signs a free agent: moves him to the team on Player Contracts, sets the contract and logs the signing.
+// Splits a contract into salary-sheet seasons starting with startYear: the signing bonus is prorated evenly,
+// the rest is paid as an even base salary, and guaranteed money beyond the bonus covers base salary from year one.
+// Years past the last salary sheet are left off.
+function contractSeasonBreakdown(contract, startYear = currentLeagueYear()) {
+  const years = Math.max(1, contract.years);
+  const bonus = Math.min(contract.signingBonus || 0, contract.totalValue);
+  const baseTotal = contract.totalValue - bonus;
+  const split = (amount) => {
+    const each = Math.floor(amount / years);
+    return Array.from({ length: years }, (_, i) => each + (i === years - 1 ? amount - each * years : 0));
+  };
+  const prorated = split(bonus);
+  const base = split(baseTotal);
+  let guaranteedLeft = Math.max(0, Math.min((contract.guaranteed || 0) - bonus, baseTotal));
+  return base.map((baseSalary, i) => {
+    const guaranteedSalary = Math.min(baseSalary, guaranteedLeft);
+    guaranteedLeft -= guaranteedSalary;
+    return { year: startYear + i, baseSalary, proratedBonus: prorated[i], guaranteedSalary };
+  }).filter(({ year }) => seasons.includes(year));
+}
+
+// Signs a free agent: puts him on the team's salary sheet with the contract's season-by-season cap hits
+// (taking his age, experience and profile from Player Contracts) and logs the signing.
 // Returns the transaction, or null if he isn't a free agent any more.
 function signFreeAgent(data, playerId, teamId, contract, date = localDateString(), extraDetails = "") {
-  const player = (data.contractPlayers || []).find((p) => p.id === playerId && p.team === freeAgentTeamId);
-  if (!player) return null;
-  player.team = teamId;
-  player.contract = { length: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus ?? null, guaranteed: contract.guaranteed ?? null };
-  delete player.faType;
-  return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: player.name,
-    details: `Signed ${faOfferTerms({ years: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus, guaranteed: contract.guaranteed })}${extraDetails}` });
+  const entry = (data.contractPlayers || []).find((p) => p.id === playerId && p.team === freeAgentTeamId);
+  if (!entry || !data.teams[teamId]) return null;
+  const start = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const breakdown = contractSeasonBreakdown(contract, start);
+  const position = String(entry.position || "").trim().toUpperCase().slice(0, 8);
+  const { team, position: _position, faType, ...details } = entry;
+  const player = {
+    ...details,
+    contract: { length: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus ?? null, guaranteed: contract.guaranteed ?? null },
+    activeSeasons: breakdown.length ? breakdown.map(({ year }) => year) : [start],
+    seasons: Object.fromEntries(seasons.map((year) => {
+      const row = breakdown.find((b) => b.year === year);
+      const season = row || year === start ? emptySeasonData(position, "Active") : emptySeasonData();
+      if (row) Object.assign(season, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, guaranteedSalary: row.guaranteedSalary });
+      return [year, season];
+    }))
+  };
+  data.teams[teamId].roster.push(player);
+  data.contractPlayers = data.contractPlayers.filter((p) => p !== entry);
+  const lastYear = breakdown.length ? breakdown[breakdown.length - 1].year : start;
+  return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: entry.name,
+    details: `Signed ${faOfferTerms({ years: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus, guaranteed: contract.guaranteed })}${extraDetails}. On the ${teamId} salary sheet ${start}${lastYear > start ? `–${lastYear}` : ""}` });
 }
 
 // ---- Game Log Archives ----

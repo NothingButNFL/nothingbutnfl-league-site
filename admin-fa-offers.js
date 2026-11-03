@@ -154,7 +154,7 @@ faoOpen.addEventListener("click", async (event) => {
   }
   Object.assign(offer, { status: "accepted", decidedAt: now, decisionNote: "Accepted by the commissioner" });
   for (const other of others) Object.assign(other, { status: "declined", decidedAt: now, decisionNote: `${offer.playerName} signed with ${offer.teamId}` });
-  if (!save(`${offer.playerName} signed with the ${teamName(offer.teamId)}: ${faOfferTerms(offer)}.${others.length ? ` ${others.length} other offer${others.length === 1 ? " was" : "s were"} declined.` : ""} Add his cap hits on the ${offer.teamId} salary sheet.`)) {
+  if (!save(`${offer.playerName} signed with the ${teamName(offer.teamId)}: ${faOfferTerms(offer)}.${others.length ? ` ${others.length} other offer${others.length === 1 ? " was" : "s were"} declined.` : ""} He's on the ${offer.teamId} salary sheet with these cap hits: ${contractSeasonBreakdown(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).map((b) => `${b.year} ${formatCurrency(b.baseSalary + b.proratedBonus)}`).join(", ")}.`)) {
     officeData = loadStoredOfficeData(JSON.parse(before));
   }
   render();
