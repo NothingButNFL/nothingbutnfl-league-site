@@ -453,8 +453,108 @@ const contractFields = [
   ["releaseNetSavings", "Release net savings", true]
 ];
 
+// Click a salary-table heading to sort by it; click again to flip the order, a third time to go back to sheet order.
+const salarySortKeys = ["name", "position", "rosterType", "experience", ...contractFields.map(([field]) => field)];
+const salaryTextKeys = new Set(["name", "position", "rosterType"]);
+let salarySort = null; // { key, direction: 1 | -1 }
+
+function salarySortValue(player, key) {
+  const entry = seasonEntry(player, activeSeason);
+  if (key === "name") return player.name;
+  if (key === "position" || key === "rosterType") return entry[key] || "";
+  if (key === "experience") return projectedExperience(player, activeSeason) ?? -1;
+  if (key === "capHit" || key === "capPercent") return capHitFor(entry);
+  if (key === "yearsRemaining") return yearsRemainingFor(player, activeSeason);
+  if (key === "tradePenalty" || key === "releasePenalty") {
+    const penalties = calculatedPenaltiesFor(player, activeSeason);
+    return penalties ? penalties[key] : entry[key];
+  }
+  return entry[key] ?? 0;
+}
+
+function sortedSalaryRoster(roster) {
+  if (!salarySort) return roster;
+  const { key, direction } = salarySort;
+  return [...roster].sort((a, b) => {
+    const av = salarySortValue(a, key), bv = salarySortValue(b, key);
+    const diff = typeof av === "string" ? av.localeCompare(bv, undefined, { sensitivity: "base" }) : av - bv;
+    return direction * diff || a.name.localeCompare(b.name);
+  });
+}
+
+function setupSalarySortHeaders() {
+  const headers = document.querySelectorAll(".salary-table thead tr:not(.salary-groups) th");
+  headers.forEach((th, index) => {
+    const key = salarySortKeys[index];
+    if (!key || th.querySelector(".salary-sort")) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "salary-sort";
+    button.dataset.sortKey = key;
+    const label = document.createElement("span");
+    label.textContent = th.textContent.trim();
+    const arrow = document.createElement("span");
+    arrow.className = "salary-sort-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    button.append(label, arrow);
+    if (th.title) button.title = `${th.title}. Click to sort.`;
+    else button.title = "Click to sort";
+    th.replaceChildren(button);
+    button.addEventListener("click", () => {
+      const startDirection = salaryTextKeys.has(key) ? 1 : -1;
+      if (!salarySort || salarySort.key !== key) salarySort = { key, direction: startDirection };
+      else if (salarySort.direction === startDirection) salarySort = { key, direction: -startDirection };
+      else salarySort = null;
+      renderSalaryRows();
+    });
+  });
+}
+
+// Narrow screens show the table as cards with no headings, so a menu does the same sorting.
+function setupSalarySortSelect() {
+  if (document.querySelector("#salary-sort-select")) return;
+  const wrap = document.querySelector(".salary-table")?.closest(".management-table-wrap");
+  if (!wrap) return;
+  const box = document.createElement("div");
+  box.className = "salary-sort-select";
+  const label = document.createElement("label");
+  label.textContent = "Sort by";
+  const select = document.createElement("select");
+  select.id = "salary-sort-select";
+  const headers = [...document.querySelectorAll(".salary-table thead tr:not(.salary-groups) th")].map((th) => th.textContent.trim().replace(/[↑↓]/g, "").trim());
+  select.append(new Option("Sheet order", ""));
+  salarySortKeys.forEach((key, i) => {
+    const name = (headers[i] || key).toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+    const [first, second] = salaryTextKeys.has(key) ? [" (A–Z)", " (Z–A)"] : [" (high–low)", " (low–high)"];
+    select.append(new Option(name + first, `${key}:${salaryTextKeys.has(key) ? 1 : -1}`), new Option(name + second, `${key}:${salaryTextKeys.has(key) ? -1 : 1}`));
+  });
+  select.addEventListener("change", () => {
+    const [key, direction] = select.value.split(":");
+    salarySort = key ? { key, direction: Number(direction) } : null;
+    renderSalaryRows();
+  });
+  label.append(select);
+  box.append(label);
+  wrap.before(box);
+}
+
+function updateSalarySortHeaders() {
+  const select = document.querySelector("#salary-sort-select");
+  if (select) select.value = salarySort ? `${salarySort.key}:${salarySort.direction}` : "";
+  document.querySelectorAll(".salary-table .salary-sort").forEach((button) => {
+    const th = button.closest("th");
+    const active = salarySort?.key === button.dataset.sortKey;
+    th.setAttribute("aria-sort", active ? (salarySort.direction === 1 ? "ascending" : "descending") : "none");
+    th.classList.toggle("is-sorted", active);
+    button.querySelector(".salary-sort-arrow").textContent = active ? (salarySort.direction === 1 ? "↑" : "↓") : "";
+  });
+}
+
 function renderSalaryRows() {
-  const roster = selectedTeamData().roster.filter((player) => isPlayerOnSeason(player, activeSeason));
+  setupSalarySortHeaders();
+  setupSalarySortSelect();
+  updateSalarySortHeaders();
+  const roster = sortedSalaryRoster(selectedTeamData().roster.filter((player) => isPlayerOnSeason(player, activeSeason)));
   salaryRows.replaceChildren();
   salaryEmpty.hidden = roster.length > 0;
   for (const player of roster) {

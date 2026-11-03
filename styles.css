@@ -1829,3 +1829,16 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .team-fa-preview.is-over { color: #ff9299; }
 .team-fa-panel .trade-offers-heading { margin-top: 24px; }
 .fa-table .row-transaction { white-space: nowrap; }
+
+/* Team sheet salary table: sortable headings */
+.salary-table .salary-sort { display: inline-flex; width: 100%; align-items: center; justify-content: center; gap: 3px; padding: 4px 2px; border: 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; white-space: nowrap; cursor: pointer; }
+.salary-table .salary-sort:hover, .salary-table .salary-sort:focus-visible { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.salary-table th.is-sorted { color: #8fd0ff; }
+.salary-sort-arrow { min-width: 8px; font-size: 11px; }
+/* Headings wrap onto two lines, and the table scrolls sideways instead of clipping amounts. */
+.salary-table .salary-sort { white-space: normal; line-height: 1.25; text-align: center; }
+.salary-table thead tr:not(.salary-groups) th { white-space: normal; vertical-align: bottom; }
+@media (min-width: 1301px) { .salary-table { min-width: 1380px; } }
+.salary-sort-select { display: none; }
+@media (max-width: 1300px) { .salary-sort-select { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 6px 0 12px; } .salary-sort-select label { display: grid; gap: 6px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; } .salary-sort-select select { min-width: 200px; padding: 9px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); color-scheme: dark; } }
+@media (min-width: 1301px) { .salary-col-years { width: 5.5%; } .salary-col-actions { width: 7.5%; } .salary-table .salary-sort { overflow-wrap: normal; word-break: keep-all; } }
