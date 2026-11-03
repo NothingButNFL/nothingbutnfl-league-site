@@ -175,6 +175,49 @@ for (const group of groupMenus) {
     if (!menu.contains(event.target) && !sidebarLayout.matches) closeGroupMenu(group);
   });
 }
+// Collapse button for the desktop sidebar (icons only when collapsed). Remembered in this browser.
+const collapseKey = "nbf-sidebar-collapsed";
+const siteHeader = document.querySelector(".site-header");
+function setSidebarCollapsed(collapsed, remember = true) {
+  document.documentElement.classList.toggle("nav-collapsed", collapsed);
+  const button = document.querySelector(".sidebar-collapse");
+  if (button) {
+    button.setAttribute("aria-expanded", String(!collapsed));
+    button.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+    button.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    button.querySelector(".sidebar-collapse-label").textContent = collapsed ? "Expand" : "Collapse";
+  }
+  if (remember) { try { localStorage.setItem(collapseKey, collapsed ? "1" : "0"); } catch { /* storage unavailable */ } }
+}
+if (siteHeader) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sidebar-collapse";
+  button.setAttribute("aria-controls", "primary-nav");
+  const icon = document.createElement("span");
+  icon.className = "sidebar-collapse-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "«";
+  const label = document.createElement("span");
+  label.className = "sidebar-collapse-label";
+  button.append(icon, label);
+  siteHeader.append(button);
+  button.addEventListener("click", () => setSidebarCollapsed(!document.documentElement.classList.contains("nav-collapsed")));
+  // Hover names for icons while collapsed.
+  siteHeader.querySelectorAll(".primary-nav > a, .teams-trigger, .admin-trigger").forEach((item) => {
+    const name = item.querySelector(".nav-label")?.textContent.trim();
+    if (name && !item.title) item.title = name;
+  });
+  let saved = false;
+  try { saved = localStorage.getItem(collapseKey) === "1"; } catch { /* storage unavailable */ }
+  setSidebarCollapsed(saved, false);
+  // Opening a group (not Teams) from the collapsed sidebar expands it first.
+  siteHeader.addEventListener("click", (event) => {
+    if (!sidebarLayout.matches || !document.documentElement.classList.contains("nav-collapsed")) return;
+    if (event.target.closest(".admin-trigger")) setSidebarCollapsed(false);
+  }, true);
+}
+
 // The sidebar opens the group holding the current page.
 function openCurrentGroup() {
   if (!sidebarLayout.matches) return;

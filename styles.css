@@ -1748,3 +1748,42 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
   body > .site-header .teams-menu:hover .teams-chevron, body > .site-header .teams-menu.is-open .teams-chevron { transform: translateX(3px); }
   .sample-banner { position: relative; }
 }
+
+/* Sidebar collapse button and collapsed (icons-only) state. */
+.sidebar-collapse { display: none; }
+@media (min-width: 1181px) {
+  body > .site-header .sidebar-collapse {
+    display: flex; align-items: center; gap: 11px; width: 100%; min-height: 40px; margin-top: auto; padding: 0 12px;
+    border: 1px solid #31527a; border-radius: 3px; background: transparent; color: #c9d8ea; font: 600 13px var(--body); cursor: pointer;
+  }
+  body > .site-header .sidebar-collapse:hover, body > .site-header .sidebar-collapse:focus-visible { background: #174477; color: #fff; }
+  .sidebar-collapse-icon { width: 18px; font-size: 18px; line-height: 1; text-align: center; transition: transform .18s ease; }
+  body, body > .site-header { transition: padding-left .18s ease, width .18s ease; }
+
+  html.nav-collapsed body { padding-left: 68px; }
+  html.nav-collapsed body > .site-header, html.nav-collapsed body > .site-header:hover,
+  html.nav-collapsed body > .site-header:focus-within, html.nav-collapsed body > .site-header.is-open { width: 68px; padding: 18px 10px 24px; }
+  html.nav-collapsed body > .site-header .brand { justify-content: center; padding: 0 0 14px; }
+  html.nav-collapsed body > .site-header .brand-copy { display: none !important; }
+  html.nav-collapsed body > .site-header .brand-logo { width: 36px; height: 36px; flex-basis: 36px; }
+  html.nav-collapsed body > .site-header .nav-label,
+  html.nav-collapsed body > .site-header .teams-chevron,
+  html.nav-collapsed body > .site-header .admin-chevron,
+  html.nav-collapsed body > .site-header .sidebar-collapse-label { display: none; }
+  html.nav-collapsed body > .site-header .primary-nav > a, html.nav-collapsed body > .site-header .teams-trigger,
+  html.nav-collapsed body > .site-header .admin-trigger, html.nav-collapsed body > .site-header .sidebar-collapse { position: relative; justify-content: center; padding: 0; }
+  html.nav-collapsed body > .site-header .primary-nav .nav-icon { width: 20px; flex-basis: 20px; font-size: 18px; }
+  html.nav-collapsed body > .site-header .primary-nav .nav-icon svg { width: 20px; height: 20px; }
+  html.nav-collapsed body > .site-header .admin-menu .admin-dropdown,
+  html.nav-collapsed body > .site-header .admin-menu.is-open .admin-dropdown { display: none; }
+  html.nav-collapsed body > .site-header .nav-badge-trigger { position: absolute; top: 3px; right: 3px; left: auto; margin: 0; }
+  html.nav-collapsed body > .site-header .teams-dropdown, html.nav-collapsed body > .site-header .primary-nav .teams-menu .teams-dropdown { left: 76px; width: min(780px, calc(100vw - 96px)); }
+  html.nav-collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
+}
+
+/* Phones and tablets: the menu bar stays fixed to the top of the screen. */
+@media (max-width: 1180px) {
+  body { padding-top: 62px; }
+  body > .site-header, body > .site-header:hover, body > .site-header:focus-within, body > .site-header.is-open { position: fixed; top: 0; right: 0; left: 0; z-index: 50; }
+  .skip-link:focus { top: 74px; }
+}
