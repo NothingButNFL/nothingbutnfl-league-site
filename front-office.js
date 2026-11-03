@@ -576,7 +576,7 @@ function renderSalaryRows() {
       vmb.type = "button";
       vmb.className = "vmb-mark";
       vmb.dataset.action = "remove-vmb";
-      vmb.textContent = "VMB";
+      vmb.textContent = "Vet Ben";
       vmb.title = `Veteran Minimum Benefit: paid ${formatCurrency(entry.baseSalary)} in base salary, charged ${formatCurrency(entry.vmbCapBase)} (the 2-year minimum) against the cap. Click to remove.`;
       vmb.setAttribute("aria-label", `${player.name}: Veteran Minimum Benefit. Click to remove`);
       nameCell.append(vmb);
