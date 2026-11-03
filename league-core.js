@@ -101,7 +101,8 @@ function validateOfficeData(data) {
             !isIntegerInRange(entry.yearsRemaining, 0, 8) ||
             !isIntegerInRange(entry.tradePenalty) || !Number.isSafeInteger(entry.tradeNetSavings) ||
             Math.abs(entry.tradeNetSavings) > 999999999 || !isIntegerInRange(entry.releasePenalty) ||
-            !Number.isSafeInteger(entry.releaseNetSavings) || Math.abs(entry.releaseNetSavings) > 999999999) return false;
+            !Number.isSafeInteger(entry.releaseNetSavings) || Math.abs(entry.releaseNetSavings) > 999999999 ||
+            (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999))) return false;
       }
     }
   }
@@ -330,9 +331,12 @@ function formatSignedCurrency(value) {
   return value > 0 ? `+${formatCurrency(value)}` : formatCurrency(value);
 }
 
+// Cap hit for one season. A Veteran Minimum Benefit season (vmbCapBase set) counts the 2-year minimum instead of the base salary paid.
 function capHitFor(entry) {
-  return entry.baseSalary + entry.proratedBonus + entry.rosterBonus;
+  const base = Number.isSafeInteger(entry.vmbCapBase) ? entry.vmbCapBase : entry.baseSalary;
+  return base + entry.proratedBonus + entry.rosterBonus;
 }
+const isVmbSeason = (entry) => Number.isSafeInteger(entry?.vmbCapBase);
 
 function seasonCapFigures(teamId, year, data = officeData) {
   const team = data.teams[teamId];
@@ -2008,8 +2012,8 @@ function contractSeasonBreakdown(contract, startYear = contract.startYear ?? cur
     const shares = prorationShares(bonus, years + (contract.voidYears || 0));
     // Veteran Minimum Benefit: the salary sheet charges the 2-year minimum as base salary; the player is paid his own minimum.
     const vmb = contract.vmbCapBase !== undefined;
-    return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: vmb ? contract.vmbCapBase : y.baseSalary, actualSalary: y.baseSalary,
-      proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: vmb ? Math.min(y.guaranteedSalary, contract.vmbCapBase) : y.guaranteedSalary }))
+    return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: y.baseSalary, capBase: vmb ? contract.vmbCapBase : y.baseSalary,
+      proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: y.guaranteedSalary }))
       .filter(({ year }) => seasons.includes(year));
   }
   const baseTotal = contract.totalValue - bonus;
@@ -2026,6 +2030,8 @@ function contractSeasonBreakdown(contract, startYear = contract.startYear ?? cur
     return { year: startYear + i, baseSalary, proratedBonus: prorated[i], rosterBonus: 0, guaranteedSalary };
   }).filter(({ year }) => seasons.includes(year));
 }
+
+const breakdownCapHit = (b) => (b.capBase ?? b.baseSalary) + b.proratedBonus + (b.rosterBonus || 0);
 
 // The signing bonus sitting on void years, and the season it accelerates into (the season after the last real year).
 function voidBonusFor(contract, startYear = contract.startYear ?? currentLeagueYear()) {
@@ -2072,6 +2078,7 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
       const row = breakdown.find((b) => b.year === year);
       const season = row || year === start ? emptySeasonData(position, "Active") : emptySeasonData();
       if (row) Object.assign(season, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary });
+      if (row && contract.vmbCapBase !== undefined) { season.vmbCapBase = contract.vmbCapBase; season.rosterType = "Active (VMB)"; }
       return [year, season];
     }))
   };

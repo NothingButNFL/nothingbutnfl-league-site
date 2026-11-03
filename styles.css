@@ -1893,3 +1893,6 @@ form.is-minimum input[readonly] { opacity: .75; }
 .admin-vmb-panel { margin-top: 18px; }
 .ce-proration.is-over { color: #ff9299; font-weight: 700; }
 .contract-type-field select { min-width: 240px; }
+.vmb-mark { display: inline-block; margin-left: 6px; padding: 1px 5px; border: 1px solid #ffd37a; color: #ffd37a; font: 700 9px var(--mono); letter-spacing: .04em; vertical-align: middle; cursor: help; }
+.salary-table .computed-cell.is-vmb { color: #ffd37a; }
+.salary-table .computed-cell.is-vmb::after { content: " *"; }

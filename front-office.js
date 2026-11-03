@@ -571,6 +571,13 @@ function renderSalaryRows() {
     nameLink.textContent = player.name;
     nameLink.title = `Open ${player.name}'s profile`;
     nameCell.append(nameLink);
+    if (isVmbSeason(entry)) {
+      const vmb = document.createElement("span");
+      vmb.className = "vmb-mark";
+      vmb.textContent = "VMB";
+      vmb.title = `Veteran Minimum Benefit: paid ${formatCurrency(entry.baseSalary)} in base salary, charged ${formatCurrency(entry.vmbCapBase)} (the 2-year minimum) against the cap.`;
+      nameCell.append(vmb);
+    }
     const injury = injuryForPlayer(officeData, player, activeTeamId);
     if (injury) {
       const mark = document.createElement("a");
@@ -649,7 +656,10 @@ function updateComputedCells() {
     if (!player) continue;
     const entry = seasonEntry(player, activeSeason);
     const capHit = capHitFor(entry);
-    row.querySelector('[data-computed="capHit"]').textContent = formatCurrency(capHit);
+    const capCell = row.querySelector('[data-computed="capHit"]');
+    capCell.textContent = formatCurrency(capHit);
+    capCell.classList.toggle("is-vmb", isVmbSeason(entry));
+    capCell.title = isVmbSeason(entry) ? `Veteran Minimum Benefit: ${formatCurrency(entry.vmbCapBase)} (2-year minimum) + bonuses, not his ${formatCurrency(entry.baseSalary)} base salary.` : "";
     row.querySelector('[data-computed="capPercent"]').textContent = totalCap > 0
       ? `${((capHit / totalCap) * 100).toFixed(2)}%`
       : "—";
@@ -1263,6 +1273,31 @@ salaryRows.addEventListener("change", (event) => {
     }
     if (field === "name") player.name = value;
     else seasonEntry(player, activeSeason)[field] = field === "position" ? value.toUpperCase() : value;
+    // A roster type naming the Veteran Minimum Benefit ("VMB") charges this season at the 2-year minimum.
+    if (field === "rosterType") {
+      const entry = seasonEntry(player, activeSeason);
+      const wantsVmb = /\bvmb\b|veteran minimum/i.test(value);
+      if (wantsVmb && !isVmbSeason(entry)) {
+        const capBase = officeData.minimumSalaries?.[activeSeason]?.["2"];
+        if (capBase === null || capBase === undefined) {
+          workspaceStatus.textContent = `Set the ${activeSeason} minimum for 2 years of experience on Admin › League Cap Directory to charge ${player.name} as a Veteran Minimum Benefit player.`;
+        } else {
+          entry.vmbCapBase = capBase;
+          renderSalaryRows();
+          updateCapOverview();
+          updateTradeSummary();
+          saveOfficeData(`${player.name} is on a Veteran Minimum Benefit deal for ${activeSeason}: his cap hit counts ${formatCurrency(capBase)} (the 2-year minimum) instead of his base salary.`);
+          return;
+        }
+      } else if (!wantsVmb && isVmbSeason(entry)) {
+        delete entry.vmbCapBase;
+        renderSalaryRows();
+        updateCapOverview();
+        updateTradeSummary();
+        saveOfficeData(`${player.name}'s ${activeSeason} cap hit now uses his base salary (no longer Veteran Minimum Benefit).`);
+        return;
+      }
+    }
   } else {
     const min = field.endsWith("NetSavings") ? -999999999 : 0;
     const value = input.dataset.currency === "true" ? parseCurrencyInput(input) : input.valueAsNumber;

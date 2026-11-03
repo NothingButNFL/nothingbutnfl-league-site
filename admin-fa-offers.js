@@ -45,8 +45,8 @@ function contractTable(offer) {
   for (const r of rows) {
     const tr = body.insertRow();
     tr.insertCell().textContent = String(r.year);
-    for (const v of [r.baseSalary, r.proratedBonus, r.rosterBonus || 0, r.guaranteedSalary, r.baseSalary + r.proratedBonus + (r.rosterBonus || 0)]) tr.insertCell().textContent = formatCurrency(v);
-    if (offer.vmbCapBase !== undefined) tr.cells[1].textContent = `${formatCurrency(r.actualSalary)} paid · ${formatCurrency(r.baseSalary)} on the cap`;
+    for (const v of [r.baseSalary, r.proratedBonus, r.rosterBonus || 0, r.guaranteedSalary, breakdownCapHit(r)]) tr.insertCell().textContent = formatCurrency(v);
+    if (offer.vmbCapBase !== undefined) tr.cells[1].textContent = `${formatCurrency(r.baseSalary)} paid · ${formatCurrency(r.capBase)} on the cap`;
   }
   if (offer.voidYears && Array.isArray(offer.yearsDetail)) {
     const shares = prorationShares(Math.min(offer.signingBonus || 0, offer.totalValue), offer.years + offer.voidYears);
@@ -79,7 +79,7 @@ function offerRow(offer) {
   const terms = textEl("p", "fa-offer-terms", faOfferTerms(offer));
   const aav = Math.round(offer.totalValue / offer.years);
   const first = contractSeasonBreakdown(offer)[0];
-  const firstHit = first ? first.baseSalary + first.proratedBonus + (first.rosterBonus || 0) : aav;
+  const firstHit = first ? breakdownCapHit(first) : aav;
   const facts = document.createElement("p");
   facts.className = "fa-offer-meta";
   const year = capYear();
@@ -192,7 +192,7 @@ faoOpen.addEventListener("click", async (event) => {
   }
   Object.assign(offer, { status: "accepted", decidedAt: now, decisionNote: "Accepted by the commissioner" });
   for (const other of others) Object.assign(other, { status: "declined", decidedAt: now, decisionNote: `${offer.playerName} signed with ${offer.teamId}` });
-  if (!save(`${offer.playerName} signed with the ${teamName(offer.teamId)}: ${faOfferTerms(offer)}.${others.length ? ` ${others.length} other offer${others.length === 1 ? " was" : "s were"} declined.` : ""} He's on the ${offer.teamId} salary sheet with these cap hits: ${contractSeasonBreakdown(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).map((b) => `${b.year} ${formatCurrency(b.baseSalary + b.proratedBonus + (b.rosterBonus || 0))}`).join(", ")}${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) ? `, plus ${formatCurrency(voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).amount)} void-year dead cap in ${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).year}` : ""}.`)) {
+  if (!save(`${offer.playerName} signed with the ${teamName(offer.teamId)}: ${faOfferTerms(offer)}.${others.length ? ` ${others.length} other offer${others.length === 1 ? " was" : "s were"} declined.` : ""} He's on the ${offer.teamId} salary sheet with these cap hits: ${contractSeasonBreakdown(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).map((b) => `${b.year} ${formatCurrency(breakdownCapHit(b))}`).join(", ")}${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) ? `, plus ${formatCurrency(voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).amount)} void-year dead cap in ${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).year}` : ""}.`)) {
     officeData = loadStoredOfficeData(JSON.parse(before));
   }
   render();

@@ -27,7 +27,7 @@ function teamCapRoom() {
 function renderTeamFaCap() {
   const room = teamCapRoom();
   const open = pendingFaOffers(officeData).filter((o) => o.teamId === activeTeamId);
-  const firstHit = (o) => { const b = contractSeasonBreakdown(o)[0]; return b ? b.baseSalary + b.proratedBonus + (b.rosterBonus || 0) : 0; };
+  const firstHit = (o) => { const b = contractSeasonBreakdown(o)[0]; return b ? breakdownCapHit(b) : 0; };
   const committed = open.reduce((sum, o) => sum + firstHit(o), 0);
   const cards = [
     [`${teamFaYear()} cap room`, room === null ? "Set base cap" : teamFaMoney(room), room === null ? "" : room < 0 ? "is-negative" : "is-positive"],
