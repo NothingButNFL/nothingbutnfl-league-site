@@ -32,14 +32,7 @@ function save(message) {
   }
 }
 
-const money = (text) => {
-  const raw = String(text || "").trim().replace(/[$,\s]/g, "").toUpperCase();
-  if (!raw) return null;
-  const match = raw.match(/^(\d+(?:\.\d+)?)([KM]?)$/);
-  if (!match) return undefined;
-  const value = Math.round(Number(match[1]) * (match[2] === "M" ? 1e6 : match[2] === "K" ? 1e3 : 1));
-  return isIntegerInRange(value, 0, 999999999) ? value : undefined;
-};
+const money = parseMoneyText;
 const shortMoney = (v) => (v >= 1e6 ? `$${String(Number((v / 1e6).toFixed(2)))}M` : formatCurrency(v));
 
 const freeAgents = () => (officeData.contractPlayers || []).filter((p) => p.team === freeAgentTeamId);
@@ -173,22 +166,10 @@ signForm.addEventListener("submit", (event) => {
     values[field] = v;
   }
   if (values.totalValue === null) { faStatus.textContent = "Enter the contract's total value."; return; }
-  if (!Array.isArray(officeData.faOffers)) officeData.faOffers = [];
   const teamId = f.team.value;
-  const now = new Date().toISOString();
-  // A team's newer offer for the same player replaces its open one.
-  const replaced = pendingFaOffers(officeData).find((o) => o.playerId === player.id && o.teamId === teamId);
-  if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer offer" });
-  if (officeData.faOffers.length >= 3000) officeData.faOffers = officeData.faOffers.filter((o) => o.status === "pending").concat(officeData.faOffers.filter((o) => o.status !== "pending").slice(-2000));
-  const offer = { id: newRecordId("faoffer"), playerId: player.id, playerName: player.name.slice(0, faOfferLimits.playerName), teamId,
-    years: Number(f.years.value), totalValue: values.totalValue, status: "pending", createdAt: now };
-  if (values.signingBonus) offer.signingBonus = values.signingBonus;
-  if (values.guaranteed) offer.guaranteed = values.guaranteed;
-  if (f.notes.value.trim()) offer.notes = f.notes.value.trim().slice(0, faOfferLimits.notes);
-  officeData.faOffers.push(offer);
-  if (!save(`${replaced ? "Updated offer" : "Offer"} sent: the ${teamName(teamId)} offered ${player.name} ${faOfferTerms(offer)}. It's waiting for the commissioner.`)) {
-    officeData.faOffers.pop();
-    if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
+  const result = submitFaOffer(officeData, player, teamId, { years: Number(f.years.value), ...values, notes: f.notes.value });
+  if (!save(`${result.replaced ? "Updated offer" : "Offer"} sent: the ${teamName(teamId)} offered ${player.name} ${faOfferTerms(result.offer)}. It's waiting for the commissioner.`)) {
+    undoFaOffer(officeData, result);
     return;
   }
   refreshNavNotifications();
@@ -266,7 +247,7 @@ document.querySelector("#fa-open-offers").addEventListener("click", async (event
   if (!offer) { faStatus.textContent = "That offer has already been decided."; renderFreeAgents(); return; }
   const ok = await confirmAction(`Withdraw the ${teamName(offer.teamId)} offer to ${offer.playerName}?`, { confirmLabel: "Withdraw offer", danger: true });
   if (!ok) return;
-  Object.assign(offer, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: "Withdrawn by the team" });
+  withdrawFaOffer(offer);
   save(`The ${teamName(offer.teamId)} offer to ${offer.playerName} was withdrawn.`);
   refreshNavNotifications();
   renderFreeAgents();

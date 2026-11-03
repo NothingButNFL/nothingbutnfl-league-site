@@ -1816,3 +1816,16 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .gl-import { margin-top: 14px; }
 .gl-import .import-hint { margin: 8px 0 10px; color: #8ca5c5; font-size: 12px; line-height: 1.5; }
 .gl-import textarea { width: 100%; box-sizing: border-box; }
+
+/* ---- Team sheet: Offer Free Agent tab ---- */
+.team-fa-cap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 10px; margin-bottom: 16px; }
+.team-fa-cap .cap-stat { min-height: 84px; }
+.team-fa-cap strong.is-positive { color: #75e28b; }
+.team-fa-cap strong.is-negative { color: #ff9299; }
+.team-fa-form-panel { margin-top: 16px; }
+.team-fa-form { grid-template-columns: minmax(80px, .5fr) repeat(3, minmax(140px, 1fr)) minmax(200px, 1.6fr); }
+@media (max-width: 1100px) { .team-fa-form { grid-template-columns: 1fr 1fr; } }
+.team-fa-preview { grid-column: 1 / -1; margin: 0; color: #c9d8ea; font: 13px var(--mono); }
+.team-fa-preview.is-over { color: #ff9299; }
+.team-fa-panel .trade-offers-heading { margin-top: 24px; }
+.fa-table .row-transaction { white-space: nowrap; }

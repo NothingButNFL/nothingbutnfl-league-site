@@ -1940,6 +1940,41 @@ function faOfferTerms(offer) {
     offer.guaranteed ? `${formatCurrency(offer.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
 }
 
+// "12.5M", "750K" or "12,500,000" → dollars; "" → null; anything else → undefined.
+function parseMoneyText(text) {
+  const raw = String(text || "").trim().replace(/[$,\s]/g, "").toUpperCase();
+  if (!raw) return null;
+  const match = raw.match(/^(\d+(?:\.\d+)?)([KM]?)$/);
+  if (!match) return undefined;
+  const value = Math.round(Number(match[1]) * (match[2] === "M" ? 1e6 : match[2] === "K" ? 1e3 : 1));
+  return isIntegerInRange(value, 0, 999999999) ? value : undefined;
+}
+
+// Adds a team's offer for a free agent. A team's newer offer for the same player replaces its open one.
+// Returns { offer, replaced } (call undoFaOffer with it if saving fails).
+function submitFaOffer(data, player, teamId, terms) {
+  if (!Array.isArray(data.faOffers)) data.faOffers = [];
+  const now = new Date().toISOString();
+  const replaced = pendingFaOffers(data).find((o) => o.playerId === player.id && o.teamId === teamId) || null;
+  if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer offer" });
+  if (data.faOffers.length >= 3000) data.faOffers = data.faOffers.filter((o) => o.status === "pending").concat(data.faOffers.filter((o) => o.status !== "pending").slice(-2000));
+  const offer = { id: newRecordId("faoffer"), playerId: player.id, playerName: player.name.slice(0, faOfferLimits.playerName), teamId,
+    years: terms.years, totalValue: terms.totalValue, status: "pending", createdAt: now };
+  if (terms.signingBonus) offer.signingBonus = terms.signingBonus;
+  if (terms.guaranteed) offer.guaranteed = terms.guaranteed;
+  if (terms.notes) offer.notes = String(terms.notes).trim().slice(0, faOfferLimits.notes);
+  data.faOffers.push(offer);
+  return { offer, replaced };
+}
+function undoFaOffer(data, { offer, replaced }) {
+  data.faOffers = data.faOffers.filter((o) => o !== offer);
+  if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
+}
+
+function withdrawFaOffer(offer, note = "Withdrawn by the team") {
+  Object.assign(offer, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: note });
+}
+
 // Signs a free agent: moves him to the team on Player Contracts, sets the contract and logs the signing.
 // Returns the transaction, or null if he isn't a free agent any more.
 function signFreeAgent(data, playerId, teamId, contract, date = localDateString(), extraDetails = "") {

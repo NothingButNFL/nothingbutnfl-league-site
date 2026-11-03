@@ -32,6 +32,7 @@
     <script src="front-office.js" defer></script>
     <script src="depth-chart.js" defer></script>
     <script src="multi-year.js" defer></script>
+    <script src="team-fa.js" defer></script>
   </head>
   <body class="team-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -244,6 +245,48 @@
               </table>
             </div>
             <p class="empty-state" id="multi-year-empty" hidden>No players on this season's roster yet.</p>
+          </div>
+
+          <div class="management-panel team-fa-panel" id="team-fa-panel" role="tabpanel" aria-labelledby="season-tab-free-agents" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">FREE AGENCY</span><h3>Offer a free agent</h3></div>
+              <p>Pick a free agent and send this team's contract offer. It goes to the commissioner's Free Agent Offers inbox; nothing changes until it's accepted. A new offer for the same player replaces this team's open one.</p>
+            </div>
+            <div class="team-fa-cap" id="team-fa-cap"></div>
+            <div class="contracts-toolbar">
+              <label>Search<input id="team-fa-search" type="search" placeholder="Player name" maxlength="60"></label>
+              <label>Position<select id="team-fa-pos"></select></label>
+              <div class="contracts-total"><span>FREE AGENTS</span><strong id="team-fa-count">0</strong></div>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table fa-table">
+                <thead><tr><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">AGE</th><th scope="col">YRS EXP</th><th scope="col">FA TYPE</th><th scope="col">LAST CONTRACT</th><th scope="col">YOUR OFFER</th><th scope="col"><span class="sr-only">Make offer</span></th></tr></thead>
+                <tbody id="team-fa-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="team-fa-empty" hidden></p>
+
+            <div class="management-panel fa-sign-panel team-fa-form-panel" id="team-fa-form-panel" hidden>
+              <div class="panel-heading">
+                <div><span class="panel-index">CONTRACT OFFER</span><h3 id="team-fa-form-title">Offer a contract</h3></div>
+                <p id="team-fa-form-note"></p>
+              </div>
+              <form class="management-form fa-sign-form team-fa-form" id="team-fa-form">
+                <label>Years<input name="years" type="number" min="1" max="10" step="1" required></label>
+                <label>Total value<input name="totalValue" inputmode="decimal" placeholder="e.g. 24M" required></label>
+                <label>Signing bonus<input name="signingBonus" inputmode="decimal" placeholder="$0"></label>
+                <label>Guaranteed<input name="guaranteed" inputmode="decimal" placeholder="$0"></label>
+                <label class="fa-offer-notes">Message to the commissioner<input name="notes" maxlength="300" placeholder="Optional"></label>
+                <p class="team-fa-preview" id="team-fa-preview" aria-live="polite"></p>
+                <div class="fa-sign-actions">
+                  <button class="button button-lime" type="submit">Send offer <span aria-hidden="true">→</span></button>
+                  <button class="workspace-button" type="button" id="team-fa-cancel">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <h4 class="trade-offers-heading">This team's offers</h4>
+            <div class="fa-offer-list" id="team-fa-offers"></div>
           </div>
 
           <div class="management-panel picks-panel" id="draft-picks-panel" role="tabpanel" aria-labelledby="season-tab-draft-picks" hidden>
