@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#071a33">
-    <meta name="description" content="Nothing But NFL league awards by season: MVP, player of the year awards, rookies, GM of the Year and Super Bowl champions.">
+    <meta name="description" content="Nothing But NFL league awards by season: MVP, OPOY, DPOY, rookies, comeback, coach and GM of the year, and the Kurt Warner, Shaq Barrett and Hershel Walker awards.">
     <title>Awards — Nothing But NFL</title>
     <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
     <link rel="stylesheet" href="styles.css">
@@ -98,7 +98,7 @@
             <div>
               <p class="eyebrow"><span class="eyebrow-dot"></span> SEASON INFORMATION</p>
               <h1>Awards</h1>
-              <p class="team-page-subtitle">League honors for every season, from MVP to GM of the Year.</p>
+              <p class="team-page-subtitle">League honors for every season, from MVP to the Hershel Walker Award.</p>
             </div>
           </div>
         </div>
@@ -132,11 +132,11 @@
               <label>Season<input name="season" id="award-season" type="number" min="1920" max="2100" step="1" required></label>
               <label class="awards-award-field">Award<input name="award" id="award-name" list="award-presets" maxlength="60" placeholder="e.g. Most Valuable Player" required></label>
               <datalist id="award-presets"></datalist>
-              <label class="awards-winner-field">Winner<input name="winner" id="award-winner" list="award-players" maxlength="70" placeholder="Player, coach, GM or team" required autocomplete="off"></label>
+              <label class="awards-winner-field">Winner<input name="winner" id="award-winner" list="award-players" maxlength="70" placeholder="Player, coach or GM" required autocomplete="off"></label>
               <datalist id="award-players"></datalist>
               <label>Team<select name="team" id="award-team"></select></label>
               <label>Position<input name="position" id="award-position" maxlength="10" placeholder="e.g. QB"></label>
-              <label class="awards-notes-field">Notes<input name="notes" maxlength="200" placeholder="e.g. 4,812 yards, 41 TD"></label>
+              <label class="awards-notes-field">Notes<input name="notes" maxlength="200" placeholder="e.g. 4,812 yards, 41 TD, or the trade or signing"></label>
               <button class="button button-lime add-button" type="submit">Save award <span aria-hidden="true">+</span></button>
             </form>
           </div>

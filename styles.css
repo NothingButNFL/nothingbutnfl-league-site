@@ -1345,9 +1345,9 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .award-card { display: grid; align-content: start; gap: 6px; min-height: 132px; padding: 16px; border: 1px solid #31527a; background: #0c2b50; color: #fff; text-align: left; cursor: pointer; font: inherit; }
 .award-card:hover, .award-card:focus-visible { border-color: #8fd0ff; background: #10335d; }
 .award-card.is-open { border-style: dashed; background: #0a2647; }
-.award-card.is-champion { border-color: #f2b950; background: linear-gradient(160deg, #2b2a1a 0%, #0c2b50 70%); }
+.award-card.is-named { border-color: #f2b950; background: linear-gradient(160deg, #2b2a1a 0%, #0c2b50 70%); }
 .award-name { color: #8fd0ff; font: 700 10px var(--mono); letter-spacing: .07em; text-transform: uppercase; }
-.award-card.is-champion .award-name { color: #ffd37a; }
+.award-card.is-named .award-name { color: #ffd37a; }
 .award-winner { font: 700 20px/1.2 var(--display); letter-spacing: -.01em; }
 .award-card.is-open .award-winner { color: #8ca5c5; font-size: 16px; font-weight: 600; }
 .award-meta { color: #c5d5e8; font-size: 12px; }
@@ -1555,3 +1555,7 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .depth-sub.is-unset input[type="range"] { opacity: .35; }
 .depth-sub input[type="number"] { width: 52px; min-width: 0; padding: 4px 6px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 12px var(--body); text-align: center; color-scheme: dark; }
 @media (max-width: 900px) { .depth-subs-tables { grid-template-columns: 1fr; } }
+.award-name { display: grid; gap: 3px; }
+.award-short { display: inline-block; justify-self: start; margin-bottom: 2px; padding: 2px 6px; border: 1px solid #8fd0ff; color: #fff; font: 700 11px var(--mono); letter-spacing: .06em; }
+.award-about { color: #c5d5e8; font: 600 11px var(--body); letter-spacing: 0; text-transform: none; }
+.award-card.is-named.is-open { border-style: dashed; }

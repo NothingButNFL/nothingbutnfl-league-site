@@ -404,6 +404,7 @@ function loadStoredOfficeData(raw) {
   if (!Array.isArray(data.transactions)) data.transactions = transactionsFromTradeHistory(data);
   upgradeTradeLogEntries(data);
   upgradeInjuries(data);
+  upgradeAwards(data);
   mergeDirectoryIntoRosters(data);
   return data;
 }
@@ -1347,8 +1348,32 @@ function validMedia(media) {
 
 // ---- Awards ----
 // data.awards = [{ id, season, award, winner, teamId?, position?, notes? }]
-const awardPresets = ["Most Valuable Player", "Offensive Player of the Year", "Defensive Player of the Year", "Offensive Rookie of the Year",
-  "Defensive Rookie of the Year", "Comeback Player of the Year", "Coach of the Year", "GM of the Year", "Super Bowl Champion", "Super Bowl MVP"];
+// The league's own awards, in display order. short = abbreviation; about = what a named award honors.
+const awardInfo = [
+  { name: "Most Valuable Player", short: "MVP" },
+  { name: "Offensive Player Of The Year", short: "OPOY" },
+  { name: "Defensive Player Of The Year", short: "DPOY" },
+  { name: "Offensive Rookie Of The Year", short: "OROY" },
+  { name: "Defensive Rookie Of The Year", short: "DROY" },
+  { name: "Comeback Player Of The Year", short: "CPOY" },
+  { name: "Coach Of The Year", short: "COTY" },
+  { name: "General Manager Of The Year", short: "GMOY" },
+  { name: "Kurt Warner Award", short: "Overachiever", about: "Overachiever Of The Year" },
+  { name: "Shaq Barrett Award", short: "Best Value", about: "Best Value Signing" },
+  { name: "Hershel Walker Award", short: "Fleece", about: "Fleece Of The Year" }
+];
+const awardPresets = awardInfo.map(({ name }) => name);
+const awardDetails = (name) => awardInfo.find((a) => a.name === name) || null;
+
+// Older saves used other spellings ("Offensive Player of the Year", "GM of the Year"): match them to the league's names.
+function upgradeAwards(data) {
+  const aliases = { "gm of the year": "General Manager Of The Year", "comeback player": "Comeback Player Of The Year" };
+  for (const entry of data.awards || []) {
+    const key = String(entry.award).trim().toLowerCase();
+    const match = awardPresets.find((name) => name.toLowerCase() === key) || aliases[key];
+    if (match) entry.award = match;
+  }
+}
 const awardTextLimits = { award: 60, winner: 70, position: 10, notes: 200 };
 
 function validAwards(awards) {

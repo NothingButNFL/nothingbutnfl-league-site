@@ -71,12 +71,26 @@ function renderAwards() {
     const entry = seasonAwards.find((a) => a.award === award);
     const card = document.createElement("button");
     card.type = "button";
-    card.className = `award-card${entry ? "" : " is-open"}${/super bowl champion/i.test(award) ? " is-champion" : ""}`;
+    const info = awardDetails(award);
+    card.className = `award-card${entry ? "" : " is-open"}${info?.about ? " is-named" : ""}`;
     card.dataset.award = award;
     card.title = entry ? `Change the ${award} winner` : `Set the ${viewSeason} ${award}`;
     const label = document.createElement("span");
     label.className = "award-name";
-    label.textContent = award;
+    if (info && !info.about) {
+      const short = document.createElement("b");
+      short.className = "award-short";
+      short.textContent = info.short;
+      label.append(short, award);
+    } else {
+      label.textContent = award;
+    }
+    if (info?.about) {
+      const about = document.createElement("span");
+      about.className = "award-about";
+      about.textContent = info.about;
+      label.append(about);
+    }
     const winner = document.createElement("strong");
     winner.className = "award-winner";
     winner.textContent = entry ? entry.winner : "To be announced";
@@ -101,7 +115,8 @@ function renderAwards() {
     tr.insertCell().textContent = String(entry.season);
     const award = tr.insertCell();
     award.className = "award-cell-name";
-    award.textContent = entry.award;
+    const details = awardDetails(entry.award);
+    award.textContent = details ? `${entry.award} (${details.about || details.short})` : entry.award;
     const winner = tr.insertCell();
     winner.className = "award-cell-winner";
     winner.append(winnerNode(entry));
@@ -162,7 +177,12 @@ awardsRows.addEventListener("click", async (event) => {
 });
 
 // ---- Form ----
-document.querySelector("#award-presets").append(...awardPresets.map((name) => new Option(name, name)));
+document.querySelector("#award-presets").append(...awardInfo.map(({ name, short, about }) => {
+  const option = document.createElement("option");
+  option.value = name;
+  option.label = about || short;
+  return option;
+}));
 awardsForm.elements.team.append(new Option("No team", ""), ...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id)));
 
 function fillPlayerSuggestions() {
