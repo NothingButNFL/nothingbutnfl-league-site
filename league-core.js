@@ -1401,7 +1401,7 @@ const playerStatGroups = [
   { name: "Passing", stats: [["cmp", "CMP"], ["att", "ATT"], ["passYds", "PASS YDS"], ["passTd", "PASS TD"], ["int", "INT"]] },
   { name: "Rushing", stats: [["rushAtt", "CAR"], ["rushYds", "RUSH YDS"], ["rushTd", "RUSH TD"]] },
   { name: "Receiving", stats: [["rec", "REC"], ["recYds", "REC YDS"], ["recTd", "REC TD"]] },
-  { name: "Defense", stats: [["tackles", "TKL"], ["sacks", "SACKS"], ["defInt", "INT"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["defTd", "DEF TD"]] },
+  { name: "Defense", stats: [["tackles", "TKL"], ["tfl", "TFL"], ["sacks", "SACKS"], ["defInt", "INT"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["defTd", "DEF TD"]] },
   { name: "Kicking", stats: [["fgm", "FGM"], ["fga", "FGA"], ["fgLong", "FG LONG"], ["xpm", "XPM"], ["xpa", "XPA"]] }
 ];
 const playerStatKeys = playerStatGroups.flatMap((group) => group.stats.map(([key]) => key));
@@ -1515,7 +1515,7 @@ function boxScoreStats(game, playerName) {
   if (d) {
     team ||= d.team;
     values.tackles = n(d.tackles);
-    for (const [from, to] of [["sacks", "sacks"], ["int", "defInt"], ["ff", "ff"], ["fr", "fr"], ["pd", "pd"], ["td", "defTd"]]) if (n(d[from])) values[to] = n(d[from]);
+    for (const [from, to] of [["tfl", "tfl"], ["sacks", "sacks"], ["int", "defInt"], ["ff", "ff"], ["fr", "fr"], ["pd", "pd"], ["td", "defTd"]]) if (n(d[from])) values[to] = n(d[from]);
   }
   const k = line("kicking");
   if (k) { team ||= k.team; Object.assign(values, { fgm: n(k.fgm), fga: n(k.fga), xpm: n(k.xpm), xpa: n(k.xpa) }); if (k.long) values.fgLong = n(k.long); }
