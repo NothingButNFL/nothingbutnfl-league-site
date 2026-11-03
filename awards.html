@@ -62,7 +62,7 @@
             <a class="admin-menu-link" href="roster-breakdown.html" role="menuitem"><span>Roster Breakdown</span></a>
           </div>
         </div>
-        <div class="admin-menu season-menu is-current">
+        <div class="admin-menu season-menu">
           <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="season-dropdown">
             <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/></svg></span><span class="nav-label">Season Information</span><span class="admin-chevron" aria-hidden="true">›</span>
           </button>
@@ -70,8 +70,15 @@
             <a class="admin-menu-link" href="injuries.html" role="menuitem"><span>Injury Report</span></a>
             <a class="admin-menu-link" href="standings.html" role="menuitem"><span>Standings</span></a>
             <a class="admin-menu-link" href="stats.html" role="menuitem"><span>Season Stats</span></a>
-            <a class="admin-menu-link" href="awards.html" role="menuitem" aria-current="page"><span>Awards</span></a>
             <a class="admin-menu-link" href="schedule.html" role="menuitem"><span>Schedule</span></a>
+          </div>
+        </div>
+        <div class="admin-menu season-menu is-current">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="history-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5v1.5A3 3 0 0 0 7.5 10.5M16.5 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="nav-label">League History</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="history-dropdown" aria-label="League history pages">
+            <a class="admin-menu-link" href="awards.html" role="menuitem" aria-current="page"><span>Awards</span></a>
           </div>
         </div>
         <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
@@ -96,7 +103,7 @@
           <a class="team-back-link" href="index.html#top"><span aria-hidden="true">←</span> LEAGUE HOME</a>
           <div class="team-page-title">
             <div>
-              <p class="eyebrow"><span class="eyebrow-dot"></span> SEASON INFORMATION</p>
+              <p class="eyebrow"><span class="eyebrow-dot"></span> LEAGUE HISTORY</p>
               <h1>Awards</h1>
               <p class="team-page-subtitle">League honors for every season, from MVP to the Hershel Walker Award.</p>
             </div>
@@ -110,7 +117,7 @@
             <div>
               <div class="section-kicker"><span>01</span> LEAGUE HONORS</div>
               <h2 id="awards-title"><span id="awards-season-label">2026</span> <span>awards.</span></h2>
-              <p class="section-subtitle">Pick a season to see its winners. Click an award to set or change its winner.</p>
+              <p class="section-subtitle">Pick a season to see its winners, including past seasons. Click an award to set or change its winner for that season.</p>
             </div>
             <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
           </div>
@@ -119,8 +126,17 @@
           <p class="workspace-status" id="awards-status" role="status" aria-live="polite"></p>
 
           <div class="awards-toolbar">
-            <label>Season<select id="awards-season"></select></label>
+            <div class="awards-step" id="awards-step">
+              <button class="awards-step-button" id="awards-prev" type="button" data-step="-1" aria-label="Previous season">‹</button>
+              <label>Season<select id="awards-season"></select></label>
+              <button class="awards-step-button" id="awards-next" type="button" data-step="1" aria-label="Next season">›</button>
+            </div>
+            <form class="awards-jump" id="awards-jump">
+              <label>Older season<input id="awards-jump-year" type="number" min="1920" max="2100" step="1" placeholder="e.g. 2019" required></label>
+              <button class="button" type="submit">Go</button>
+            </form>
           </div>
+          <p class="awards-past-note" id="awards-past-note" hidden></p>
           <div class="awards-grid" id="awards-grid"></div>
 
           <div class="management-panel awards-editor" id="awards-editor">

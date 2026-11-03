@@ -33,10 +33,19 @@ function save(message) {
 
 const presetRank = (award) => { const i = awardPresets.indexOf(award); return i === -1 ? awardPresets.length : i; };
 
+// Every season from now back ten years (or to the oldest saved award) is listed, so past winners can be set.
 function fillSeasons() {
-  const years = [...new Set([thisSeason(), ...officeData.awards.map((a) => a.season)])].sort((a, b) => b - a);
-  awardsSeasonSelect.replaceChildren(...years.map((year) => new Option(String(year), String(year))));
-  if (!years.includes(viewSeason)) viewSeason = years[0];
+  const now = thisSeason();
+  const saved = officeData.awards.map((a) => a.season);
+  const oldest = Math.min(now - 10, viewSeason, ...saved);
+  const newest = Math.max(now, viewSeason, ...saved);
+  const years = [];
+  for (let year = newest; year >= oldest; year -= 1) years.push(year);
+  awardsSeasonSelect.replaceChildren(...years.map((year) => {
+    const set = officeData.awards.filter((a) => a.season === year && awardPresets.includes(a.award)).length;
+    const label = `${year}${year === now ? " (current)" : ""}${set ? ` · ${set} of ${awardPresets.length} set` : ""}`;
+    return new Option(label, String(year));
+  }));
   awardsSeasonSelect.value = String(viewSeason);
 }
 
@@ -65,6 +74,11 @@ function winnerNode(entry) {
 function renderAwards() {
   fillSeasons();
   document.querySelector("#awards-season-label").textContent = String(viewSeason);
+  document.querySelector("#awards-prev").disabled = viewSeason <= 1920;
+  document.querySelector("#awards-next").disabled = viewSeason >= thisSeason();
+  const past = document.querySelector("#awards-past-note");
+  past.hidden = viewSeason >= thisSeason();
+  past.textContent = `You're viewing the ${viewSeason} season. Click any award to set its ${viewSeason} winner.`;
   const seasonAwards = officeData.awards.filter((a) => a.season === viewSeason);
   const names = [...new Set([...awardPresets, ...seasonAwards.map((a) => a.award)])].sort((a, b) => presetRank(a) - presetRank(b));
   awardsGrid.replaceChildren(...names.map((award) => {
@@ -142,7 +156,23 @@ function renderAwards() {
   awardsEmpty.textContent = "No awards yet. Click an award above to name its first winner.";
 }
 
-awardsSeasonSelect.addEventListener("change", () => { viewSeason = Number(awardsSeasonSelect.value); renderAwards(); });
+function showSeason(year) {
+  viewSeason = year;
+  awardsForm.elements.season.value = String(year);
+  renderAwards();
+}
+awardsSeasonSelect.addEventListener("change", () => showSeason(Number(awardsSeasonSelect.value)));
+document.querySelector("#awards-step").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-step]");
+  if (button) showSeason(viewSeason + Number(button.dataset.step));
+});
+document.querySelector("#awards-jump").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = document.querySelector("#awards-jump-year");
+  if (!input.reportValidity()) return;
+  showSeason(Number(input.value));
+  input.value = "";
+});
 
 function openForm(award, entry) {
   const f = awardsForm.elements;
