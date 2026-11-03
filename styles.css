@@ -1649,3 +1649,20 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .awards-filter-clear { min-height: 40px; padding: 0 14px; }
 .awards-filter-clear[hidden] { display: none; }
 .awards-filter-count { align-self: center; margin-left: auto; color: #8ca5c5; font: 12px var(--mono); }
+
+/* ---- Team sheet: Multi-Year summary ---- */
+.multi-year-table { min-width: 1100px; }
+.multi-year-table th, .multi-year-table td { white-space: nowrap; }
+.multi-year-table thead th:nth-child(n + 3), .multi-year-table .my-money { text-align: right; }
+.multi-year-table .my-player, .multi-year-table thead th:first-child, .multi-year-table tfoot th { position: sticky; left: 0; z-index: 1; background: #0c2b50; }
+.multi-year-table .my-player { min-width: 180px; font-weight: 600; }
+.multi-year-table .my-money { font-variant-numeric: tabular-nums; }
+.multi-year-table .is-current { background: rgba(143, 208, 255, .07); }
+.multi-year-table thead th.is-current { color: #8fd0ff; }
+.multi-year-table .is-empty { color: #4f6b8f; }
+.multi-year-table tfoot th, .multi-year-table tfoot td { border-top: 1px solid #31527a; color: #c9d8ea; font-size: 13px; }
+.multi-year-table tfoot th { text-align: left; font: 700 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.multi-year-table tfoot tr.my-room th, .multi-year-table tfoot tr.my-room td { border-top: 2px solid #8fd0ff; color: #fff; font-weight: 700; font-size: 15px; }
+.multi-year-table tfoot tr.my-room th { font-size: 11px; }
+.multi-year-table tfoot tr.my-room td.is-positive { color: #75e28b; }
+.multi-year-table tfoot tr.my-room td.is-negative { color: #ff9299; }

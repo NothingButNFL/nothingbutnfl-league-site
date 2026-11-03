@@ -162,6 +162,9 @@ function renderSeasonTabs() {
   const tabs = document.querySelector("#season-tabs");
   tabs.replaceChildren();
   const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
+    id: "multi-year",
+    label: "MULTI-YEAR"
+  }, {
     id: "draft-picks",
     label: "DRAFT PICKS"
   }, {
@@ -178,7 +181,7 @@ function renderSeasonTabs() {
       ? activeTab === "salary" && Number(id) === activeSeason
       : activeTab === id;
     tab.setAttribute("aria-selected", String(active));
-    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "draft-picks" ? "draft-picks-panel" :
+    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "multi-year" ? "multi-year-panel" : id === "draft-picks" ? "draft-picks-panel" :
       id === "trade" ? "trade-panel" : "salary-year-content");
     tab.tabIndex = active ? 0 : -1;
     tab.textContent = label;
@@ -194,7 +197,7 @@ function renderSeasonTabs() {
       }
     }
     tab.addEventListener("click", () => {
-      activeTab = id === "draft-picks" || id === "trade" || id === "depth-chart" ? id : "salary";
+      activeTab = id === "draft-picks" || id === "trade" || id === "depth-chart" || id === "multi-year" ? id : "salary";
       if (activeTab === "salary") activeSeason = Number(id);
       renderFrontOffice();
     });
@@ -222,6 +225,11 @@ function updateCapOverview() {
     depthPanel.hidden = activeTab !== "depth-chart";
     // The cap cards and salary tables belong to the salary-year tabs only.
     if (activeTab === "depth-chart") globalThis.renderDepthChart?.();
+  }
+  const multiYearPanel = document.querySelector("#multi-year-panel");
+  if (multiYearPanel) {
+    multiYearPanel.hidden = activeTab !== "multi-year";
+    if (activeTab === "multi-year") globalThis.renderMultiYear?.();
   }
   const team = selectedTeamData();
   const figures = seasonCapFigures(activeTeamId, activeSeason);
