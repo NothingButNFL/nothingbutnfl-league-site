@@ -1567,3 +1567,41 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .award-short { display: inline-block; justify-self: start; margin-bottom: 2px; padding: 2px 6px; border: 1px solid #8fd0ff; color: #fff; font: 700 11px var(--mono); letter-spacing: .06em; }
 .award-about { color: #c5d5e8; font: 600 11px var(--body); letter-spacing: 0; text-transform: none; }
 .award-card.is-named.is-open { border-style: dashed; }
+
+/* ---- Super Bowl Champions ---- */
+.sb-latest { display: flex; align-items: center; gap: 22px; margin: 6px 0 18px; padding: 22px 24px; border: 1px solid #f2b950; background: linear-gradient(120deg, #2b2a1a 0%, #0c2b50 65%); color: #fff; }
+.sb-latest.is-empty { display: block; border-style: dashed; border-color: #31527a; background: #0a2647; color: #c9d8ea; font: 14px var(--body); }
+.sb-latest-logo { display: grid; place-items: center; flex: none; width: 84px; height: 84px; border-radius: 50%; background: rgba(255, 255, 255, .06); }
+.sb-latest-logo img { width: 70px; height: 70px; object-fit: contain; }
+.sb-latest-text { display: grid; gap: 4px; min-width: 0; }
+.sb-latest-kicker { color: #ffd37a; font: 700 10px var(--mono); letter-spacing: .08em; }
+.sb-latest-text strong { font: 700 clamp(24px, 4vw, 38px)/1.1 var(--display); letter-spacing: -.02em; }
+.sb-latest-text p { margin: 0; color: #c9d8ea; font: 14px var(--body); }
+.sb-logo-fallback { color: #ffd37a; font: 700 16px var(--mono); }
+.sb-boxscore[hidden] { display: none; }
+.sb-boxscore { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; padding: 10px 14px; border-left: 3px solid #8fd0ff; background: #0a2647; color: #c9d8ea; font: 13px var(--body); }
+.sb-boxscore .button { min-height: 36px; padding: 0 14px; }
+.sb-form { grid-template-columns: minmax(90px, .5fr) repeat(2, minmax(190px, 1.2fr)) repeat(2, minmax(110px, .6fr)); }
+.sb-form .sb-notes-field { grid-column: 1 / -2; }
+.sb-form .add-button { grid-column: -2 / -1; }
+@media (max-width: 1100px) { .sb-form { grid-template-columns: 1fr 1fr; } .sb-form .sb-notes-field, .sb-form .add-button { grid-column: 1 / -1; } }
+.sb-row { cursor: pointer; }
+.sb-row:hover td { background: #10335d; }
+.sb-season { color: #ffd37a; font: 700 14px var(--mono); }
+.sb-team { display: inline-flex; align-items: baseline; gap: 8px; color: #fff; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.sb-team b { min-width: 30px; color: #8fd0ff; font: 700 10px var(--mono); }
+.sb-team:hover, .sb-team:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.sb-count { margin-left: 8px; padding: 1px 6px; border: 1px solid #f2b950; color: #ffd37a; font: 700 10px var(--mono); }
+.sb-notes { min-width: 180px; color: #c9d8ea; }
+.sb-trophies { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px; }
+.sb-trophies.is-empty { display: block; color: #c9d8ea; font: 14px var(--body); }
+.sb-trophy { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #31527a; background: #0c2b50; color: #fff; text-decoration: none; }
+.sb-trophy:hover, .sb-trophy:focus-visible { border-color: #f2b950; }
+.sb-trophy-logo { display: grid; place-items: center; flex: none; width: 40px; height: 40px; }
+.sb-trophy-logo img { width: 40px; height: 40px; object-fit: contain; }
+.sb-trophy-logo .sb-logo-fallback { font-size: 11px; }
+.sb-trophy-text { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.sb-trophy-text strong { font: 700 15px var(--body); }
+.sb-trophy-text span { color: #c9d8ea; font: 12px var(--mono); }
+.sb-trophy-count { color: #ffd37a; font: 700 26px/1 var(--display); }
+@media (max-width: 640px) { .sb-latest { flex-direction: column; align-items: flex-start; } }

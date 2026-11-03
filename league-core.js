@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates);
 }
 
 function migrateLegacyData(data) {
@@ -405,6 +405,7 @@ function loadStoredOfficeData(raw) {
   upgradeTradeLogEntries(data);
   upgradeInjuries(data);
   upgradeAwards(data);
+  moveSuperBowlAwards(data);
   mergeDirectoryIntoRosters(data);
   return data;
 }
@@ -1391,6 +1392,58 @@ function validAwards(awards) {
     ids.add(entry.id);
   }
   return true;
+}
+
+// ---- Super Bowl champions ----
+// data.championships = [{ id, season, champion, runnerUp?, championScore?, runnerUpScore?, mvp?, gm?, notes? }]
+const championshipLimits = { mvp: 70, gm: 70, notes: 300 };
+
+function validChampionships(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 500) return false;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const ids = new Set();
+  const seasonsSeen = new Set();
+  for (const entry of list) {
+    if (!entry || typeof entry.id !== "string" || !entry.id || ids.has(entry.id) ||
+        !isIntegerInRange(entry.season, 1920, 2100) || seasonsSeen.has(entry.season) || !teamIds.has(entry.champion) ||
+        (entry.runnerUp !== undefined && (!teamIds.has(entry.runnerUp) || entry.runnerUp === entry.champion))) return false;
+    for (const field of ["championScore", "runnerUpScore"]) {
+      if (entry[field] !== undefined && !isIntegerInRange(entry[field], 0, 200)) return false;
+    }
+    for (const field of Object.keys(championshipLimits)) {
+      if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > championshipLimits[field])) return false;
+    }
+    ids.add(entry.id);
+    seasonsSeen.add(entry.season);
+  }
+  return true;
+}
+
+// Older saves kept "Super Bowl Champion" and "Super Bowl MVP" as awards; they now live on the Super Bowl Champions page.
+function moveSuperBowlAwards(data) {
+  if (!Array.isArray(data.championships)) data.championships = [];
+  if (!Array.isArray(data.awards)) return;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const isName = (entry, name) => String(entry.award).trim().toLowerCase() === name;
+  const moved = new Set();
+  for (const entry of data.awards) {
+    if (!isName(entry, "super bowl champion")) continue;
+    const team = teamIds.has(entry.teamId) ? entry.teamId : nflTeams.find(({ id, name }) => [id, name].some((v) => v.toLowerCase() === entry.winner.trim().toLowerCase()))?.id;
+    if (!team || data.championships.some((c) => c.season === entry.season)) continue;
+    const record = { id: newRecordId("title"), season: entry.season, champion: team };
+    if (entry.notes) record.notes = entry.notes.slice(0, championshipLimits.notes);
+    data.championships.push(record);
+    moved.add(entry);
+  }
+  for (const entry of data.awards) {
+    if (!isName(entry, "super bowl mvp")) continue;
+    const record = data.championships.find((c) => c.season === entry.season);
+    if (!record || record.mvp) continue;
+    record.mvp = entry.winner.slice(0, championshipLimits.mvp);
+    moved.add(entry);
+  }
+  if (moved.size) data.awards = data.awards.filter((entry) => !moved.has(entry));
 }
 
 // ---- Schedule ----
