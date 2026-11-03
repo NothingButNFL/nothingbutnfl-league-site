@@ -1787,3 +1787,32 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
   body > .site-header, body > .site-header:hover, body > .site-header:focus-within, body > .site-header.is-open { position: fixed; top: 0; right: 0; left: 0; z-index: 50; }
   .skip-link:focus { top: 74px; }
 }
+
+/* ---- Game Log Archives ---- */
+.gl-filters select { min-width: 200px; }
+.gl-clear { min-height: 40px; padding: 0 14px; }
+.gl-clear[hidden] { display: none; }
+.gl-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 10px; margin-bottom: 14px; }
+.gl-summary .cap-stat { min-height: 84px; }
+.gl-table { min-width: 940px; }
+.gl-table td, .gl-table th { white-space: nowrap; }
+.gl-team a { display: inline-flex; align-items: baseline; gap: 8px; color: #c9d8ea; text-decoration: none; }
+.gl-team b { min-width: 30px; color: #8fd0ff; font: 700 10px var(--mono); }
+.gl-team.is-winner a { color: #fff; font-weight: 700; }
+.gl-team a:hover, .gl-team a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.gl-score { color: #fff; font: 700 15px var(--display); font-variant-numeric: tabular-nums; text-align: center; }
+.gl-playoff { color: #ffd37a; font-weight: 600; }
+.gl-result { display: inline-block; padding: 2px 7px; font: 700 11px var(--mono); }
+.gl-result.is-win { background: rgba(117, 226, 139, .15); color: #75e28b; }
+.gl-result.is-loss { background: rgba(255, 146, 153, .15); color: #ff9299; }
+.gl-result.is-tie { background: rgba(201, 216, 234, .12); color: #c9d8ea; }
+.gl-note { display: block; margin-top: 2px; color: #8ca5c5; font-size: 11px; }
+.gl-source { color: #8ca5c5; font-size: 12px; }
+.gl-source a { color: #8fd0ff; }
+.gl-form { grid-template-columns: minmax(90px, .5fr) minmax(150px, .9fr) minmax(190px, 1.3fr) minmax(90px, .5fr) minmax(190px, 1.3fr) minmax(90px, .5fr); }
+.gl-form .gl-note-field { grid-column: span 4; }
+.gl-form .add-button { grid-column: span 1; }
+@media (max-width: 1100px) { .gl-form { grid-template-columns: 1fr 1fr; } .gl-form .gl-note-field, .gl-form .add-button { grid-column: 1 / -1; } }
+.gl-import { margin-top: 14px; }
+.gl-import .import-hint { margin: 8px 0 10px; color: #8ca5c5; font-size: 12px; line-height: 1.5; }
+.gl-import textarea { width: 100%; box-sizing: border-box; }

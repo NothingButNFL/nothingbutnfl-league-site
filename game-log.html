@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="Every Nothing But NFL game on record, by season, week and team.">
+    <title>Game Log Archives — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js" defer></script>
+    <script src="league-core.js" defer></script>
+    <script src="game-log.js" defer></script>
+  </head>
+  <body class="admin-page awards-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Overview</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <div class="admin-menu season-menu frontoffice-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="frontoffice-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M3 12.5h18"/><path d="M11 12.5v2h2v-2"/></svg></span><span class="nav-label">Front Office</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="frontoffice-dropdown" aria-label="Front office pages">
+            <a class="admin-menu-link" href="contracts.html" role="menuitem"><span>Player Contracts</span></a>
+            <a class="admin-menu-link" href="trade-block.html" role="menuitem"><span>Trade Block</span></a>
+            <a class="admin-menu-link" href="free-agency.html" role="menuitem"><span>Free Agency</span></a>
+            <a class="admin-menu-link" href="transactions.html" role="menuitem"><span>Transaction Log</span></a>
+            <a class="admin-menu-link" href="cap-summary.html" role="menuitem"><span>Cap Summary</span></a>
+            <a class="admin-menu-link" href="roster-breakdown.html" role="menuitem"><span>Roster Breakdown</span></a>
+          </div>
+        </div>
+        <div class="admin-menu season-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="season-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/></svg></span><span class="nav-label">Season Information</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="season-dropdown" aria-label="Season information pages">
+            <a class="admin-menu-link" href="injuries.html" role="menuitem"><span>Injury Report</span></a>
+            <a class="admin-menu-link" href="standings.html" role="menuitem"><span>Standings</span></a>
+            <a class="admin-menu-link" href="stats.html" role="menuitem"><span>Season Stats</span></a>
+            <a class="admin-menu-link" href="schedule.html" role="menuitem"><span>Schedule</span></a>
+          </div>
+        </div>
+        <div class="admin-menu season-menu is-current">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="history-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5v1.5A3 3 0 0 0 7.5 10.5M16.5 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="nav-label">League History</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="history-dropdown" aria-label="League history pages">
+            <a class="admin-menu-link" href="awards.html" role="menuitem"><span>Awards</span></a>
+            <a class="admin-menu-link" href="super-bowls.html" role="menuitem"><span>Super Bowl Champions</span></a>
+            <a class="admin-menu-link" href="game-log.html" role="menuitem" aria-current="page"><span>Game Log Archives</span></a>
+          </div>
+        </div>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></span><span class="nav-label">Media</span></a>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-total" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="admin-fa-offers.html" role="menuitem"><span>Free Agent Offers</span><span class="nav-badge" data-badge="admin-fa" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+            <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="team-page-intro admin-page-intro">
+        <div class="section-wrap">
+          <a class="team-back-link" href="index.html#top"><span aria-hidden="true">←</span> LEAGUE HOME</a>
+          <div class="team-page-title">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-dot"></span> LEAGUE HISTORY</p>
+              <h1>Game Log Archives</h1>
+              <p class="team-page-subtitle">Every game played in the league, season by season.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="front-office-section admin-section" aria-labelledby="gl-title">
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>01</span> THE RECORD BOOK</div>
+              <h2 id="gl-title">Every <span>game.</span></h2>
+              <p class="section-subtitle">Box scores logged on Season Stats are added here automatically. Add older games below, one at a time or pasted from a spreadsheet. Filter by season, week or team, and click a column heading to sort.</p>
+            </div>
+            <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
+          </div>
+
+          <p class="storage-notice" id="gl-storage-notice" role="status">Edits are saved in this browser only. This workspace has no league sync or live NFL data.</p>
+          <p class="workspace-status" id="gl-status" role="status" aria-live="polite"></p>
+
+          <div class="awards-toolbar gl-filters">
+            <label>Season<select id="gl-season"></select></label>
+            <label>Week<select id="gl-week"></select></label>
+            <label>Team<select id="gl-team"></select></label>
+            <button class="button gl-clear" id="gl-clear" type="button" hidden>Clear filters</button>
+          </div>
+          <div class="gl-summary" id="gl-summary"></div>
+
+          <div class="management-table-wrap">
+            <table class="management-table gl-table">
+              <thead id="gl-head"></thead>
+              <tbody id="gl-rows"></tbody>
+            </table>
+          </div>
+          <p class="empty-state" id="gl-empty" hidden></p>
+
+          <div class="management-panel" id="gl-editor">
+            <div class="panel-heading">
+              <div><span class="panel-index">ADD TO THE ARCHIVE</span><h3>Add a past game</h3></div>
+              <p>For games that don't have a box score on Season Stats, like earlier seasons.</p>
+            </div>
+            <form class="management-form gl-form" id="gl-form">
+              <label>Season<input name="season" type="number" min="1920" max="2100" step="1" required></label>
+              <label>Week<select name="week" required></select></label>
+              <label>Away team<select name="away" required></select></label>
+              <label>Away score<input name="awayScore" type="number" min="0" max="200" step="1" required></label>
+              <label>Home team<select name="home" required></select></label>
+              <label>Home score<input name="homeScore" type="number" min="0" max="200" step="1" required></label>
+              <label>Date<input name="date" type="date"></label>
+              <label class="gl-note-field">Note<input name="note" maxlength="80" placeholder="Optional, e.g. Overtime"></label>
+              <button class="button button-lime add-button" type="submit">Add game <span aria-hidden="true">+</span></button>
+            </form>
+            <details class="salary-import-panel gl-import">
+              <summary>Paste games from a spreadsheet <span>Season · Week · Away · Away score · Home · Home score · Date (optional)</span></summary>
+              <textarea id="gl-paste" rows="6" spellcheck="false" placeholder="Season&#9;Week&#9;Away&#9;Away Score&#9;Home&#9;Home Score&#9;Date&#10;2025&#9;1&#9;KC&#9;27&#9;BAL&#9;20&#9;2025-09-07&#10;2025&#9;Wild Card&#9;Bills&#9;31&#9;Jaguars&#9;24"></textarea>
+              <p class="import-hint">One game per row, columns separated by tabs (copied from a spreadsheet) or commas. Teams can be abbreviations (KC), nicknames (Chiefs) or full names. Weeks can be 1–18 or Wild Card, Divisional, Conference or Super Bowl. A header row is skipped.</p>
+              <button class="button button-lime" id="gl-paste-import" type="button">Import games</button>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>

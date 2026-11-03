@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive);
 }
 
 function migrateLegacyData(data) {
@@ -1951,3 +1951,40 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
   return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: player.name,
     details: `Signed ${faOfferTerms({ years: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus, guaranteed: contract.guaranteed })}${extraDetails}` });
 }
+
+// ---- Game Log Archives ----
+// data.gameArchive = [{ id, season, week (1–22), away, home, awayScore, homeScore, date?, note? }]
+// Games entered by hand (or pasted) for League History. Box scores from Season Stats are added to the archive automatically.
+function validGameArchive(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 10000) return false;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const ids = new Set();
+  for (const g of list) {
+    if (!g || typeof g.id !== "string" || !g.id || ids.has(g.id) || !isIntegerInRange(g.season, 1920, 2100) || !isIntegerInRange(g.week, 1, 22) ||
+        !teamIds.has(g.away) || !teamIds.has(g.home) || g.away === g.home ||
+        !isIntegerInRange(g.awayScore, 0, 200) || !isIntegerInRange(g.homeScore, 0, 200) ||
+        (g.date !== undefined && (typeof g.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(g.date))) ||
+        (g.note !== undefined && (typeof g.note !== "string" || g.note.length > 80))) return false;
+    ids.add(g.id);
+  }
+  return true;
+}
+
+// Every game on record: archived games plus logged box scores (season taken from the game date).
+function archivedGames(data) {
+  const games = (data.gameArchive || []).map((g) => ({ ...g, source: "archive" }));
+  const key = (g) => `${g.season}|${g.week}|${[g.away, g.home].sort().join("-")}`;
+  const seen = new Set(games.map(key));
+  for (const played of data.games || []) {
+    const [away, home] = played.teams;
+    const date = /^\d{4}-\d{2}-\d{2}/.test(played.date || "") ? played.date.slice(0, 10) : undefined;
+    const season = date ? currentLeagueYear(new Date(`${date}T12:00:00`)) : (data.standings?.season || currentLeagueYear());
+    const game = { id: `box-${played.id}`, season, week: Number.isInteger(played.week) && played.week >= 1 && played.week <= 22 ? played.week : null,
+      away: away.team, home: home.team, awayScore: away.score, homeScore: home.score, date, source: "boxscore" };
+    if (game.week !== null && seen.has(key(game))) continue;
+    games.push(game);
+  }
+  return games;
+}
+
