@@ -161,10 +161,7 @@ function transactionButton(player, transaction) {
 function renderSeasonTabs() {
   const tabs = document.querySelector("#season-tabs");
   tabs.replaceChildren();
-  const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
-    id: "multi-year",
-    label: "MULTI-YEAR"
-  }, {
+  const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, { id: "multi-year", label: "MULTI-YEAR" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
     id: "draft-picks",
     label: "DRAFT PICKS"
   }, {
