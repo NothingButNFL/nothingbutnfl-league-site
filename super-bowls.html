@@ -147,10 +147,10 @@
                 <label>Player<input name="mvp" maxlength="70" list="sb-players" placeholder="Player" autocomplete="off"></label>
                 <datalist id="sb-players"></datalist>
                 <label>Position<input name="mvpPosition" maxlength="10" placeholder="e.g. QB"></label>
-                <label class="sb-mvp-stats-field">Stats<input name="mvpStats" maxlength="200" placeholder="e.g. 24/31, 312 yds, 3 TD, 0 INT · 6 car, 41 yds"></label>
                 <button class="button sb-mvp-fill" id="sb-mvp-fill" type="button" hidden>Fill stats from box score</button>
+                <p class="sb-mvp-hint">Fill in only the stats that apply. Empty boxes aren't shown.</p>
+                <div class="sb-stat-inputs" id="sb-stat-inputs"></div>
               </fieldset>
-              <label class="sb-notes-field">Notes<input name="notes" maxlength="300" placeholder="e.g. First title in franchise history"></label>
               <button class="button button-lime add-button" type="submit">Save champion <span aria-hidden="true">+</span></button>
             </form>
           </div>
@@ -162,7 +162,7 @@
             </div>
             <div class="management-table-wrap">
               <table class="management-table sb-table">
-                <thead><tr><th scope="col">SEASON</th><th scope="col">CHAMPION</th><th scope="col">RESULT</th><th scope="col">RUNNER-UP</th><th scope="col">SB MVP</th><th scope="col">WINNING GM</th><th scope="col">NOTES</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">SEASON</th><th scope="col">CHAMPION</th><th scope="col">RESULT</th><th scope="col">RUNNER-UP</th><th scope="col">SB MVP</th><th scope="col">WINNING GM</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody id="sb-rows"></tbody>
               </table>
             </div>

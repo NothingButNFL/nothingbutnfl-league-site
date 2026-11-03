@@ -1395,8 +1395,19 @@ function validAwards(awards) {
 }
 
 // ---- Super Bowl champions ----
-// data.championships = [{ id, season, champion, runnerUp?, championScore?, runnerUpScore?, mvp?, mvpPosition?, mvpStats?, gm?, notes? }]
-const championshipLimits = { mvp: 70, mvpPosition: 10, mvpStats: 200, gm: 70, notes: 300 };
+// data.championships = [{ id, season, champion, runnerUp?, championScore?, runnerUpScore?, mvp?, mvpPosition?, mvpLine?, gm? }]
+// mvpLine = { passYds: 281, passTd: 2, ... } — the MVP's individual stat boxes (keys from mvpStatGroups).
+// Older entries may also carry mvpStats (a typed stat line) and notes.
+const championshipLimits = { mvp: 70, mvpPosition: 10, gm: 70 };
+const championshipLegacyLimits = { mvpStats: 200, notes: 300 };
+const mvpStatGroups = [
+  { name: "Passing", stats: [["cmp", "CMP"], ["att", "ATT"], ["passYds", "PASS YDS"], ["passTd", "PASS TD"], ["int", "INT"]] },
+  { name: "Rushing", stats: [["rushAtt", "CAR"], ["rushYds", "RUSH YDS"], ["rushTd", "RUSH TD"]] },
+  { name: "Receiving", stats: [["rec", "REC"], ["recYds", "REC YDS"], ["recTd", "REC TD"]] },
+  { name: "Defense", stats: [["tackles", "TKL"], ["sacks", "SACKS"], ["defInt", "INT"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["defTd", "DEF TD"]] },
+  { name: "Kicking", stats: [["fgm", "FGM"], ["fga", "FGA"], ["fgLong", "FG LONG"], ["xpm", "XPM"], ["xpa", "XPA"]] }
+];
+const mvpStatKeys = mvpStatGroups.flatMap((group) => group.stats.map(([key]) => key));
 
 function validChampionships(list) {
   if (list === undefined) return true;
@@ -1411,9 +1422,11 @@ function validChampionships(list) {
     for (const field of ["championScore", "runnerUpScore"]) {
       if (entry[field] !== undefined && !isIntegerInRange(entry[field], 0, 200)) return false;
     }
-    for (const field of Object.keys(championshipLimits)) {
-      if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > championshipLimits[field])) return false;
+    for (const [field, limit] of Object.entries({ ...championshipLimits, ...championshipLegacyLimits })) {
+      if (entry[field] !== undefined && (typeof entry[field] !== "string" || entry[field].length > limit)) return false;
     }
+    if (entry.mvpLine !== undefined && (!entry.mvpLine || typeof entry.mvpLine !== "object" || Array.isArray(entry.mvpLine) ||
+        Object.entries(entry.mvpLine).some(([key, value]) => !mvpStatKeys.includes(key) || typeof value !== "number" || !Number.isFinite(value) || value < -200 || value > 2000))) return false;
     ids.add(entry.id);
     seasonsSeen.add(entry.season);
   }
@@ -1432,7 +1445,7 @@ function moveSuperBowlAwards(data) {
     const team = teamIds.has(entry.teamId) ? entry.teamId : nflTeams.find(({ id, name }) => [id, name].some((v) => v.toLowerCase() === entry.winner.trim().toLowerCase()))?.id;
     if (!team || data.championships.some((c) => c.season === entry.season)) continue;
     const record = { id: newRecordId("title"), season: entry.season, champion: team };
-    if (entry.notes) record.notes = entry.notes.slice(0, championshipLimits.notes);
+    if (entry.notes) record.notes = entry.notes.slice(0, championshipLegacyLimits.notes);
     data.championships.push(record);
     moved.add(entry);
   }

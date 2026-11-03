@@ -78,13 +78,48 @@ function mvpNode(entry) {
     head.append(pos);
   }
   wrap.append(head);
-  if (entry.mvpStats) {
+  const tiles = statTiles(entry.mvpLine);
+  if (tiles.length) {
+    const grid = document.createElement("span");
+    grid.className = "sb-stat-tiles";
+    grid.append(...tiles.map(([value, label]) => {
+      const tile = document.createElement("span");
+      tile.className = "sb-stat-tile";
+      const v = document.createElement("b");
+      v.textContent = value;
+      const l = document.createElement("span");
+      l.textContent = label;
+      tile.append(v, l);
+      return tile;
+    }));
+    wrap.append(grid);
+  } else if (entry.mvpStats) {
     const stats = document.createElement("span");
     stats.className = "sb-mvp-stats";
     stats.textContent = entry.mvpStats;
     wrap.append(stats);
   }
   return wrap;
+}
+
+// Stat boxes to show, in order: [value, label]. Pairs (CMP/ATT, FGM/FGA, XPM/XPA) share one box.
+function statTiles(line) {
+  if (!line) return [];
+  const has = (key) => line[key] !== undefined;
+  const pairs = { cmp: ["att", "C/ATT"], fgm: ["fga", "FG"], xpm: ["xpa", "XP"] };
+  const paired = new Set(Object.values(pairs).map(([key]) => key));
+  const tiles = [];
+  for (const group of mvpStatGroups) {
+    for (const [key, label] of group.stats) {
+      if (pairs[key]) {
+        const [other, pairLabel] = pairs[key];
+        if (has(key) && has(other)) tiles.push([`${line[key]}/${line[other]}`, pairLabel]);
+        else if (has(key)) tiles.push([String(line[key]), label]);
+        else if (has(other)) tiles.push([String(line[other]), group.stats.find(([k]) => k === other)[1]]);
+      } else if (!paired.has(key) && has(key)) tiles.push([String(line[key]), label]);
+    }
+  }
+  return tiles;
 }
 
 function titleCount(teamId, upTo) {
@@ -154,9 +189,6 @@ function renderTable() {
     mvpCell.className = "sb-mvp";
     if (entry.mvp) mvpCell.append(mvpNode(entry)); else mvpCell.textContent = "—";
     tr.insertCell().textContent = entry.gm || "—";
-    const notes = tr.insertCell();
-    notes.className = "sb-notes";
-    notes.textContent = entry.notes || "";
     const actions = tr.insertCell();
     const remove = document.createElement("button");
     remove.type = "button";
@@ -214,6 +246,28 @@ function render() {
 
 // ---- Form ----
 const f = sbForm.elements;
+document.querySelector("#sb-stat-inputs").replaceChildren(...mvpStatGroups.map((group) => {
+  const row = document.createElement("div");
+  row.className = "sb-stat-group";
+  const title = document.createElement("span");
+  title.className = "sb-stat-group-name";
+  title.textContent = group.name;
+  row.append(title, ...group.stats.map(([key, label]) => {
+    const field = document.createElement("label");
+    field.textContent = label;
+    const input = document.createElement("input");
+    input.type = "number";
+    input.name = `stat-${key}`;
+    input.step = key === "sacks" ? "0.5" : "1";
+    input.min = /Yds$/.test(key) ? "-200" : "0";
+    input.max = "2000";
+    input.inputMode = "decimal";
+    input.setAttribute("aria-label", `MVP ${group.name.toLowerCase()} ${label}`);
+    field.append(input);
+    return field;
+  }));
+  return row;
+}));
 const teamOptions = (blank) => [new Option(blank, ""), ...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id))];
 f.champion.append(...teamOptions("Choose a team"));
 f.runnerUp.append(...teamOptions("Not set"));
@@ -254,9 +308,8 @@ function openForm(entry) {
   f.runnerUpScore.value = entry.runnerUpScore ?? "";
   f.mvp.value = entry.mvp || "";
   f.mvpPosition.value = entry.mvpPosition || "";
-  f.mvpStats.value = entry.mvpStats || "";
+  for (const key of mvpStatKeys) f[`stat-${key}`].value = entry.mvpLine?.[key] ?? "";
   f.gm.value = entry.gm || "";
-  f.notes.value = entry.notes || "";
   document.querySelector("#sb-form-title").textContent = `Change the ${entry.season} champion`;
   showBoxScoreHint();
   showMvpFill();
@@ -288,50 +341,44 @@ function showBoxScoreHint() {
     f.championScore.value = String(winner.score);
     f.runnerUpScore.value = String(loser.score);
     if (!f.gm.value) f.gm.value = gmFor(winner.team);
-    sbStatus.textContent = "Filled from the box score. Add the Super Bowl MVP, then use \"Fill stats from box score\" for their line.";
+    sbStatus.textContent = "Filled from the box score. Add the Super Bowl MVP, then use \"Fill stats from box score\" for their stats.";
     f.mvp.focus();
   });
   sbBoxScore.replaceChildren(text, button);
 }
-// A player's stat line from a box score, e.g. "24/31, 312 yds, 3 TD, 0 INT · 6 car, 41 yds".
-function statLine(game, playerName) {
+// A player's Super Bowl numbers from a box score, as stat-box values.
+function boxScoreStats(game, playerName) {
   const key = normalizePlayerName(playerName);
   const line = (category) => (game.players[category] || []).find((l) => normalizePlayerName(l.player) === key);
   const n = (v) => Number(v) || 0;
-  const parts = [];
+  const values = {};
   let team = "";
   const p = line("passing");
-  if (p) { team = p.team; parts.push(`${n(p.cmp)}/${n(p.att)}, ${n(p.yds)} yds, ${n(p.td)} TD, ${n(p.int)} INT`); }
+  if (p) { team = p.team; Object.assign(values, { cmp: n(p.cmp), att: n(p.att), passYds: n(p.yds), passTd: n(p.td), int: n(p.int) }); }
   const r = line("rushing");
-  if (r && (n(r.att) || n(r.yds))) { team ||= r.team; parts.push(`${n(r.att)} car, ${n(r.yds)} yds${n(r.td) ? `, ${n(r.td)} TD` : ""}`); }
+  if (r && (n(r.att) || n(r.yds))) { team ||= r.team; Object.assign(values, { rushAtt: n(r.att), rushYds: n(r.yds), rushTd: n(r.td) }); }
   const c = line("receiving");
-  if (c) { team ||= c.team; parts.push(`${n(c.rec)} rec, ${n(c.yds)} yds${n(c.td) ? `, ${n(c.td)} TD` : ""}`); }
+  if (c) { team ||= c.team; Object.assign(values, { rec: n(c.rec), recYds: n(c.yds), recTd: n(c.td) }); }
   const d = line("defense");
   if (d) {
     team ||= d.team;
-    const bits = [`${n(d.tackles)} tkl`];
-    if (n(d.sacks)) bits.push(`${n(d.sacks)} sack${n(d.sacks) === 1 ? "" : "s"}`);
-    if (n(d.int)) bits.push(`${n(d.int)} INT`);
-    if (n(d.ff)) bits.push(`${n(d.ff)} FF`);
-    if (n(d.fr)) bits.push(`${n(d.fr)} FR`);
-    if (n(d.pd)) bits.push(`${n(d.pd)} PD`);
-    if (n(d.td)) bits.push(`${n(d.td)} TD`);
-    parts.push(bits.join(", "));
+    values.tackles = n(d.tackles);
+    for (const [from, to] of [["sacks", "sacks"], ["int", "defInt"], ["ff", "ff"], ["fr", "fr"], ["pd", "pd"], ["td", "defTd"]]) if (n(d[from])) values[to] = n(d[from]);
   }
   const k = line("kicking");
-  if (k) { team ||= k.team; parts.push(`${n(k.fgm)}/${n(k.fga)} FG${k.long ? ` (long ${n(k.long)})` : ""}, ${n(k.xpm)}/${n(k.xpa)} XP`); }
-  return parts.length ? { stats: parts.join(" · "), team, position: p ? "QB" : k ? "K" : "" } : null;
+  if (k) { team ||= k.team; Object.assign(values, { fgm: n(k.fgm), fga: n(k.fga), xpm: n(k.xpm), xpa: n(k.xpa) }); if (k.long) values.fgLong = n(k.long); }
+  return Object.keys(values).length ? { values, team, position: p ? "QB" : k ? "K" : "" } : null;
 }
 
 const mvpFill = document.querySelector("#sb-mvp-fill");
 function showMvpFill() {
   const game = superBowlGame();
-  mvpFill.hidden = !(game && canSave && Number(f.season.value) === thisSeason() && f.mvp.value.trim() && statLine(game, f.mvp.value));
+  mvpFill.hidden = !(game && canSave && Number(f.season.value) === thisSeason() && f.mvp.value.trim() && boxScoreStats(game, f.mvp.value));
 }
 mvpFill.addEventListener("click", () => {
-  const found = statLine(superBowlGame(), f.mvp.value);
+  const found = boxScoreStats(superBowlGame(), f.mvp.value);
   if (!found) return;
-  f.mvpStats.value = found.stats.slice(0, championshipLimits.mvpStats);
+  for (const key of mvpStatKeys) f[`stat-${key}`].value = found.values[key] ?? "";
   if (!f.mvpPosition.value) {
     const player = findPlayerByName(officeData, f.mvp.value, found.team || undefined)?.player;
     f.mvpPosition.value = (player?.seasons?.[currentLeagueYear()]?.position || found.position || "").slice(0, 10);
@@ -368,6 +415,13 @@ sbForm.addEventListener("submit", (event) => {
     const value = f[field].value.trim();
     if (value) entry[field] = value.slice(0, championshipLimits[field]); else delete entry[field];
   }
+  const line = {};
+  for (const key of mvpStatKeys) {
+    const raw = f[`stat-${key}`].value.trim();
+    if (raw !== "" && Number.isFinite(Number(raw))) line[key] = Number(raw);
+  }
+  if (Object.keys(line).length) { entry.mvpLine = line; delete entry.mvpStats; } else delete entry.mvpLine;
+  if (!entry.mvp) { delete entry.mvpLine; delete entry.mvpStats; delete entry.mvpPosition; }
   if (!existing) officeData.championships.push(entry);
   save(`The ${teamName(entry.champion)} are the ${season} Super Bowl champions.`);
   resetForm();
