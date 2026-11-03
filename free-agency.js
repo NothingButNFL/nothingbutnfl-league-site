@@ -20,6 +20,7 @@ try {
     : `${error.message || "Browser storage is unavailable."} No saved data was changed.`;
 }
 let signingId = null;
+const faEditor = createContractEditor(document.querySelector("#fa-contract"));
 
 function save(message) {
   try {
@@ -141,7 +142,8 @@ faRows.addEventListener("click", (event) => {
   signingId = player.id;
   document.querySelector("#fa-sign-title").textContent = `Offer ${player.name} a contract`;
   signForm.reset();
-  applyContractType(signForm, officeData, player);
+  faEditor.reset(player);
+  applyContractType(signForm, officeData, player, faEditor);
   const home = new URLSearchParams(location.search).get("team");
   if (nflTeams.some(({ id }) => id === home)) signForm.elements.team.value = home;
   signPanel.hidden = false;
@@ -151,7 +153,7 @@ faRows.addEventListener("click", (event) => {
 
 signForm.elements.contractType.addEventListener("change", () => {
   const player = freeAgents().find((p) => p.id === signingId);
-  const result = applyContractType(signForm, officeData, player);
+  const result = applyContractType(signForm, officeData, player, faEditor);
   if (result?.error) faStatus.textContent = result.error;
 });
 
@@ -165,24 +167,10 @@ signForm.addEventListener("submit", (event) => {
   try { officeData = readStoredOffice() || officeData; } catch { /* keep the copy we have */ }
   const player = freeAgents().find((p) => p.id === signingId);
   if (!player) { faStatus.textContent = "That player is no longer a free agent."; signPanel.hidden = true; renderFreeAgents(); return; }
-  const f = signForm.elements;
-  const values = {};
-  for (const field of ["totalValue", "signingBonus", "guaranteed"]) {
-    const v = money(f[field].value);
-    if (v === undefined) { faStatus.textContent = `Enter ${field === "totalValue" ? "the total value" : field === "signingBonus" ? "the signing bonus" : "the guaranteed amount"} as dollars, like 12,500,000 or 12.5M.`; f[field].focus(); return; }
-    values[field] = v;
-  }
-  if (values.totalValue === null && f.contractType.value !== "minimum") { faStatus.textContent = "Enter the contract's total value."; return; }
-  const teamId = f.team.value;
-  let minimumTier = "";
-  if (f.contractType.value === "minimum") {
-    const minimum = minimumSalaryFor(officeData, player);
-    if (minimum.error) { faStatus.textContent = minimum.error; return; }
-    Object.assign(values, { totalValue: minimum.amount, signingBonus: null, guaranteed: null });
-    f.years.value = "1";
-    minimumTier = minimum.tier;
-  }
-  const result = submitFaOffer(officeData, player, teamId, { years: Number(f.years.value), ...values, notes: f.notes.value, minimum: minimumTier });
+  const terms = readOfferForm(signForm, officeData, player, faEditor);
+  if (terms.error) { faStatus.textContent = terms.error; return; }
+  const teamId = signForm.elements.team.value;
+  const result = submitFaOffer(officeData, player, teamId, terms);
   if (!save(`${result.replaced ? "Updated offer" : "Offer"} sent: the ${teamName(teamId)} offered ${player.name} ${faOfferTerms(result.offer)}. It's waiting for the commissioner.`)) {
     undoFaOffer(officeData, result);
     return;

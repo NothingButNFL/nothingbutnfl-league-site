@@ -32,6 +32,7 @@
     <script src="front-office.js" defer></script>
     <script src="depth-chart.js" defer></script>
     <script src="multi-year.js" defer></script>
+    <script src="contract-editor.js" defer></script>
     <script src="team-fa.js" defer></script>
   </head>
   <body class="team-page">
@@ -273,10 +274,7 @@
               </div>
               <form class="management-form fa-sign-form team-fa-form" id="team-fa-form">
                 <label class="contract-type-field">Contract<select name="contractType"><option value="custom">Custom</option><option value="minimum">Minimum (1 year)</option></select></label>
-                <label>Years<input name="years" type="number" min="1" max="10" step="1" required></label>
-                <label>Total value<input name="totalValue" inputmode="decimal" placeholder="e.g. 24M" required></label>
-                <label>Signing bonus<input name="signingBonus" inputmode="decimal" placeholder="$0"></label>
-                <label>Guaranteed<input name="guaranteed" inputmode="decimal" placeholder="$0"></label>
+                <div class="contract-editor-slot" id="team-fa-contract"></div>
                 <label class="fa-offer-notes">Message to the commissioner<input name="notes" maxlength="300" placeholder="Optional"></label>
                 <p class="minimum-note" aria-live="polite"></p>
                 <p class="team-fa-preview" id="team-fa-preview" aria-live="polite"></p>

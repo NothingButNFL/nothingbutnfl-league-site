@@ -6,6 +6,7 @@ const teamFaPos = document.querySelector("#team-fa-pos");
 const teamFaFormPanel = document.querySelector("#team-fa-form-panel");
 const teamFaForm = document.querySelector("#team-fa-form");
 let teamFaPlayerId = null;
+const teamFaEditor = createContractEditor(document.querySelector("#team-fa-contract"));
 
 const teamFaYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
 const teamFaMoney = (v) => v < 0 ? `−${formatCurrency(Math.abs(v))}` : formatCurrency(v);
@@ -26,11 +27,12 @@ function teamCapRoom() {
 function renderTeamFaCap() {
   const room = teamCapRoom();
   const open = pendingFaOffers(officeData).filter((o) => o.teamId === activeTeamId);
-  const committed = open.reduce((sum, o) => sum + Math.round(o.totalValue / o.years), 0);
+  const firstHit = (o) => { const b = contractSeasonBreakdown(o)[0]; return b ? b.baseSalary + b.proratedBonus + (b.rosterBonus || 0) : 0; };
+  const committed = open.reduce((sum, o) => sum + firstHit(o), 0);
   const cards = [
     [`${teamFaYear()} cap room`, room === null ? "Set base cap" : teamFaMoney(room), room === null ? "" : room < 0 ? "is-negative" : "is-positive"],
     ["Open offers", String(open.length), ""],
-    ["Yearly value of open offers", formatCurrency(committed), ""],
+    [`${teamFaYear()} cap hits of open offers`, formatCurrency(committed), ""],
     ["Room if all were accepted", room === null ? "—" : teamFaMoney(room - committed), room === null ? "" : room - committed < 0 ? "is-negative" : "is-positive"]
   ];
   document.querySelector("#team-fa-cap").replaceChildren(...cards.map(([label, value, tone]) => {
@@ -154,23 +156,21 @@ function renderTeamFreeAgents() {
 }
 
 function updateTeamFaPreview() {
-  const f = teamFaForm.elements;
-  const total = parseMoneyText(f.totalValue.value);
-  const years = Number(f.years.value);
   const preview = document.querySelector("#team-fa-preview");
-  if (!total || !years) { preview.textContent = ""; preview.className = "team-fa-preview"; return; }
-  const aav = Math.round(total / years);
+  const capHit = teamFaEditor.firstYearCapHit();
+  if (!capHit) { preview.textContent = ""; preview.className = "team-fa-preview"; return; }
   const room = teamCapRoom();
-  preview.textContent = `${formatCurrency(aav)} per year.${room === null ? "" : ` ${teamFaYear()} cap room would go from ${teamFaMoney(room)} to ${teamFaMoney(room - aav)}.`}`;
-  preview.className = `team-fa-preview${room !== null && room - aav < 0 ? " is-over" : ""}`;
+  preview.textContent = `${teamFaYear()} cap hit ${formatCurrency(capHit)}.${room === null ? "" : ` ${teamFaYear()} cap room would go from ${teamFaMoney(room)} to ${teamFaMoney(room - capHit)}.`}`;
+  preview.className = `team-fa-preview${room !== null && room - capHit < 0 ? " is-over" : ""}`;
 }
 
 teamFaSearch.addEventListener("input", renderTeamFreeAgents);
 teamFaPos.addEventListener("change", renderTeamFreeAgents);
 teamFaForm.addEventListener("input", updateTeamFaPreview);
+teamFaForm.addEventListener("contractchange", updateTeamFaPreview);
 teamFaForm.elements.contractType.addEventListener("change", () => {
   const player = currentFreeAgents().find((p) => p.id === teamFaPlayerId);
-  const result = applyContractType(teamFaForm, officeData, player);
+  const result = applyContractType(teamFaForm, officeData, player, teamFaEditor);
   if (result?.error) workspaceStatus.textContent = result.error;
   updateTeamFaPreview();
 });
@@ -186,20 +186,17 @@ teamFaRows.addEventListener("click", (event) => {
     ? `The ${teamName(activeTeamId)} already have an open offer (${faOfferTerms(existing)}). Sending this replaces it.`
     : `This offer is sent from the ${teamName(activeTeamId)}.`;
   teamFaForm.reset();
-  applyContractType(teamFaForm, officeData, player);
+  teamFaEditor.reset(player);
   if (existing) {
     const f = teamFaForm.elements;
-    f.years.value = String(existing.years);
-    f.totalValue.value = formatCurrency(existing.totalValue);
-    if (existing.signingBonus) f.signingBonus.value = formatCurrency(existing.signingBonus);
-    if (existing.guaranteed) f.guaranteed.value = formatCurrency(existing.guaranteed);
+    teamFaEditor.load(existing);
     if (existing.notes) f.notes.value = existing.notes;
-    if (existing.minimum) { f.contractType.value = "minimum"; applyContractType(teamFaForm, officeData, player); }
+    if (existing.minimum) { f.contractType.value = "minimum"; applyContractType(teamFaForm, officeData, player, teamFaEditor); }
   }
   updateTeamFaPreview();
   teamFaFormPanel.hidden = false;
   teamFaFormPanel.scrollIntoView({ behavior: "smooth", block: "center" });
-  teamFaForm.elements.years.focus({ preventScroll: true });
+  teamFaForm.querySelector(".ce-years input, [data-ce]")?.focus({ preventScroll: true });
 });
 
 document.querySelector("#team-fa-cancel").addEventListener("click", () => { teamFaFormPanel.hidden = true; teamFaPlayerId = null; });
@@ -209,23 +206,9 @@ teamFaForm.addEventListener("submit", (event) => {
   if (!storageIsAvailable || !teamFaForm.reportValidity()) return;
   const player = currentFreeAgents().find((p) => p.id === teamFaPlayerId);
   if (!player) { workspaceStatus.textContent = "That player is no longer a free agent."; teamFaFormPanel.hidden = true; renderTeamFreeAgents(); return; }
-  const f = teamFaForm.elements;
-  const values = {};
-  for (const [field, label] of [["totalValue", "the total value"], ["signingBonus", "the signing bonus"], ["guaranteed", "the guaranteed amount"]]) {
-    const v = parseMoneyText(f[field].value);
-    if (v === undefined) { workspaceStatus.textContent = `Enter ${label} as dollars, like 12,500,000 or 12.5M.`; f[field].focus(); return; }
-    values[field] = v;
-  }
-  let minimumTier = "";
-  if (f.contractType.value === "minimum") {
-    const minimum = minimumSalaryFor(officeData, player);
-    if (minimum.error) { workspaceStatus.textContent = minimum.error; return; }
-    Object.assign(values, { totalValue: minimum.amount, signingBonus: null, guaranteed: null });
-    f.years.value = "1";
-    minimumTier = minimum.tier;
-  }
-  if (!values.totalValue && !minimumTier) { workspaceStatus.textContent = "Enter the contract's total value."; f.totalValue.focus(); return; }
-  const result = submitFaOffer(officeData, player, activeTeamId, { years: Number(f.years.value), ...values, notes: f.notes.value, minimum: minimumTier });
+  const terms = readOfferForm(teamFaForm, officeData, player, teamFaEditor);
+  if (terms.error) { workspaceStatus.textContent = terms.error; return; }
+  const result = submitFaOffer(officeData, player, activeTeamId, terms);
   saveOfficeData(`${result.replaced ? "Updated offer" : "Offer"} sent to the commissioner: ${player.name}, ${faOfferTerms(result.offer)}.`);
   if (!storageIsAvailable) { undoFaOffer(officeData, result); return; }
   refreshNavNotifications();

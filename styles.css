@@ -1854,3 +1854,35 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .minimum-note { grid-column: 1 / -1; margin: 0; color: #ffd37a; font: 13px var(--body); }
 .minimum-note:empty { display: none; }
 form.is-minimum input[readonly] { opacity: .75; }
+
+/* ---- Contract offer builder (Free Agency + team sheet) ---- */
+.contract-editor-slot { grid-column: 1 / -1; }
+.contract-editor { display: grid; gap: 10px; padding: 0 0 4px; }
+.ce-title { display: grid; justify-items: center; gap: 2px; padding: 10px; background: #000; color: #fff; text-align: center; }
+.ce-title strong { font: 600 22px var(--display); letter-spacing: .01em; }
+.ce-subtitle { color: #c9d8ea; font-size: 12px; }
+.contract-editor table { width: 100%; border-collapse: collapse; }
+.ce-summary, .ce-years { min-width: 720px; }
+.contract-editor th { padding: 6px 8px; background: #6d8197; color: #071a33; font: 700 10px var(--mono); letter-spacing: .03em; text-align: center; white-space: nowrap; }
+.contract-editor td { padding: 4px 6px; border-bottom: 1px solid #1d3a5f; color: #fff; font-size: 13px; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.contract-editor .ce-input-cell { padding: 3px; background: rgba(242, 185, 80, .08); }
+.contract-editor input, .contract-editor select { width: 100%; box-sizing: border-box; min-height: 32px; padding: 4px 8px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); text-align: right; color-scheme: dark; }
+.contract-editor input[readonly] { opacity: .7; }
+.ce-computed { color: #c9d8ea; }
+.ce-years td:last-child { font-weight: 700; }
+.ce-years tfoot th, .ce-years tfoot td { border-top: 2px solid #6d8197; background: #6d8197; color: #071a33; font: 700 12px var(--mono); }
+.ce-years tfoot th { text-align: right; }
+.ce-years tr.is-void td { background: rgba(109, 129, 151, .15); color: #8ca5c5; font-style: italic; }
+.ce-void-tag { padding: 1px 5px; border: 1px solid #8ca5c5; font: 700 9px var(--mono); font-style: normal; }
+.ce-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.ce-controls label { display: grid; gap: 6px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; }
+.ce-controls select { min-width: 150px; text-align: left; }
+.ce-proration { flex: 1 1 260px; margin: 0; color: #8ca5c5; font-size: 12px; }
+.ce-void-note { margin: 0; color: #ffd37a; font-size: 13px; }
+.ce-void-note:empty { display: none; }
+.fao-contract { width: 100%; max-width: 760px; margin-top: 6px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.fao-contract th { padding: 4px 6px; background: #1d3a5f; color: #c9d8ea; font: 700 9px var(--mono); text-align: right; }
+.fao-contract th:first-child, .fao-contract td:first-child { text-align: left; }
+.fao-contract td { padding: 4px 6px; border-bottom: 1px solid #1d3a5f; color: #fff; text-align: right; }
+.fao-contract tr.is-void td { color: #8ca5c5; font-style: italic; }
+.fao-contract tr.fao-void-note td { color: #ffd37a; text-align: left; font-style: normal; }

@@ -76,7 +76,8 @@ function validateOfficeData(data) {
         if (!record || typeof record.id !== "string" || !record.id ||
             typeof record.playerName !== "string" || !record.playerName.trim() || record.playerName.length > 70 ||
             (record.position !== undefined && (typeof record.position !== "string" || record.position.length > 8)) ||
-            !["trade", "release", "import"].includes(record.transaction) ||
+            !["trade", "release", "import", "void"].includes(record.transaction) ||
+            (record.voidFor !== undefined && typeof record.voidFor !== "string") ||
             !Number.isInteger(record.transactionYear) || !seasons.includes(record.transactionYear) ||
             !Number.isSafeInteger(record.amount) || record.amount < 0 ||
             typeof record.date !== "string" || !record.date) return false;
@@ -545,6 +546,7 @@ function applyTradeAssets(data, assets, year = currentLeagueYear()) {
       date
     });
     sourceTeam.deadCap[year].push(record(asset.penalties.tradePenalty));
+    accelerateVoidDeadCap(sourceTeam, asset.player, year);
     if (asset.penalties.futureTradeDeadCap > 0 && deadCapSeasons.includes(year + 1)) {
       sourceTeam.deadCap[year + 1].push(record(asset.penalties.futureTradeDeadCap));
     }
@@ -1927,7 +1929,11 @@ function validFaOffers(list) {
         !faOfferStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
         (o.decidedAt !== undefined && typeof o.decidedAt !== "string") ||
         ["notes", "decisionNote"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > faOfferLimits[k])) ||
-        (o.minimum !== undefined && typeof o.minimum !== "string") || (o.minimum && o.minimum.length > 10)) return false;
+        (o.minimum !== undefined && typeof o.minimum !== "string") || (o.minimum && o.minimum.length > 10) ||
+        (o.voidYears !== undefined && (!isIntegerInRange(o.voidYears, 0, 4) || o.years + o.voidYears > 5)) ||
+        (o.startYear !== undefined && !seasons.includes(o.startYear)) ||
+        (o.yearsDetail !== undefined && (!Array.isArray(o.yearsDetail) || o.yearsDetail.length !== o.years ||
+          o.yearsDetail.some((y) => !y || ["baseSalary", "rosterBonus", "guaranteedSalary"].some((k) => !isIntegerInRange(y[k], 0, 999999999)))))) return false;
     ids.add(o.id);
   }
   return true;
@@ -1936,7 +1942,7 @@ function validFaOffers(list) {
 const pendingFaOffers = (data) => (data.faOffers || []).filter((o) => o.status === "pending");
 
 function faOfferTerms(offer) {
-  return [`${offer.years} year${offer.years === 1 ? "" : "s"}, ${formatCurrency(offer.totalValue)}${offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
+  return [`${offer.years} year${offer.years === 1 ? "" : "s"}${offer.voidYears ? ` + ${offer.voidYears} void` : ""}, ${formatCurrency(offer.totalValue)}${offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
     offer.signingBonus ? `${formatCurrency(offer.signingBonus)} signing bonus` : "",
     offer.guaranteed ? `${formatCurrency(offer.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
 }
@@ -1965,6 +1971,11 @@ function submitFaOffer(data, player, teamId, terms) {
   if (terms.guaranteed) offer.guaranteed = terms.guaranteed;
   if (terms.notes) offer.notes = String(terms.notes).trim().slice(0, faOfferLimits.notes);
   if (terms.minimum) offer.minimum = terms.minimum;
+  if (Array.isArray(terms.yearsDetail)) {
+    offer.yearsDetail = terms.yearsDetail.map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary }));
+    offer.voidYears = terms.voidYears || 0;
+    offer.startYear = terms.startYear;
+  }
   data.faOffers.push(offer);
   return { offer, replaced };
 }
@@ -1977,12 +1988,25 @@ function withdrawFaOffer(offer, note = "Withdrawn by the team") {
   Object.assign(offer, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: note });
 }
 
-// Splits a contract into salary-sheet seasons starting with startYear: the signing bonus is prorated evenly,
-// the rest is paid as an even base salary, and guaranteed money beyond the bonus covers base salary from year one.
-// Years past the last salary sheet are left off.
-function contractSeasonBreakdown(contract, startYear = currentLeagueYear()) {
+// Signing bonuses are spread evenly over the contract, up to 5 seasons. A deal shorter than 5 years can add void years:
+// phantom seasons that carry part of the bonus while the player isn't under contract.
+const maxProrationSeasons = 5;
+function prorationShares(bonus, seasonCount) {
+  const count = Math.max(1, Math.min(seasonCount, maxProrationSeasons));
+  const each = Math.floor(bonus / count);
+  return Array.from({ length: count }, (_, i) => each + (i === count - 1 ? bonus - each * count : 0));
+}
+
+// Contract → salary-sheet seasons starting with startYear: [{ year, baseSalary, proratedBonus, rosterBonus, guaranteedSalary }].
+// Offers built year by year (yearsDetail) use their own numbers; older offers split evenly. Years past the last salary sheet are left off.
+function contractSeasonBreakdown(contract, startYear = contract.startYear ?? currentLeagueYear()) {
   const years = Math.max(1, contract.years);
   const bonus = Math.min(contract.signingBonus || 0, contract.totalValue);
+  if (Array.isArray(contract.yearsDetail)) {
+    const shares = prorationShares(bonus, years + (contract.voidYears || 0));
+    return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: y.baseSalary, proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: y.guaranteedSalary }))
+      .filter(({ year }) => seasons.includes(year));
+  }
   const baseTotal = contract.totalValue - bonus;
   const split = (amount) => {
     const each = Math.floor(amount / years);
@@ -1994,8 +2018,35 @@ function contractSeasonBreakdown(contract, startYear = currentLeagueYear()) {
   return base.map((baseSalary, i) => {
     const guaranteedSalary = Math.min(baseSalary, guaranteedLeft);
     guaranteedLeft -= guaranteedSalary;
-    return { year: startYear + i, baseSalary, proratedBonus: prorated[i], guaranteedSalary };
+    return { year: startYear + i, baseSalary, proratedBonus: prorated[i], rosterBonus: 0, guaranteedSalary };
   }).filter(({ year }) => seasons.includes(year));
+}
+
+// The signing bonus sitting on void years, and the season it accelerates into (the season after the last real year).
+function voidBonusFor(contract, startYear = contract.startYear ?? currentLeagueYear()) {
+  if (!contract.voidYears || !Array.isArray(contract.yearsDetail)) return null;
+  const shares = prorationShares(Math.min(contract.signingBonus || 0, contract.totalValue), contract.years + contract.voidYears);
+  const amount = shares.slice(contract.years).reduce((sum, v) => sum + v, 0);
+  return amount > 0 ? { amount, year: startYear + contract.years, voidYears: contract.voidYears } : null;
+}
+
+// When a player with void years is released or traded early, his void-year bonus accelerates now:
+// into this season (March 1–May 31) or next season (June 1–February 28), like other prorated bonuses.
+function accelerateVoidDeadCap(team, player, year, date = new Date()) {
+  const target = isEarlyLeagueWindow(date) || !seasons.includes(year + 1) ? year : year + 1;
+  let moved = 0;
+  for (const season of seasons) {
+    if (season === target) continue;
+    const keep = [];
+    for (const record of team.deadCap[season]) {
+      if (record.transaction === "void" && record.voidFor === player.id && season > target) {
+        team.deadCap[target].push({ ...record, transactionYear: target });
+        moved += record.amount;
+      } else keep.push(record);
+    }
+    team.deadCap[season] = keep;
+  }
+  return moved;
 }
 
 // Signs a free agent: puts him on the team's salary sheet with the contract's season-by-season cap hits
@@ -2015,15 +2066,23 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
     seasons: Object.fromEntries(seasons.map((year) => {
       const row = breakdown.find((b) => b.year === year);
       const season = row || year === start ? emptySeasonData(position, "Active") : emptySeasonData();
-      if (row) Object.assign(season, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, guaranteedSalary: row.guaranteedSalary });
+      if (row) Object.assign(season, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary });
       return [year, season];
     }))
   };
   data.teams[teamId].roster.push(player);
   data.contractPlayers = data.contractPlayers.filter((p) => p !== entry);
   const lastYear = breakdown.length ? breakdown[breakdown.length - 1].year : start;
+  // Void-year bonus: dead cap on the first void season's table.
+  const voided = voidBonusFor(contract, start);
+  let voidNote = "";
+  if (voided && seasons.includes(voided.year)) {
+    data.teams[teamId].deadCap[voided.year].push({ id: newRecordId("dead-cap"), playerName: entry.name.slice(0, 70), position, transaction: "void",
+      transactionYear: voided.year, amount: voided.amount, date: new Date().toISOString(), voidFor: player.id });
+    voidNote = `; ${formatCurrency(voided.amount)} of signing bonus on ${voided.voidYears} void year${voided.voidYears === 1 ? "" : "s"} becomes ${voided.year} dead cap`;
+  }
   return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: entry.name,
-    details: `Signed ${faOfferTerms({ years: contract.years, totalValue: contract.totalValue, signingBonus: contract.signingBonus, guaranteed: contract.guaranteed })}${extraDetails}. On the ${teamId} salary sheet ${start}${lastYear > start ? `–${lastYear}` : ""}` });
+    details: `Signed ${faOfferTerms(contract)}${extraDetails}. On the ${teamId} salary sheet ${start}${lastYear > start ? `–${lastYear}` : ""}${voidNote}` });
 }
 
 // ---- Game Log Archives ----
@@ -2091,28 +2150,38 @@ function minimumSalaryFor(data, player, year = (seasons.includes(currentLeagueYe
   return { amount, tier, experience, year };
 }
 
-// Offer forms: a "Contract" menu (Custom / Minimum). Minimum fills a 1-year deal at the player's minimum and locks the terms.
-// Returns the minimum (with .tier) when applied, or { error } and switches back to Custom.
-function applyContractType(form, data, player) {
+// Offer forms: a "Contract" menu (Custom / Minimum). Minimum locks the contract builder to a 1-year deal at the
+// player's minimum. Returns the minimum (with .tier) when applied, or { error } and switches back to Custom.
+function applyContractType(form, data, player, editor) {
   const f = form.elements;
-  const minimum = f.contractType.value === "minimum";
-  for (const name of ["years", "totalValue", "signingBonus", "guaranteed"]) f[name].readOnly = minimum;
-  form.classList.toggle("is-minimum", minimum);
   const note = form.querySelector(".minimum-note");
-  if (!minimum) { if (note) note.textContent = ""; return null; }
+  if (f.contractType.value !== "minimum") {
+    if (editor.isLocked()) editor.reset(player);
+    if (note) note.textContent = "";
+    return null;
+  }
   const result = player ? minimumSalaryFor(data, player) : { error: "Choose a player first." };
   if (result.error) {
     f.contractType.value = "custom";
-    for (const name of ["years", "totalValue", "signingBonus", "guaranteed"]) f[name].readOnly = false;
-    form.classList.remove("is-minimum");
     if (note) note.textContent = result.error;
     return result;
   }
-  f.years.value = "1";
-  f.totalValue.value = formatCurrency(result.amount);
-  f.signingBonus.value = "";
-  f.guaranteed.value = "";
+  editor.setMinimum(result.amount);
   if (note) note.textContent = `${result.year} minimum for ${minimumTierLabel(result.tier)} of experience (${player.name} has ${result.experience}).`;
   return result;
+}
+
+// Reads an offer form's terms (contract builder + Minimum menu). Returns terms for submitFaOffer, or { error }.
+function readOfferForm(form, data, player, editor) {
+  const terms = editor.read();
+  if (terms.error) return terms;
+  terms.notes = form.elements.notes.value;
+  terms.minimum = "";
+  if (form.elements.contractType.value === "minimum") {
+    const minimum = minimumSalaryFor(data, player);
+    if (minimum.error) return minimum;
+    terms.minimum = minimum.tier;
+  }
+  return terms;
 }
 

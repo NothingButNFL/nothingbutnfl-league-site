@@ -61,6 +61,7 @@ async function recordRosterTransaction(player, transaction) {
   });
   team.deadCap[year].push(makeRecord(currentAmount));
   if (futureIsTrackable) team.deadCap[nextYear].push(makeRecord(futureAmount));
+  accelerateVoidDeadCap(team, player, year);
   player.activeSeasons = player.activeSeasons.filter((season) => season < year);
   if (!player.activeSeasons.length) {
     team.roster = team.roster.filter(({ id }) => id !== player.id);
@@ -886,7 +887,7 @@ function renderDeadCapRows() {
     const row = body.insertRow();
     row.dataset.deadCapId = record.id;
     const typeCell = row.insertCell();
-    typeCell.textContent = record.transaction === "trade" ? "Trade" : record.transaction === "release" ? "Release" : "Import";
+    typeCell.textContent = record.transaction === "trade" ? "Trade" : record.transaction === "release" ? "Release" : record.transaction === "void" ? "Void year" : "Import";
     const playerCell = row.insertCell();
     playerCell.textContent = record.playerName;
     const positionCell = row.insertCell();
