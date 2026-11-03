@@ -210,3 +210,68 @@ renderMinimums(officeData);
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderMinimums(officeData);
 });
+
+// ---- Veteran Minimum Benefit bonus limits ----
+const adminVmbHead = document.querySelector("#admin-vmb-head");
+const adminVmbRows = document.querySelector("#admin-vmb-rows");
+function renderVmbLimits(data) {
+  const head = document.createElement("tr");
+  for (const label of ["", ...minimumSeasons.map(String)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    if (label === String(minimumYear())) th.className = "is-current";
+    head.append(th);
+  }
+  adminVmbHead.replaceChildren(head);
+  const row = document.createElement("tr");
+  const th = document.createElement("th");
+  th.scope = "row";
+  th.textContent = "Bonus limit";
+  row.append(th);
+  for (const year of minimumSeasons) {
+    const cell = row.insertCell();
+    cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.maxLength = 14;
+    const value = vmbBonusLimitFor(data, year);
+    input.value = value === null ? "" : formatCurrency(value);
+    input.placeholder = "No limit";
+    input.dataset.vmbYear = String(year);
+    input.disabled = !safeToSave;
+    input.setAttribute("aria-label", `${year} Veteran Minimum Benefit bonus limit`);
+    cell.append(input);
+  }
+  adminVmbRows.replaceChildren(row);
+}
+adminVmbRows.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-vmb-year]");
+  if (!input || !safeToSave) return;
+  const year = Number(input.dataset.vmbYear);
+  const value = input.value.trim() ? parseMoneyText(input.value) : null;
+  if (value === undefined) {
+    input.setCustomValidity("Enter a whole dollar amount, such as $187,500.");
+    input.reportValidity();
+    input.setCustomValidity("");
+    const old = vmbBonusLimitFor(officeData, year);
+    input.value = old === null ? "" : formatCurrency(old);
+    return;
+  }
+  const updated = { ...officeData, vmbBonusLimits: { ...(officeData.vmbBonusLimits || {}), [year]: value } };
+  if (saveMinimums(updated, `${year} Veteran Minimum Benefit bonus limit ${value === null ? "removed" : `set to ${formatCurrency(value)}`}.`)) input.value = value === null ? "" : formatCurrency(value);
+});
+adminVmbRows.addEventListener("focusin", (event) => {
+  const input = event.target.closest("[data-vmb-year]");
+  if (input) input.value = input.value.replace(/[$,\s]/g, "");
+});
+adminVmbRows.addEventListener("focusout", (event) => {
+  const input = event.target.closest("[data-vmb-year]");
+  const value = input && parseMoneyText(input.value);
+  if (input && value) input.value = formatCurrency(value);
+});
+renderVmbLimits(officeData);
+window.addEventListener("storage", (event) => {
+  if (event.key === officeStorageKey) renderVmbLimits(officeData);
+});

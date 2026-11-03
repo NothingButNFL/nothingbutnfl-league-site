@@ -1890,3 +1890,6 @@ form.is-minimum input[readonly] { opacity: .75; }
 .ce-min-hint:empty { display: none; }
 .ce-min-hint.is-below { color: #ff9299; font-weight: 700; }
 .contract-editor td.is-below input { border-color: #ff9299; }
+.admin-vmb-panel { margin-top: 18px; }
+.ce-proration.is-over { color: #ff9299; font-weight: 700; }
+.contract-type-field select { min-width: 240px; }

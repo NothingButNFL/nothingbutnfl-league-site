@@ -46,6 +46,7 @@ function contractTable(offer) {
     const tr = body.insertRow();
     tr.insertCell().textContent = String(r.year);
     for (const v of [r.baseSalary, r.proratedBonus, r.rosterBonus || 0, r.guaranteedSalary, r.baseSalary + r.proratedBonus + (r.rosterBonus || 0)]) tr.insertCell().textContent = formatCurrency(v);
+    if (offer.vmbCapBase !== undefined) tr.cells[1].textContent = `${formatCurrency(r.actualSalary)} paid · ${formatCurrency(r.baseSalary)} on the cap`;
   }
   if (offer.voidYears && Array.isArray(offer.yearsDetail)) {
     const shares = prorationShares(Math.min(offer.signingBonus || 0, offer.totalValue), offer.years + offer.voidYears);

@@ -7,6 +7,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
   const maxYears = () => seasons.length - seasons.indexOf(startYear());
   let player = null;
   let locked = false;
+  let vmb = null; // { salary, capBase, limit } when building a Veteran Minimum Benefit deal
   let rows = [];
   let years = 1, voidYears = 0, signingBonus = 0;
 
@@ -49,8 +50,8 @@ function createContractEditor(container, { getData = () => null } = {}) {
     if (voidYears > maxVoid) voidYears = maxVoid;
     voidSelect.replaceChildren(...Array.from({ length: maxVoid + 1 }, (_, i) => new Option(i ? `${i} void year${i === 1 ? "" : "s"}` : "None", String(i))));
     voidSelect.value = String(voidYears);
-    voidSelect.disabled = locked || maxVoid === 0;
-    yearsSelect.disabled = locked;
+    voidSelect.disabled = locked || vmb || maxVoid === 0;
+    yearsSelect.disabled = locked || vmb;
     bonusInput.readOnly = locked;
   }
 
@@ -78,7 +79,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
         input.dataset.row = String(i);
         input.dataset.field = field;
         input.value = rows[i][field] ? formatCurrency(rows[i][field]) : "";
-        input.readOnly = locked;
+        input.readOnly = locked || (vmb && field === "baseSalary");
         input.setAttribute("aria-label", `${start + i} ${field === "baseSalary" ? "base salary" : field === "rosterBonus" ? "roster bonus" : "guaranteed salary"}`);
         cell.className = "ce-input-cell";
         cell.append(input);
@@ -117,7 +118,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
       container.querySelector(`[data-cell="bonus-${i}"]`).textContent = money(share);
       const capCell = container.querySelector(`[data-cell="cap-${i}"]`);
       if (i < years) {
-        const cap = rows[i].baseSalary + share + rows[i].rosterBonus;
+        const cap = (vmb ? vmb.capBase : rows[i].baseSalary) + share + rows[i].rosterBonus;
         capCell.textContent = money(cap);
         tCap += cap;
         tBonusReal += share;
@@ -147,7 +148,13 @@ function createContractEditor(container, { getData = () => null } = {}) {
       ? `${money(voidAmount)} of signing bonus sits on the void year${voidYears === 1 ? "" : "s"}. The player isn't under contract then: after his final season (${voidSeason - 1}) it accelerates onto the ${voidSeason} dead-cap table${seasons.includes(voidSeason) ? "" : " (past the last salary sheet, so it isn't tracked)"}.`
       : "";
     const sub = $(".ce-subtitle");
-    sub.textContent = locked ? "League minimum" : "Original";
+    sub.textContent = vmb ? "Veteran Minimum Benefit" : locked ? "League minimum" : "Original";
+    if (vmb) {
+      const extras = signingBonus + rows.reduce((s, r) => s + r.rosterBonus + r.guaranteedSalary, 0);
+      const over = vmb.limit !== null && extras > vmb.limit;
+      $(".ce-proration").textContent = `Cap charge uses the ${formatCurrency(vmb.capBase)} 2-year minimum instead of his ${formatCurrency(vmb.salary)} salary.${vmb.limit === null ? "" : ` Bonuses + guarantees: ${formatCurrency(extras)} of ${formatCurrency(vmb.limit)} allowed.`}`;
+      $(".ce-proration").classList.toggle("is-over", over);
+    } else $(".ce-proration").classList.remove("is-over");
   }
 
   function render() { fillSelects(); buildRows(); update(); }
@@ -173,7 +180,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
   return {
     reset(forPlayer) {
       player = forPlayer || null;
-      locked = false; years = 1; voidYears = 0; signingBonus = 0; rows = [];
+      locked = false; vmb = null; years = 1; voidYears = 0; signingBonus = 0; rows = [];
       bonusInput.value = "";
       render();
     },
@@ -184,14 +191,20 @@ function createContractEditor(container, { getData = () => null } = {}) {
       bonusInput.value = signingBonus ? formatCurrency(signingBonus) : "";
       render();
     },
+    setVmb(terms) {
+      locked = false; vmb = { salary: terms.salary, capBase: terms.capBase, limit: terms.limit };
+      years = 1; voidYears = 0;
+      rows = [{ baseSalary: terms.salary, rosterBonus: rows[0]?.rosterBonus || 0, guaranteedSalary: Math.min(rows[0]?.guaranteedSalary || 0, terms.salary) }];
+      render();
+    },
     setMinimum(amount) {
-      locked = true; years = 1; voidYears = 0; signingBonus = 0;
+      locked = true; vmb = null; years = 1; voidYears = 0; signingBonus = 0;
       rows = [{ baseSalary: amount, rosterBonus: 0, guaranteedSalary: 0 }];
       bonusInput.value = "";
       render();
     },
-    unlock() { locked = false; render(); },
-    isLocked: () => locked,
+    unlock() { locked = false; vmb = null; render(); },
+    isLocked: () => locked || Boolean(vmb),
     // The offer terms, or { error }.
     read() {
       const raw = [bonusInput, ...tbody.querySelectorAll("input")];
@@ -216,7 +229,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
     },
     firstYearCapHit() {
       const { shares } = totals();
-      return rows[0] ? rows[0].baseSalary + (shares[0] || 0) + rows[0].rosterBonus : 0;
+      return rows[0] ? (vmb ? vmb.capBase : rows[0].baseSalary) + (shares[0] || 0) + rows[0].rosterBonus : 0;
     }
   };
 }

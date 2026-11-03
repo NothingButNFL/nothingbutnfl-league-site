@@ -191,7 +191,8 @@ teamFaRows.addEventListener("click", (event) => {
     const f = teamFaForm.elements;
     teamFaEditor.load(existing);
     if (existing.notes) f.notes.value = existing.notes;
-    if (existing.minimum) { f.contractType.value = "minimum"; applyContractType(teamFaForm, officeData, player, teamFaEditor); }
+    if (existing.vmbCapBase !== undefined) { f.contractType.value = "vmb"; applyContractType(teamFaForm, officeData, player, teamFaEditor); }
+    else if (existing.minimum) { f.contractType.value = "minimum"; applyContractType(teamFaForm, officeData, player, teamFaEditor); }
   }
   updateTeamFaPreview();
   teamFaFormPanel.hidden = false;

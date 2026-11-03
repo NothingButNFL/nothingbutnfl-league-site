@@ -118,7 +118,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits);
 }
 
 function migrateLegacyData(data) {
@@ -1932,6 +1932,7 @@ function validFaOffers(list) {
         (o.minimum !== undefined && typeof o.minimum !== "string") || (o.minimum && o.minimum.length > 10) ||
         (o.voidYears !== undefined && (!isIntegerInRange(o.voidYears, 0, 4) || o.years + o.voidYears > 5)) ||
         (o.startYear !== undefined && !seasons.includes(o.startYear)) ||
+        (o.vmbCapBase !== undefined && !isIntegerInRange(o.vmbCapBase, 0, 999999999)) ||
         (o.yearsDetail !== undefined && (!Array.isArray(o.yearsDetail) || o.yearsDetail.length !== o.years ||
           o.yearsDetail.some((y) => !y || ["baseSalary", "rosterBonus", "guaranteedSalary"].some((k) => !isIntegerInRange(y[k], 0, 999999999)))))) return false;
     ids.add(o.id);
@@ -1942,7 +1943,7 @@ function validFaOffers(list) {
 const pendingFaOffers = (data) => (data.faOffers || []).filter((o) => o.status === "pending");
 
 function faOfferTerms(offer) {
-  return [`${offer.years} year${offer.years === 1 ? "" : "s"}${offer.voidYears ? ` + ${offer.voidYears} void` : ""}, ${formatCurrency(offer.totalValue)}${offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
+  return [`${offer.years} year${offer.years === 1 ? "" : "s"}${offer.voidYears ? ` + ${offer.voidYears} void` : ""}, ${formatCurrency(offer.totalValue)}${offer.vmbCapBase !== undefined ? ` (Veteran Minimum Benefit, ${formatCurrency(offer.vmbCapBase)} cap charge)` : offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
     offer.signingBonus ? `${formatCurrency(offer.signingBonus)} signing bonus` : "",
     offer.guaranteed ? `${formatCurrency(offer.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
 }
@@ -1971,6 +1972,7 @@ function submitFaOffer(data, player, teamId, terms) {
   if (terms.guaranteed) offer.guaranteed = terms.guaranteed;
   if (terms.notes) offer.notes = String(terms.notes).trim().slice(0, faOfferLimits.notes);
   if (terms.minimum) offer.minimum = terms.minimum;
+  if (terms.vmbCapBase !== undefined) offer.vmbCapBase = terms.vmbCapBase;
   if (Array.isArray(terms.yearsDetail)) {
     offer.yearsDetail = terms.yearsDetail.map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary }));
     offer.voidYears = terms.voidYears || 0;
@@ -2004,7 +2006,10 @@ function contractSeasonBreakdown(contract, startYear = contract.startYear ?? cur
   const bonus = Math.min(contract.signingBonus || 0, contract.totalValue);
   if (Array.isArray(contract.yearsDetail)) {
     const shares = prorationShares(bonus, years + (contract.voidYears || 0));
-    return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: y.baseSalary, proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: y.guaranteedSalary }))
+    // Veteran Minimum Benefit: the salary sheet charges the 2-year minimum as base salary; the player is paid his own minimum.
+    const vmb = contract.vmbCapBase !== undefined;
+    return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: vmb ? contract.vmbCapBase : y.baseSalary, actualSalary: y.baseSalary,
+      proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: vmb ? Math.min(y.guaranteedSalary, contract.vmbCapBase) : y.guaranteedSalary }))
       .filter(({ year }) => seasons.includes(year));
   }
   const baseTotal = contract.totalValue - bonus;
@@ -2150,24 +2155,32 @@ function minimumSalaryFor(data, player, year = (seasons.includes(currentLeagueYe
   return { amount, tier, experience, year };
 }
 
-// Offer forms: a "Contract" menu (Custom / Minimum). Minimum locks the contract builder to a 1-year deal at the
-// player's minimum. Returns the minimum (with .tier) when applied, or { error } and switches back to Custom.
+// Offer forms: a "Contract" menu (Custom / Minimum / Veteran Minimum Benefit). Minimum locks the builder to a 1-year deal at the
+// player's minimum; VMB locks it to 1 year at his minimum (charged at the 2-year rate) with bonuses up to the league limit.
+// Returns the applied terms, or { error } and switches back to Custom.
 function applyContractType(form, data, player, editor) {
   const f = form.elements;
   const note = form.querySelector(".minimum-note");
-  if (f.contractType.value !== "minimum") {
+  const type = f.contractType.value;
+  if (type === "custom") {
     if (editor.isLocked()) editor.reset(player);
     if (note) note.textContent = "";
     return null;
   }
-  const result = player ? minimumSalaryFor(data, player) : { error: "Choose a player first." };
+  const result = type === "vmb" ? vmbTermsFor(data, player) : player ? minimumSalaryFor(data, player) : { error: "Choose a player first." };
   if (result.error) {
     f.contractType.value = "custom";
+    if (editor.isLocked()) editor.reset(player);
     if (note) note.textContent = result.error;
     return result;
   }
-  editor.setMinimum(result.amount);
-  if (note) note.textContent = `${result.year} minimum for ${minimumTierLabel(result.tier)} of experience (${player.name} has ${result.experience}).`;
+  if (type === "vmb") {
+    editor.setVmb(result);
+    if (note) note.textContent = `Veteran Minimum Benefit: ${player.name} (${result.experience} credited seasons) is paid the ${result.year} minimum of ${formatCurrency(result.salary)}, but it counts as ${formatCurrency(result.capBase)} (the 2-year minimum) against the cap. 1 league year only.${result.limit === null ? "" : ` Signing bonus + roster bonus + guaranteed money can't total more than ${formatCurrency(result.limit)}.`}`;
+  } else {
+    editor.setMinimum(result.amount);
+    if (note) note.textContent = `${result.year} minimum for ${minimumTierLabel(result.tier)} of experience (${player.name} has ${result.experience}).`;
+  }
   return result;
 }
 
@@ -2182,6 +2195,13 @@ function readOfferForm(form, data, player, editor) {
     if (minimum.error) return minimum;
     terms.minimum = minimum.tier;
   }
+  if (form.elements.contractType.value === "vmb") {
+    const vmb = vmbTermsFor(data, player);
+    if (vmb.error) return vmb;
+    const extras = terms.signingBonus + terms.yearsDetail.reduce((s, y) => s + y.rosterBonus + y.guaranteedSalary, 0);
+    if (vmb.limit !== null && extras > vmb.limit) return { error: `Veteran Minimum Benefit: signing bonus, roster bonus and guaranteed salary total ${formatCurrency(extras)}, more than the ${vmb.year} limit of ${formatCurrency(vmb.limit)}.` };
+    terms.vmbCapBase = vmb.capBase;
+  }
   return terms;
 }
 
@@ -2193,5 +2213,35 @@ function minimumForSeason(data, player, year, startYear = (seasons.includes(curr
   const tier = minimumTierFor(experience);
   const amount = tier ? data.minimumSalaries?.[year]?.[tier] : null;
   return amount === null || amount === undefined ? null : { amount, tier, experience };
+}
+
+// ---- Veteran Minimum Benefit ----
+// Players with 4+ credited seasons can sign a 1-year deal at their own league minimum that counts against the cap only
+// as the 2-year minimum. Signing bonus + roster bonus + guaranteed money is capped per league year (Admin › League Cap Directory).
+// data.vmbBonusLimits = { [season]: dollars|null }
+const vmbMinimumExperience = 4;
+const vmbDefaultLimits = { 2026: 187500 };
+function validVmbLimits(table) {
+  if (table === undefined) return true;
+  return !!table && typeof table === "object" && !Array.isArray(table) &&
+    Object.entries(table).every(([year, value]) => seasons.includes(Number(year)) && (value === null || isIntegerInRange(value, 0, 999999999)));
+}
+function vmbBonusLimitFor(data, year) {
+  const table = { ...vmbDefaultLimits, ...(data.vmbBonusLimits || {}) };
+  const value = table[year];
+  return value === undefined ? null : value;
+}
+
+// Returns { salary, capBase, limit, year, experience } or { error }.
+function vmbTermsFor(data, player, year = (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0])) {
+  if (!player) return { error: "Choose a player first." };
+  const experience = player.experience;
+  if (experience === null || experience === undefined) return { error: `${player.name} has no years of experience set. Add it on Player Contracts to check Veteran Minimum Benefit eligibility.` };
+  if (experience < vmbMinimumExperience) return { error: `${player.name} isn't eligible for the Veteran Minimum Benefit: it needs at least ${vmbMinimumExperience} credited seasons and he has ${experience}.` };
+  const own = minimumSalaryFor(data, player, year);
+  if (own.error) return own;
+  const capBase = data.minimumSalaries?.[year]?.["2"];
+  if (capBase === null || capBase === undefined) return { error: `The ${year} minimum for 2 years of experience isn't set, and a Veteran Minimum Benefit deal is charged at that rate. Set it on Admin › League Cap Directory.` };
+  return { salary: own.amount, capBase, limit: vmbBonusLimitFor(data, year), year, experience, tier: own.tier };
 }
 
