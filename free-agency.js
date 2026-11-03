@@ -20,7 +20,7 @@ try {
     : `${error.message || "Browser storage is unavailable."} No saved data was changed.`;
 }
 let signingId = null;
-const faEditor = createContractEditor(document.querySelector("#fa-contract"));
+const faEditor = createContractEditor(document.querySelector("#fa-contract"), { getData: () => officeData });
 
 function save(message) {
   try {

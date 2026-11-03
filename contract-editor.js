@@ -2,7 +2,7 @@
 // Contract Offer Template: a summary row, then one row per season with base salary, prorated signing bonus,
 // roster bonus, guaranteed salary and cap hit. Signing bonus prorates over up to 5 seasons; deals shorter than
 // 5 years can add void years. Needs league-core.js.
-function createContractEditor(container) {
+function createContractEditor(container, { getData = () => null } = {}) {
   const startYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   const maxYears = () => seasons.length - seasons.indexOf(startYear());
   let player = null;
@@ -82,6 +82,12 @@ function createContractEditor(container) {
         input.setAttribute("aria-label", `${start + i} ${field === "baseSalary" ? "base salary" : field === "rosterBonus" ? "roster bonus" : "guaranteed salary"}`);
         cell.className = "ce-input-cell";
         cell.append(input);
+        if (field === "baseSalary") {
+          const hint = document.createElement("small");
+          hint.className = "ce-min-hint";
+          hint.dataset.minHint = String(i);
+          cell.append(hint);
+        }
       }
       trs.push(tr);
     }
@@ -116,6 +122,15 @@ function createContractEditor(container) {
         tCap += cap;
         tBonusReal += share;
       } else capCell.textContent = "—";
+    }
+    const data = getData();
+    for (let i = 0; i < years; i++) {
+      const hint = container.querySelector(`[data-min-hint="${i}"]`);
+      if (!hint) continue;
+      const min = data && player ? minimumForSeason(data, player, startYear() + i, startYear()) : null;
+      hint.textContent = min ? `Min ${formatCurrency(min.amount)} (${min.experience} yrs)` : "";
+      hint.classList.toggle("is-below", Boolean(min) && rows[i].baseSalary < min.amount);
+      hint.closest("td").classList.toggle("is-below", Boolean(min) && rows[i].baseSalary < min.amount);
     }
     out("tBase", money(rows.reduce((s, r) => s + r.baseSalary, 0)));
     out("tBonus", money(shares.reduce((s, v) => s + v, 0)));
@@ -186,6 +201,16 @@ function createContractEditor(container) {
       if (over !== -1) return { error: `${startYear() + over}: guaranteed salary can't be more than that year's base salary.` };
       const { total, gtd } = totals();
       if (!total) return { error: "Enter a base salary or signing bonus." };
+      const data = getData();
+      if (data && player) {
+        for (let i = 0; i < years; i++) {
+          const min = minimumForSeason(data, player, startYear() + i, startYear());
+          if (min && rows[i].baseSalary < min.amount) {
+            tbody.querySelector(`input[data-row="${i}"][data-field="baseSalary"]`)?.focus();
+            return { error: `${startYear() + i}: base salary must be at least the ${formatCurrency(min.amount)} minimum for ${minimumTierLabel(min.tier)} of experience (${player.name} will have ${min.experience}).` };
+          }
+        }
+      }
       return { years, voidYears, signingBonus, startYear: startYear(), totalValue: total, guaranteed: gtd,
         yearsDetail: rows.map((r) => ({ ...r })) };
     },

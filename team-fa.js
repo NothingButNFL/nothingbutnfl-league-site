@@ -6,7 +6,7 @@ const teamFaPos = document.querySelector("#team-fa-pos");
 const teamFaFormPanel = document.querySelector("#team-fa-form-panel");
 const teamFaForm = document.querySelector("#team-fa-form");
 let teamFaPlayerId = null;
-const teamFaEditor = createContractEditor(document.querySelector("#team-fa-contract"));
+const teamFaEditor = createContractEditor(document.querySelector("#team-fa-contract"), { getData: () => officeData });
 
 const teamFaYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
 const teamFaMoney = (v) => v < 0 ? `−${formatCurrency(Math.abs(v))}` : formatCurrency(v);

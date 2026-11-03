@@ -2185,3 +2185,13 @@ function readOfferForm(form, data, player, editor) {
   return terms;
 }
 
+// The minimum base salary for a player in a given season: his years of experience now, plus one for each later season.
+// Returns { amount, tier, experience } or null when his experience or that minimum isn't set.
+function minimumForSeason(data, player, year, startYear = (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0])) {
+  if (player?.experience === null || player?.experience === undefined) return null;
+  const experience = Number(player.experience) + (year - startYear);
+  const tier = minimumTierFor(experience);
+  const amount = tier ? data.minimumSalaries?.[year]?.[tier] : null;
+  return amount === null || amount === undefined ? null : { amount, tier, experience };
+}
+
