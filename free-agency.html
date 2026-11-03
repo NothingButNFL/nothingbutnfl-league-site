@@ -148,11 +148,13 @@
             </div>
             <form class="management-form fa-sign-form" id="fa-sign-form">
               <label>Your team<select name="team" required></select></label>
+              <label class="contract-type-field">Contract<select name="contractType"><option value="custom">Custom</option><option value="minimum">Minimum (1 year)</option></select></label>
               <label>Years<input name="years" type="number" min="1" max="10" step="1" required></label>
               <label>Total value<input name="totalValue" inputmode="decimal" placeholder="$0" required></label>
               <label>Signing bonus<input name="signingBonus" inputmode="decimal" placeholder="$0"></label>
               <label>Guaranteed<input name="guaranteed" inputmode="decimal" placeholder="$0"></label>
               <label class="fa-offer-notes">Message to the commissioner<input name="notes" maxlength="300" placeholder="Optional, e.g. incentives or a deadline"></label>
+              <p class="minimum-note" aria-live="polite"></p>
               <div class="fa-sign-actions">
                 <button class="button button-lime" type="submit">Send offer <span aria-hidden="true">→</span></button>
                 <button class="workspace-button" type="button" id="fa-sign-cancel">Cancel</button>

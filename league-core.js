@@ -117,7 +117,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries);
 }
 
 function migrateLegacyData(data) {
@@ -1926,7 +1926,8 @@ function validFaOffers(list) {
         ["signingBonus", "guaranteed"].some((k) => o[k] !== undefined && o[k] !== null && !isIntegerInRange(o[k], 0, 999999999)) ||
         !faOfferStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
         (o.decidedAt !== undefined && typeof o.decidedAt !== "string") ||
-        ["notes", "decisionNote"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > faOfferLimits[k]))) return false;
+        ["notes", "decisionNote"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > faOfferLimits[k])) ||
+        (o.minimum !== undefined && typeof o.minimum !== "string") || (o.minimum && o.minimum.length > 10)) return false;
     ids.add(o.id);
   }
   return true;
@@ -1935,7 +1936,7 @@ function validFaOffers(list) {
 const pendingFaOffers = (data) => (data.faOffers || []).filter((o) => o.status === "pending");
 
 function faOfferTerms(offer) {
-  return [`${offer.years} year${offer.years === 1 ? "" : "s"}, ${formatCurrency(offer.totalValue)}`,
+  return [`${offer.years} year${offer.years === 1 ? "" : "s"}, ${formatCurrency(offer.totalValue)}${offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
     offer.signingBonus ? `${formatCurrency(offer.signingBonus)} signing bonus` : "",
     offer.guaranteed ? `${formatCurrency(offer.guaranteed)} guaranteed` : ""].filter(Boolean).join(", ");
 }
@@ -1963,6 +1964,7 @@ function submitFaOffer(data, player, teamId, terms) {
   if (terms.signingBonus) offer.signingBonus = terms.signingBonus;
   if (terms.guaranteed) offer.guaranteed = terms.guaranteed;
   if (terms.notes) offer.notes = String(terms.notes).trim().slice(0, faOfferLimits.notes);
+  if (terms.minimum) offer.minimum = terms.minimum;
   data.faOffers.push(offer);
   return { offer, replaced };
 }
@@ -2058,5 +2060,59 @@ function archivedGames(data) {
     games.push(game);
   }
   return games;
+}
+
+// ---- Minimum salaries (Admin › League Cap Directory) ----
+// data.minimumSalaries = { [season]: { "0": dollars|null, "1": …, "2": …, "3": …, "4-6": …, "7+": … } }
+const minimumTiers = ["0", "1", "2", "3", "4-6", "7+"];
+const minimumTierLabel = (tier) => tier === "7+" ? "7+ years" : tier === "4-6" ? "4–6 years" : tier === "1" ? "1 year" : `${tier} years`;
+
+function validMinimumSalaries(table) {
+  if (table === undefined) return true;
+  if (!table || typeof table !== "object" || Array.isArray(table)) return false;
+  return Object.entries(table).every(([year, row]) => seasons.includes(Number(year)) && row && typeof row === "object" &&
+    Object.entries(row).every(([tier, value]) => minimumTiers.includes(tier) && (value === null || isIntegerInRange(value, 0, 999999999))));
+}
+
+function minimumTierFor(experience) {
+  if (experience === null || experience === undefined || !Number.isFinite(Number(experience))) return null;
+  const e = Number(experience);
+  return e <= 0 ? "0" : e <= 3 ? String(e) : e <= 6 ? "4-6" : "7+";
+}
+
+// The minimum salary for a player this league year, from his years of experience on Player Contracts.
+// Returns { amount, tier, experience, year } or { error }.
+function minimumSalaryFor(data, player, year = (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0])) {
+  const experience = player.experience;
+  const tier = minimumTierFor(experience);
+  if (!tier) return { error: `${player.name} has no years of experience set. Add it on Player Contracts to use the minimum.` };
+  const amount = data.minimumSalaries?.[year]?.[tier];
+  if (amount === null || amount === undefined) return { error: `The ${year} minimum salary for ${minimumTierLabel(tier)} of experience isn't set. The commissioner sets it on Admin › League Cap Directory.` };
+  return { amount, tier, experience, year };
+}
+
+// Offer forms: a "Contract" menu (Custom / Minimum). Minimum fills a 1-year deal at the player's minimum and locks the terms.
+// Returns the minimum (with .tier) when applied, or { error } and switches back to Custom.
+function applyContractType(form, data, player) {
+  const f = form.elements;
+  const minimum = f.contractType.value === "minimum";
+  for (const name of ["years", "totalValue", "signingBonus", "guaranteed"]) f[name].readOnly = minimum;
+  form.classList.toggle("is-minimum", minimum);
+  const note = form.querySelector(".minimum-note");
+  if (!minimum) { if (note) note.textContent = ""; return null; }
+  const result = player ? minimumSalaryFor(data, player) : { error: "Choose a player first." };
+  if (result.error) {
+    f.contractType.value = "custom";
+    for (const name of ["years", "totalValue", "signingBonus", "guaranteed"]) f[name].readOnly = false;
+    form.classList.remove("is-minimum");
+    if (note) note.textContent = result.error;
+    return result;
+  }
+  f.years.value = "1";
+  f.totalValue.value = formatCurrency(result.amount);
+  f.signingBonus.value = "";
+  f.guaranteed.value = "";
+  if (note) note.textContent = `${result.year} minimum for ${minimumTierLabel(result.tier)} of experience (${player.name} has ${result.experience}).`;
+  return result;
 }
 

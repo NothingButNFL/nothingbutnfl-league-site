@@ -103,3 +103,109 @@ window.addEventListener("storage", (event) => {
     adminStatus.textContent = `${error.message || "The update from another tab could not be read."} Current values were not changed.`;
   }
 });
+
+// ---- Minimum player salaries ----
+const adminMinHead = document.querySelector("#admin-min-head");
+const adminMinRows = document.querySelector("#admin-min-rows");
+const minimumYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+
+function renderMinimums(data) {
+  const head = document.createElement("tr");
+  for (const label of ["YEARS OF EXPERIENCE", ...seasons.map(String)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    if (label === String(minimumYear())) th.className = "is-current";
+    head.append(th);
+  }
+  adminMinHead.replaceChildren(head);
+  adminMinRows.replaceChildren(...minimumTiers.map((tier) => {
+    const row = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = tier === "0" ? "0 (rookies)" : tier === "7+" ? "7+" : tier;
+    row.append(th);
+    for (const year of seasons) {
+      const cell = row.insertCell();
+      cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.maxLength = 14;
+      input.inputMode = "decimal";
+      const value = data.minimumSalaries?.[year]?.[tier];
+      input.value = value === null || value === undefined ? "" : formatCurrency(value);
+      input.placeholder = "—";
+      input.dataset.minYear = String(year);
+      input.dataset.minTier = tier;
+      input.disabled = !safeToSave;
+      input.setAttribute("aria-label", `${year} minimum salary for ${minimumTierLabel(tier)} of experience`);
+      cell.append(input);
+    }
+    return row;
+  }));
+  document.querySelector("#admin-min-copy").disabled = !safeToSave;
+}
+
+function saveMinimums(updated, message) {
+  if (storageAvailable) {
+    try { writeStoredOffice(updated); } catch (error) {
+      storageAvailable = false;
+      adminStorageNotice.textContent = `Could not save this data in browser storage: ${error.message}. Changes are only in memory until storage is available.`;
+      renderMinimums(officeData);
+      return false;
+    }
+  }
+  officeData = updated;
+  adminStatus.textContent = message;
+  return true;
+}
+
+adminMinRows.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-min-tier]");
+  if (!input || !safeToSave) return;
+  const year = Number(input.dataset.minYear), tier = input.dataset.minTier;
+  const value = input.value.trim() ? parseMoneyText(input.value) : null;
+  if (value === undefined) {
+    input.setCustomValidity("Enter a whole dollar amount, such as $840,000 or 0.84M.");
+    input.reportValidity();
+    input.setCustomValidity("");
+    const old = officeData.minimumSalaries?.[year]?.[tier];
+    input.value = old === null || old === undefined ? "" : formatCurrency(old);
+    return;
+  }
+  const table = JSON.parse(JSON.stringify(officeData.minimumSalaries || {}));
+  table[year] = { ...(table[year] || {}), [tier]: value };
+  if (saveMinimums({ ...officeData, minimumSalaries: table }, `${year} minimum for ${minimumTierLabel(tier)} of experience ${value === null ? "cleared" : `set to ${formatCurrency(value)}`}.`)) {
+    input.value = value === null ? "" : formatCurrency(value);
+  }
+});
+adminMinRows.addEventListener("focusin", (event) => {
+  const input = event.target.closest("[data-min-tier]");
+  if (input) input.value = input.value.replace(/[$,\s]/g, "");
+});
+adminMinRows.addEventListener("focusout", (event) => {
+  const input = event.target.closest("[data-min-tier]");
+  const value = input && parseMoneyText(input.value);
+  if (input && value) input.value = formatCurrency(value);
+});
+
+document.querySelector("#admin-min-copy").addEventListener("click", () => {
+  const from = minimumYear();
+  const source = officeData.minimumSalaries?.[from] || {};
+  if (!minimumTiers.some((tier) => source[tier] != null)) { adminStatus.textContent = `Enter the ${from} minimums first.`; return; }
+  const table = JSON.parse(JSON.stringify(officeData.minimumSalaries || {}));
+  let filled = 0;
+  for (const year of seasons.filter((y) => y > from)) {
+    table[year] = { ...(table[year] || {}) };
+    for (const tier of minimumTiers) {
+      if (table[year][tier] == null && source[tier] != null) { table[year][tier] = source[tier]; filled += 1; }
+    }
+  }
+  if (!filled) { adminStatus.textContent = "Every later season already has its minimums."; return; }
+  if (saveMinimums({ ...officeData, minimumSalaries: table }, `Copied the ${from} minimums into ${filled} blank box${filled === 1 ? "" : "es"} for later seasons.`)) renderMinimums(officeData);
+});
+
+renderMinimums(officeData);
+window.addEventListener("storage", (event) => {
+  if (event.key === officeStorageKey) renderMinimums(officeData);
+});

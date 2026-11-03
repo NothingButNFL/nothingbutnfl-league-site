@@ -1842,3 +1842,15 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .salary-sort-select { display: none; }
 @media (max-width: 1300px) { .salary-sort-select { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 6px 0 12px; } .salary-sort-select label { display: grid; gap: 6px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; } .salary-sort-select select { min-width: 200px; padding: 9px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); color-scheme: dark; } }
 @media (min-width: 1301px) { .salary-col-years { width: 5.5%; } .salary-col-actions { width: 7.5%; } .salary-table .salary-sort { overflow-wrap: normal; word-break: keep-all; } }
+
+/* ---- League Cap Directory: minimum salaries ---- */
+.admin-min-panel { margin-top: 18px; }
+.admin-min-table { min-width: 980px; }
+.admin-min-table tbody th { color: #fff; font: 600 13px var(--body); text-align: left; white-space: nowrap; }
+.admin-min-table thead th.is-current { color: #8fd0ff; }
+.admin-min-table td.is-current { background: rgba(143, 208, 255, .07); }
+.admin-min-table input { width: 100%; min-width: 96px; text-align: right; }
+.admin-min-actions { display: flex; gap: 10px; margin-top: 12px; }
+.minimum-note { grid-column: 1 / -1; margin: 0; color: #ffd37a; font: 13px var(--body); }
+.minimum-note:empty { display: none; }
+form.is-minimum input[readonly] { opacity: .75; }
