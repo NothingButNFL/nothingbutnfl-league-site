@@ -2094,7 +2094,7 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
     voidNote = `; ${formatCurrency(voided.amount)} of signing bonus on ${voided.voidYears} void year${voided.voidYears === 1 ? "" : "s"} becomes ${voided.year} dead cap`;
   }
   return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: entry.name,
-    details: `Signed ${faOfferTerms(contract)}${extraDetails}. On the ${teamId} salary sheet ${start}${lastYear > start ? `–${lastYear}` : ""}${voidNote}` });
+    details: `${signingAnnouncement(teamId, position, entry.name, contract)}\nOn the ${teamId} salary sheet ${start}${lastYear > start ? `–${lastYear}` : ""}${voidNote}${extraDetails}.` });
 }
 
 // ---- Game Log Archives ----
@@ -2250,5 +2250,35 @@ function vmbTermsFor(data, player, year = (seasons.includes(currentLeagueYear())
   const capBase = data.minimumSalaries?.[year]?.["2"];
   if (capBase === null || capBase === undefined) return { error: `The ${year} minimum for 2 years of experience isn't set, and a Veteran Minimum Benefit deal is charged at that rate. Set it on Admin › League Cap Directory.` };
   return { salary: own.amount, capBase, limit: vmbBonusLimitFor(data, year), year, experience, tier: own.tier };
+}
+
+// ---- Transaction announcements ----
+// The league announces signings as:
+//   **Cincinnati Bengals Sign:**
+//   • RB Chase Brown to a 4 year, $52,000,000 deal with a $15,000,000 signing bonus and $38,145,000 in total guarantees.
+// Length, total value, signing bonus and total guarantees are always included.
+function signingAnnouncement(teamId, position, playerName, contract, verb = "Sign") {
+  const kind = contract.vmbCapBase !== undefined ? " Veteran Minimum Benefit" : contract.minimum ? " minimum" : "";
+  const length = `${contract.years} year${contract.voidYears ? ` (+${contract.voidYears} void)` : ""}`;
+  const who = [String(position || "").toUpperCase(), playerName].filter(Boolean).join(" ");
+  return `**${teamName(teamId)} ${verb}:**\n• ${who} to a ${length}, ${formatCurrency(contract.totalValue)}${kind} deal with a ${formatCurrency(contract.signingBonus || 0)} signing bonus and ${formatCurrency(contract.guaranteed || 0)} in total guarantees.`;
+}
+
+// Copies text to the clipboard (falls back to a hidden text box). Resolves true when it worked.
+async function copyText(text) {
+  try {
+    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
+  } catch { /* fall through */ }
+  const box = document.createElement("textarea");
+  box.value = text;
+  box.setAttribute("readonly", "");
+  box.style.position = "fixed";
+  box.style.opacity = "0";
+  document.body.append(box);
+  box.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch { ok = false; }
+  box.remove();
+  return ok;
 }
 

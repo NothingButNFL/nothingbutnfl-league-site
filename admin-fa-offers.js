@@ -153,8 +153,15 @@ function render() {
     const team = textEl("span", "txn-team", offer.teamId);
     team.title = teamName(offer.teamId);
     head.append(who, team, textEl("span", "fa-offer-status", { accepted: "Accepted", declined: "Declined", withdrawn: "Withdrawn" }[offer.status]));
+    card.dataset.offerId = offer.id;
     card.append(head, textEl("p", "fa-offer-terms", faOfferTerms(offer)),
       textEl("p", "fa-offer-meta", [`Decided ${when(offer.decidedAt || offer.createdAt)}`, offer.decisionNote || ""].filter(Boolean).join(" · ")));
+    if (offer.status === "accepted") {
+      const copy = textEl("button", "workspace-button fa-offer-withdraw", "Copy announcement");
+      copy.type = "button";
+      copy.dataset.action = "copy-announcement";
+      card.append(copy);
+    }
     return card;
   }));
   if (!history.length) faoHistory.append(emptyNote("No decisions yet."));
@@ -184,18 +191,49 @@ faoOpen.addEventListener("click", async (event) => {
   const ok = await confirmAction(`Accept the ${teamName(offer.teamId)} offer and sign ${offer.playerName} (${faOfferTerms(offer)})?${others.length ? ` ${others.length} other open offer${others.length === 1 ? "" : "s"} for him will be declined.` : ""}`, { confirmLabel: "Accept and sign" });
   if (!ok) return;
   const before = JSON.stringify(officeData);
-  const txn = signFreeAgent(officeData, offer.playerId, offer.teamId, offer, localDateString(), " (free agent offer accepted)");
+  const signedPosition = (officeData.contractPlayers || []).find((p) => p.id === offer.playerId)?.position || "";
+  const txn = signFreeAgent(officeData, offer.playerId, offer.teamId, offer, localDateString(), " · free agent offer accepted");
   if (!txn) {
     faoStatus.textContent = `${offer.playerName} is no longer a free agent, so the offer can't be accepted. Decline it instead.`;
     officeData = JSON.parse(before);
     return;
   }
-  Object.assign(offer, { status: "accepted", decidedAt: now, decisionNote: "Accepted by the commissioner" });
+  Object.assign(offer, { status: "accepted", decidedAt: now, decisionNote: "Accepted by the commissioner", position: String(signedPosition).slice(0, 8) || undefined });
+  if (!offer.position) delete offer.position;
   for (const other of others) Object.assign(other, { status: "declined", decidedAt: now, decisionNote: `${offer.playerName} signed with ${offer.teamId}` });
   if (!save(`${offer.playerName} signed with the ${teamName(offer.teamId)}: ${faOfferTerms(offer)}.${others.length ? ` ${others.length} other offer${others.length === 1 ? " was" : "s were"} declined.` : ""} He's on the ${offer.teamId} salary sheet with these cap hits: ${contractSeasonBreakdown(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).map((b) => `${b.year} ${formatCurrency(breakdownCapHit(b))}`).join(", ")}${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) ? `, plus ${formatCurrency(voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).amount)} void-year dead cap in ${voidBonusFor(offer, seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]).year}` : ""}.`)) {
     officeData = loadStoredOfficeData(JSON.parse(before));
+    render();
+    return;
   }
   render();
+  showAnnouncement(offer);
+});
+
+function announcementFor(offer) {
+  return signingAnnouncement(offer.teamId, offer.position, offer.playerName, offer);
+}
+
+// After accepting, the announcement is shown ready to copy into the league's channel.
+function showAnnouncement(offer) {
+  const box = document.querySelector("#fao-announcement");
+  box.hidden = false;
+  box.querySelector("pre").textContent = announcementFor(offer);
+  box.dataset.offerId = offer.id;
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest('[data-action="copy-announcement"]');
+  if (!button) return;
+  const id = button.closest("[data-offer-id]")?.dataset.offerId;
+  const offer = (officeData.faOffers || []).find((o) => o.id === id);
+  if (!offer) return;
+  const ok = await copyText(announcementFor(offer));
+  const label = button.textContent;
+  button.textContent = ok ? "Copied ✓" : "Couldn't copy";
+  setTimeout(() => { button.textContent = label; }, 1800);
+  if (!ok) faoStatus.textContent = "Your browser blocked copying. Select the announcement text and copy it yourself.";
 });
 
 function save(message) {

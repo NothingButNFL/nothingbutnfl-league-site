@@ -1897,3 +1897,5 @@ form.is-minimum input[readonly] { opacity: .75; }
 .vmb-mark:hover, .vmb-mark:focus-visible { background: rgba(255, 211, 122, .15); }
 .salary-table .computed-cell.is-vmb { color: #ffd37a; }
 .salary-table .computed-cell.is-vmb::after { content: " *"; }
+.fao-announcement { border-color: #75e28b; }
+.fao-announcement-text { margin: 0 0 12px; padding: 14px 16px; border-left: 3px solid #75e28b; background: #071a33; color: #fff; font: 14px/1.6 var(--body); white-space: pre-wrap; }
