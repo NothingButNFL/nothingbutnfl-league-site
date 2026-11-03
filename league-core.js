@@ -2078,7 +2078,7 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
       const row = breakdown.find((b) => b.year === year);
       const season = row || year === start ? emptySeasonData(position, "Active") : emptySeasonData();
       if (row) Object.assign(season, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary });
-      if (row && contract.vmbCapBase !== undefined) { season.vmbCapBase = contract.vmbCapBase; season.rosterType = "Active (VMB)"; }
+      if (row && contract.vmbCapBase !== undefined) season.vmbCapBase = contract.vmbCapBase;
       return [year, season];
     }))
   };
