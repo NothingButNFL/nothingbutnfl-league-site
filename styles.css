@@ -1700,3 +1700,51 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .fao-team:hover, .fao-team:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 .fao-actions { display: flex; gap: 8px; }
 .fao-actions .button, .fao-actions .workspace-button { min-height: 38px; padding: 0 16px; }
+
+/* ================= Left sidebar navigation (desktop) =================
+   On wide screens the menu sits in a fixed sidebar on the left; groups open in place like an accordion
+   and Teams opens a panel beside the sidebar. Below 1181px the top bar with its menu button is used. */
+@media (min-width: 1181px) {
+  body { padding-left: 240px; }
+  body > .site-header, body > .site-header:hover, body > .site-header:focus-within, body > .site-header.is-open {
+    position: fixed; inset: 0 auto 0 0; z-index: 40; display: flex; width: 240px; height: 100vh; min-height: 0;
+    flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 18px; grid-template-columns: none;
+    padding: 18px 12px 24px; overflow-y: auto; overscroll-behavior: contain;
+    border-right: 1px solid #264a75; border-bottom: 0; background: #0c2b50; box-shadow: none;
+  }
+  body > .site-header .brand { grid-column: auto; justify-self: auto; justify-content: flex-start; gap: 10px; padding: 0 6px 14px; border-bottom: 1px solid #264a75; }
+  body > .site-header .brand-logo { width: 40px; height: 40px; flex-basis: 40px; }
+  body > .site-header .brand-copy, body > .site-header .brand-copy { display: inline !important; font-size: 15px !important; }
+  body > .site-header .menu-toggle { display: none; }
+  body > .site-header .primary-nav {
+    grid-column: auto; display: flex; position: static; width: 100%; height: auto; flex: none; flex-direction: column;
+    align-items: stretch; justify-content: flex-start; gap: 2px; padding: 0; overflow: visible; border: 0; box-shadow: none; background: transparent;
+  }
+  body > .site-header .primary-nav .nav-icon { display: inline-flex; width: 18px; flex-basis: 18px; }
+  body > .site-header .primary-nav > a, body > .site-header .teams-trigger, body > .site-header .admin-trigger {
+    width: 100%; height: auto; min-height: 42px; justify-content: flex-start; gap: 11px; padding: 0 12px; border: 0; border-radius: 3px; font-size: 14px; box-shadow: none;
+  }
+  body > .site-header .primary-nav > a[aria-current="page"],
+  body > .site-header .season-menu.is-current .season-trigger { background: #10335d; color: #fff; box-shadow: inset 3px 0 0 #8fd0ff; }
+  body > .site-header .teams-menu, body > .site-header .admin-menu { width: 100%; flex-direction: column; align-items: stretch; }
+  body > .site-header .teams-chevron, body > .site-header .admin-chevron { margin-left: auto; transform: none; font-size: 16px; opacity: .75; }
+  body > .site-header .admin-menu.is-open .admin-chevron { transform: rotate(90deg); }
+  body > .site-header .nav-badge-trigger { position: static; order: 0; margin-left: auto; }
+  body > .site-header .nav-badge-trigger:not([hidden]) + .admin-chevron { margin-left: 8px; }
+  /* Groups open in place. */
+  body > .site-header .admin-dropdown, body > .site-header .season-menu .admin-dropdown {
+    position: static; display: none; width: 100%; gap: 0; padding: 4px 0 6px; border: 0; box-shadow: none; background: #0a2647;
+  }
+  body > .site-header .admin-menu:not(.is-open):hover .admin-dropdown,
+  body > .site-header .admin-menu:not(.is-open):focus-within .admin-dropdown { display: none; }
+  body > .site-header .admin-menu.is-open .admin-dropdown { display: grid; }
+  body > .site-header .admin-menu-link { min-height: 36px; padding: 6px 12px 6px 41px; font-size: 13px; }
+  body > .site-header .admin-menu-link[aria-current="page"] { box-shadow: inset 3px 0 0 #8fd0ff; }
+  /* Teams: a panel beside the sidebar. */
+  body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown {
+    position: fixed; top: 12px; left: 248px; right: auto; display: grid; width: min(780px, calc(100vw - 268px)); max-height: calc(100vh - 24px);
+    grid-template-columns: repeat(4, minmax(0, 1fr)); overflow-y: auto; border: 1px solid #31527a; box-shadow: 0 16px 36px rgba(0,0,0,.4);
+  }
+  body > .site-header .teams-menu:hover .teams-chevron, body > .site-header .teams-menu.is-open .teams-chevron { transform: translateX(3px); }
+  .sample-banner { position: relative; }
+}

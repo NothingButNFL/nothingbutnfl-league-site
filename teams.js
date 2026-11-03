@@ -70,6 +70,8 @@ if (teamsDropdown) {
 
 const teamsMenu = document.querySelector(".teams-menu");
 const teamsTrigger = document.querySelector(".teams-trigger");
+// In the desktop sidebar, menu groups stay open until their own button is clicked again.
+const sidebarLayout = window.matchMedia("(min-width: 1181px)");
 const adminMenu = document.querySelector(".admin-menu:not(.season-menu)");
 const adminTrigger = adminMenu?.querySelector(".admin-trigger");
 const adminDropdown = document.querySelector("#admin-dropdown");
@@ -136,11 +138,11 @@ if (adminMenu && adminTrigger && adminDropdown) {
     }
   });
   document.addEventListener("click", (event) => {
-    if (!adminMenu.contains(event.target)) closeAdminMenu();
+    if (!adminMenu.contains(event.target) && !sidebarLayout.matches) closeAdminMenu();
   });
 }
 
-// Grouped dropdowns ("Front Office", "Season Information"): every .season-menu works the same way.
+// Grouped dropdowns ("Front Office", "Season Information", "League History"): every .season-menu works the same way.
 const groupMenus = [...document.querySelectorAll(".season-menu")].map((menu) => ({
   menu, trigger: menu.querySelector(".season-trigger"), dropdown: menu.querySelector(".season-dropdown")
 })).filter(({ trigger, dropdown }) => trigger && dropdown);
@@ -154,7 +156,7 @@ for (const group of groupMenus) {
   dropdown.setAttribute("role", "menu");
   trigger.addEventListener("click", () => {
     const open = trigger.getAttribute("aria-expanded") === "true";
-    groupMenus.forEach((other) => { if (other !== group) closeGroupMenu(other); });
+    if (!sidebarLayout.matches) groupMenus.forEach((other) => { if (other !== group) closeGroupMenu(other); });
     trigger.setAttribute("aria-expanded", String(!open));
     menu.classList.toggle("is-open", !open);
   });
@@ -170,9 +172,24 @@ for (const group of groupMenus) {
     if (event.key === "Escape") { closeGroupMenu(group); trigger.focus(); }
   });
   document.addEventListener("click", (event) => {
-    if (!menu.contains(event.target)) closeGroupMenu(group);
+    if (!menu.contains(event.target) && !sidebarLayout.matches) closeGroupMenu(group);
   });
 }
+// The sidebar opens the group holding the current page.
+function openCurrentGroup() {
+  if (!sidebarLayout.matches) return;
+  for (const { menu, trigger } of groupMenus) {
+    if (menu.classList.contains("is-current") || menu.querySelector('[aria-current="page"]')) {
+      menu.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  }
+  if (adminMenu?.querySelector('[aria-current="page"]')) {
+    adminMenu.classList.add("is-open");
+    adminTrigger?.setAttribute("aria-expanded", "true");
+  }
+}
+openCurrentGroup();
 
 if (mobileMenuToggle && siteNavigation) {
   mobileMenuToggle.addEventListener("click", () => {
