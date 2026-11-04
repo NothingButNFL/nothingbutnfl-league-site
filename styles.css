@@ -2081,3 +2081,4 @@ form.is-minimum input[readonly] { opacity: .75; }
 .conference-card.is-afc::before, .conference-card.is-nfc::before { position: absolute; z-index: -1; inset: 8% 0; background: no-repeat center / contain; content: ""; opacity: .2; pointer-events: none; }
 .conference-card.is-afc::before { background-image: url("assets/afc.png"); }
 .conference-card.is-nfc::before { background-image: url("assets/nfc.png"); opacity: .38; }
+.conference-card h3 { margin: 2px 0 14px; color: #fff; font: 700 22px/1.2 var(--display); letter-spacing: -.01em; text-align: center; text-transform: none; }

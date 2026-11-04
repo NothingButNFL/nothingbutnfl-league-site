@@ -733,3 +733,4 @@ html[data-theme="light"] .theme-option.is-selected { color: #0b1f3a; }
 html[data-theme="light"] .theme-menu-heading { border-top-color: #c6d4e5; color: #556b8a; }
 html[data-theme="light"] .insider-wire { border-top-color: #e2e9f2; }
 html[data-theme="light"] .insider-title { color: #0b1f3a; }
+html[data-theme="light"] .conference-card h3 { color: #0b1f3a; }
