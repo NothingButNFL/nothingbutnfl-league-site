@@ -218,31 +218,52 @@ if (siteHeader) {
   }, true);
 }
 
-// Light / dark mode toggle (sidebar and mobile menu). The choice is remembered in this browser.
+// Dark / Gray / Light mode (sidebar and mobile bar). The choice is remembered in this browser.
+// In the full sidebar all three show; collapsed or on phones only the current one shows and clicking it moves to the next.
 const themeKey = "nbf-theme";
-function currentTheme() { return document.documentElement.dataset.theme === "light" ? "light" : "dark"; }
+const themeModes = [
+  { id: "dark", label: "Dark", color: "#071a33", icon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>' },
+  { id: "gray", label: "Gray", color: "#18191b", icon: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>' },
+  { id: "light", label: "Light", color: "#ffffff", icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>' }
+];
+function currentTheme() {
+  const t = document.documentElement.dataset.theme;
+  return themeModes.some(({ id }) => id === t) ? t : "dark";
+}
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   try { localStorage.setItem(themeKey, theme); } catch { /* storage unavailable */ }
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#ffffff" : "#071a33");
-  for (const button of document.querySelectorAll(".theme-toggle")) {
-    const next = theme === "light" ? "dark" : "light";
-    button.querySelector(".theme-toggle-icon").innerHTML = theme === "light"
-      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
-    button.querySelector(".theme-toggle-label").textContent = next === "light" ? "Light mode" : "Dark mode";
-    button.setAttribute("aria-label", `Switch to ${next} mode`);
-    button.title = `Switch to ${next} mode`;
-  }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeModes.find(({ id }) => id === theme).color);
+  document.querySelectorAll(".theme-switch [data-theme-choice]").forEach((button) => {
+    const active = button.dataset.themeChoice === theme;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 }
+const compactThemeSwitch = () => !sidebarLayout.matches || document.documentElement.classList.contains("nav-collapsed");
 if (siteHeader) {
-  const toggle = document.createElement("button");
-  toggle.type = "button";
-  toggle.className = "theme-toggle";
-  toggle.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span><span class="theme-toggle-label"></span>';
-  toggle.addEventListener("click", () => setTheme(currentTheme() === "light" ? "dark" : "light"));
+  const group = document.createElement("div");
+  group.className = "theme-switch";
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-label", "Color mode");
+  for (const mode of themeModes) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.themeChoice = mode.id;
+    button.title = `${mode.label} mode`;
+    button.setAttribute("aria-label", `${mode.label} mode`);
+    button.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true">${mode.icon}</svg><span>${mode.label}</span>`;
+    button.addEventListener("click", () => {
+      if (compactThemeSwitch() && button.dataset.themeChoice === currentTheme()) {
+        const next = themeModes[(themeModes.findIndex(({ id }) => id === currentTheme()) + 1) % themeModes.length];
+        setTheme(next.id);
+        group.querySelector(`[data-theme-choice="${next.id}"]`).focus();
+      } else setTheme(mode.id);
+    });
+    group.append(button);
+  }
   const collapse = siteHeader.querySelector(".sidebar-collapse");
-  if (collapse) collapse.before(toggle); else siteHeader.append(toggle);
+  if (collapse) collapse.before(group); else siteHeader.append(group);
   setTheme(currentTheme());
 }
 

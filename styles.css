@@ -1905,18 +1905,24 @@ form.is-minimum input[readonly] { opacity: .75; }
 .salary-table td[data-label="Player name"] { white-space: normal; overflow-wrap: anywhere; } .salary-table td[data-label="Player name"] .vmb-mark { margin: 2px 4px 0 0; }
 .contracts-fifth-year { min-width: 90px; } .contracts-fifth-year.is-set { border-color: #ffb36b; color: #ffb36b; } .contracts-money .fifth-year-mark { margin-right: 4px; }
 
-/* ---- Light / dark mode toggle ---- */
-.theme-toggle { display: flex; align-items: center; gap: 11px; border: 1px solid #31527a; border-radius: 3px; background: transparent; color: #c9d8ea; font: 600 13px var(--body); cursor: pointer; }
-.theme-toggle:hover, .theme-toggle:focus-visible { background: #174477; color: #fff; }
-.theme-toggle-icon { display: inline-flex; width: 18px; justify-content: center; }
+/* ---- Dark / Gray / Light mode switch ---- */
+.theme-switch { display: flex; gap: 2px; padding: 2px; border: 1px solid #31527a; border-radius: 4px; }
+.theme-switch button { display: flex; flex: 1; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 6px; border: 0; border-radius: 3px; background: transparent; color: #c9d8ea; font: 600 12px var(--body); cursor: pointer; }
+.theme-switch button:hover, .theme-switch button:focus-visible { background: #174477; color: #fff; }
+.theme-switch button.is-active { background: #174477; color: #fff; box-shadow: inset 0 0 0 1px #8fd0ff; }
 @media (min-width: 1181px) {
-  body > .site-header .theme-toggle { width: 100%; min-height: 40px; margin-top: auto; padding: 0 12px; }
-  body > .site-header .theme-toggle + .sidebar-collapse { margin-top: 8px; }
-  html.nav-collapsed body > .site-header .theme-toggle { justify-content: center; padding: 0; }
-  html.nav-collapsed body > .site-header .theme-toggle-label { display: none; }
+  body > .site-header .theme-switch { width: 100%; margin-top: auto; }
+  body > .site-header .theme-switch + .sidebar-collapse { margin-top: 8px; }
+  html.nav-collapsed body > .site-header .theme-switch { padding: 0; border: 0; }
+  html.nav-collapsed body > .site-header .theme-switch button:not(.is-active) { display: none; }
+  html.nav-collapsed body > .site-header .theme-switch button { min-height: 40px; border: 1px solid #31527a; box-shadow: none; }
+  html.nav-collapsed body > .site-header .theme-switch span { display: none; }
 }
 @media (max-width: 1180px) {
-  body > .site-header .theme-toggle { order: 2; width: 40px; height: 40px; margin-left: auto; justify-content: center; padding: 0; }
-  body > .site-header .theme-toggle-label { display: none; }
+  body > .site-header .theme-switch { order: 2; margin-left: auto; padding: 0; border: 0; }
+  body > .site-header .theme-switch button:not(.is-active) { display: none; }
+  body > .site-header .theme-switch button { width: 40px; height: 40px; border: 1px solid #31527a; box-shadow: none; }
+  body > .site-header .theme-switch span { display: none; }
   body > .site-header .menu-toggle { order: 3; margin-left: 8px; }
+}
 }

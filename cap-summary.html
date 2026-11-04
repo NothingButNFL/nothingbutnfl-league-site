@@ -9,9 +9,10 @@
     <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="theme-light.css">
+    <link rel="stylesheet" href="theme-gray.css">
     <script>
-      // Applies the saved light/dark choice before the page paints.
-      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; } catch (e) {}
+      // Applies the saved dark/gray/light choice before the page paints.
+      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; } catch (e) {}
     </script>
     <script>
       // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
