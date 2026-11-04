@@ -640,10 +640,7 @@ function salarySortValue(player, key) {
   if (key === "experience") return projectedExperience(player, activeSeason) ?? -1;
   if (key === "capHit" || key === "capPercent") return capHitFor(entry);
   if (key === "yearsRemaining") return yearsRemainingFor(player, activeSeason);
-  if (key === "tradePenalty" || key === "releasePenalty") {
-    const penalties = calculatedPenaltiesFor(player, activeSeason);
-    return penalties ? penalties[key] : entry[key];
-  }
+  if (["tradePenalty", "releasePenalty", "tradeNetSavings", "releaseNetSavings"].includes(key)) return sheetPenaltiesFor(player, activeSeason)[key];
   return entry[key] ?? 0;
 }
 
@@ -811,16 +808,16 @@ function renderSalaryRows() {
         cell.append(input);
       } else {
         const signedDisplay = field === "tradeNetSavings" || field === "releaseNetSavings";
-        const penalties = calculatedPenaltiesFor(player, activeSeason);
-        const isCalculatedPenalty = penalties && (field === "tradePenalty" || field === "releasePenalty");
-        const value = isCalculatedPenalty ? penalties[field] : entry[field];
+        const sheet = sheetPenaltiesFor(player, activeSeason);
+        const isCalculated = signedDisplay || (sheet.calculated && (field === "tradePenalty" || field === "releasePenalty"));
+        const value = isCalculated ? sheet[field] : entry[field];
         const input = currencyInput(value, ariaLabel, field, signed === true, signedDisplay);
-        if (isCalculatedPenalty) {
+        if (isCalculated) {
           input.readOnly = true;
-          input.title = "Calculated from prorated bonuses and guaranteed salary using the current league-year rules.";
+          input.title = penaltyCellTitle(field, sheet.rule);
         }
         cell.append(input);
-        if (signedDisplay) updateSavingsAppearance(cell, entry[field]);
+        if (signedDisplay) updateSavingsAppearance(cell, value);
       }
     }
     const actionCell = row.insertCell();
@@ -834,6 +831,18 @@ function renderSalaryRows() {
     actionCell.append(actions);
   }
   updateComputedCells();
+}
+
+// Hover text for the calculated dead-cap and net-savings cells.
+function penaltyCellTitle(field, rule) {
+  if (field.endsWith("NetSavings")) {
+    return `Cap hit minus the ${field === "tradeNetSavings" ? "trade" : "release"} penalty: what this season's cap gains if he's ${field === "tradeNetSavings" ? "traded" : "released"}.`;
+  }
+  const what = field === "tradePenalty" ? "prorated signing bonus" : "prorated signing bonus and guaranteed salary";
+  if (rule === "projected") return `Projected as a March 1 – May 31 move in ${activeSeason}: this season's and later seasons' ${what}.`;
+  if (rule === "current-early") return `March 1 – May 31 rules: this season's and later seasons' ${what} all count now.`;
+  if (rule === "current-late") return `After June 1: only this season's ${what} counts now; later seasons' lands on next year's dead cap.`;
+  return "";
 }
 
 function updateComputedCells() {
@@ -851,11 +860,20 @@ function updateComputedCells() {
       ? `${((capHit / totalCap) * 100).toFixed(2)}%`
       : "—";
     row.querySelector('[data-field="yearsRemaining"]').value = String(yearsRemainingFor(player, activeSeason));
-    const penalties = calculatedPenaltiesFor(player, activeSeason);
+    const sheet = sheetPenaltiesFor(player, activeSeason);
     for (const field of ["tradePenalty", "releasePenalty"]) {
       const input = row.querySelector(`[data-field="${field}"]`);
-      input.value = formatCurrency(penalties ? penalties[field] : entry[field]);
-      input.readOnly = Boolean(penalties);
+      if (document.activeElement === input && !sheet.calculated) continue;
+      input.value = formatCurrency(sheet.calculated ? sheet[field] : entry[field]);
+      input.readOnly = sheet.calculated;
+      input.title = sheet.calculated ? penaltyCellTitle(field, sheet.rule) : "";
+    }
+    for (const field of ["tradeNetSavings", "releaseNetSavings"]) {
+      const input = row.querySelector(`[data-field="${field}"]`);
+      input.value = formatSignedCurrency(sheet[field]);
+      input.readOnly = true;
+      input.title = penaltyCellTitle(field, sheet.rule);
+      updateSavingsAppearance(input.closest("td"), sheet[field]);
     }
   }
 }
@@ -1474,8 +1492,8 @@ salaryRows.addEventListener("change", (event) => {
   const player = selectedTeamData().roster.find(({ id }) => id === row.dataset.playerId);
   if (!player) return;
   const field = input.dataset.field;
-  if (field === "yearsRemaining" ||
-      (calculatedPenaltiesFor(player, activeSeason) && (field === "tradePenalty" || field === "releasePenalty"))) return;
+  if (field === "yearsRemaining" || field === "tradeNetSavings" || field === "releaseNetSavings" ||
+      (sheetPenaltiesFor(player, activeSeason).calculated && (field === "tradePenalty" || field === "releasePenalty"))) return;
   if (field === "name" || field === "position" || field === "rosterType") {
     const value = input.value.trim();
     const maxLength = field === "name" ? 70 : field === "position" ? 8 : 30;
