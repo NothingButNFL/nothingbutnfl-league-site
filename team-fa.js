@@ -142,14 +142,27 @@ function renderTeamFreeAgents() {
   empty.hidden = shown.length > 0;
   empty.textContent = all.length ? "No free agents match these filters." : "There are no free agents right now. Players marked FA on Player Contracts show up here.";
 
-  const offers = (officeData.faOffers || []).filter((o) => o.teamId === activeTeamId)
-    .sort((a, b) => (a.status === "pending" ? 0 : 1) - (b.status === "pending" ? 0 : 1) || (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 20);
-  const list = document.querySelector("#team-fa-offers");
-  list.replaceChildren(...offers.map(teamFaOfferCard));
-  if (!offers.length) {
+  // Pending offers sit at the top of the tab; decided ones are listed at the bottom.
+  const mineAll = (officeData.faOffers || []).filter((o) => o.teamId === activeTeamId);
+  const pending = mineAll.filter((o) => o.status === "pending").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const pendingBox = document.querySelector("#team-fa-pending");
+  pendingBox.replaceChildren(...pending.map(teamFaOfferCard));
+  if (!pending.length) {
     const note = document.createElement("p");
     note.className = "empty-state";
-    note.textContent = "This team hasn't made any free agent offers yet.";
+    note.textContent = "No pending offers. Pick a free agent below and click Make offer.";
+    pendingBox.append(note);
+  }
+  document.querySelector("#team-fa-pending-count").textContent = String(pending.length);
+  document.querySelector(".team-fa-pending").classList.toggle("has-offers", pending.length > 0);
+  const past = mineAll.filter((o) => o.status !== "pending")
+    .sort((a, b) => (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 20);
+  const list = document.querySelector("#team-fa-offers");
+  list.replaceChildren(...past.map(teamFaOfferCard));
+  if (!past.length) {
+    const note = document.createElement("p");
+    note.className = "empty-state";
+    note.textContent = "No accepted, declined or withdrawn offers yet.";
     list.append(note);
   }
   if (teamFaPlayerId && !currentFreeAgents().some((p) => p.id === teamFaPlayerId)) { teamFaFormPanel.hidden = true; teamFaPlayerId = null; }
@@ -218,7 +231,7 @@ teamFaForm.addEventListener("submit", (event) => {
   renderTeamFreeAgents();
 });
 
-document.querySelector("#team-fa-offers").addEventListener("click", async (event) => {
+document.querySelector("#team-fa-pending").addEventListener("click", async (event) => {
   const button = event.target.closest('[data-action="withdraw"]');
   const id = button?.closest("[data-offer-id]")?.dataset.offerId;
   const offer = id && pendingFaOffers(officeData).find((o) => o.id === id && o.teamId === activeTeamId);

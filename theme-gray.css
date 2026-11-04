@@ -366,3 +366,4 @@ html[data-theme="gray"] .theme-switch button.is-active { background-color: #3a3c
 @media (max-width: 1180px) {
   html[data-theme="gray"] body > .site-header .theme-switch button { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
 }
+html[data-theme="gray"] .team-fa-pending { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }

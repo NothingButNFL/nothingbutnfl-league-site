@@ -675,3 +675,6 @@ html[data-theme="light"] .theme-switch button.is-active { background-color: #dbe
 @media (max-width: 1180px) {
   html[data-theme="light"] body > .site-header .theme-switch button { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 }
+html[data-theme="light"] .team-fa-pending { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #1f6fc5; background-color: #f5f8fc; }
+html[data-theme="light"] .team-fa-pending.has-offers { border-left-color: #c98a12; }
+html[data-theme="light"] .team-fa-pending-title { color: #0b1f3a; }

@@ -1925,4 +1925,9 @@ form.is-minimum input[readonly] { opacity: .75; }
   body > .site-header .theme-switch span { display: none; }
   body > .site-header .menu-toggle { order: 3; margin-left: 8px; }
 }
-}
+
+/* Team sheet Offer Free Agent tab: pending offers at the top */
+.team-fa-pending { margin: 0 0 16px; padding: 14px 16px 16px; border: 1px solid #31527a; border-left: 3px solid #8fd0ff; background: #0a2647; }
+.team-fa-pending.has-offers { border-left-color: #ffd37a; }
+.team-fa-pending-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: #fff; font: 700 16px var(--display); }
+.team-fa-pending .empty-state { margin: 0; }

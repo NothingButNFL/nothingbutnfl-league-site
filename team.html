@@ -259,6 +259,10 @@
               <div><span class="panel-index">FREE AGENCY</span><h3>Offer a free agent</h3></div>
               <p>Pick a free agent and send this team's contract offer. It goes to the commissioner's Free Agent Offers inbox; nothing changes until it's accepted. A new offer for the same player replaces this team's open one.</p>
             </div>
+            <section class="team-fa-pending" aria-labelledby="team-fa-pending-title">
+              <h4 class="team-fa-pending-title" id="team-fa-pending-title">Pending offers <span class="fa-offer-count" id="team-fa-pending-count">0</span></h4>
+              <div class="fa-offer-list" id="team-fa-pending"></div>
+            </section>
             <div class="team-fa-cap" id="team-fa-cap"></div>
             <div class="contracts-toolbar">
               <label>Search<input id="team-fa-search" type="search" placeholder="Player name" maxlength="60"></label>
@@ -291,7 +295,7 @@
               </form>
             </div>
 
-            <h4 class="trade-offers-heading">This team's offers</h4>
+            <h4 class="trade-offers-heading">Past offers</h4>
             <div class="fa-offer-list" id="team-fa-offers"></div>
           </div>
 
