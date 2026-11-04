@@ -41,6 +41,7 @@
     <script src="contract-editor.js" defer></script>
     <script src="team-fa.js" defer></script>
     <script src="restructure.js" defer></script>
+    <script src="extend.js" defer></script>
   </head>
   <body class="team-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -105,6 +106,7 @@
             <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
             <a class="admin-menu-link" href="admin-fa-offers.html" role="menuitem"><span>Free Agent Offers</span><span class="nav-badge" data-badge="admin-fa" hidden></span></a>
             <a class="admin-menu-link" href="admin-restructures.html" role="menuitem"><span>Restructure Requests</span><span class="nav-badge" data-badge="admin-restructure" hidden></span></a>
+            <a class="admin-menu-link" href="admin-extensions.html" role="menuitem"><span>Extension Offers</span><span class="nav-badge" data-badge="admin-extension" hidden></span></a>
             <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
             <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
           </div>
@@ -285,6 +287,41 @@
             </div>
             <h4 class="trade-offers-heading">Past restructure requests</h4>
             <div class="fa-offer-list" id="rs-past"></div>
+          </div>
+
+          <div class="management-panel extend-panel" id="extend-panel" role="tabpanel" aria-labelledby="season-tab-extend" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">CONTRACT MOVES</span><h3>Offer an extension</h3></div>
+              <p>Players in the last year of their deal can be offered an extension that starts next season. Build it year by year like a free agent offer. It goes to the commissioner on Admin › Extension Offers; nothing changes until it's approved.</p>
+            </div>
+            <section class="team-fa-pending" id="ext-pending-box" aria-labelledby="ext-pending-title">
+              <h4 class="team-fa-pending-title" id="ext-pending-title">Pending extensions <span class="fa-offer-count" id="ext-pending-count">0</span></h4>
+              <div class="fa-offer-list" id="ext-pending"></div>
+            </section>
+            <div class="management-table-wrap">
+              <table class="management-table fa-table">
+                <thead><tr><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">AGE</th><th scope="col">YRS EXP</th><th scope="col" id="ext-cap-head">CAP HIT</th><th scope="col">YOUR OFFER</th><th scope="col"><span class="sr-only">Offer extension</span></th></tr></thead>
+                <tbody id="ext-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="ext-empty" hidden></p>
+            <div class="management-panel fa-sign-panel team-fa-form-panel" id="ext-form-panel" hidden>
+              <div class="panel-heading">
+                <div><span class="panel-index">EXTENSION OFFER</span><h3 id="ext-form-title">Offer an extension</h3></div>
+                <p id="ext-form-note"></p>
+              </div>
+              <form class="management-form fa-sign-form team-fa-form" id="ext-form">
+                <div class="contract-editor-slot" id="ext-contract"></div>
+                <label class="fa-offer-notes">Message to the commissioner<input name="notes" maxlength="300" placeholder="Optional"></label>
+                <p class="team-fa-preview" id="ext-preview" aria-live="polite"></p>
+                <div class="fa-sign-actions">
+                  <button class="button button-lime" type="submit">Send for approval <span aria-hidden="true">→</span></button>
+                  <button class="workspace-button" type="button" id="ext-cancel">Cancel</button>
+                </div>
+              </form>
+            </div>
+            <h4 class="trade-offers-heading">Past extension offers</h4>
+            <div class="fa-offer-list" id="ext-past"></div>
           </div>
 
           <div class="management-panel team-fa-panel" id="team-fa-panel" role="tabpanel" aria-labelledby="season-tab-free-agents" hidden>

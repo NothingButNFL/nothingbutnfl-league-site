@@ -120,7 +120,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers);
 }
 
 function migrateLegacyData(data) {
@@ -2410,4 +2410,87 @@ function undoRestructure(data, { request, replaced }) {
   if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
 }
 const restructureSummary = (r) => `${formatCurrency(r.amount)} of ${r.year} salary to signing bonus over ${r.spread} season${r.spread === 1 ? "" : "s"}${r.addVoid ? ` (+${r.addVoid} void)` : ""} · ${formatCurrency(r.capSavings)} cap space`;
+
+// ---- Contract extensions (team sheet › Extend, Admin › Extension Offers) ----
+// Players in the final year of their deal can be offered an extension that starts next season.
+// data.extensionOffers = [{ id, teamId, playerId, playerName, position?, years, voidYears, signingBonus, totalValue, guaranteed,
+//   yearsDetail, startYear, status: "pending" | "approved" | "declined" | "withdrawn", createdAt, decidedAt?, decisionNote?, notes? }]
+function validExtensionOffers(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 3000) return false;
+  const ids = new Set();
+  for (const o of list) {
+    if (!o || typeof o.id !== "string" || !o.id || ids.has(o.id) || !nflTeams.some(({ id }) => id === o.teamId) ||
+        typeof o.playerId !== "string" || typeof o.playerName !== "string" || !o.playerName || o.playerName.length > 70 ||
+        !isIntegerInRange(o.years, 1, 10) || !isIntegerInRange(o.voidYears || 0, 0, 4) || !seasons.includes(o.startYear) ||
+        ["signingBonus", "totalValue", "guaranteed"].some((k) => !isIntegerInRange(o[k] || 0, 0, 999999999)) ||
+        !Array.isArray(o.yearsDetail) || o.yearsDetail.length !== o.years ||
+        o.yearsDetail.some((y) => !y || ["baseSalary", "rosterBonus", "guaranteedSalary"].some((k) => !isIntegerInRange(y[k], 0, 999999999))) ||
+        !restructureStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
+        ["decisionNote", "notes", "position"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > 300))) return false;
+    ids.add(o.id);
+  }
+  return true;
+}
+const pendingExtensions = (data) => (data.extensionOffers || []).filter((o) => o.status === "pending");
+const extensionStartYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) + 1;
+
+// Players on a team sheet whose deal ends this season (nothing on later sheets) can be extended.
+function isExtensionEligible(player) {
+  const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  return isPlayerOnSeason(player, year) && seasons.includes(year + 1) && !player.activeSeasons.some((s) => s > year);
+}
+
+function submitExtension(data, teamId, player, terms) {
+  if (!Array.isArray(data.extensionOffers)) data.extensionOffers = [];
+  const now = new Date().toISOString();
+  const replaced = pendingExtensions(data).find((o) => o.teamId === teamId && o.playerId === player.id) || null;
+  if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer offer" });
+  if (data.extensionOffers.length >= 3000) data.extensionOffers = data.extensionOffers.filter((o) => o.status === "pending").concat(data.extensionOffers.filter((o) => o.status !== "pending").slice(-2000));
+  const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const offer = { id: newRecordId("extension"), teamId, playerId: player.id, playerName: player.name.slice(0, 70),
+    years: terms.years, voidYears: terms.voidYears || 0, signingBonus: terms.signingBonus || 0, totalValue: terms.totalValue, guaranteed: terms.guaranteed || 0,
+    yearsDetail: terms.yearsDetail.map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary })),
+    startYear: terms.startYear, status: "pending", createdAt: now };
+  const position = seasonEntry(player, year).position;
+  if (position) offer.position = String(position).slice(0, 8);
+  if (terms.notes && terms.notes.trim()) offer.notes = terms.notes.trim().slice(0, 300);
+  data.extensionOffers.push(offer);
+  return { offer, replaced };
+}
+function undoExtension(data, { offer, replaced }) {
+  data.extensionOffers = data.extensionOffers.filter((o) => o !== offer);
+  if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
+}
+
+// Applies an approved extension: adds the new seasons to his salary sheet, any void-year bonus to dead cap,
+// updates his contract and logs it. Returns the transaction or { error }.
+function applyExtension(data, offer) {
+  const team = data.teams[offer.teamId];
+  const player = team?.roster.find((p) => p.id === offer.playerId);
+  if (!player) return { error: `${offer.playerName} is no longer on the ${offer.teamId} salary sheet.` };
+  if (!isExtensionEligible(player)) return { error: `${offer.playerName} already has seasons after this one on his sheet, so he can't be extended.` };
+  const current = seasonEntry(player, offer.startYear - 1);
+  const rows = contractSeasonBreakdown(offer, offer.startYear);
+  for (const row of rows) {
+    player.seasons[row.year] = { ...emptySeasonData(current.position, current.rosterType || "Active"),
+      baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary };
+    if (!player.activeSeasons.includes(row.year)) player.activeSeasons.push(row.year);
+  }
+  const voided = voidBonusFor(offer, offer.startYear);
+  let voidNote = "";
+  if (voided && seasons.includes(voided.year)) {
+    team.deadCap[voided.year].push({ id: newRecordId("dead-cap"), playerName: player.name.slice(0, 70), position: current.position, transaction: "void",
+      transactionYear: voided.year, amount: voided.amount, date: new Date().toISOString(), voidFor: player.id, voidYears: voided.voidYears });
+    voidNote = `; ${formatCurrency(voided.amount)} of signing bonus on ${voided.voidYears} void year${voided.voidYears === 1 ? "" : "s"} becomes ${voided.year} dead cap`;
+  }
+  player.contract = { length: offer.years, totalValue: offer.totalValue, signingBonus: offer.signingBonus || null, guaranteed: offer.guaranteed || null };
+  const last = rows.length ? rows[rows.length - 1].year : offer.startYear;
+  return logTransaction(data, { type: "extension", teams: [offer.teamId], player: player.name,
+    details: `${extensionAnnouncement(offer)}\nOn the ${offer.teamId} salary sheet ${offer.startYear}${last > offer.startYear ? `–${last}` : ""}${voidNote}.` });
+}
+
+function extensionAnnouncement(offer) {
+  return signingAnnouncement(offer.teamId, offer.position, offer.playerName, offer, "Extend");
+}
 

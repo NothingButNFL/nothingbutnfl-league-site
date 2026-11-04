@@ -2,8 +2,10 @@
 // Contract Offer Template: a summary row, then one row per season with base salary, prorated signing bonus,
 // roster bonus, guaranteed salary and cap hit. Signing bonus prorates over up to 5 seasons; deals shorter than
 // 5 years can add void years. Needs league-core.js.
-function createContractEditor(container, { getData = () => null } = {}) {
-  const startYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+function createContractEditor(container, { getData = () => null, startYear: startYearOption = null, title = "Contract Offer" } = {}) {
+  // The league year now (players' ages and experience are as of this season). Extensions start a later season.
+  const refYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const startYear = () => startYearOption ? startYearOption() : refYear();
   const maxYears = () => seasons.length - seasons.indexOf(startYear());
   let player = null;
   let locked = false;
@@ -13,7 +15,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
 
   container.classList.add("contract-editor");
   container.innerHTML = `
-    <div class="ce-title"><strong>Contract Offer</strong><span class="ce-subtitle"></span></div>
+    <div class="ce-title"><strong>${title}</strong><span class="ce-subtitle"></span></div>
     <div class="management-table-wrap"><table class="ce-summary"><thead><tr>
       <th>NAME</th><th>POSITION</th><th>AGE</th><th>CONTRACT LENGTH</th><th>TOTAL VALUE</th><th>SIGNING BONUS</th><th>TOTAL GTD</th><th>AAV</th>
     </tr></thead><tbody><tr>
@@ -65,7 +67,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
       const tr = document.createElement("tr");
       const isVoid = i >= years;
       if (isVoid) tr.className = "is-void";
-      tr.insertCell().textContent = age === null ? "—" : String(age + i);
+      tr.insertCell().textContent = age === null ? "—" : String(age + (start - refYear()) + i);
       const yearCell = tr.insertCell();
       yearCell.textContent = String(start + i);
       if (isVoid) { const tag = document.createElement("span"); tag.className = "ce-void-tag"; tag.textContent = "VOID"; yearCell.append(" ", tag); }
@@ -105,7 +107,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
   function update() {
     const { shares, total, gtd } = totals();
     out("name", player?.name || "—");
-    out("position", player?.position || "—");
+    out("position", player?.position || (player?.seasons && isPlayerOnSeason(player, refYear()) ? seasonEntry(player, refYear()).position : "") || "—");
     const age = player ? playerAge(player) : null;
     out("age", age === null ? "—" : String(age));
     out("length", voidYears ? `${years} + ${voidYears} void` : String(years));
@@ -128,7 +130,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
     for (let i = 0; i < years; i++) {
       const hint = container.querySelector(`[data-min-hint="${i}"]`);
       if (!hint) continue;
-      const min = data && player ? minimumForSeason(data, player, startYear() + i, startYear()) : null;
+      const min = data && player ? minimumForSeason(data, player, startYear() + i, refYear()) : null;
       hint.textContent = min ? `Min ${formatCurrency(min.amount)} (${min.experience} yrs)` : "";
       hint.classList.toggle("is-below", Boolean(min) && rows[i].baseSalary < min.amount);
       hint.closest("td").classList.toggle("is-below", Boolean(min) && rows[i].baseSalary < min.amount);
@@ -186,6 +188,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
     },
     load(offer) {
       years = offer.years; voidYears = offer.voidYears || 0; signingBonus = offer.signingBonus || 0;
+      if (years > maxYears()) years = maxYears();
       rows = Array.isArray(offer.yearsDetail) ? offer.yearsDetail.map((r) => ({ ...r }))
         : contractSeasonBreakdown(offer, startYear()).map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary }));
       bonusInput.value = signingBonus ? formatCurrency(signingBonus) : "";
@@ -217,7 +220,7 @@ function createContractEditor(container, { getData = () => null } = {}) {
       const data = getData();
       if (data && player) {
         for (let i = 0; i < years; i++) {
-          const min = minimumForSeason(data, player, startYear() + i, startYear());
+          const min = minimumForSeason(data, player, startYear() + i, refYear());
           if (min && rows[i].baseSalary < min.amount) {
             tbody.querySelector(`input[data-row="${i}"][data-field="baseSalary"]`)?.focus();
             return { error: `${startYear() + i}: base salary must be at least the ${formatCurrency(min.amount)} minimum for ${minimumTierLabel(min.tier)} of experience (${player.name} will have ${min.experience}).` };
