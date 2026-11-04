@@ -1,4 +1,4 @@
-// Team sheet Actions › Extensions: offer an extension to players in the final year of their deal. The offer is built with the
+// Team sheet Team Actions › Extensions: offer an extension to players in the final year of their deal. The offer is built with the
 // contract builder (starting next season) and goes to Admin › Extension Offers. Uses front-office.js globals.
 const extRows = document.querySelector("#ext-rows");
 const extFormPanel = document.querySelector("#ext-form-panel");

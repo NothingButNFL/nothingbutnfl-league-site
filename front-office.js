@@ -161,10 +161,10 @@ function transactionButton(player, transaction) {
 
 // Team actions live under one "Team Actions" dropdown, next to Draft Picks in the tab row.
 const teamActionItems = [
-  { id: "trade", label: "Trade" },
+  { id: "trade", label: "Trade Center" },
   { id: "restructure", label: "Restructure" },
   { id: "extend", label: "Extensions" },
-  { id: "free-agents", label: "Sign Player" }
+  { id: "free-agents", label: "Free Agents" }
 ];
 const teamActionIds = teamActionItems.map((item) => item.id);
 const tabPanelFor = (id) => ({ "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
