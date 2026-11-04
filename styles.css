@@ -2076,3 +2076,5 @@ form.is-minimum input[readonly] { opacity: .75; }
 .theme-menu-heading { margin: 8px 9px 4px; padding-top: 8px; border-top: 1px solid #31527a; color: #8ca5c5; font: 10px var(--mono); letter-spacing: .09em; text-transform: uppercase; }
 .insider-wire { margin-top: 18px; padding-top: 16px; border-top: 1px solid #1d3a5f; }
 .insider-title { margin: 0; color: #fff; font: 700 18px var(--display); letter-spacing: -.01em; }
+.conference-title { display: flex; align-items: center; gap: 12px; }
+.conference-logo { width: 44px; height: 44px; object-fit: contain; }
