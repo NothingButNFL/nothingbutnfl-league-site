@@ -1971,3 +1971,4 @@ form.is-minimum input[readonly] { opacity: .75; }
 .ce-title.is-section { padding: 6px 10px; }
 .ce-title.is-section strong { display: none; }
 .ce-title.is-section .ce-subtitle, .ce-original .ce-title .ce-subtitle { color: #fff; font: 600 15px var(--body); }
+.rs-inputs input.is-below { border-color: #ff9299; }

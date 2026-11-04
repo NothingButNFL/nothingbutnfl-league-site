@@ -2477,6 +2477,8 @@ function applyExtension(data, offer) {
   const player = team?.roster.find((p) => p.id === offer.playerId);
   if (!player) return { error: `${offer.playerName} is no longer on the ${offer.teamId} salary sheet.` };
   if (!isExtensionEligible(player)) return { error: `${offer.playerName} already has seasons after this one on his sheet, so he can't be extended.` };
+  const belowMinimum = minimumProblem(data, player, offer, offer.startYear);
+  if (belowMinimum) return { error: belowMinimum };
   const thisYear = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   const current = seasonEntry(player, thisYear);
   const rows = contractSeasonBreakdown(offer, offer.startYear);
@@ -2506,5 +2508,17 @@ function applyExtension(data, offer) {
 
 function extensionAnnouncement(offer) {
   return signingAnnouncement(offer.teamId, offer.position, offer.playerName, offer, "Extend");
+}
+
+// Checks every season of an offer's base salary against the league minimum for the player's experience that season
+// (his experience now plus one per later season). Returns "" or a message. Seasons without a minimum set aren't checked.
+function minimumProblem(data, player, contract, startYear) {
+  const ref = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  for (const [i, row] of (contract.yearsDetail || []).entries()) {
+    const year = startYear + i;
+    const min = minimumForSeason(data, player, year, ref);
+    if (min && row.baseSalary < min.amount) return `${year}: base salary ${formatCurrency(row.baseSalary)} is below the ${formatCurrency(min.amount)} minimum for ${minimumTierLabel(min.tier)} of experience (${player.name} will have ${min.experience}).`;
+  }
+  return "";
 }
 

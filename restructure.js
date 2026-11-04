@@ -97,6 +97,14 @@ function rsUpdate() {
   rsBase.placeholder = formatCurrency(entry.baseSalary);
   rsRoster.placeholder = formatCurrency(entry.rosterBonus);
   const apply = document.querySelector("#rs-apply");
+  // Minimum hint under the base salary box, same as the free agent offer form.
+  const min = minimumForSeason(officeData, player, year, year);
+  const typedBase = rsBase.value.trim() ? parseMoneyText(rsBase.value) : entry.baseSalary;
+  const hint = document.querySelector("#rs-min-hint");
+  hint.textContent = min ? `Min ${formatCurrency(min.amount)} (${min.experience} yrs)` : "";
+  const below = Boolean(min) && Number.isFinite(typedBase) && typedBase < min.amount;
+  hint.classList.toggle("is-below", below);
+  rsBase.classList.toggle("is-below", below);
   const message = error || plan?.error;
   if (message) {
     rsNote.textContent = message;

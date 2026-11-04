@@ -255,7 +255,9 @@ function createContractEditor(container, { getData = () => null, startYear: star
       const over = rows.findIndex((r) => r.guaranteedSalary > r.baseSalary);
       if (over !== -1) return { error: `${startYear() + over}: guaranteed salary can't be more than that year's base salary.` };
       const { total, gtd } = totals();
-      if (!total) return { error: "Enter a base salary or signing bonus." };
+      // Extensions need money in the new years (their "new money" total can be small next to the old season).
+      const newMoney = signingBonus + rows.slice(extra).reduce((s, r) => s + r.baseSalary + r.rosterBonus, 0);
+      if (extension ? !newMoney : !total) return { error: extension ? "Enter a base salary (or signing bonus) for the extension years." : "Enter a base salary or signing bonus." };
       const data = getData();
       if (data && player) {
         for (let i = 0; i < rowCount(); i++) {

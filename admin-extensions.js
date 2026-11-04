@@ -26,7 +26,7 @@ function problemWith(o) {
   const player = playerFor(o);
   if (!player) return `${o.playerName} is no longer on the ${o.teamId} salary sheet.`;
   if (!isExtensionEligible(player)) return `${o.playerName} already has seasons after this one on his sheet.`;
-  return "";
+  return minimumProblem(officeData, player, o, o.startYear);
 }
 
 function contractTable(o) {
