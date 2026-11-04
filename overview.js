@@ -137,17 +137,9 @@ function renderConferenceLeaders() {
     const teamIds = nflDivisions.filter((division) => division.conference === conference).flatMap((division) => division.teams);
     const ranked = teamIds.map((teamId) => ({ teamId, record: teamRecord(data, teamId) })).sort(compareRecords).slice(0, 7);
     const card = document.createElement("article");
-    card.className = "conference-card";
+    card.className = `conference-card is-${conference.toLowerCase()}`; // the conference logo sits faintly behind the table
     const title = document.createElement("h3");
-    title.className = "conference-title";
-    // Conference logo (assets/afc.png, assets/nfc.png); if it can't load, just the name shows.
-    const logo = document.createElement("img");
-    logo.className = "conference-logo";
-    logo.src = `assets/${conference.toLowerCase()}.png`;
-    logo.alt = "";
-    logo.loading = "lazy";
-    logo.addEventListener("error", () => logo.remove(), { once: true });
-    title.append(logo, conference);
+    title.textContent = conference;
     const wrap = document.createElement("div");
     wrap.className = "conference-table-wrap";
     const table = document.createElement("table");
