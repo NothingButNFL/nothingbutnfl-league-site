@@ -32,10 +32,15 @@ function problemWith(o) {
 function contractTable(o) {
   const table = el("table", "fao-contract");
   const head = table.createTHead().insertRow();
-  for (const label of ["YEAR", "BASE SALARY", "SIGNING BONUS", "ROSTER BONUS", "GTD SALARY", "CAP HIT"]) head.append(el("th", "", label));
+  for (const label of ["AGE", "YEAR", "BASE SALARY", "SIGNING BONUS", "ROSTER BONUS", "GTD SALARY", "CAP HIT"]) head.append(el("th", "", label));
   const body = table.createTBody();
+  // His age each season: today's age, plus one for each season after the current one.
+  const player = playerFor(o);
+  const age = player ? playerAge(player) : null;
+  const nowYear = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   for (const r of contractSeasonBreakdown(o, o.startYear)) {
     const tr = body.insertRow();
+    tr.insertCell().textContent = age === null ? "—" : String(age + r.year - nowYear);
     tr.insertCell().textContent = String(r.year);
     for (const v of [r.baseSalary, r.proratedBonus, r.rosterBonus || 0, r.guaranteedSalary, breakdownCapHit(r)]) tr.insertCell().textContent = formatCurrency(v);
   }
@@ -44,7 +49,7 @@ function contractTable(o) {
     const tr = body.insertRow();
     tr.className = "fao-void-note";
     const cell = tr.insertCell();
-    cell.colSpan = 6;
+    cell.colSpan = 7;
     cell.textContent = `${formatCurrency(voided.amount)} on ${voided.voidYears} void year${voided.voidYears === 1 ? "" : "s"} becomes ${voided.year} dead cap after his final season.`;
   }
   return table;
