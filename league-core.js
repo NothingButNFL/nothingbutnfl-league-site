@@ -1225,6 +1225,25 @@ function profilePhotoSrc(profile) {
   return profile.photoData || profile.photoUrl || "";
 }
 
+// A small round portrait for name cells (team pages). Blank (an empty circle) when the player has no photo
+// or it fails to load.
+function playerPortrait(player) {
+  const wrap = document.createElement("span");
+  wrap.className = "player-portrait";
+  wrap.setAttribute("aria-hidden", "true");
+  const src = profilePhotoSrc(playerProfile(player));
+  if (src) {
+    const img = document.createElement("img");
+    img.alt = "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.src = src;
+    img.addEventListener("error", () => img.remove());
+    wrap.append(img);
+  }
+  return wrap;
+}
+
 function playerProfile(player) {
   return { positions: "", college: "", draftYear: null, draftRound: null, draftPick: null, height: "", weight: null,
     photoUrl: "", photoData: "", retired: false, notes: "", ...(player.profile || {}) };

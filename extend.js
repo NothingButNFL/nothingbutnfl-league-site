@@ -56,7 +56,7 @@ function renderExtensions() {
     link.className = "player-name-link";
     link.href = profileUrl(p.id);
     link.textContent = p.name;
-    name.append(link);
+    name.append(playerPortrait(p), link);
     tr.insertCell().textContent = entry.position || "—";
     const age = playerAge(p);
     tr.insertCell().textContent = age === null ? "—" : String(age);

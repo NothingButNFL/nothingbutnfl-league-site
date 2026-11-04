@@ -438,3 +438,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .rsa-card { border-top-color
 html:is([data-theme^="team-"], [data-theme="neon"]) .rsa-status.is-withdrawn { background-color: rgb(var(--tm-c9d8ea) / 0.12); color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-message { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-message input { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-portrait { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }

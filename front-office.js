@@ -744,7 +744,7 @@ function renderSalaryRows() {
     nameLink.href = profileUrl(player.id);
     nameLink.textContent = player.name;
     nameLink.title = `Open ${player.name}'s profile`;
-    nameCell.append(nameLink);
+    nameCell.append(playerPortrait(player), nameLink);
     if (isVmbSeason(entry)) {
       const vmb = document.createElement("button");
       vmb.type = "button";

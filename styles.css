@@ -1995,3 +1995,15 @@ form.is-minimum input[readonly] { opacity: .75; }
 .ce-title.is-section strong { display: none; }
 .ce-title.is-section .ce-subtitle, .ce-original .ce-title .ce-subtitle { color: #fff; font: 600 15px var(--body); }
 .rs-inputs input.is-below { border-color: #ff9299; }
+
+/* Player portraits next to names on team pages (blank circle when there's no photo) */
+.player-portrait { display: inline-block; flex: none; width: 30px; height: 30px; margin: -4px 9px -4px 0; overflow: hidden; border: 1px solid #31527a; border-radius: 50%; background: #0a2647; vertical-align: middle; }
+.player-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.salary-table .player-portrait { float: left; margin: 1px 8px 0 0; }
+.salary-table td:has(> .player-portrait) .player-name-link { line-height: 20px; }
+@media (max-width: 1300px) {
+  .salary-table tbody td:has(> .player-portrait) { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 10px; }
+  .salary-table tbody td:has(> .player-portrait)::before { grid-column: 1 / -1; }
+  .salary-table tbody td:has(> .player-portrait) > :not(.player-portrait) { grid-column: 2; justify-self: start; }
+  .salary-table tbody td > .player-portrait { float: none; width: 36px; height: 36px; margin: 0; grid-row: span 4; align-self: start; }
+}

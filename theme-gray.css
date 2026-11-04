@@ -377,3 +377,4 @@ html[data-theme="gray"] .rsa-card { border-top-color: #47494f; border-right-colo
 html[data-theme="gray"] .rsa-status.is-withdrawn { color: #d5d7db; }
 html[data-theme="gray"] .rs-message { color: #d5d7db; }
 html[data-theme="gray"] .rs-message input { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
+html[data-theme="gray"] .player-portrait { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }

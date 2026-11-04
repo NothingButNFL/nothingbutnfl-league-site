@@ -28,7 +28,7 @@ function renderMultiYear() {
     link.className = "player-name-link";
     link.href = profileUrl(player.id);
     link.textContent = player.name;
-    nameCell.append(link);
+    nameCell.append(playerPortrait(player), link);
     tr.insertCell().textContent = seasonEntry(player, current).position || "—";
     for (const year of seasons) {
       const cell = tr.insertCell();
