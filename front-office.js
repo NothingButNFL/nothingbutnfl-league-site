@@ -10,7 +10,7 @@ const salaryEmpty = document.querySelector("#salary-empty");
 const requestedTeamId = new URLSearchParams(window.location.search).get("team")?.toUpperCase();
 let activeTeamId = nflTeams.some(({ id }) => id === requestedTeamId) ? requestedTeamId : nflTeams[0].id;
 let activeSeason = firstSeason;
-let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#free-agents" ? "free-agents" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
+let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#free-agents" ? "free-agents" : location.hash === "#restructure" ? "restructure" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
 let officeData = emptyOfficeData(activeTeamId);
 let storageIsAvailable = true;
 let tradePartnerIds = ["", ""];
@@ -169,6 +169,9 @@ function renderSeasonTabs() {
     id: "trade",
     label: "TRADE"
   }, {
+    id: "restructure",
+    label: "RESTRUCTURE"
+  }, {
     id: "free-agents",
     label: "OFFER FREE AGENT"
   }];
@@ -182,7 +185,7 @@ function renderSeasonTabs() {
       ? activeTab === "salary" && Number(id) === activeSeason
       : activeTab === id;
     tab.setAttribute("aria-selected", String(active));
-    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "multi-year" ? "multi-year-panel" : id === "free-agents" ? "team-fa-panel" : id === "draft-picks" ? "draft-picks-panel" :
+    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "multi-year" ? "multi-year-panel" : id === "free-agents" ? "team-fa-panel" : id === "restructure" ? "restructure-panel" : id === "draft-picks" ? "draft-picks-panel" :
       id === "trade" ? "trade-panel" : "salary-year-content");
     tab.tabIndex = active ? 0 : -1;
     tab.textContent = label;
@@ -198,7 +201,7 @@ function renderSeasonTabs() {
       }
     }
     tab.addEventListener("click", () => {
-      activeTab = ["draft-picks", "trade", "depth-chart", "multi-year", "free-agents"].includes(id) ? id : "salary";
+      activeTab = ["draft-picks", "trade", "depth-chart", "multi-year", "free-agents", "restructure"].includes(id) ? id : "salary";
       if (activeTab === "salary") activeSeason = Number(id);
       renderFrontOffice();
     });
@@ -231,6 +234,11 @@ function updateCapOverview() {
   if (multiYearPanel) {
     multiYearPanel.hidden = activeTab !== "multi-year";
     if (activeTab === "multi-year") globalThis.renderMultiYear?.();
+  }
+  const restructurePanel = document.querySelector("#restructure-panel");
+  if (restructurePanel) {
+    restructurePanel.hidden = activeTab !== "restructure";
+    if (activeTab === "restructure") globalThis.renderRestructure?.();
   }
   const teamFaPanel = document.querySelector("#team-fa-panel");
   if (teamFaPanel) {

@@ -755,6 +755,7 @@ body > main, body > footer { margin-left: 58px; }
 .txn-waiver { --txn-color: #c79bff; }
 .txn-extension { --txn-color: #75e28b; }
 .txn-signing { --txn-color: #6fc8ff; }
+.txn-restructure { --txn-color: #ffb36b; }
 .txn-other { --txn-color: #c5d5e8; }
 .txn-table { min-width: 860px; }
 .txn-table td { vertical-align: top; padding-top: 11px; padding-bottom: 11px; }
@@ -1931,3 +1932,20 @@ form.is-minimum input[readonly] { opacity: .75; }
 .team-fa-pending.has-offers { border-left-color: #ffd37a; }
 .team-fa-pending-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: #fff; font: 700 16px var(--display); }
 .team-fa-pending .empty-state { margin: 0; }
+
+/* ---- Team sheet: Restructure tab ---- */
+.rs-controls { display: flex; gap: 12px; margin-bottom: 14px; }
+.rs-controls label, .rs-inputs label { display: grid; gap: 6px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; }
+.rs-controls select { min-width: 360px; padding: 9px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); color-scheme: dark; }
+.rs-sheet { margin-bottom: 14px; }
+.rs-sheet td small { color: #8ca5c5; font-size: 10px; }
+.rs-sheet tr.is-changed td { background: rgba(255, 179, 107, .08); }
+.rs-inputs { display: grid; grid-template-columns: repeat(3, minmax(180px, 240px)) 1fr; align-items: end; gap: 12px; margin: 4px 0 16px; padding: 14px 16px; border: 1px solid #ffb36b; background: rgba(255, 179, 107, .05); }
+.rs-inputs input, .rs-inputs select { min-height: 38px; padding: 6px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); color-scheme: dark; }
+.rs-inputs input { text-align: right; }
+.rs-note { grid-column: 1 / -1; margin: 0; color: #ffd37a; font-size: 13px; }
+.rs-note.is-error { color: #ff9299; }
+.rs-actions { display: flex; gap: 10px; margin-bottom: 14px; }
+@media (max-width: 900px) { .rs-inputs { grid-template-columns: 1fr; } .rs-controls select { min-width: 0; width: 100%; } }
+.rs-inputs label { display: block; }
+.rs-inputs label input, .rs-inputs label select { display: block; width: 100%; margin-top: 6px; }

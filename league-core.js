@@ -933,6 +933,7 @@ const transactionTypes = {
   waiver: "Waiver",
   extension: "Extension",
   signing: "Free Agent Signing",
+  restructure: "Restructure",
   other: "Other"
 };
 
@@ -2095,7 +2096,7 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
   let voidNote = "";
   if (voided && seasons.includes(voided.year)) {
     data.teams[teamId].deadCap[voided.year].push({ id: newRecordId("dead-cap"), playerName: entry.name.slice(0, 70), position, transaction: "void",
-      transactionYear: voided.year, amount: voided.amount, date: new Date().toISOString(), voidFor: player.id });
+      transactionYear: voided.year, amount: voided.amount, date: new Date().toISOString(), voidFor: player.id, voidYears: voided.voidYears });
     voidNote = `; ${formatCurrency(voided.amount)} of signing bonus on ${voided.voidYears} void year${voided.voidYears === 1 ? "" : "s"} becomes ${voided.year} dead cap`;
   }
   return logTransaction(data, { date, type: "signing", teams: [freeAgentTeamId, teamId], player: entry.name,
@@ -2285,5 +2286,85 @@ async function copyText(text) {
   try { ok = document.execCommand("copy"); } catch { ok = false; }
   box.remove();
   return ok;
+}
+
+// ---- Contract restructures ----
+// A team can lower a player's current-year base salary (down to his league minimum) and roster bonus and turn that
+// money into signing bonus. It's spread evenly over the rest of the deal including this season, up to 5 seasons;
+// void years (new or already on the contract) can stretch it to 5. Bonus on void years sits as "Void year" dead cap
+// on the first void season, like a free agent deal.
+function voidRecordFor(team, playerId) {
+  for (const season of seasons) {
+    const record = team.deadCap[season].find((r) => r.transaction === "void" && r.voidFor === playerId);
+    if (record) return { season, record, voidYears: record.voidYears || 1 };
+  }
+  return null;
+}
+
+// Returns the restructure, or { error }. terms = { newBase, newRoster, addVoid }.
+function restructurePlan(data, teamId, player, terms) {
+  const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  if (!isPlayerOnSeason(player, year)) return { error: `${player.name} isn't on the ${year} salary sheet.` };
+  const team = data.teams[teamId];
+  const entry = seasonEntry(player, year);
+  const minimum = minimumSalaryFor(data, player, year);
+  const floor = minimum.error ? 0 : minimum.amount;
+  const newBase = terms.newBase, newRoster = terms.newRoster;
+  if (!Number.isSafeInteger(newBase) || !Number.isSafeInteger(newRoster) || newBase < 0 || newRoster < 0) return { error: "Enter the new amounts in whole dollars." };
+  if (newBase > entry.baseSalary) return { error: `A restructure can only lower ${year} base salary (now ${formatCurrency(entry.baseSalary)}).` };
+  if (newRoster > entry.rosterBonus) return { error: `A restructure can only lower the ${year} roster bonus (now ${formatCurrency(entry.rosterBonus)}).` };
+  if (newBase < Math.min(floor, entry.baseSalary)) return { error: `${year} base salary can't go below ${player.name}'s league minimum of ${formatCurrency(floor)} (${minimumTierLabel(minimum.tier)} of experience).` };
+  const amount = (entry.baseSalary - newBase) + (entry.rosterBonus - newRoster);
+  const real = player.activeSeasons.filter((s) => s >= year && !isFifthYearOption(seasonEntry(player, s))).sort((a, b) => a - b);
+  const existingVoid = voidRecordFor(team, player.id);
+  const voidHave = existingVoid ? existingVoid.voidYears : 0;
+  const maxAddVoid = Math.max(0, maxProrationSeasons - real.length - voidHave);
+  const addVoid = Math.min(Math.max(0, terms.addVoid || 0), maxAddVoid);
+  const spread = Math.min(maxProrationSeasons, real.length + voidHave + addVoid);
+  const shares = prorationShares(amount, spread);
+  const lastReal = real[real.length - 1];
+  const voidSeason = existingVoid ? existingVoid.season : lastReal + 1;
+  const voidAdded = shares.slice(real.length).reduce((s, v) => s + v, 0);
+  const rows = real.map((season, i) => {
+    const e = seasonEntry(player, season);
+    const before = { baseSalary: e.baseSalary, proratedBonus: e.proratedBonus, rosterBonus: e.rosterBonus, guaranteedSalary: e.guaranteedSalary, capHit: capHitFor(e) };
+    const after = { ...before };
+    if (season === year) { after.baseSalary = newBase; after.rosterBonus = newRoster; after.guaranteedSalary = Math.min(e.guaranteedSalary, newBase); }
+    after.proratedBonus += i < spread ? shares[i] : 0;
+    after.capHit = (isVmbSeason(e) ? e.vmbCapBase : after.baseSalary) + after.proratedBonus + after.rosterBonus;
+    return { season, before, after };
+  });
+  const voidBefore = existingVoid ? existingVoid.record.amount : 0;
+  return {
+    year, amount, floor, spread, shares, addVoid, maxAddVoid, voidHave, voidSeason, voidBefore, voidAfter: voidBefore + voidAdded, voidAdded,
+    rows, capSavings: rows[0].before.capHit - rows[0].after.capHit, position: entry.position,
+    voidTracked: seasons.includes(voidSeason)
+  };
+}
+
+function applyRestructure(data, teamId, player, plan) {
+  const team = data.teams[teamId];
+  for (const row of plan.rows) Object.assign(seasonEntry(player, row.season), {
+    baseSalary: row.after.baseSalary, proratedBonus: row.after.proratedBonus, rosterBonus: row.after.rosterBonus, guaranteedSalary: row.after.guaranteedSalary
+  });
+  if (plan.voidAdded > 0 && plan.voidTracked) {
+    const existing = voidRecordFor(team, player.id);
+    if (existing) { existing.record.amount += plan.voidAdded; existing.record.voidYears = plan.voidHave + plan.addVoid; }
+    else team.deadCap[plan.voidSeason].push({ id: newRecordId("dead-cap"), playerName: player.name.slice(0, 70), position: plan.position, transaction: "void",
+      transactionYear: plan.voidSeason, amount: plan.voidAdded, date: new Date().toISOString(), voidFor: player.id, voidYears: plan.addVoid });
+  }
+  if (player.contract) {
+    const contract = playerContract(player);
+    contract.signingBonus = (contract.signingBonus || 0) + plan.amount;
+    contract.guaranteed = (contract.guaranteed || 0) + plan.amount;
+    player.contract = contract;
+  }
+  return logTransaction(data, { type: "restructure", teams: [teamId], player: player.name, details: restructureAnnouncement(teamId, player, plan) });
+}
+
+function restructureAnnouncement(teamId, player, plan) {
+  const who = [String(plan.position || "").toUpperCase(), player.name].filter(Boolean).join(" ");
+  const voidText = plan.addVoid ? ` and adds ${plan.addVoid} void year${plan.addVoid === 1 ? "" : "s"}` : "";
+  return `**${teamName(teamId)} Restructure:**\n• ${who} converts ${formatCurrency(plan.amount)} of ${plan.year} salary into signing bonus, spread over ${plan.spread} season${plan.spread === 1 ? "" : "s"}${voidText}, creating ${formatCurrency(plan.capSavings)} in ${plan.year} cap space.`;
 }
 

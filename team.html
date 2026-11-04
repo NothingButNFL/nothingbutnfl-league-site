@@ -40,6 +40,7 @@
     <script src="multi-year.js" defer></script>
     <script src="contract-editor.js" defer></script>
     <script src="team-fa.js" defer></script>
+    <script src="restructure.js" defer></script>
   </head>
   <body class="team-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -252,6 +253,34 @@
               </table>
             </div>
             <p class="empty-state" id="multi-year-empty" hidden>No players on this season's roster yet.</p>
+          </div>
+
+          <div class="management-panel restructure-panel" id="restructure-panel" role="tabpanel" aria-labelledby="season-tab-restructure" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">CONTRACT MOVES</span><h3>Restructure a contract</h3></div>
+              <p>Lower this season's base salary (down to the player's league minimum) and roster bonus, and turn that money into signing bonus. It's spread evenly over the rest of the deal including this season, up to 5 seasons, and added to his existing signing bonus. Add void years to stretch it to 5.</p>
+            </div>
+            <div class="rs-controls">
+              <label>Player<select id="rs-player"></select></label>
+            </div>
+            <p class="empty-state" id="rs-empty" hidden></p>
+            <div id="rs-body" hidden>
+              <div class="contract-editor rs-sheet" id="rs-original"></div>
+              <div class="rs-inputs">
+                <label>New <span class="rs-year"></span> base salary<input id="rs-base" inputmode="decimal" autocomplete="off"></label>
+                <label>New <span class="rs-year"></span> roster bonus<input id="rs-roster" inputmode="decimal" autocomplete="off"></label>
+                <label>Add void years<select id="rs-void"></select></label>
+                <p class="rs-note" id="rs-note" aria-live="polite"></p>
+              </div>
+              <div class="contract-editor rs-sheet" id="rs-after"></div>
+              <div class="rs-actions">
+                <button class="button button-lime" id="rs-apply" type="button">Restructure contract</button>
+              </div>
+              <div class="fao-announcement rs-announcement" id="rs-announcement" hidden>
+                <pre class="fao-announcement-text"></pre>
+                <button class="workspace-button" id="rs-copy" type="button">Copy announcement</button>
+              </div>
+            </div>
           </div>
 
           <div class="management-panel team-fa-panel" id="team-fa-panel" role="tabpanel" aria-labelledby="season-tab-free-agents" hidden>

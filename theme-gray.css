@@ -367,3 +367,7 @@ html[data-theme="gray"] .theme-switch button.is-active { background-color: #3a3c
   html[data-theme="gray"] body > .site-header .theme-switch button { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
 }
 html[data-theme="gray"] .team-fa-pending { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .rs-controls label, html[data-theme="gray"] .rs-inputs label { color: #d5d7db; }
+html[data-theme="gray"] .rs-controls select { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; color-scheme: dark; }
+html[data-theme="gray"] .rs-sheet td small { color: #a5a8ae; }
+html[data-theme="gray"] .rs-inputs input, html[data-theme="gray"] .rs-inputs select { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; color-scheme: dark; }

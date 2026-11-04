@@ -678,3 +678,10 @@ html[data-theme="light"] .theme-switch button.is-active { background-color: #dbe
 html[data-theme="light"] .team-fa-pending { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #1f6fc5; background-color: #f5f8fc; }
 html[data-theme="light"] .team-fa-pending.has-offers { border-left-color: #c98a12; }
 html[data-theme="light"] .team-fa-pending-title { color: #0b1f3a; }
+html[data-theme="light"] .rs-controls label, html[data-theme="light"] .rs-inputs label { color: #33496b; }
+html[data-theme="light"] .rs-controls select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
+html[data-theme="light"] .rs-sheet td small { color: #556b8a; }
+html[data-theme="light"] .rs-inputs { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; }
+html[data-theme="light"] .rs-inputs input, html[data-theme="light"] .rs-inputs select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
+html[data-theme="light"] .rs-note { color: #946100; }
+html[data-theme="light"] .rs-note.is-error { color: #c0283a; }
