@@ -11,8 +11,11 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .teams-dropdown { border-top
 html:is([data-theme^="team-"], [data-theme="neon"]) .admin-dropdown { border-bottom-color: rgb(var(--tm-334149)); background-color: rgb(var(--tm-101a22)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .admin-menu-link:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .admin-menu-link:focus-visible, html:is([data-theme^="team-"], [data-theme="neon"]) .admin-menu-link[aria-current="page"] { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .team-menu-link:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .team-menu-link:focus-visible { background-color: rgb(var(--tm-174477)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .hero-proof span { color: rgb(var(--tm-c2ccd3)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .snapshot-footer { border-top-color: rgb(var(--tm-111b22) / 0.2); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .hero-bottom { color: rgb(var(--tm-b8c4cc)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .standings-toolbar { border-bottom-color: rgb(var(--tm-334149)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .standings-table th { color: rgb(var(--tm-b8c4cc)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .standings-table td { border-top-color: rgb(var(--tm-29363e)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .team-monogram { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .join-callout { border-top-color: rgb(var(--tm-334149)); }
@@ -20,17 +23,20 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .interest-form { background-
 html:is([data-theme^="team-"], [data-theme="neon"]) .interest-form input, html:is([data-theme^="team-"], [data-theme="neon"]) .interest-form select, html:is([data-theme^="team-"], [data-theme="neon"]) .interest-form textarea, html:is([data-theme^="team-"], [data-theme="neon"]) .application-result textarea { border-top-color: rgb(var(--tm-405057)); border-right-color: rgb(var(--tm-405057)); border-bottom-color: rgb(var(--tm-405057)); border-left-color: rgb(var(--tm-405057)); background-color: rgb(var(--tm-142129)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .application-result { border-top-color: rgb(var(--tm-405057)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .site-footer { background-color: rgb(var(--tm-0c151b)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .site-footer > p { color: rgb(var(--tm-b8c4cc)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .footer-note { border-top-color: rgb(var(--tm-29363b)); }
 @media (max-width: 700px) {
   html:is([data-theme^="team-"], [data-theme="neon"]) .menu-toggle { border-top-color: rgb(var(--tm-39474e)); border-right-color: rgb(var(--tm-39474e)); border-bottom-color: rgb(var(--tm-39474e)); border-left-color: rgb(var(--tm-39474e)); }
   html:is([data-theme^="team-"], [data-theme="neon"]) .primary-nav a:not(.nav-cta) { border-bottom-color: rgb(var(--tm-334149)); }
 }
 html:is([data-theme^="team-"], [data-theme="neon"]) .franchise-picker select { background-color: rgb(var(--tm-18262d)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .panel-index { color: rgb(var(--tm-b8c4cc)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-103261)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel summary span { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel textarea { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel textarea::placeholder { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel textarea::placeholder { color: rgb(var(--tm-c3d3e6)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-import-panel > p { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .management-table th { color: rgb(var(--tm-b8c4cc)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .row-transaction { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .row-transaction:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .row-transaction:focus-visible { background-color: rgb(var(--tm-0c2b50)); }
 @media (max-width: 700px) {
@@ -80,7 +86,7 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table .salary-groups
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table .computed-cell + .computed-cell { color: rgb(var(--tm-d7e8ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .admin-cap-table td:first-child { color: rgb(var(--tm-d7e8ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .admin-cap-cell input { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .admin-cap-cell input::placeholder { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .admin-cap-cell input::placeholder { color: rgb(var(--tm-c3d3e6)); }
 @media (max-width: 1300px) {
   html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table tbody tr { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-103261)); }
   html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table tbody td { border-bottom-color: rgb(var(--tm-31527a)); }
@@ -123,7 +129,7 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .picks-table td.pick-own { c
 html:is([data-theme^="team-"], [data-theme="neon"]) .txn-chip { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .txn-chip:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .txn-chip.is-active { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .txn-date { color: rgb(var(--tm-c5d5e8)) !important; }
-html:is([data-theme^="team-"], [data-theme="neon"]) .txn-auto { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .txn-auto { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .txn-team { background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) a.txn-team:hover { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .txn-details { color: rgb(var(--tm-dbe7f5)) !important; }
@@ -140,10 +146,10 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .standings-leaders .standing
 html:is([data-theme^="team-"], [data-theme="neon"]) .division-board-table thead th { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .division-board-table td { border-top-color: rgb(var(--tm-1d3a5f)); color: rgb(var(--tm-dbe7f5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-column { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-column { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-card li { border-top-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-card li::before { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-name small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-card li::before { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .stats-leader-name small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stats-table-wrap { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stats-table thead th { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stats-table td { border-top-color: rgb(var(--tm-1d3a5f)); color: rgb(var(--tm-dbe7f5)); }
@@ -157,47 +163,47 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .game-review { border-top-co
 html:is([data-theme^="team-"], [data-theme="neon"]) .game-review .game-meta input, html:is([data-theme^="team-"], [data-theme="neon"]) .game-review .game-meta select { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .game-review h5 { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .game-review th, html:is([data-theme^="team-"], [data-theme="neon"]) .game-review td { border-top-color: rgb(var(--tm-1d3a5f)); color: rgb(var(--tm-dbe7f5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .game-review th { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .game-review th { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .game-review td input { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .game-log li { background-color: rgb(var(--tm-0c2b50)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .game-log li small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .stats-source { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .scores-hint { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .game-log li small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .stats-source { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .scores-hint { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .score-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .score-line { border-bottom-color: rgb(var(--tm-1d3a5f)); color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .score-foot small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .score-foot small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .leader-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .leader-card h3 { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .leader-top { border-bottom-color: rgb(var(--tm-31527a)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .leader-top-name span { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .leader-top-name span { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .leader-card li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .leader-card li::before { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .leader-name small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .leader-empty { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .leader-card li::before { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .leader-name small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .leader-empty { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-avatar { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-facts { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-bio input, html:is([data-theme^="team-"], [data-theme="neon"]) .player-bio textarea { border-top-color: rgb(var(--tm-1d3a5f)); border-right-color: rgb(var(--tm-1d3a5f)); border-bottom-color: rgb(var(--tm-1d3a5f)); border-left-color: rgb(var(--tm-1d3a5f)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-bio input:focus, html:is([data-theme^="team-"], [data-theme="neon"]) .player-bio textarea:focus { border-top-color: rgb(var(--tm-8ca5c5)); border-right-color: rgb(var(--tm-8ca5c5)); border-bottom-color: rgb(var(--tm-8ca5c5)); border-left-color: rgb(var(--tm-8ca5c5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-contract-summary div { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-contract-summary dt { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-contract-summary dt { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-subhead { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-transactions li { background-color: rgb(var(--tm-0c2b50)); color: rgb(var(--tm-dbe7f5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-transactions small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .profile-link { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-transactions small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .profile-link { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .leader-photo { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-photo-upload:focus-within { outline-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-photo-field small { color: rgb(var(--tm-9fb4cf)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .conference-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .conference-card h3 { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .conference-table th { border-bottom-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .conference-table th { border-bottom-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .conference-table td { border-bottom-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .conference-table td:first-child { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .conference-team small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .conference-table td:first-child { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .conference-team small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .recent-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .recent-item { border-top-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .recent-meta time { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .recent-body p { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .recent-empty { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .recent-empty { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .confirm-overlay { background-color: rgb(var(--tm-030c1a) / 0.72); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .confirm-box { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-injury { color: rgb(var(--tm-dbe7f5)); }
@@ -206,7 +212,7 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .key-date.is-next { border-t
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-date-stamp { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-date.is-next .key-date-stamp { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-date-countdown { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .key-date.is-past .key-date-countdown { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .key-date.is-past .key-date-countdown { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-date-body p { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-dates-editor { border-top-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .key-dates-form input { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
@@ -227,14 +233,14 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .media-image-button:focus-wi
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-image-preview { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-card-image { background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .media-card-meta { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .media-card-meta { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-card-text { color: rgb(var(--tm-dbe7f5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-card-link { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .news-item { border-top-color: rgb(var(--tm-1d3a5f)); border-right-color: rgb(var(--tm-1d3a5f)); border-bottom-color: rgb(var(--tm-1d3a5f)); border-left-color: rgb(var(--tm-1d3a5f)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .news-item:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .news-item:focus-visible { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .news-image { background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .news-snippet { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .news-teams { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .news-teams { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .media-card.is-linked { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); box-shadow: rgb(var(--tm-8fd0ff)) 0px 0px 0px 1px; }
 html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header:hover, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header:focus-within, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header.is-open { border-bottom-color: rgb(var(--tm-264a75)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .primary-nav > a, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .teams-trigger, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .admin-trigger { color: rgb(var(--tm-dbe7f5)); }
@@ -263,35 +269,35 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .award-card:hover, html:is([
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-card.is-open { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-card.is-named { background-image: linear-gradient(160deg, rgb(43, 42, 26) 0%, rgb(var(--tm-0c2b50)) 70%); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-name { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .award-card.is-open .award-winner { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .award-card.is-open .award-winner { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-meta { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .award-notes { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .award-notes { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-cell-name { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .award-cell-winner small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .award-cell-winner small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .schedule-record { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sched-game { border-top-color: rgb(var(--tm-1d3a5f)); border-right-color: rgb(var(--tm-1d3a5f)); border-bottom-color: rgb(var(--tm-1d3a5f)); border-left-color: rgb(var(--tm-1d3a5f)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sched-game.is-final { background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sched-when { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .sched-at { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .sched-at { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sched-team b { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .sched-team.is-loser .sched-team-name, html:is([data-theme^="team-"], [data-theme="neon"]) .sched-team.is-loser .sched-score { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .sched-status small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .sched-state { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .sched-team.is-loser .sched-team-name, html:is([data-theme^="team-"], [data-theme="neon"]) .sched-team.is-loser .sched-score { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .sched-status small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .sched-state { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sched-result.is-t { border-top-color: rgb(var(--tm-c5d5e8)); border-right-color: rgb(var(--tm-c5d5e8)); border-bottom-color: rgb(var(--tm-c5d5e8)); border-left-color: rgb(var(--tm-c5d5e8)); color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .schedule-paste { color: rgb(var(--tm-dbe7f5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .schedule-paste textarea { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .schedule-paste p { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .schedule-paste p { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tb-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tb-pos { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .tb-date { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .tb-facts dt { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .tb-date { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .tb-facts dt { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tb-asking { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tb-notes { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-status.is-listed { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-8fd0ff) / 0.12); color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-table tr.is-listed td { background-color: rgb(var(--tm-8fd0ff) / 0.05); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-note-row td { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-note-form { border-left-color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-note-form label { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-note-form label { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .tbk-note-form input { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .cs-toolbar select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .cs-team b { color: rgb(var(--tm-8fd0ff)); }
@@ -302,11 +308,11 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .rb-team-head p { color: rgb
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-stack { background-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-seg { color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group { border-right-color: rgb(var(--tm-1d3a5f)); border-bottom-color: rgb(var(--tm-1d3a5f)); border-left-color: rgb(var(--tm-1d3a5f)); background-color: rgb(var(--tm-0a2647)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group header span { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group header span { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li { border-top-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li span { color: rgb(var(--tm-dbe7f5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li.rb-none { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .rb-group li.rb-none { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-table tr.is-selected td { box-shadow: rgb(var(--tm-8fd0ff)) 0px 1px 0px inset, rgb(var(--tm-8fd0ff)) 0px -1px 0px inset; }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rb-team-button b { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section, html:is([data-theme^="team-"], [data-theme="neon"]) .admin-section { background-color: rgb(var(--tm-071a33)); }
@@ -315,25 +321,25 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section .manag
 html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section .salary-import-panel, html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section .trade-team-section { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section th, html:is([data-theme^="team-"], [data-theme="neon"]) .contracts-table thead th, html:is([data-theme^="team-"], [data-theme="neon"]) .contracts-table th:first-child, html:is([data-theme^="team-"], [data-theme="neon"]) .contracts-table td:first-child { background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section .tab-button.is-active, html:is([data-theme^="team-"], [data-theme="neon"]) .front-office-section .season-tab.is-active { background-color: rgb(var(--tm-0c2b50)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-n { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-n { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-select.is-empty { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-select.is-empty { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-select:focus-visible { outline-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-schemes { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row input { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row input::placeholder { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-count { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row input::placeholder { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-count { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .su-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .su-team b { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .su-meta { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .su-meta { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .su-group h4 { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .su-group li { border-top-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .su-from { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .su-arrow { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .su-from { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .su-arrow { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .su-copy-fallback { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row select.is-empty { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .depth-subs-note { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-scheme-row select.is-empty { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .depth-subs-note { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-subs-table { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-subs-table caption { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .depth-subs-table thead th { border-bottom-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-c5d5e8)); }
@@ -355,15 +361,15 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .sb-trophy { border-top-colo
 html:is([data-theme^="team-"], [data-theme="neon"]) .sb-trophy-text span { color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sb-mvp-pos { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sb-mvp-stats { color: rgb(var(--tm-c9d8ea)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .sb-mvp-hint { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .sb-mvp-hint { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .stat-tile { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .stat-tile span { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .stat-tile span { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .sb-latest-mvp .stat-tile { background-color: rgb(var(--tm-071a33) / 0.7); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-stats-fields { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-8fd0ff) / 0.04); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-stats-fields legend { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .award-stats-hint { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .award-stats-hint { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .award-stats-fields .stat-input-group-name { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .awards-filter-count { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .awards-filter-count { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table .my-player, html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table thead th:first-child, html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table tfoot th { background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table .is-current { background-color: rgb(var(--tm-8fd0ff) / 0.07); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table thead th.is-current { color: rgb(var(--tm-8fd0ff)); }
@@ -373,12 +379,12 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .multi-year-table tfoot tr.m
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-count { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer.is-withdrawn { border-left-color: rgb(var(--tm-6d84a3)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-status { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-status { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-notes-text { color: rgb(var(--tm-c9d8ea)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-meta { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fa-offer-meta { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-group { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-group-head { border-bottom-color: rgb(var(--tm-31527a)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .fao-group-meta { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fao-group-meta { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-offer { border-top-color: rgb(var(--tm-31527a) / 0.5); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-team b { color: rgb(var(--tm-8fd0ff)); }
 @media (min-width: 1181px) {
@@ -396,10 +402,10 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .fao-team b { color: rgb(var
 html:is([data-theme^="team-"], [data-theme="neon"]) .gl-team a { color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .gl-team b { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .gl-result.is-tie { background-color: rgb(var(--tm-c9d8ea) / 0.12); color: rgb(var(--tm-c9d8ea)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .gl-note { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .gl-source { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .gl-note { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .gl-source { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .gl-source a { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .gl-import .import-hint { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .gl-import .import-hint { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .team-fa-preview { color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table th.is-sorted { color: rgb(var(--tm-8fd0ff)); }
 @media (max-width: 1300px) {
@@ -414,46 +420,46 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .contract-editor td { border
 html:is([data-theme^="team-"], [data-theme="neon"]) .contract-editor input, html:is([data-theme^="team-"], [data-theme="neon"]) .contract-editor select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ce-computed { color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ce-years tfoot th, html:is([data-theme^="team-"], [data-theme="neon"]) .ce-years tfoot td { border-top-color: rgb(var(--tm-6d8197)); background-color: rgb(var(--tm-6d8197)); color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .ce-years tr.is-void td { background-color: rgb(var(--tm-6d8197) / 0.15); color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ce-years tr.is-void td { background-color: rgb(var(--tm-6d8197) / 0.15); color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ce-void-tag { border-top-color: rgb(var(--tm-8ca5c5)); border-right-color: rgb(var(--tm-8ca5c5)); border-bottom-color: rgb(var(--tm-8ca5c5)); border-left-color: rgb(var(--tm-8ca5c5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ce-controls label { color: rgb(var(--tm-c5d5e8)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .ce-proration { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ce-proration { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-contract th { background-color: rgb(var(--tm-1d3a5f)); color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-contract td { border-bottom-color: rgb(var(--tm-1d3a5f)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .fao-contract tr.is-void td { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .ce-min-hint { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fao-contract tr.is-void td { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ce-min-hint { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fao-announcement-text { background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker:focus-visible, html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker[aria-expanded="true"] { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker:focus-visible { box-shadow: rgb(var(--tm-8fd0ff)) 0px 0px 0px 2px; }
-html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker-text small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker-chevron { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker-text small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .theme-picker-chevron { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .team-fa-pending { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-controls label, html:is([data-theme^="team-"], [data-theme="neon"]) .rs-inputs label { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-controls select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .rs-sheet td small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .rs-sheet td small { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-inputs input, html:is([data-theme^="team-"], [data-theme="neon"]) .rs-inputs select { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rsa-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rsa-status.is-withdrawn { background-color: rgb(var(--tm-c9d8ea) / 0.12); color: rgb(var(--tm-c9d8ea)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-message { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rs-message input { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-portrait { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-cog { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-cog { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-cog:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .player-cog:focus-visible, html:is([data-theme^="team-"], [data-theme="neon"]) .player-cog[aria-expanded="true"] { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-title { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-title { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:hover:not(:disabled), html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:focus-visible { background-color: rgb(var(--tm-174477)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:disabled { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item small { color: rgb(var(--tm-8ca5c5)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .insider-sub { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:disabled { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item small { color: rgb(var(--tm-b3c6de)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-sub { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-post { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-check { color: rgb(var(--tm-8fd0ff)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .insider-handle { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-handle { color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-tag { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-foot { border-top-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-menu { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option { color: rgb(var(--tm-dbe7f5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option-check { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option.is-active { background-color: rgb(var(--tm-174477)); }
-html:is([data-theme^="team-"], [data-theme="neon"]) .theme-menu-heading { border-top-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .theme-menu-heading { border-top-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-b3c6de)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-wire { border-top-color: rgb(var(--tm-1d3a5f)); }
