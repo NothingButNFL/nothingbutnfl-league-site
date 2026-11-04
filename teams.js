@@ -218,8 +218,8 @@ if (siteHeader) {
   }, true);
 }
 
-// Site theme picker (bottom of the sidebar / mobile bar): NBNFL (navy), Dark (gray), Light, then the 32 NFL team
-// themes. Remembered in this browser. Team themes use theme-team.css, where every NBNFL blue is a --tm-RRGGBB
+// Site theme picker (bottom of the sidebar / mobile bar): NBNFL (navy), Dark (gray), Light, Neon, then the 32 NFL
+// team themes. Remembered in this browser. Team themes use theme-team.css, where every NBNFL blue is a --tm-RRGGBB
 // variable; the variables are worked out here from the team's colors and also saved so each page's head script
 // can apply them before it paints.
 const themeKey = "nbf-theme";
@@ -227,7 +227,10 @@ const themeVarsKey = "nbf-theme-vars";
 const themeModes = [
   { id: "dark", label: "NBNFL", color: "#071a33", swatch: ["#071a33", "#8fd0ff"] },
   { id: "gray", label: "Dark", color: "#18191b", swatch: ["#18191b", "#d5d7db"] },
-  { id: "light", label: "Light", color: "#ffffff", swatch: ["#ffffff", "#0c2b50"] }
+  { id: "light", label: "Light", color: "#ffffff", swatch: ["#ffffff", "#0c2b50"] },
+  // Neon: violet-black surfaces, hot pink accents, cyan secondary text; theme-neon.css adds the glow and haze.
+  { id: "neon", label: "Neon", color: "#0b0318", swatch: ["#ff2bd6", "#00e5ff"],
+    palette: { base: "#2a0a5e", accent: "#ff3fd8", textHue: 186, textSat: 1.5, surfaceLight: 0.72 } }
 ];
 // base: the color the page surfaces are tinted with; accent: links, highlights and active states.
 const teamThemePalettes = {
@@ -259,9 +262,9 @@ function hslToRgb(h, s, l) {
   const f = (n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
   return [f(0), f(8), f(4)];
 }
-// The --tm-RRGGBB values ("r g b") for one team, from its base and accent colors.
-function teamThemeVars(teamId) {
-  const [base, accent] = teamThemePalettes[teamId];
+// The --tm-RRGGBB values ("r g b") for a palette: base tints the surfaces, accent is links and highlights.
+// Optional: textHue/textSat give muted text its own hue; surfaceLight darkens (<1) the surfaces.
+function paletteThemeVars({ base, accent, textHue = null, textSat = 0.8, surfaceLight = 1 }) {
   const [bh, , , chroma] = hexToHsl(base);
   const tint = Math.min(1, chroma / 0.17); // black-based teams get neutral grays
   const [ah, as, al] = hexToHsl(accent);
@@ -269,11 +272,14 @@ function teamThemeVars(teamId) {
   for (const [key, [, s, l, kind]] of Object.entries(teamThemeColors)) {
     let rgb;
     if (kind === "a") rgb = hslToRgb(ah, as, Math.min(0.88, Math.max(0.64, al) - (0.78 - l)));
-    else rgb = hslToRgb(bh, s * tint * (kind === "t" ? 0.8 : 1), l);
+    else if (kind === "t") rgb = hslToRgb(textHue ?? bh, Math.min(1, s * (textHue === null ? tint : 1) * textSat), l);
+    else rgb = hslToRgb(bh, s * tint, l * surfaceLight);
     vars[`--tm-${key}`] = rgb.join(" ");
   }
   return vars;
 }
+const teamThemeVars = (teamId) => paletteThemeVars({ base: teamThemePalettes[teamId][0], accent: teamThemePalettes[teamId][1] });
+const themeVarsFor = (choice) => choice.teamId ? teamThemeVars(choice.teamId) : choice.palette ? paletteThemeVars(choice.palette) : null;
 const findTheme = (id) => allThemes.find((t) => t.id === id);
 function currentTheme() {
   const t = document.documentElement.dataset.theme;
@@ -283,8 +289,8 @@ function applyThemeVars(theme) {
   const style = document.documentElement.style;
   for (const prop of [...style]) if (prop.startsWith("--tm-")) style.removeProperty(prop);
   const choice = findTheme(theme);
-  if (!choice?.teamId) { try { localStorage.removeItem(themeVarsKey); } catch { /* storage unavailable */ } return null; }
-  const vars = teamThemeVars(choice.teamId);
+  const vars = choice && themeVarsFor(choice);
+  if (!vars) { try { localStorage.removeItem(themeVarsKey); } catch { /* storage unavailable */ } return null; }
   for (const [prop, value] of Object.entries(vars)) style.setProperty(prop, value);
   try { localStorage.setItem(themeVarsKey, Object.entries(vars).map(([p, v]) => `${p}:${v}`).join(";")); } catch { /* storage unavailable */ }
   return vars;

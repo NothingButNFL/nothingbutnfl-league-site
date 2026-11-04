@@ -118,7 +118,7 @@ const themes = {
     console.log(`theme-${name}.css`, css.split("\n").length, "rules");
   }
 
-  // NFL team themes: one stylesheet for all 32. Every NBNFL navy/blue color becomes a variable
+  // NFL team themes (and Neon): one stylesheet for all of them. Every NBNFL navy/blue color becomes a variable
   // (--tm-RRGGBB holding "r g b") that teams.js fills in from the chosen team's colors.
   const team = await page.evaluate(() => {
     const classify = (r, g, b) => {
@@ -141,7 +141,7 @@ const themes = {
       used[key] = c;
       return a === undefined ? `rgb(var(--tm-${key}))` : `rgb(var(--tm-${key}) / ${a})`;
     });
-    const scope = 'html[data-theme^="team-"]';
+    const scope = 'html:is([data-theme^="team-"], [data-theme="neon"])'; // Neon uses the same variables
     const prefix = (sel) => sel.split(",").map((s) => {
       s = s.trim();
       if (s.startsWith(":root")) return scope + s.slice(5);
