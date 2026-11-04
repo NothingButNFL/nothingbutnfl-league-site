@@ -9,8 +9,8 @@
   --lime: #ffffff;
   --orange: #ffffff;
   --mono: "Cascadia Code", "Courier New", monospace;
-  --body: "Segoe UI", Arial, sans-serif;
-  --display: "Arial", "Segoe UI", sans-serif;
+  --body: "Play", "Segoe UI", Arial, sans-serif;
+  --display: "Play", "Arial", "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
