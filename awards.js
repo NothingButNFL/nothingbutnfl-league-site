@@ -73,7 +73,7 @@ function winnerNode(entry) {
 
 function renderAwards() {
   fillSeasons();
-  document.querySelector("#awards-season-label").textContent = String(viewSeason);
+  const seasonLabel = document.querySelector("#awards-season-label"); if (seasonLabel) seasonLabel.textContent = String(viewSeason);
   document.querySelector("#awards-prev").disabled = viewSeason <= 1920;
   document.querySelector("#awards-next").disabled = viewSeason >= thisSeason();
   const past = document.querySelector("#awards-past-note");
