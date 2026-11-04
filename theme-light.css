@@ -693,3 +693,4 @@ html[data-theme="light"] .rsa-status.is-declined { color: #c0283a; }
 html[data-theme="light"] .rsa-status.is-withdrawn { color: #33496b; }
 html[data-theme="light"] .rs-message { color: #33496b; }
 html[data-theme="light"] .rs-message input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
+html[data-theme="light"] .ce-title.is-section .ce-subtitle, html[data-theme="light"] .ce-original .ce-title .ce-subtitle { color: #0b1f3a; }

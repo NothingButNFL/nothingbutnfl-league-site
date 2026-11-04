@@ -2013,13 +2013,16 @@ function prorationShares(bonus, seasonCount) {
 // Offers built year by year (yearsDetail) use their own numbers; older offers split evenly. Years past the last salary sheet are left off.
 function contractSeasonBreakdown(contract, startYear = contract.startYear ?? currentLeagueYear()) {
   const years = Math.max(1, contract.years);
-  const bonus = Math.min(contract.signingBonus || 0, contract.totalValue);
+  const bonus = contract.includesCurrent ? (contract.signingBonus || 0) : Math.min(contract.signingBonus || 0, contract.totalValue);
   if (Array.isArray(contract.yearsDetail)) {
-    const shares = prorationShares(bonus, years + (contract.voidYears || 0));
+    // Extensions that rework the current season list it first (includesCurrent) and keep its existing proration.
+    const realCount = contract.yearsDetail.length;
+    const shares = prorationShares(bonus, realCount + (contract.voidYears || 0));
+    const existing = (i) => contract.includesCurrent && i === 0 ? (contract.currentProrated || 0) : 0;
     // Veteran Minimum Benefit: the salary sheet charges the 2-year minimum as base salary; the player is paid his own minimum.
     const vmb = contract.vmbCapBase !== undefined;
     return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: y.baseSalary, capBase: vmb ? contract.vmbCapBase : y.baseSalary,
-      proratedBonus: shares[i] || 0, rosterBonus: y.rosterBonus, guaranteedSalary: y.guaranteedSalary }))
+      proratedBonus: (shares[i] || 0) + existing(i), rosterBonus: y.rosterBonus, guaranteedSalary: y.guaranteedSalary }))
       .filter(({ year }) => seasons.includes(year));
   }
   const baseTotal = contract.totalValue - bonus;
@@ -2042,9 +2045,11 @@ const breakdownCapHit = (b) => (b.capBase ?? b.baseSalary) + b.proratedBonus + (
 // The signing bonus sitting on void years, and the season it accelerates into (the season after the last real year).
 function voidBonusFor(contract, startYear = contract.startYear ?? currentLeagueYear()) {
   if (!contract.voidYears || !Array.isArray(contract.yearsDetail)) return null;
-  const shares = prorationShares(Math.min(contract.signingBonus || 0, contract.totalValue), contract.years + contract.voidYears);
-  const amount = shares.slice(contract.years).reduce((sum, v) => sum + v, 0);
-  return amount > 0 ? { amount, year: startYear + contract.years, voidYears: contract.voidYears } : null;
+  const realCount = contract.yearsDetail.length;
+  const bonus = contract.includesCurrent ? (contract.signingBonus || 0) : Math.min(contract.signingBonus || 0, contract.totalValue);
+  const shares = prorationShares(bonus, realCount + contract.voidYears);
+  const amount = shares.slice(realCount).reduce((sum, v) => sum + v, 0);
+  return amount > 0 ? { amount, year: startYear + realCount, voidYears: contract.voidYears } : null;
 }
 
 // When a player with void years is released or traded early, his void-year bonus accelerates now:
@@ -2424,7 +2429,8 @@ function validExtensionOffers(list) {
         typeof o.playerId !== "string" || typeof o.playerName !== "string" || !o.playerName || o.playerName.length > 70 ||
         !isIntegerInRange(o.years, 1, 10) || !isIntegerInRange(o.voidYears || 0, 0, 4) || !seasons.includes(o.startYear) ||
         ["signingBonus", "totalValue", "guaranteed"].some((k) => !isIntegerInRange(o[k] || 0, 0, 999999999)) ||
-        !Array.isArray(o.yearsDetail) || o.yearsDetail.length !== o.years ||
+        !Array.isArray(o.yearsDetail) || o.yearsDetail.length !== o.years + (o.includesCurrent ? 1 : 0) ||
+        (o.currentProrated !== undefined && !isIntegerInRange(o.currentProrated, 0, 999999999)) ||
         o.yearsDetail.some((y) => !y || ["baseSalary", "rosterBonus", "guaranteedSalary"].some((k) => !isIntegerInRange(y[k], 0, 999999999))) ||
         !restructureStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
         ["decisionNote", "notes", "position"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > 300))) return false;
@@ -2433,7 +2439,7 @@ function validExtensionOffers(list) {
   return true;
 }
 const pendingExtensions = (data) => (data.extensionOffers || []).filter((o) => o.status === "pending");
-const extensionStartYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) + 1;
+const extensionStartYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) + 1; // first new season
 
 // Players on a team sheet whose deal ends this season (nothing on later sheets) can be extended.
 function isExtensionEligible(player) {
@@ -2452,6 +2458,7 @@ function submitExtension(data, teamId, player, terms) {
     years: terms.years, voidYears: terms.voidYears || 0, signingBonus: terms.signingBonus || 0, totalValue: terms.totalValue, guaranteed: terms.guaranteed || 0,
     yearsDetail: terms.yearsDetail.map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary })),
     startYear: terms.startYear, status: "pending", createdAt: now };
+  if (terms.includesCurrent) { offer.includesCurrent = true; offer.currentProrated = terms.currentProrated || 0; }
   const position = seasonEntry(player, year).position;
   if (position) offer.position = String(position).slice(0, 8);
   if (terms.notes && terms.notes.trim()) offer.notes = terms.notes.trim().slice(0, 300);
@@ -2470,9 +2477,15 @@ function applyExtension(data, offer) {
   const player = team?.roster.find((p) => p.id === offer.playerId);
   if (!player) return { error: `${offer.playerName} is no longer on the ${offer.teamId} salary sheet.` };
   if (!isExtensionEligible(player)) return { error: `${offer.playerName} already has seasons after this one on his sheet, so he can't be extended.` };
-  const current = seasonEntry(player, offer.startYear - 1);
+  const thisYear = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const current = seasonEntry(player, thisYear);
   const rows = contractSeasonBreakdown(offer, offer.startYear);
   for (const row of rows) {
+    if (row.year === thisYear && offer.includesCurrent) {
+      // The current season is reworked in place (keeping position, roster type and tags).
+      Object.assign(current, { baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary });
+      continue;
+    }
     player.seasons[row.year] = { ...emptySeasonData(current.position, current.rosterType || "Active"),
       baseSalary: row.baseSalary, proratedBonus: row.proratedBonus, rosterBonus: row.rosterBonus || 0, guaranteedSalary: row.guaranteedSalary };
     if (!player.activeSeasons.includes(row.year)) player.activeSeasons.push(row.year);
@@ -2486,8 +2499,9 @@ function applyExtension(data, offer) {
   }
   player.contract = { length: offer.years, totalValue: offer.totalValue, signingBonus: offer.signingBonus || null, guaranteed: offer.guaranteed || null };
   const last = rows.length ? rows[rows.length - 1].year : offer.startYear;
+  const first = offer.includesCurrent ? thisYear + 1 : offer.startYear;
   return logTransaction(data, { type: "extension", teams: [offer.teamId], player: player.name,
-    details: `${extensionAnnouncement(offer)}\nOn the ${offer.teamId} salary sheet ${offer.startYear}${last > offer.startYear ? `–${last}` : ""}${voidNote}.` });
+    details: `${extensionAnnouncement(offer)}\nAdds ${first}${last > first ? `–${last}` : ""} to the ${offer.teamId} salary sheet${offer.includesCurrent ? ` and reworks ${thisYear}` : ""}${voidNote}.` });
 }
 
 function extensionAnnouncement(offer) {

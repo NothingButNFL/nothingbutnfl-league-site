@@ -3,7 +3,7 @@
 const extRows = document.querySelector("#ext-rows");
 const extFormPanel = document.querySelector("#ext-form-panel");
 const extForm = document.querySelector("#ext-form");
-const extEditor = createContractEditor(document.querySelector("#ext-contract"), { getData: () => officeData, startYear: extensionStartYear, title: "Extension Offer" });
+const extEditor = createContractEditor(document.querySelector("#ext-contract"), { getData: () => officeData, extension: true, title: "Contract Extension Template" });
 let extPlayerId = null;
 
 const extYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
@@ -20,7 +20,7 @@ function extCard(o) {
   card.innerHTML = '<div class="fa-offer-head"><strong></strong><span class="fa-offer-status"></span></div><p class="fa-offer-terms"></p><p class="fa-offer-meta"></p>';
   card.querySelector("strong").textContent = o.playerName;
   card.querySelector(".fa-offer-status").textContent = label;
-  card.querySelector(".fa-offer-terms").textContent = `${faOfferTerms(o)} · starts ${o.startYear}`;
+  card.querySelector(".fa-offer-terms").textContent = `${faOfferTerms(o)} · through ${o.startYear + o.yearsDetail.length - 1}`;
   card.querySelector(".fa-offer-meta").textContent = [`${o.status === "pending" ? "Sent" : "Decided"} ${when}`, o.decisionNote || ""].filter(Boolean).join(" · ");
   if (o.status === "pending" && storageIsAvailable) {
     const button = document.createElement("button");
@@ -88,14 +88,19 @@ function renderExtensions() {
   if (extPlayerId && !players.some((p) => p.id === extPlayerId)) { extFormPanel.hidden = true; extPlayerId = null; }
 }
 
+// This season's cap hit changes too, since the extension reworks it.
 function extPreview() {
   const preview = document.querySelector("#ext-preview");
-  const hit = extEditor.firstYearCapHit();
-  const start = extensionStartYear();
-  if (!hit) { preview.textContent = ""; preview.className = "team-fa-preview"; return; }
-  const room = seasonCapFigures(activeTeamId, start).remaining;
-  preview.textContent = `${start} cap hit ${formatCurrency(hit)}.${room === null ? "" : ` ${start} cap room would go from ${room < 0 ? "−" : ""}${formatCurrency(Math.abs(room))} to ${room - hit < 0 ? "−" : ""}${formatCurrency(Math.abs(room - hit))}.`}`;
-  preview.className = `team-fa-preview${room !== null && room - hit < 0 ? " is-over" : ""}`;
+  const player = extEligible().find((p) => p.id === extPlayerId);
+  if (!player) { preview.textContent = ""; return; }
+  const year = extYear();
+  const before = capHitFor(seasonEntry(player, year));
+  const after = extEditor.firstYearCapHit();
+  const room = seasonCapFigures(activeTeamId, year).remaining;
+  const signed = (v) => `${v < 0 ? "−" : ""}${formatCurrency(Math.abs(v))}`;
+  const newRoom = room === null ? null : room + before - after;
+  preview.textContent = `${year} cap hit ${formatCurrency(before)} → ${formatCurrency(after)}.${room === null ? "" : ` ${year} cap room would go from ${signed(room)} to ${signed(newRoom)}.`}`;
+  preview.className = `team-fa-preview${newRoom !== null && newRoom < 0 ? " is-over" : ""}`;
 }
 extForm.addEventListener("input", extPreview);
 extForm.addEventListener("contractchange", extPreview);
@@ -109,7 +114,7 @@ extRows.addEventListener("click", (event) => {
   document.querySelector("#ext-form-title").textContent = `Offer ${player.name} an extension`;
   document.querySelector("#ext-form-note").textContent = existing
     ? `There's already a pending extension (${faOfferTerms(existing)}). Sending this replaces it.`
-    : `His deal ends after ${extYear()}. The extension starts in ${extensionStartYear()}.`;
+    : `His deal ends after ${extYear()}. Rework his ${extYear()} salary if you like, then add the new years. The signing bonus spreads over ${extYear()} and the extension years, up to 5 seasons.`;
   extForm.reset();
   extEditor.reset(player);
   if (existing) { extEditor.load(existing); if (existing.notes) extForm.elements.notes.value = existing.notes; }
@@ -128,7 +133,7 @@ extForm.addEventListener("submit", (event) => {
   if (terms.error) { workspaceStatus.textContent = terms.error; return; }
   terms.notes = extForm.elements.notes.value;
   const result = submitExtension(officeData, activeTeamId, player, terms);
-  saveOfficeData(`${result.replaced ? "Updated extension" : "Extension"} for ${player.name} sent to the commissioner: ${faOfferTerms(result.offer)}, starting ${result.offer.startYear}.`);
+  saveOfficeData(`${result.replaced ? "Updated extension" : "Extension"} for ${player.name} sent to the commissioner: ${faOfferTerms(result.offer)} in new money, through ${result.offer.startYear + result.offer.yearsDetail.length - 1}.`);
   if (!storageIsAvailable) { undoExtension(officeData, result); return; }
   refreshNavNotifications();
   extFormPanel.hidden = true;

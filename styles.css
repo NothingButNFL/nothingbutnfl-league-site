@@ -1966,3 +1966,8 @@ form.is-minimum input[readonly] { opacity: .75; }
 .rs-message { display: grid; gap: 6px; max-width: 520px; margin: 0 0 12px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; }
 .rs-message input { min-height: 38px; padding: 6px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); }
 @media (max-width: 760px) { .rsa-card { grid-template-columns: 1fr; } }
+.ce-original { display: grid; gap: 10px; margin-bottom: 14px; }
+.ce-original[hidden] { display: none; }
+.ce-title.is-section { padding: 6px 10px; }
+.ce-title.is-section strong { display: none; }
+.ce-title.is-section .ce-subtitle, .ce-original .ce-title .ce-subtitle { color: #fff; font: 600 15px var(--body); }

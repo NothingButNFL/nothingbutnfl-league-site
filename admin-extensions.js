@@ -62,14 +62,16 @@ function render() {
     head.append(team, el("strong", "rsa-player", `${o.position ? `${o.position} ` : ""}${o.playerName}`), el("span", "fao-group-meta", `Sent ${when(o.createdAt)}`));
     card.append(head);
     const body = el("div", "rsa-body");
-    body.append(el("p", "fa-offer-terms", `${faOfferTerms(o)} · starts ${o.startYear}`));
+    body.append(el("p", "fa-offer-terms", `${faOfferTerms(o)}${o.includesCurrent ? " in new money" : ""} · through ${o.startYear + o.yearsDetail.length - 1}`));
     if (o.notes) body.append(el("p", "fa-offer-notes-text", `“${o.notes}”`));
     const problem = problemWith(o);
     if (problem) body.append(el("p", "fao-warning", `Can't be approved: ${problem}`));
     else {
       const first = contractSeasonBreakdown(o, o.startYear)[0];
       const room = seasonCapFigures(o.teamId, o.startYear, officeData).remaining;
-      if (first) body.append(el("p", "fa-offer-meta", room === null ? `${o.startYear} cap room: base cap not set` : `${o.startYear} cap room ${signedMoney(room)} → ${signedMoney(room - breakdownCapHit(first))} after`));
+      // Extensions that rework this season change its cap hit rather than adding a new one.
+      const before = o.includesCurrent ? capHitFor(seasonEntry(playerFor(o), o.startYear)) : 0;
+      if (first) body.append(el("p", "fa-offer-meta", `${o.includesCurrent ? `${o.startYear} cap hit ${formatCurrency(before)} → ${formatCurrency(breakdownCapHit(first))} · ` : ""}${room === null ? `${o.startYear} cap room: base cap not set` : `${o.startYear} cap room ${signedMoney(room)} → ${signedMoney(room + before - breakdownCapHit(first))} after`}`));
     }
     body.append(contractTable(o));
     card.append(body);
@@ -110,7 +112,7 @@ function renderLog() {
     team.append(link);
     tr.insertCell().textContent = `${o.position ? `${o.position} ` : ""}${o.playerName}`;
     tr.insertCell().textContent = faOfferTerms(o);
-    const last = o.startYear + o.years - 1;
+    const last = o.startYear + o.yearsDetail.length - 1;
     tr.insertCell().textContent = `${o.startYear}${last > o.startYear ? `–${last}` : ""}`;
     tr.insertCell().append(el("span", `rsa-status is-${o.status}`, { approved: "Approved", declined: "Declined", withdrawn: "Withdrawn" }[o.status]));
     tr.insertCell().textContent = o.decisionNote || "";
