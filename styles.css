@@ -2007,3 +2007,7 @@ form.is-minimum input[readonly] { opacity: .75; }
   .salary-table tbody td:has(> .player-portrait) > :not(.player-portrait) { grid-column: 2; justify-self: start; }
   .salary-table tbody td > .player-portrait { float: none; width: 36px; height: 36px; margin: 0; grid-row: span 4; align-self: start; }
 }
+/* Calculated trade / release penalties and net savings on the salary sheet */
+.salary-table td[data-computed$="Penalty"], .salary-table td[data-computed$="NetSavings"] { font-weight: 600; white-space: nowrap; cursor: help; }
+.salary-table td[data-computed$="NetSavings"].is-positive-savings { color: #75e28b; }
+.salary-table td[data-computed$="NetSavings"].is-negative-savings { color: #ff9299; }

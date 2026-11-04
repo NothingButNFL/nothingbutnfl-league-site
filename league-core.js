@@ -319,28 +319,26 @@ function calculatedPenaltiesFor(player, year, date = new Date()) {
   };
 }
 
-// Dead cap and net savings shown on a salary sheet for one season.
+// Dead cap and net savings shown on a salary sheet for one season (always calculated, never typed in).
 // - This league year: the live rules (calculatedPenaltiesFor: March 1 – May 31 everything accelerates, later only this
 //   season's money counts now and the rest lands on next year's dead cap).
-// - Future seasons: projected as a March 1 – May 31 move in that league year (that season's and every later season's
+// - Any other season: as a March 1 – May 31 move in that league year (that season's and every later season's
 //   prorated bonus, plus guaranteed salary for a release).
-// - Past seasons: whatever was entered on the sheet.
 // Net savings = that season's cap hit minus the dead cap it would leave in that season.
 function sheetPenaltiesFor(player, year, date = new Date()) {
-  const current = currentLeagueYear(date);
   const entry = seasonEntry(player, year);
-  let tradePenalty = entry.tradePenalty || 0, releasePenalty = entry.releasePenalty || 0, rule = "entered";
-  if (year === current) {
+  let tradePenalty, releasePenalty, rule;
+  if (year === currentLeagueYear(date)) {
     ({ tradePenalty, releasePenalty } = calculatedPenaltiesFor(player, year, date));
     rule = isEarlyLeagueWindow(date) ? "current-early" : "current-late";
-  } else if (year > current) {
-    const remaining = seasons.filter((season) => season >= year && (season === year || isPlayerOnSeason(player, season)));
+  } else {
+    const remaining = seasons.filter((season) => season === year || (season > year && isPlayerOnSeason(player, season)));
     tradePenalty = remaining.reduce((total, season) => total + seasonEntry(player, season).proratedBonus, 0);
     releasePenalty = remaining.reduce((total, season) => total + seasonEntry(player, season).proratedBonus + seasonEntry(player, season).guaranteedSalary, 0);
     rule = "projected";
   }
   const capHit = capHitFor(entry);
-  return { calculated: rule !== "entered", rule, tradePenalty, releasePenalty, tradeNetSavings: capHit - tradePenalty, releaseNetSavings: capHit - releasePenalty };
+  return { rule, tradePenalty, releasePenalty, tradeNetSavings: capHit - tradePenalty, releaseNetSavings: capHit - releasePenalty };
 }
 
 function formatCurrency(value) {

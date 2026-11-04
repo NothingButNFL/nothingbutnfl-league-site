@@ -488,8 +488,9 @@ function parseSalaryPaste(text) {
       break;
     }
   }
-  const requiredColumns = ["name", "position", "rosterType", "baseSalary", "proratedBonus", "rosterBonus",
-    "guaranteedSalary", "tradePenalty", "tradeNetSavings", "releasePenalty", "releaseNetSavings"];
+  // Cap hit, cap %, years remaining, trade/release penalties and net savings are calculated, so those columns are
+  // optional and ignored if they're in the paste.
+  const requiredColumns = ["name", "position", "rosterType", "baseSalary", "proratedBonus", "rosterBonus", "guaranteedSalary"];
   const missingColumns = hasHeader ? requiredColumns.filter((field) => !columnMap.has(field)) : [];
   if (missingColumns.length) {
     throw new Error(`The header row is missing: ${missingColumns.join(", ")}.`);
@@ -502,13 +503,10 @@ function parseSalaryPaste(text) {
     const lineNumber = index + 1;
     const rowColumns = hasHeader ? columnMap : new Map([
       ["name", 0], ["position", 1], ["rosterType", 2], ["baseSalary", 3],
-      ["proratedBonus", 4], ["rosterBonus", 5], ["guaranteedSalary", 6],
-      ["yearsRemaining", cells.length - 5], ["tradePenalty", cells.length - 4],
-      ["tradeNetSavings", cells.length - 3], ["releasePenalty", cells.length - 2],
-      ["releaseNetSavings", cells.length - 1]
+      ["proratedBonus", 4], ["rosterBonus", 5], ["guaranteedSalary", 6]
     ]);
-    if (!hasHeader && cells.length < 12) {
-      throw new Error(`Row ${lineNumber}: expected at least 12 tab-separated columns, including player details, years left, and trade/release values.`);
+    if (!hasHeader && cells.length < 7) {
+      throw new Error(`Row ${lineNumber}: expected at least 7 tab-separated columns: player name, position, roster type, base salary, prorated bonus, roster bonus and guaranteed salary.`);
     }
     const name = (cells[rowColumns.get("name")] || "").trim();
     if (!name) throw new Error(`Row ${lineNumber}: player name is required.`);
@@ -519,8 +517,7 @@ function parseSalaryPaste(text) {
     if (rosterType.length > 30) throw new Error(`Row ${lineNumber}: roster type must be 30 characters or fewer.`);
 
     const entry = emptySeasonData(position, rosterType);
-    for (const field of ["baseSalary", "proratedBonus", "rosterBonus", "guaranteedSalary",
-      "tradePenalty", "tradeNetSavings", "releasePenalty", "releaseNetSavings"]) {
+    for (const field of ["baseSalary", "proratedBonus", "rosterBonus", "guaranteedSalary"]) {
       entry[field] = parsePastedAmount(cells[rowColumns.get(field)] || "", field, lineNumber);
     }
     importedRows.push({ name, entry, lineNumber });
@@ -622,10 +619,10 @@ const contractFields = [
   ["capHit", "Cap hit", "computed"],
   ["capPercent", "Cap percentage", "computed"],
   ["yearsRemaining", "Years remaining", false],
-  ["tradePenalty", "Trade penalty", false],
-  ["tradeNetSavings", "Trade net savings", true],
-  ["releasePenalty", "Release penalty", false],
-  ["releaseNetSavings", "Release net savings", true]
+  ["tradePenalty", "Trade penalty", "computed"],
+  ["tradeNetSavings", "Trade net savings", "computed"],
+  ["releasePenalty", "Release penalty", "computed"],
+  ["releaseNetSavings", "Release net savings", "computed"]
 ];
 
 // Click a salary-table heading to sort by it; click again to flip the order, a third time to go back to sheet order.
@@ -807,17 +804,7 @@ function renderSalaryRows() {
         input.title = "Count of this and future seasons with a base salary above $0.";
         cell.append(input);
       } else {
-        const signedDisplay = field === "tradeNetSavings" || field === "releaseNetSavings";
-        const sheet = sheetPenaltiesFor(player, activeSeason);
-        const isCalculated = signedDisplay || (sheet.calculated && (field === "tradePenalty" || field === "releasePenalty"));
-        const value = isCalculated ? sheet[field] : entry[field];
-        const input = currencyInput(value, ariaLabel, field, signed === true, signedDisplay);
-        if (isCalculated) {
-          input.readOnly = true;
-          input.title = penaltyCellTitle(field, sheet.rule);
-        }
-        cell.append(input);
-        if (signedDisplay) updateSavingsAppearance(cell, value);
+        cell.append(currencyInput(entry[field], ariaLabel, field, signed === true, false));
       }
     }
     const actionCell = row.insertCell();
@@ -839,10 +826,9 @@ function penaltyCellTitle(field, rule) {
     return `Cap hit minus the ${field === "tradeNetSavings" ? "trade" : "release"} penalty: what this season's cap gains if he's ${field === "tradeNetSavings" ? "traded" : "released"}.`;
   }
   const what = field === "tradePenalty" ? "prorated signing bonus" : "prorated signing bonus and guaranteed salary";
-  if (rule === "projected") return `Projected as a March 1 – May 31 move in ${activeSeason}: this season's and later seasons' ${what}.`;
+  if (rule === "projected") return `As a March 1 – May 31 move in ${activeSeason}: this season's and later seasons' ${what}.`;
   if (rule === "current-early") return `March 1 – May 31 rules: this season's and later seasons' ${what} all count now.`;
-  if (rule === "current-late") return `After June 1: only this season's ${what} counts now; later seasons' lands on next year's dead cap.`;
-  return "";
+  return `After June 1: only this season's ${what} counts now; later seasons' lands on next year's dead cap.`;
 }
 
 function updateComputedCells() {
@@ -860,20 +846,14 @@ function updateComputedCells() {
       ? `${((capHit / totalCap) * 100).toFixed(2)}%`
       : "—";
     row.querySelector('[data-field="yearsRemaining"]').value = String(yearsRemainingFor(player, activeSeason));
+    // Trade / release penalties and net savings are always calculated (sheetPenaltiesFor in league-core.js).
     const sheet = sheetPenaltiesFor(player, activeSeason);
-    for (const field of ["tradePenalty", "releasePenalty"]) {
-      const input = row.querySelector(`[data-field="${field}"]`);
-      if (document.activeElement === input && !sheet.calculated) continue;
-      input.value = formatCurrency(sheet.calculated ? sheet[field] : entry[field]);
-      input.readOnly = sheet.calculated;
-      input.title = sheet.calculated ? penaltyCellTitle(field, sheet.rule) : "";
-    }
-    for (const field of ["tradeNetSavings", "releaseNetSavings"]) {
-      const input = row.querySelector(`[data-field="${field}"]`);
-      input.value = formatSignedCurrency(sheet[field]);
-      input.readOnly = true;
-      input.title = penaltyCellTitle(field, sheet.rule);
-      updateSavingsAppearance(input.closest("td"), sheet[field]);
+    for (const field of ["tradePenalty", "tradeNetSavings", "releasePenalty", "releaseNetSavings"]) {
+      const cell = row.querySelector(`[data-computed="${field}"]`);
+      const savings = field.endsWith("NetSavings");
+      cell.textContent = savings ? formatSignedCurrency(sheet[field]) : formatCurrency(sheet[field]);
+      cell.title = penaltyCellTitle(field, sheet.rule);
+      if (savings) updateSavingsAppearance(cell, sheet[field]);
     }
   }
 }
@@ -1492,8 +1472,7 @@ salaryRows.addEventListener("change", (event) => {
   const player = selectedTeamData().roster.find(({ id }) => id === row.dataset.playerId);
   if (!player) return;
   const field = input.dataset.field;
-  if (field === "yearsRemaining" || field === "tradeNetSavings" || field === "releaseNetSavings" ||
-      (sheetPenaltiesFor(player, activeSeason).calculated && (field === "tradePenalty" || field === "releasePenalty"))) return;
+  if (field === "yearsRemaining") return;
   if (field === "name" || field === "position" || field === "rosterType") {
     const value = input.value.trim();
     const maxLength = field === "name" ? 70 : field === "position" ? 8 : 30;
