@@ -2032,3 +2032,12 @@ form.is-minimum input[readonly] { opacity: .75; }
   .salary-table tbody td:has(> .player-cog) > .player-portrait { grid-column: 2; }
 }
 .sample-actions [hidden] { display: none !important; }
+/* Wider pages next to the sidebar (team and admin pages already go full width) */
+@media (min-width: 1181px) {
+  .section-wrap { max-width: 1680px; padding-right: clamp(24px, 3.5vw, 56px); padding-left: clamp(24px, 3.5vw, 56px); }
+}
+/* Overview leaders: long names truncate instead of pushing the numbers out of the card */
+.leader-card ol { grid-template-columns: minmax(0, 1fr); }
+.leader-card li strong { flex: none; }
+.leader-top-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 801px) and (max-width: 1499px) { .leaders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
