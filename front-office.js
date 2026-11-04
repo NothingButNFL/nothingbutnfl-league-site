@@ -159,7 +159,7 @@ function transactionButton(player, transaction) {
   return button;
 }
 
-// Team actions live under one "Actions" dropdown at the end of the tab row.
+// Team actions live under one "Team Actions" dropdown, next to Draft Picks in the tab row.
 const teamActionItems = [
   { id: "trade", label: "Trade" },
   { id: "restructure", label: "Restructure" },
@@ -216,7 +216,7 @@ function renderSeasonTabs() {
   const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, { id: "multi-year", label: "MULTI-YEAR" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
     id: "draft-picks",
     label: "DRAFT PICKS"
-  }, { id: "actions", label: "ACTIONS" }];
+  }, { id: "actions", label: "TEAM ACTIONS" }];
   const isActive = (id) => seasons.some((year) => String(year) === id)
     ? activeTab === "salary" && Number(id) === activeSeason
     : id === "actions" ? teamActionIds.includes(activeTab) : activeTab === id;
@@ -315,11 +315,11 @@ function renderSeasonTabs() {
   updateActionsTab();
 }
 
-// The Actions tab shows which action is open ("ACTIONS · TRADE").
+// The Team Actions tab shows which action is open ("TEAM ACTIONS · TRADE").
 function updateActionsTab() {
   const label = document.querySelector("#season-tab-actions .season-tab-actions-label");
   const current = teamActionItems.find((item) => item.id === activeTab);
-  if (label) label.textContent = current ? `ACTIONS · ${current.label.toUpperCase()}` : "ACTIONS";
+  if (label) label.textContent = current ? `TEAM ACTIONS · ${current.label.toUpperCase()}` : "TEAM ACTIONS";
   document.querySelectorAll("#team-actions-menu .team-actions-item").forEach((item) => {
     const active = item.dataset.tab === activeTab;
     item.classList.toggle("is-active", active);

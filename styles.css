@@ -504,7 +504,7 @@ body > main, body > footer { margin-left: 58px; }
 .season-tab { min-width: 78px; padding: 12px 15px; border: 1px solid transparent; border-bottom: 0; background: transparent; color: #c5d5e8; cursor: pointer; font: 11px var(--mono); }
 .season-tab:hover, .season-tab:focus-visible { background: #174477; color: #fff; }
 .season-tab.is-active { border-color: #54749b; background: #174477; color: #fff; }
-.season-tab-actions { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; margin-left: auto; white-space: nowrap; }
+.season-tab-actions { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }
 .season-tab-chevron { font-size: 10px; transition: transform .15s ease; }
 .season-tab-actions[aria-expanded="true"] { background: #174477; color: #fff; }
 .season-tab-actions[aria-expanded="true"] .season-tab-chevron { transform: rotate(180deg); }
