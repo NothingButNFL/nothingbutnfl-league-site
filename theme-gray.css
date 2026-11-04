@@ -378,3 +378,10 @@ html[data-theme="gray"] .rsa-status.is-withdrawn { color: #d5d7db; }
 html[data-theme="gray"] .rs-message { color: #d5d7db; }
 html[data-theme="gray"] .rs-message input { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
 html[data-theme="gray"] .player-portrait { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .player-cog { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; color: #a5a8ae; }
+html[data-theme="gray"] .player-cog:hover, html[data-theme="gray"] .player-cog:focus-visible, html[data-theme="gray"] .player-cog[aria-expanded="true"] { background-color: #3a3c41; }
+html[data-theme="gray"] .player-menu { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
+html[data-theme="gray"] .player-menu-title { color: #a5a8ae; }
+html[data-theme="gray"] .player-menu-item:hover:not(:disabled), html[data-theme="gray"] .player-menu-item:focus-visible { background-color: #3a3c41; }
+html[data-theme="gray"] .player-menu-item:disabled { color: #a5a8ae; }
+html[data-theme="gray"] .player-menu-item small { color: #a5a8ae; }

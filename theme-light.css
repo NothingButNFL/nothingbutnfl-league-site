@@ -708,3 +708,12 @@ html[data-theme="light"] .rs-inputs input.is-below { border-top-color: #d23a46; 
 html[data-theme="light"] .player-portrait { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .salary-table td[data-computed$="NetSavings"].is-positive-savings { color: #1e7f3a; }
 html[data-theme="light"] .salary-table td[data-computed$="NetSavings"].is-negative-savings { color: #c0283a; }
+html[data-theme="light"] .player-cog { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #556b8a; }
+html[data-theme="light"] .player-cog:hover, html[data-theme="light"] .player-cog:focus-visible, html[data-theme="light"] .player-cog[aria-expanded="true"] { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; background-color: #dbe7f6; color: #0b1f3a; }
+html[data-theme="light"] .player-menu { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; box-shadow: rgba(15, 35, 70, 0.175) 0px 16px 38px; }
+html[data-theme="light"] .player-menu-title { color: #556b8a; }
+html[data-theme="light"] .player-menu-item { color: #0b1f3a; }
+html[data-theme="light"] .player-menu-item:hover:not(:disabled), html[data-theme="light"] .player-menu-item:focus-visible { background-color: #dbe7f6; }
+html[data-theme="light"] .player-menu-item.is-danger { color: #c0283a; }
+html[data-theme="light"] .player-menu-item:disabled { color: #556b8a; }
+html[data-theme="light"] .player-menu-item small { color: #556b8a; }

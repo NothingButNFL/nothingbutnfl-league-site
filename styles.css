@@ -513,7 +513,7 @@ body > main, body > footer { margin-left: 58px; }
 .team-actions-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border: 0; border-left: 2px solid transparent; border-radius: 3px; background: transparent; color: #c5d5e8; cursor: pointer; font: 12px var(--mono); letter-spacing: .04em; text-align: left; text-transform: uppercase; }
 .team-actions-item:hover, .team-actions-item:focus-visible { background: #174477; color: #fff; outline: none; }
 .team-actions-item.is-active { border-left-color: #8fd0ff; background: #174477; color: #fff; }
-.salary-col-player { width: 9.5%; }
+.salary-col-player { width: 14.5%; }
 .salary-col-exp { width: 4.5%; }
 .salary-col-position { width: 5.5%; }
 .salary-col-roster { width: 7%; }
@@ -2011,3 +2011,23 @@ form.is-minimum input[readonly] { opacity: .75; }
 .salary-table td[data-computed$="Penalty"], .salary-table td[data-computed$="NetSavings"] { font-weight: 600; white-space: nowrap; cursor: help; }
 .salary-table td[data-computed$="NetSavings"].is-positive-savings { color: #75e28b; }
 .salary-table td[data-computed$="NetSavings"].is-negative-savings { color: #ff9299; }
+
+/* Salary sheet: cog button before each player's portrait, and its action menu */
+.player-cog { display: inline-grid; flex: none; width: 26px; height: 26px; margin: 3px 6px 0 0; padding: 0; place-items: center; border: 1px solid #31527a; border-radius: 4px; background: transparent; color: #8ca5c5; cursor: pointer; vertical-align: middle; }
+.player-cog:hover, .player-cog:focus-visible, .player-cog[aria-expanded="true"] { border-color: #8fd0ff; background: #174477; color: #fff; }
+.player-cog svg { transition: transform .25s ease; }
+.player-cog[aria-expanded="true"] svg { transform: rotate(60deg); }
+.salary-table .player-cog { float: left; }
+.player-menu { position: fixed; z-index: 90; display: grid; min-width: 220px; gap: 2px; padding: 6px; border: 1px solid #54749b; border-radius: 5px; background: #0c2b50; box-shadow: 0 16px 38px rgba(0, 0, 0, .5); }
+.player-menu-title { margin: 2px 8px 6px; overflow: hidden; color: #8ca5c5; font: 10px var(--mono); letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.player-menu-item { display: grid; gap: 2px; padding: 9px 12px; border: 0; border-radius: 3px; background: transparent; color: #fff; cursor: pointer; font: 600 13px var(--body); text-align: left; }
+.player-menu-item:hover:not(:disabled), .player-menu-item:focus-visible { background: #174477; outline: none; }
+.player-menu-item.is-danger { color: #ff9299; }
+.player-menu-item:disabled { color: #8ca5c5; cursor: not-allowed; opacity: .75; }
+.player-menu-item small { color: #8ca5c5; font: 400 11px var(--body); }
+@media (max-width: 1300px) {
+  .salary-table tbody td:has(> .player-cog) { grid-template-columns: auto auto minmax(0, 1fr); }
+  .salary-table tbody td:has(> .player-cog) > :not(.player-portrait):not(.player-cog) { grid-column: 3; }
+  .salary-table tbody td:has(> .player-cog) > .player-cog { float: none; margin: 0; grid-column: 1; grid-row: span 4; align-self: start; width: 36px; height: 36px; }
+  .salary-table tbody td:has(> .player-cog) > .player-portrait { grid-column: 2; }
+}

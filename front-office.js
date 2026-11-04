@@ -43,7 +43,8 @@ async function recordRosterTransaction(player, transaction) {
     (futureIsTrackable ? ` and ${formatCurrency(futureAmount)} on the ${nextYear} dead-cap table` :
       futureAmount > 0 ? `; future dead cap is not tracked because the ledger covers only ${deadCapSeasons.join(" and ")}` : "") +
     `. Their ${year} and later salary sheets will be removed.`;
-  const confirmed = await confirmAction(summary, { confirmLabel: transaction === "trade" ? `Trade ${player.name}` : `Release ${player.name}`, danger: true });
+  const question = transaction === "release" ? `Are you sure you want to cut ${player.name}? ` : "";
+  const confirmed = await confirmAction(question + summary, { confirmLabel: transaction === "trade" ? `Trade ${player.name}` : `Release ${player.name}`, danger: true });
   if (!confirmed) {
     workspaceStatus.textContent = `${transaction === "trade" ? "Trade" : "Release"} canceled. No changes were made.`;
     return;
@@ -720,6 +721,7 @@ function updateSalarySortHeaders() {
 }
 
 function renderSalaryRows() {
+  closePlayerMenu();
   setupSalarySortHeaders();
   setupSalarySortSelect();
   updateSalarySortHeaders();
@@ -738,7 +740,16 @@ function renderSalaryRows() {
     nameLink.href = profileUrl(player.id);
     nameLink.textContent = player.name;
     nameLink.title = `Open ${player.name}'s profile`;
-    nameCell.append(playerPortrait(player), nameLink);
+    const cog = document.createElement("button");
+    cog.type = "button";
+    cog.className = "player-cog";
+    cog.dataset.action = "player-menu";
+    cog.setAttribute("aria-haspopup", "menu");
+    cog.setAttribute("aria-expanded", "false");
+    cog.setAttribute("aria-label", `Actions for ${player.name}`);
+    cog.title = `Actions for ${player.name}`;
+    cog.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+    nameCell.append(cog, playerPortrait(player), nameLink);
     if (isVmbSeason(entry)) {
       const vmb = document.createElement("button");
       vmb.type = "button";
@@ -1545,7 +1556,132 @@ document.querySelector("#cap-adjustment").addEventListener("blur", (event) => {
   if (value !== null) input.value = formatCurrency(value);
 });
 
+// ---- Player cog menu (salary sheet): Release, Offer Extension, Restructure Contract, Add To Trade Block, Trade Player ----
+function closePlayerMenu(focusCog = false) {
+  const menu = document.querySelector("#player-menu");
+  if (!menu) return;
+  const cog = salaryRows.querySelector(`.player-cog[aria-expanded="true"]`);
+  cog?.setAttribute("aria-expanded", "false");
+  menu.remove();
+  if (focusCog) cog?.focus();
+}
+
+function placePlayerMenu() {
+  const menu = document.querySelector("#player-menu");
+  const cog = salaryRows.querySelector(`.player-cog[aria-expanded="true"]`);
+  if (!menu || !cog) return;
+  const rect = cog.getBoundingClientRect();
+  const height = menu.offsetHeight, width = menu.offsetWidth;
+  const below = rect.bottom + 6 + height <= window.innerHeight;
+  menu.style.top = `${below ? rect.bottom + 6 : Math.max(8, rect.top - 6 - height)}px`;
+  menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`;
+}
+
+function openPlayerMenu(cog, player) {
+  closePlayerMenu();
+  const year = currentLeagueYear();
+  const thisYear = activeSeason === year;
+  const menu = document.createElement("div");
+  menu.id = "player-menu";
+  menu.className = "player-menu";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", `Actions for ${player.name}`);
+  const title = document.createElement("p");
+  title.className = "player-menu-title";
+  title.textContent = player.name;
+  menu.append(title);
+  const add = (action, label, problem = "", danger = false) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = `player-menu-item${danger ? " is-danger" : ""}`;
+    item.setAttribute("role", "menuitem");
+    item.dataset.menuAction = action;
+    item.textContent = label;
+    if (problem) { item.disabled = true; item.title = problem; item.append(Object.assign(document.createElement("small"), { textContent: problem })); }
+    menu.append(item);
+  };
+  const onCurrent = isPlayerOnSeason(player, year);
+  const notCurrent = thisYear ? "" : `Open the ${year} sheet to do this.`;
+  add("release", "Release", !storageIsAvailable ? "Saving is unavailable." : notCurrent || (!onCurrent ? `Not on the ${year} sheet.` : ""), true);
+  if (onCurrent && isExtensionEligible(player)) add("extend", "Offer Extension", storageIsAvailable ? "" : "Saving is unavailable.");
+  add("restructure", "Restructure Contract", onCurrent ? "" : `Not on the ${year} sheet.`);
+  const blockProblem = typeof tbkProblem === "function" ? tbkProblem(player) : "";
+  add("trade-block", (officeData.tradeBlock || []).some((e) => e.playerId === player.id && e.teamId === activeTeamId) ? "On the Trade Block ✓" : "Add To Trade Block",
+    !storageIsAvailable ? "Saving is unavailable." : blockProblem.replace(/^.*already on the trade block\.$/, "Already listed."));
+  add("trade", "Trade Player", onCurrent ? "" : `Not on the ${year} sheet.`);
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-menu-action]");
+    if (!item || item.disabled) return;
+    closePlayerMenu();
+    runPlayerMenuAction(item.dataset.menuAction, player);
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll(".player-menu-item:not(:disabled)")];
+    const index = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      items[(index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
+    } else if (event.key === "Escape") { event.preventDefault(); closePlayerMenu(true); }
+    else if (event.key === "Tab") closePlayerMenu();
+  });
+  document.body.append(menu);
+  cog.setAttribute("aria-expanded", "true");
+  placePlayerMenu();
+  menu.querySelector(".player-menu-item:not(:disabled)")?.focus();
+}
+
+function runPlayerMenuAction(action, player) {
+  if (action === "release") { recordRosterTransaction(player, "release"); return; }
+  if (action === "trade-block") {
+    const problem = tbkAdd(player);
+    if (problem) { workspaceStatus.textContent = problem; return; }
+    saveOfficeData(`${player.name} is on the trade block. Add a note under Team Actions › Trade Block.`);
+    return;
+  }
+  if (action === "extend") {
+    openTeamTab("extend");
+    document.querySelector(`#ext-rows tr[data-player-id="${CSS.escape(player.id)}"] [data-action="extend"]`)?.click();
+    return;
+  }
+  if (action === "restructure") {
+    openTeamTab("restructure");
+    const select = document.querySelector("#rs-player");
+    if ([...select.options].some((o) => o.value === player.id)) {
+      select.value = player.id;
+      select.dispatchEvent(new Event("change"));
+    }
+    document.querySelector("#restructure-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  if (action === "trade") {
+    if (document.querySelector(".trade-team-section")) readTradeLines();
+    const key = `player:${player.id}`;
+    tradeLines[activeTeamId] ||= [];
+    if (!tradeLines[activeTeamId].some((line) => line.assetKey === key)) {
+      tradeLines[activeTeamId] = tradeLines[activeTeamId].filter((line) => line.assetKey);
+      tradeLines[activeTeamId].push({ id: `trade-line-${++tradeLineCounter}`, assetKey: key, destinationId: tradeParticipants().find((id) => id !== activeTeamId) || "" });
+    }
+    openTeamTab("trade");
+    document.querySelector("#trade-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    const partner = document.querySelector("#trade-partner-one");
+    if (!partner.value) { partner.focus({ preventScroll: true }); workspaceStatus.textContent = `${player.name} is in the trade. Choose a trade partner.`; }
+  }
+}
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#player-menu, .player-cog")) closePlayerMenu();
+});
+window.addEventListener("resize", () => closePlayerMenu());
+document.addEventListener("scroll", (event) => { if (!event.target.closest?.("#player-menu")) placePlayerMenu(); }, true);
+
 salaryRows.addEventListener("click", (event) => {
+  const cog = event.target.closest('[data-action="player-menu"]');
+  if (cog) {
+    const player = selectedTeamData().roster.find(({ id }) => id === cog.closest("[data-player-id]")?.dataset.playerId);
+    if (cog.getAttribute("aria-expanded") === "true") closePlayerMenu();
+    else if (player) openPlayerMenu(cog, player);
+    return;
+  }
   const transactionButton = event.target.closest("[data-transaction]");
   const row = transactionButton?.closest("[data-player-id]");
   if (transactionButton && row) {

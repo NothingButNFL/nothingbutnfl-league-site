@@ -171,6 +171,28 @@ function renderTeamBlock() {
   empty.textContent = "No players on this salary sheet.";
 }
 
+// Why a player can't go on the block right now ("" if he can).
+function tbkProblem(player) {
+  if (tbkEntryFor(player.id)) return `${player.name} is already on the trade block.`;
+  const injury = tbkInjury(player);
+  if (injury) return `${player.name} is injured (${tbkInjuryText(injury)}) and can't be put on the trade block.`;
+  if ((officeData.tradeBlock || []).length >= 2000) return "The trade block is full.";
+  return "";
+}
+// Adds this team's player to officeData.tradeBlock (same entry shape the Trade Block page uses). Doesn't save.
+// Returns "" on success, else the reason it couldn't.
+function tbkAdd(player, notes = "") {
+  const problem = tbkProblem(player);
+  if (problem) return problem;
+  if (!Array.isArray(officeData.tradeBlock)) officeData.tradeBlock = [];
+  const entry = { id: newRecordId("block"), player: player.name.slice(0, tradeBlockLimits.player), playerId: player.id, teamId: activeTeamId, date: localDateString() };
+  const pos = playerDisplayPosition(player, tbkYear());
+  if (pos) entry.position = pos.slice(0, tradeBlockLimits.position);
+  if (notes) entry.notes = notes.slice(0, tradeBlockLimits.notes);
+  officeData.tradeBlock.push(entry);
+  return "";
+}
+
 function tbkOpen(playerId) {
   tbkEditing = playerId;
   renderTeamBlock();
@@ -212,15 +234,8 @@ tbkRows.addEventListener("submit", (event) => {
     if (notes) existing.notes = notes; else delete existing.notes;
     saveOfficeData(`Note on ${player.name} saved.`);
   } else {
-    const injury = tbkInjury(player);
-    if (injury) { workspaceStatus.textContent = `${player.name} is injured (${tbkInjuryText(injury)}) and can't be put on the trade block.`; return; }
-    if (officeData.tradeBlock.length >= 2000) { workspaceStatus.textContent = "The trade block is full."; return; }
-    // Same entry shape the Trade Block page uses.
-    const entry = { id: newRecordId("block"), player: player.name.slice(0, tradeBlockLimits.player), playerId: player.id, teamId: activeTeamId, date: localDateString() };
-    const pos = playerDisplayPosition(player, tbkYear());
-    if (pos) entry.position = pos.slice(0, tradeBlockLimits.position);
-    if (notes) entry.notes = notes;
-    officeData.tradeBlock.push(entry);
+    const problem = tbkAdd(player, notes);
+    if (problem) { workspaceStatus.textContent = problem; return; }
     saveOfficeData(`${player.name} is on the trade block.`);
   }
   if (!storageIsAvailable) { officeData.tradeBlock = JSON.parse(before); return; }
