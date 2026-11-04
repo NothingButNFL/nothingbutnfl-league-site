@@ -677,16 +677,14 @@ html[data-theme="light"] .fao-announcement { border-top-color: #2f9e52; border-r
 html[data-theme="light"] .fao-announcement-text { border-left-color: #2f9e52; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .fifth-year-mark { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; color: #b45c0c; }
 html[data-theme="light"] .contracts-fifth-year.is-set { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; color: #b45c0c; }
-html[data-theme="light"] .theme-switch { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
-html[data-theme="light"] .theme-switch button { color: #33496b; }
-html[data-theme="light"] .theme-switch button:hover, html[data-theme="light"] .theme-switch button:focus-visible { background-color: #dbe7f6; color: #0b1f3a; }
-html[data-theme="light"] .theme-switch button.is-active { background-color: #dbe7f6; color: #0b1f3a; box-shadow: #1f6fc5 0px 0px 0px 1px inset; }
-@media (min-width: 1181px) {
-  html[data-theme="light"].nav-collapsed body > .site-header .theme-switch button { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
-}
-@media (max-width: 1180px) {
-  html[data-theme="light"] body > .site-header .theme-switch button { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
-}
+html[data-theme="light"] .theme-picker { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; color: #33496b; }
+html[data-theme="light"] .theme-picker:hover, html[data-theme="light"] .theme-picker:focus-within { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #dbe7f6; color: #0b1f3a; }
+html[data-theme="light"] .theme-picker:focus-within { box-shadow: #1f6fc5 0px 0px 0px 2px; }
+html[data-theme="light"] .theme-picker-swatch { border-top-color: rgba(11, 31, 58, 0.490); border-right-color: rgba(11, 31, 58, 0.490); border-bottom-color: rgba(11, 31, 58, 0.490); border-left-color: rgba(11, 31, 58, 0.490); }
+html[data-theme="light"] .theme-picker-swatch img { filter: drop-shadow(rgba(15, 35, 70, 0.210) 0px 0px 1px); }
+html[data-theme="light"] .theme-picker-text small { color: #556b8a; }
+html[data-theme="light"] .theme-picker-name { color: #0b1f3a; }
+html[data-theme="light"] .theme-picker-chevron { color: #556b8a; }
 html[data-theme="light"] .team-fa-pending { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #1f6fc5; background-color: #f5f8fc; }
 html[data-theme="light"] .team-fa-pending.has-offers { border-left-color: #c98a12; }
 html[data-theme="light"] .team-fa-pending-title { color: #0b1f3a; }
