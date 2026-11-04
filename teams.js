@@ -222,8 +222,8 @@ if (siteHeader) {
 // In the full sidebar all three show; collapsed or on phones only the current one shows and clicking it moves to the next.
 const themeKey = "nbf-theme";
 const themeModes = [
-  { id: "dark", label: "NBNFL", color: "#071a33", icon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>' },
-  { id: "gray", label: "Dark", color: "#18191b", icon: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>' },
+  { id: "dark", label: "NBNFL", color: "#071a33", icon: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>' },
+  { id: "gray", label: "Dark", color: "#18191b", icon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>' },
   { id: "light", label: "Light", color: "#ffffff", icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>' }
 ];
 function currentTheme() {
