@@ -249,7 +249,6 @@ html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .admin-d
   html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .teams-dropdown, html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .primary-nav .teams-menu .teams-dropdown { background-color: rgb(var(--tm-0a2647)); }
   html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .admin-dropdown { background-color: rgb(var(--tm-0a2647)); }
 }
-html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .brand-copy strong { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .season-menu.is-current .season-trigger { box-shadow: rgb(var(--tm-8fd0ff)) 0px -3px 0px inset; }
 @media (max-width: 1180px) {
   html:is([data-theme^="team-"], [data-theme="neon"]) body > .site-header .season-menu.is-current .season-trigger { box-shadow: rgb(var(--tm-8fd0ff)) 3px 0px 0px inset; }

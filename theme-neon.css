@@ -59,7 +59,7 @@ html[data-theme="neon"] .site-header { box-shadow: 1px 0 0 rgb(var(--neon-pink) 
 html[data-theme="neon"] :is(h1, h2) { text-shadow: 0 0 2px rgb(255 255 255 / .6), 0 0 10px rgb(var(--neon-pink) / .55), 0 0 32px rgb(var(--neon-pink) / .3); }
 html[data-theme="neon"] h2 span { text-shadow: 0 0 10px rgb(var(--neon-cyan) / .6), 0 0 28px rgb(var(--neon-cyan) / .3); }
 html[data-theme="neon"] h3 { text-shadow: 0 0 12px rgb(var(--neon-violet) / .45); }
-html[data-theme="neon"] .brand-copy strong { color: #6ff3ff; text-shadow: 0 0 6px rgb(var(--neon-cyan) / .9), 0 0 18px rgb(var(--neon-cyan) / .5); }
+html[data-theme="neon"] .brand-copy strong { text-shadow: 0 0 8px rgb(var(--neon-pink) / .6); }
 html[data-theme="neon"] :is(.section-kicker, .eyebrow, .panel-index) { text-shadow: 0 0 8px rgb(var(--neon-cyan) / .55); }
 
 /* Active states and buttons light up. */

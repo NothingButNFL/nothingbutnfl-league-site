@@ -411,7 +411,6 @@ html[data-theme="light"] body > .site-header .admin-dropdown { border-right-colo
   html[data-theme="light"] body > .site-header .admin-dropdown { background-color: #f5f8fc; }
 }
 html[data-theme="light"] body > .site-header .brand-copy { color: #0b1f3a !important; }
-html[data-theme="light"] body > .site-header .brand-copy strong { color: #1561b0; }
 html[data-theme="light"] body .cap-room-stat.is-over > strong { color: #c0283a; }
 html[data-theme="light"] .trade-projected-room.is-negative-room { color: #c0283a; }
 html[data-theme="light"] body .cap-room-stat.is-under > strong { color: #1e7f3a; }

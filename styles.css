@@ -1316,7 +1316,7 @@ body > .site-header .admin-menu-link { min-height: 38px; padding: 6px 14px; bord
   body > .site-header .admin-menu-link { padding-left: 32px; }
 }
 body > .site-header .brand-copy { display: inline !important; font-size: 12px !important; color: #fff !important; opacity: 1 !important; }
-body > .site-header .brand-copy strong { color: #8fd0ff; font-weight: 700; }
+body > .site-header .brand-copy strong { color: inherit; font-weight: 700; }
 @media (max-width: 1420px) and (min-width: 1181px) { body > .site-header .brand-copy { display: none; } }
 @media (max-width: 1180px) { body > .site-header .teams-dropdown, body > .site-header .primary-nav .teams-menu .teams-dropdown { max-height: none; overflow: visible; } body > .site-header .teams-chevron { transform: rotate(90deg); } }
 /* Center the links in the bar on wide screens; logo stays at the left. */
