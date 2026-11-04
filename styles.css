@@ -2041,19 +2041,3 @@ form.is-minimum input[readonly] { opacity: .75; }
 .leader-card li strong { flex: none; }
 .leader-top-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 801px) and (max-width: 1499px) { .leaders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-
-/* Overview: Key Dates in a right-hand column on wide screens */
-@media (min-width: 1400px) {
-  .overview-top { display: grid; grid-template-columns: minmax(0, 1fr) clamp(340px, 28vw, 520px); align-items: start; column-gap: clamp(24px, 3vw, 48px); padding-right: clamp(24px, 3.5vw, 56px); background: var(--ink); }
-  .overview-top .hero { min-height: 0; grid-template-columns: 1fr; padding: 83px 0 20px clamp(24px, 3.5vw, 56px); }
-  .overview-top .overview-main .section-wrap { max-width: none; padding-right: 0; padding-left: clamp(24px, 3.5vw, 56px); }
-  .overview-top .sample-section { padding-top: 30px; }
-  .overview-top .key-dates-section { padding-top: 83px; }
-  .overview-top .key-dates-section .section-wrap { max-width: none; padding: 0; }
-  .overview-top .key-dates-list { grid-template-columns: 1fr; }
-  .overview-top .key-dates-form { grid-template-columns: 1fr; }
-  .overview-top .hero-brand { min-width: 0; }
-  .overview-top .hero-brand h1 { min-width: 0; font-size: clamp(36px, calc(6.6vw - 52px), 96px); }
-  /* Line the rest of the Overview up with the top block */
-  body:has(.overview-top) .section-wrap { max-width: none; }
-}
