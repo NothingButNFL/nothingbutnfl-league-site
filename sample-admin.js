@@ -1,4 +1,4 @@
-// Admin: load or remove the made-up sample league (sample-league.js): a full 17-game season with 53-man rosters.
+// Overview: load or remove the made-up sample league (sample-league.js): a full 17-game season with 53-man rosters.
 // Before loading, the current saved data is copied to IndexedDB (see league-core.js); removing puts that copy back exactly.
 const sampleLoadButton = document.querySelector("#sample-load");
 const sampleRemoveButton = document.querySelector("#sample-remove");
@@ -74,6 +74,7 @@ sampleLoadButton.addEventListener("click", async () => {
   }
   renderSamplePanel();
   showSampleBanner();
+  refreshOverviewAfterSample();
 });
 
 sampleRemoveButton.addEventListener("click", async () => {
@@ -87,7 +88,20 @@ sampleRemoveButton.addEventListener("click", async () => {
   }
   renderSamplePanel();
   showSampleBanner();
+  refreshOverviewAfterSample();
 });
+
+// The Overview's key dates, leaders and standings were drawn from the old data, so redraw the page (keeping the
+// status message) after the sample is loaded or removed.
+function refreshOverviewAfterSample() {
+  try { sessionStorage.setItem("nbf-sample-status", sampleStatus.textContent); } catch { /* fine without it */ }
+  location.hash = "sample-league";
+  location.reload();
+}
+try {
+  const note = sessionStorage.getItem("nbf-sample-status");
+  if (note) { sampleStatus.textContent = note; sessionStorage.removeItem("nbf-sample-status"); }
+} catch { /* storage unavailable */ }
 
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderSamplePanel();

@@ -2031,3 +2031,4 @@ form.is-minimum input[readonly] { opacity: .75; }
   .salary-table tbody td:has(> .player-cog) > .player-cog { float: none; margin: 0; grid-column: 1; grid-row: span 4; align-self: start; width: 36px; height: 36px; }
   .salary-table tbody td:has(> .player-cog) > .player-portrait { grid-column: 2; }
 }
+.sample-actions [hidden] { display: none !important; }

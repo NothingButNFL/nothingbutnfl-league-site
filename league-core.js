@@ -1949,8 +1949,8 @@ function showSampleBanner() {
   const text = document.createElement("span");
   text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up full season with made-up rosters and contracts. ";
   const link = document.createElement("a");
-  link.href = "admin.html#sample-panel";
-  link.textContent = "Remove it in Admin";
+  link.href = "index.html#sample-league";
+  link.textContent = "Remove it on the Overview";
   text.append(link, " to get your own data back.");
   banner.append(text);
   (document.querySelector("main") || document.body).prepend(banner);
