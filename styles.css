@@ -2074,3 +2074,5 @@ form.is-minimum input[readonly] { opacity: .75; }
 .theme-option.is-active { background: #174477; color: #fff; }
 .theme-option.is-selected { color: #fff; }
 .theme-menu-heading { margin: 8px 9px 4px; padding-top: 8px; border-top: 1px solid #31527a; color: #8ca5c5; font: 10px var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+.insider-wire { margin-top: 18px; padding-top: 16px; border-top: 1px solid #1d3a5f; }
+.insider-title { margin: 0; color: #fff; font: 700 18px var(--display); letter-spacing: -.01em; }

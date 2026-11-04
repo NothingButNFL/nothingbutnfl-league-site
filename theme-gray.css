@@ -393,3 +393,4 @@ html[data-theme="gray"] .theme-menu { border-top-color: #6c6f76; border-right-co
 html[data-theme="gray"] .theme-option { color: #e2e3e6; }
 html[data-theme="gray"] .theme-option.is-active { background-color: #3a3c41; }
 html[data-theme="gray"] .theme-menu-heading { border-top-color: #47494f; color: #a5a8ae; }
+html[data-theme="gray"] .insider-wire { border-top-color: #303236; }

@@ -456,3 +456,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option { color: rgb(v
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option-check { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option.is-active { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-menu-heading { border-top-color: rgb(var(--tm-31527a)); color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-wire { border-top-color: rgb(var(--tm-1d3a5f)); }
