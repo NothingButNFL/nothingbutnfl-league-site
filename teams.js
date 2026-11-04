@@ -218,6 +218,34 @@ if (siteHeader) {
   }, true);
 }
 
+// Light / dark mode toggle (sidebar and mobile menu). The choice is remembered in this browser.
+const themeKey = "nbf-theme";
+function currentTheme() { return document.documentElement.dataset.theme === "light" ? "light" : "dark"; }
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem(themeKey, theme); } catch { /* storage unavailable */ }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#ffffff" : "#071a33");
+  for (const button of document.querySelectorAll(".theme-toggle")) {
+    const next = theme === "light" ? "dark" : "light";
+    button.querySelector(".theme-toggle-icon").innerHTML = theme === "light"
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>';
+    button.querySelector(".theme-toggle-label").textContent = next === "light" ? "Light mode" : "Dark mode";
+    button.setAttribute("aria-label", `Switch to ${next} mode`);
+    button.title = `Switch to ${next} mode`;
+  }
+}
+if (siteHeader) {
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "theme-toggle";
+  toggle.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span><span class="theme-toggle-label"></span>';
+  toggle.addEventListener("click", () => setTheme(currentTheme() === "light" ? "dark" : "light"));
+  const collapse = siteHeader.querySelector(".sidebar-collapse");
+  if (collapse) collapse.before(toggle); else siteHeader.append(toggle);
+  setTheme(currentTheme());
+}
+
 // The sidebar opens the group holding the current page.
 function openCurrentGroup() {
   if (!sidebarLayout.matches) return;

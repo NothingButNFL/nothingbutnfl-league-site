@@ -1904,3 +1904,19 @@ form.is-minimum input[readonly] { opacity: .75; }
 .multi-year-table .fifth-year-mark { margin: 0 4px 0 0; cursor: default; }
 .salary-table td[data-label="Player name"] { white-space: normal; overflow-wrap: anywhere; } .salary-table td[data-label="Player name"] .vmb-mark { margin: 2px 4px 0 0; }
 .contracts-fifth-year { min-width: 90px; } .contracts-fifth-year.is-set { border-color: #ffb36b; color: #ffb36b; } .contracts-money .fifth-year-mark { margin-right: 4px; }
+
+/* ---- Light / dark mode toggle ---- */
+.theme-toggle { display: flex; align-items: center; gap: 11px; border: 1px solid #31527a; border-radius: 3px; background: transparent; color: #c9d8ea; font: 600 13px var(--body); cursor: pointer; }
+.theme-toggle:hover, .theme-toggle:focus-visible { background: #174477; color: #fff; }
+.theme-toggle-icon { display: inline-flex; width: 18px; justify-content: center; }
+@media (min-width: 1181px) {
+  body > .site-header .theme-toggle { width: 100%; min-height: 40px; margin-top: auto; padding: 0 12px; }
+  body > .site-header .theme-toggle + .sidebar-collapse { margin-top: 8px; }
+  html.nav-collapsed body > .site-header .theme-toggle { justify-content: center; padding: 0; }
+  html.nav-collapsed body > .site-header .theme-toggle-label { display: none; }
+}
+@media (max-width: 1180px) {
+  body > .site-header .theme-toggle { order: 2; width: 40px; height: 40px; margin-left: auto; justify-content: center; padding: 0; }
+  body > .site-header .theme-toggle-label { display: none; }
+  body > .site-header .menu-toggle { order: 3; margin-left: 8px; }
+}
