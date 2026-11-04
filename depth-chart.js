@@ -86,7 +86,7 @@ function renderDepthChart() {
   const title = document.createElement("div");
   title.innerHTML = '<span class="panel-index">DEPTH CHART</span>';
   const h3 = document.createElement("h3");
-  h3.textContent = `${team.name} depth chart`;
+  h3.textContent = `${team.name} Depth Chart`;
   title.append(h3);
   const actions = document.createElement("div");
   actions.className = "depth-actions";
