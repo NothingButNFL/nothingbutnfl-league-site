@@ -104,6 +104,7 @@
             <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
             <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
             <a class="admin-menu-link" href="admin-fa-offers.html" role="menuitem"><span>Free Agent Offers</span><span class="nav-badge" data-badge="admin-fa" hidden></span></a>
+            <a class="admin-menu-link" href="admin-restructures.html" role="menuitem"><span>Restructure Requests</span><span class="nav-badge" data-badge="admin-restructure" hidden></span></a>
             <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
             <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
           </div>
@@ -258,8 +259,12 @@
           <div class="management-panel restructure-panel" id="restructure-panel" role="tabpanel" aria-labelledby="season-tab-restructure" hidden>
             <div class="panel-heading">
               <div><span class="panel-index">CONTRACT MOVES</span><h3>Restructure a contract</h3></div>
-              <p>Lower this season's base salary (down to the player's league minimum) and roster bonus, and turn that money into signing bonus. It's spread evenly over the rest of the deal including this season, up to 5 seasons, and added to his existing signing bonus. Add void years to stretch it to 5.</p>
+              <p>Lower this season's base salary (down to the player's league minimum) and roster bonus, and turn that money into signing bonus. It's spread evenly over the rest of the deal including this season, up to 5 seasons, and added to his existing signing bonus. Add void years to stretch it to 5. Requests go to the commissioner on Admin › Restructure Requests; nothing changes until it's approved.</p>
             </div>
+            <section class="team-fa-pending" id="rs-pending-box" aria-labelledby="rs-pending-title">
+              <h4 class="team-fa-pending-title" id="rs-pending-title">Pending restructures <span class="fa-offer-count" id="rs-pending-count">0</span></h4>
+              <div class="fa-offer-list" id="rs-pending"></div>
+            </section>
             <div class="rs-controls">
               <label>Player<select id="rs-player"></select></label>
             </div>
@@ -273,14 +278,13 @@
                 <p class="rs-note" id="rs-note" aria-live="polite"></p>
               </div>
               <div class="contract-editor rs-sheet" id="rs-after"></div>
+              <label class="rs-message">Message to the commissioner<input id="rs-notes" maxlength="300" placeholder="Optional"></label>
               <div class="rs-actions">
-                <button class="button button-lime" id="rs-apply" type="button">Restructure contract</button>
-              </div>
-              <div class="fao-announcement rs-announcement" id="rs-announcement" hidden>
-                <pre class="fao-announcement-text"></pre>
-                <button class="workspace-button" id="rs-copy" type="button">Copy announcement</button>
+                <button class="button button-lime" id="rs-apply" type="button">Send for approval <span aria-hidden="true">→</span></button>
               </div>
             </div>
+            <h4 class="trade-offers-heading">Past restructure requests</h4>
+            <div class="fa-offer-list" id="rs-past"></div>
           </div>
 
           <div class="management-panel team-fa-panel" id="team-fa-panel" role="tabpanel" aria-labelledby="season-tab-free-agents" hidden>

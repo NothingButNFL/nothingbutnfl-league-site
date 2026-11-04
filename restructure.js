@@ -6,7 +6,6 @@ const rsBase = document.querySelector("#rs-base");
 const rsRoster = document.querySelector("#rs-roster");
 const rsVoid = document.querySelector("#rs-void");
 const rsNote = document.querySelector("#rs-note");
-let rsLastAnnouncement = "";
 
 const rsYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
 const rsPlayers = () => officeData.teams[activeTeamId].roster
@@ -70,6 +69,7 @@ function renderRestructure() {
     return new Option(`${p.name} · ${e.position || "—"} · ${formatCurrency(capHitFor(e))}`, p.id);
   }));
   rsPlayer.value = players.some((p) => p.id === keep) ? keep : "";
+  rsRenderRequests();
   const empty = document.querySelector("#rs-empty");
   empty.hidden = players.length > 0;
   empty.textContent = `No players on the ${year} salary sheet.`;
@@ -121,7 +121,6 @@ function rsUpdate() {
 
 rsPlayer.addEventListener("change", () => {
   rsBase.value = ""; rsRoster.value = ""; rsVoid.value = "0";
-  document.querySelector("#rs-announcement").hidden = true;
   rsUpdate();
 });
 for (const el of [rsBase, rsRoster]) {
@@ -133,24 +132,60 @@ rsVoid.addEventListener("change", rsUpdate);
 document.querySelector("#rs-apply").addEventListener("click", async () => {
   const { player, plan, error } = rsPlan();
   if (!player || error || plan.error || !plan.amount) return;
-  const ok = await confirmAction(`Restructure ${player.name}? ${formatCurrency(plan.amount)} of ${plan.year} salary becomes signing bonus spread over ${plan.spread} season${plan.spread === 1 ? "" : "s"}${plan.addVoid ? ` (adding ${plan.addVoid} void year${plan.addVoid === 1 ? "" : "s"})` : ""}. His ${plan.year} cap hit goes from ${formatCurrency(plan.rows[0].before.capHit)} to ${formatCurrency(plan.rows[0].after.capHit)}.`, { confirmLabel: "Restructure" });
+  const terms = { newBase: plan.rows[0].after.baseSalary, newRoster: plan.rows[0].after.rosterBonus };
+  const ok = await confirmAction(`Send ${player.name}'s restructure to the commissioner? ${formatCurrency(plan.amount)} of ${plan.year} salary would become signing bonus spread over ${plan.spread} season${plan.spread === 1 ? "" : "s"}${plan.addVoid ? ` (adding ${plan.addVoid} void year${plan.addVoid === 1 ? "" : "s"})` : ""}, and his ${plan.year} cap hit would go from ${formatCurrency(plan.rows[0].before.capHit)} to ${formatCurrency(plan.rows[0].after.capHit)}.`, { confirmLabel: "Send for approval" });
   if (!ok) return;
-  const txn = applyRestructure(officeData, activeTeamId, player, plan);
-  saveOfficeData(`${player.name} restructured: ${formatCurrency(plan.capSavings)} of ${plan.year} cap space created.`);
-  rsLastAnnouncement = txn?.details || restructureAnnouncement(activeTeamId, player, plan);
-  const box = document.querySelector("#rs-announcement");
-  box.querySelector("pre").textContent = rsLastAnnouncement;
-  box.hidden = false;
-  rsBase.value = ""; rsRoster.value = ""; rsVoid.value = "0";
-  updateCapOverview();
-  rsUpdate();
-  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const result = submitRestructure(officeData, activeTeamId, player, plan, terms, document.querySelector("#rs-notes").value);
+  saveOfficeData(`${result.replaced ? "Updated restructure" : "Restructure"} for ${player.name} sent to the commissioner: ${restructureSummary(result.request)}.`);
+  if (!storageIsAvailable) { undoRestructure(officeData, result); return; }
+  refreshNavNotifications();
+  rsBase.value = ""; rsRoster.value = ""; rsVoid.value = "0"; document.querySelector("#rs-notes").value = "";
+  renderRestructure();
+  document.querySelector("#rs-pending-box").scrollIntoView({ behavior: "smooth", block: "nearest" });
 });
 
-document.querySelector("#rs-copy").addEventListener("click", async (event) => {
-  const ok = await copyText(rsLastAnnouncement);
-  event.target.textContent = ok ? "Copied ✓" : "Couldn't copy";
-  setTimeout(() => { event.target.textContent = "Copy announcement"; }, 1800);
+function rsRequestCard(r) {
+  const card = document.createElement("article");
+  card.className = `fa-offer is-${r.status === "approved" ? "accepted" : r.status}`;
+  card.dataset.requestId = r.id;
+  const label = { pending: "Waiting", approved: "Approved", declined: "Declined", withdrawn: "Withdrawn" }[r.status];
+  const when = new Date(r.decidedAt || r.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  card.innerHTML = `<div class="fa-offer-head"><strong></strong><span class="fa-offer-status">${label}</span></div><p class="fa-offer-terms"></p><p class="fa-offer-meta"></p>`;
+  card.querySelector("strong").textContent = r.playerName;
+  card.querySelector(".fa-offer-terms").textContent = restructureSummary(r);
+  card.querySelector(".fa-offer-meta").textContent = [`${r.status === "pending" ? "Sent" : "Decided"} ${when}`, r.decisionNote || ""].filter(Boolean).join(" · ");
+  if (r.status === "pending" && storageIsAvailable) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "workspace-button fa-offer-withdraw";
+    button.dataset.action = "withdraw-restructure";
+    button.textContent = "Withdraw";
+    card.append(button);
+  }
+  return card;
+}
+
+function rsRenderRequests() {
+  const mine = (officeData.restructureRequests || []).filter((r) => r.teamId === activeTeamId);
+  const pending = mine.filter((r) => r.status === "pending").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const past = mine.filter((r) => r.status !== "pending").sort((a, b) => (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 20);
+  const note = (text) => { const p = document.createElement("p"); p.className = "empty-state"; p.textContent = text; return p; };
+  document.querySelector("#rs-pending").replaceChildren(...(pending.length ? pending.map(rsRequestCard) : [note("No pending restructures.")]));
+  document.querySelector("#rs-pending-count").textContent = String(pending.length);
+  document.querySelector("#rs-pending-box").classList.toggle("has-offers", pending.length > 0);
+  document.querySelector("#rs-past").replaceChildren(...(past.length ? past.map(rsRequestCard) : [note("No approved, declined or withdrawn restructures yet.")]));
+}
+
+document.querySelector("#rs-pending").addEventListener("click", async (event) => {
+  const id = event.target.closest('[data-action="withdraw-restructure"]')?.closest("[data-request-id]")?.dataset.requestId;
+  const request = id && pendingRestructures(officeData).find((r) => r.id === id && r.teamId === activeTeamId);
+  if (!request) return;
+  const ok = await confirmAction(`Withdraw the restructure request for ${request.playerName}?`, { confirmLabel: "Withdraw", danger: true });
+  if (!ok) return;
+  Object.assign(request, { status: "withdrawn", decidedAt: new Date().toISOString(), decisionNote: "Withdrawn by the team" });
+  saveOfficeData(`Restructure request for ${request.playerName} withdrawn.`);
+  refreshNavNotifications();
+  renderRestructure();
 });
 
 globalThis.renderRestructure = renderRestructure;

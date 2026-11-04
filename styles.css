@@ -1949,3 +1949,20 @@ form.is-minimum input[readonly] { opacity: .75; }
 @media (max-width: 900px) { .rs-inputs { grid-template-columns: 1fr; } .rs-controls select { min-width: 0; width: 100%; } }
 .rs-inputs label { display: block; }
 .rs-inputs label input, .rs-inputs label select { display: block; width: 100%; margin-top: 6px; }
+
+/* ---- Admin: Restructure Requests ---- */
+.rsa-list { display: grid; gap: 14px; }
+.rsa-card { display: grid; grid-template-columns: 1fr auto; border: 1px solid #31527a; border-left: 3px solid #ffb36b; background: #0a2647; }
+.rsa-card .fao-group-head { grid-column: 1 / -1; }
+.rsa-player { color: #fff; font: 700 17px var(--display); }
+.rsa-body { display: grid; gap: 6px; padding: 12px 16px 16px; min-width: 0; }
+.rsa-card .fao-actions { align-self: center; padding: 12px 16px; }
+.rsa-contract tr.is-changed td { color: #ffd37a; }
+.rsa-status { display: inline-block; padding: 2px 7px; font: 700 10px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.rsa-status.is-approved { background: rgba(117, 226, 139, .15); color: #75e28b; }
+.rsa-status.is-declined { background: rgba(255, 146, 153, .15); color: #ff9299; }
+.rsa-status.is-withdrawn { background: rgba(201, 216, 234, .12); color: #c9d8ea; }
+.rsa-log td { white-space: nowrap; }
+.rs-message { display: grid; gap: 6px; max-width: 520px; margin: 0 0 12px; color: #c5d5e8; font: 8px var(--mono); letter-spacing: .03em; }
+.rs-message input { min-height: 38px; padding: 6px 10px; border: 1px solid #31527a; background: #071a33; color: #fff; font: 13px var(--body); }
+@media (max-width: 760px) { .rsa-card { grid-template-columns: 1fr; } }

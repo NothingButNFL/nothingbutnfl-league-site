@@ -120,7 +120,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests);
 }
 
 function migrateLegacyData(data) {
@@ -2367,4 +2367,47 @@ function restructureAnnouncement(teamId, player, plan) {
   const voidText = plan.addVoid ? ` and adds ${plan.addVoid} void year${plan.addVoid === 1 ? "" : "s"}` : "";
   return `**${teamName(teamId)} Restructure:**\n• ${who} converts ${formatCurrency(plan.amount)} of ${plan.year} salary into signing bonus, spread over ${plan.spread} season${plan.spread === 1 ? "" : "s"}${voidText}, creating ${formatCurrency(plan.capSavings)} in ${plan.year} cap space.`;
 }
+
+// ---- Restructure requests (Admin › Restructure Requests) ----
+// data.restructureRequests = [{ id, teamId, playerId, playerName, position, year, newBase, newRoster, addVoid,
+//   amount, capSavings, spread, status: "pending" | "approved" | "declined" | "withdrawn", createdAt, decidedAt?, decisionNote?, notes? }]
+// A team asks for a restructure on its sheet; the commissioner approves (which applies it) or declines it.
+const restructureStatuses = ["pending", "approved", "declined", "withdrawn"];
+function validRestructureRequests(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 3000) return false;
+  const ids = new Set();
+  for (const r of list) {
+    if (!r || typeof r.id !== "string" || !r.id || ids.has(r.id) || !nflTeams.some(({ id }) => id === r.teamId) ||
+        typeof r.playerId !== "string" || typeof r.playerName !== "string" || !r.playerName || r.playerName.length > 70 ||
+        !seasons.includes(r.year) || ["newBase", "newRoster", "amount", "capSavings"].some((k) => !isIntegerInRange(r[k], 0, 999999999)) ||
+        !isIntegerInRange(r.addVoid, 0, 4) || !isIntegerInRange(r.spread, 1, 5) || !restructureStatuses.includes(r.status) ||
+        typeof r.createdAt !== "string" || (r.decidedAt !== undefined && typeof r.decidedAt !== "string") ||
+        ["decisionNote", "notes", "position"].some((k) => r[k] !== undefined && (typeof r[k] !== "string" || r[k].length > 300))) return false;
+    ids.add(r.id);
+  }
+  return true;
+}
+const pendingRestructures = (data) => (data.restructureRequests || []).filter((r) => r.status === "pending");
+
+// Adds a team's restructure request; a newer one for the same player replaces its open one. Returns { request, replaced }.
+function submitRestructure(data, teamId, player, plan, terms, notes = "") {
+  if (!Array.isArray(data.restructureRequests)) data.restructureRequests = [];
+  const now = new Date().toISOString();
+  const replaced = pendingRestructures(data).find((r) => r.teamId === teamId && r.playerId === player.id) || null;
+  if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer request" });
+  if (data.restructureRequests.length >= 3000) data.restructureRequests = data.restructureRequests.filter((r) => r.status === "pending").concat(data.restructureRequests.filter((r) => r.status !== "pending").slice(-2000));
+  const request = { id: newRecordId("restructure"), teamId, playerId: player.id, playerName: player.name.slice(0, 70), year: plan.year,
+    newBase: terms.newBase, newRoster: terms.newRoster, addVoid: plan.addVoid, amount: plan.amount, capSavings: plan.capSavings, spread: plan.spread,
+    status: "pending", createdAt: now };
+  if (plan.position) request.position = String(plan.position).slice(0, 8);
+  if (notes.trim()) request.notes = notes.trim().slice(0, 300);
+  data.restructureRequests.push(request);
+  return { request, replaced };
+}
+function undoRestructure(data, { request, replaced }) {
+  data.restructureRequests = data.restructureRequests.filter((r) => r !== request);
+  if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
+}
+const restructureSummary = (r) => `${formatCurrency(r.amount)} of ${r.year} salary to signing bonus over ${r.spread} season${r.spread === 1 ? "" : "s"}${r.addVoid ? ` (+${r.addVoid} void)` : ""} · ${formatCurrency(r.capSavings)} cap space`;
 

@@ -685,3 +685,11 @@ html[data-theme="light"] .rs-inputs { border-top-color: #d2701a; border-right-co
 html[data-theme="light"] .rs-inputs input, html[data-theme="light"] .rs-inputs select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
 html[data-theme="light"] .rs-note { color: #946100; }
 html[data-theme="light"] .rs-note.is-error { color: #c0283a; }
+html[data-theme="light"] .rsa-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #d2701a; background-color: #f5f8fc; }
+html[data-theme="light"] .rsa-player { color: #0b1f3a; }
+html[data-theme="light"] .rsa-contract tr.is-changed td { color: #946100; }
+html[data-theme="light"] .rsa-status.is-approved { color: #1e7f3a; }
+html[data-theme="light"] .rsa-status.is-declined { color: #c0283a; }
+html[data-theme="light"] .rsa-status.is-withdrawn { color: #33496b; }
+html[data-theme="light"] .rs-message { color: #33496b; }
+html[data-theme="light"] .rs-message input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }

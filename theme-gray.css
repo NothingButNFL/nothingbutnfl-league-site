@@ -371,3 +371,7 @@ html[data-theme="gray"] .rs-controls label, html[data-theme="gray"] .rs-inputs l
 html[data-theme="gray"] .rs-controls select { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; color-scheme: dark; }
 html[data-theme="gray"] .rs-sheet td small { color: #a5a8ae; }
 html[data-theme="gray"] .rs-inputs input, html[data-theme="gray"] .rs-inputs select { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; color-scheme: dark; }
+html[data-theme="gray"] .rsa-card { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .rsa-status.is-withdrawn { color: #d5d7db; }
+html[data-theme="gray"] .rs-message { color: #d5d7db; }
+html[data-theme="gray"] .rs-message input { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
