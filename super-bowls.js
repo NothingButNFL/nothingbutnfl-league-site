@@ -241,7 +241,7 @@ function gmFor(teamId) {
 function resetForm() {
   sbForm.reset();
   f.season.value = String(thisSeason());
-  document.querySelector("#sb-form-title").textContent = "Add a Super Bowl champion";
+  document.querySelector("#sb-form-title").textContent = "Add A Champion";
   showBoxScoreHint();
   showMvpFill();
 }
