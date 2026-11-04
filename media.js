@@ -263,7 +263,7 @@ function renderFeed() {
   mediaEmpty.hidden = posts.length > 0;
   mediaEmpty.textContent = officeData.media.length
     ? "No posts match these filters."
-    : "No posts yet. Use Create a media post to share the first article, video or power rankings.";
+    : "No posts yet. Use Create A Media Post to share the first article, video or power rankings.";
 }
 
 for (const control of [mediaFilterType, mediaFilterTeam]) control.addEventListener("change", renderFeed);
