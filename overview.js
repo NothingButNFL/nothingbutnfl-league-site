@@ -188,8 +188,9 @@ function renderRecentTransactions() {
     // unreadable saved data: show the empty state
   }
   const list = document.querySelector("#recent-list");
-  const entries = [...(data.transactions || [])].sort((a, b) =>
-    b.date.localeCompare(a.date) || String(b.createdAt || "").localeCompare(String(a.createdAt || ""))).slice(0, 5);
+  // Most recently recorded first (entries are appended to the log as they happen), so a move made today shows up
+  // even when the log already has later-dated entries.
+  const entries = [...(data.transactions || [])].reverse().slice(0, 5);
   if (!entries.length) {
     const empty = document.createElement("li");
     empty.className = "recent-empty";

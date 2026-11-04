@@ -174,10 +174,13 @@ function insiderPostFor(entry) {
   return { id: entry.id, reporter, text, date: entry.date, createdAt: entry.createdAt, teams: entry.teams.filter((t) => t !== freeAgentTeamId), type: entry.type };
 }
 
+// The newest reports are the moves most recently added to the Transaction Log (entries are appended as they're
+// recorded), not the latest dates: a move made today should lead even if the log already has later-dated entries
+// (the sample league's season runs into December).
 function insiderPosts(data, limit = 6) {
-  return [...(data.transactions || [])]
-    .sort((a, b) => b.date.localeCompare(a.date) || String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
-    .slice(0, limit).map(insiderPostFor);
+  return (data.transactions || []).map((entry, index) => ({ entry, index }))
+    .sort((a, b) => b.index - a.index)
+    .slice(0, limit).map(({ entry }) => insiderPostFor(entry));
 }
 
 function insiderWhen(post) {
