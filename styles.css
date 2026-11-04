@@ -2082,3 +2082,21 @@ form.is-minimum input[readonly] { opacity: .75; }
 .conference-card.is-afc::before { background-image: url("assets/afc.png"); }
 .conference-card.is-nfc::before { background-image: url("assets/nfc.png"); opacity: .38; }
 .conference-card h3 { margin: 2px 0 14px; color: #fff; font: 700 18px/1.2 var(--display); letter-spacing: -.01em; text-align: center; text-transform: none; }
+
+/* Tables: center every cell's contents, left-to-right and top-to-bottom */
+table :is(th, td) { text-align: center !important; vertical-align: middle !important; }
+table :is(th, td) > :is(div, span, a, label, strong, p) { justify-content: center; justify-items: center; }
+table :is(th, td) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), table :is(th, td) select { text-align: center; text-align-last: center; }
+@media (min-width: 1301px) {
+  .salary-table td > .player-cog, .salary-table td > .player-portrait { float: none; vertical-align: middle; }
+  .salary-table td > .player-cog { display: inline-grid; margin: 0 6px 0 0; }
+  .salary-table td > .player-portrait { display: inline-block; margin: 0 8px 0 0; }
+  .salary-table td[data-label="Player name"] { white-space: nowrap; }
+  .salary-table td[data-label="Player name"] .player-name-link { display: inline-block; max-width: calc(100% - 76px); vertical-align: middle; }
+}
+table :is(th, td) > button:not(.row-delete):not(.player-cog):not(.vmb-mark), table th :is(.contracts-sort, .salary-sort) { justify-content: center; text-align: center !important; }
+table td ul { padding-left: 0 !important; list-style-position: inside; }
+@media (min-width: 1301px) {
+  /* Player names with the cog and portrait stay lined up at the left so the icons form a neat column. */
+  .salary-table td[data-label="Player name"] { text-align: left !important; }
+}
