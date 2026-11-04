@@ -24,14 +24,14 @@ html[data-theme="light"] .team-menu-fallback { color: #0b1f3a; }
 html[data-theme="light"] .hero { color: #0b1f3a; }
 html[data-theme="light"] .hero::before { background-image: linear-gradient(90deg, transparent 49.9%, rgba(11, 31, 58, 0.049) 50%, transparent 50.1%); }
 html[data-theme="light"] .hero .text-link { color: #0b1f3a; }
-html[data-theme="light"] .hero-proof span { color: #4f6584; }
+html[data-theme="light"] .hero-proof span { color: #0b1f3a; }
 html[data-theme="light"] .hero-number { color: rgba(11, 31, 58, 0.098); }
-html[data-theme="light"] .hero-bottom { border-top-color: rgba(11, 31, 58, 0.224); color: #4f6584; }
+html[data-theme="light"] .hero-bottom { border-top-color: rgba(11, 31, 58, 0.224); color: #0b1f3a; }
 html[data-theme="light"] .hero-bottom a { color: #0b1f3a; }
 html[data-theme="light"] .standings-section { color: #0b1f3a; }
 html[data-theme="light"] .standings-toolbar { border-bottom-color: #d5dde6; }
 html[data-theme="light"] .tab-button.is-active { color: #0b1f3a; }
-html[data-theme="light"] .standings-table th { color: #4f6584; }
+html[data-theme="light"] .standings-table th { color: #0b1f3a; }
 html[data-theme="light"] .standing-team { color: #0b1f3a; }
 html[data-theme="light"] .team-monogram { background-color: #dbe7f6; }
 html[data-theme="light"] .join-section { color: #0b1f3a; }
@@ -41,25 +41,25 @@ html[data-theme="light"] .interest-form input, html[data-theme="light"] .interes
 html[data-theme="light"] .application-result { border-top-color: #c9d3dc; }
 html[data-theme="light"] .copy-button { color: #0b1f3a; }
 html[data-theme="light"] .site-footer { color: #0b1f3a; }
-html[data-theme="light"] .site-footer > p { color: #4f6584; }
-html[data-theme="light"] .footer-note { color: #5d7391; }
+html[data-theme="light"] .site-footer > p { color: #0b1f3a; }
+html[data-theme="light"] .footer-note { color: #0b1f3a; }
 @media (max-width: 700px) {
   html[data-theme="light"] .menu-toggle span:not(.sr-only) { background-color: #0c2b50; }
   html[data-theme="light"] .primary-nav a:not(.nav-cta) { border-bottom-color: #d5dde6; }
 }
 html[data-theme="light"] .workspace-toolbar { color: #0b1f3a; }
 html[data-theme="light"] .franchise-picker select { color: #0b1f3a; }
-html[data-theme="light"] .panel-index { color: #4f6584; }
+html[data-theme="light"] .panel-index { color: #0b1f3a; }
 html[data-theme="light"] .salary-import-panel { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #e6eef8; }
 html[data-theme="light"] .salary-import-panel summary { color: #0b1f3a; }
 html[data-theme="light"] .salary-import-panel summary::after { color: #0b1f3a; }
-html[data-theme="light"] .salary-import-panel summary span { color: #33496b; }
+html[data-theme="light"] .salary-import-panel summary span { color: #0b1f3a; }
 html[data-theme="light"] .salary-import-panel summary strong { color: #0b1f3a; }
 html[data-theme="light"] .salary-import-panel > label { color: #0b1f3a; }
 html[data-theme="light"] .salary-import-panel textarea { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
-html[data-theme="light"] .salary-import-panel textarea::placeholder { color: #4f6584; }
-html[data-theme="light"] .salary-import-panel > p { color: #33496b; }
-html[data-theme="light"] .management-table th { color: #4f6584; }
+html[data-theme="light"] .salary-import-panel textarea::placeholder { color: #0b1f3a; }
+html[data-theme="light"] .salary-import-panel > p { color: #0b1f3a; }
+html[data-theme="light"] .management-table th { color: #0b1f3a; }
 html[data-theme="light"] .management-table input:focus, html[data-theme="light"] .management-table select:focus { background-color: #0c2b50; }
 html[data-theme="light"] .row-transaction { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; color: #0b1f3a; }
 html[data-theme="light"] .row-transaction:hover, html[data-theme="light"] .row-transaction:focus-visible { border-top-color: #0c2b50; border-right-color: #0c2b50; border-bottom-color: #0c2b50; border-left-color: #0c2b50; background-color: #ffffff; }
@@ -74,13 +74,13 @@ html[data-theme="light"] .team-page-brand { background-color: #0c2b50; }
 html[data-theme="light"] .skip-link { background-color: #0c2b50; color: #ffffff; }
 html[data-theme="light"] .section-wrap { color: #0b1f3a; }
 html[data-theme="light"] .front-office-heading h2 span, html[data-theme="light"] .team-page .front-office-heading h2 span { color: #0b1f3a; }
-html[data-theme="light"] .section-kicker, html[data-theme="light"] .section-subtitle, html[data-theme="light"] .standings-note, html[data-theme="light"] .standings-table th, html[data-theme="light"] .standings-table td, html[data-theme="light"] .join-copy > p, html[data-theme="light"] .join-callout, html[data-theme="light"] .form-heading span:last-child, html[data-theme="light"] .form-privacy, html[data-theme="light"] .site-footer > p, html[data-theme="light"] .footer-note, html[data-theme="light"] .team-page-subtitle, html[data-theme="light"] .team-back-link, html[data-theme="light"] .data-mode, html[data-theme="light"] .storage-notice, html[data-theme="light"] .workspace-status, html[data-theme="light"] .cap-stat > span, html[data-theme="light"] .cap-stat > small, html[data-theme="light"] .panel-index, html[data-theme="light"] .panel-heading > p, html[data-theme="light"] .management-table th, html[data-theme="light"] .empty-state, html[data-theme="light"] .management-form label, html[data-theme="light"] .workspace-footnote { color: #33496b; }
+html[data-theme="light"] .section-kicker, html[data-theme="light"] .section-subtitle, html[data-theme="light"] .standings-note, html[data-theme="light"] .standings-table th, html[data-theme="light"] .standings-table td, html[data-theme="light"] .join-copy > p, html[data-theme="light"] .join-callout, html[data-theme="light"] .form-heading span:last-child, html[data-theme="light"] .form-privacy, html[data-theme="light"] .site-footer > p, html[data-theme="light"] .footer-note, html[data-theme="light"] .team-page-subtitle, html[data-theme="light"] .team-back-link, html[data-theme="light"] .data-mode, html[data-theme="light"] .storage-notice, html[data-theme="light"] .workspace-status, html[data-theme="light"] .cap-stat > span, html[data-theme="light"] .cap-stat > small, html[data-theme="light"] .panel-index, html[data-theme="light"] .panel-heading > p, html[data-theme="light"] .management-table th, html[data-theme="light"] .empty-state, html[data-theme="light"] .management-form label, html[data-theme="light"] .workspace-footnote { color: #0b1f3a; }
 html[data-theme="light"] .team-page .eyebrow, html[data-theme="light"] .eyebrow, html[data-theme="light"] .sample-label, html[data-theme="light"] .form-heading, html[data-theme="light"] .join-callout > span:first-child, html[data-theme="light"] .back-top span, html[data-theme="light"] .team-back-link:hover { color: #0b1f3a; }
 html[data-theme="light"] .panel-heading h3, html[data-theme="light"] .cap-stat > strong, html[data-theme="light"] .team-page-title h1 { color: #0b1f3a; }
 html[data-theme="light"] .team-page .team-card-bottom { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 html[data-theme="light"] .interest-form { background-color: #ffffff; }
 html[data-theme="light"] .interest-form > label, html[data-theme="light"] .application-result label { color: #0b1f3a; }
-html[data-theme="light"] .interest-form label span { color: #33496b; }
+html[data-theme="light"] .interest-form label span { color: #0b1f3a; }
 html[data-theme="light"] .interest-form input, html[data-theme="light"] .interest-form select, html[data-theme="light"] .interest-form textarea, html[data-theme="light"] .application-result textarea { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .interest-form select { color: #0b1f3a; }
 html[data-theme="light"] .site-footer { background-color: #ffffff; }
@@ -95,7 +95,7 @@ html[data-theme="light"] .workspace-status:not(:empty) { border-top-color: #c6d4
 html[data-theme="light"] .cap-stat, html[data-theme="light"] .management-panel { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #dbe7f6; }
 html[data-theme="light"] .cap-limit-input { color: #0b1f3a; }
 html[data-theme="light"] .cap-limit-input input { color: #0b1f3a; }
-html[data-theme="light"] .cap-limit-input input::placeholder { color: #33496b; }
+html[data-theme="light"] .cap-limit-input input::placeholder { color: #0b1f3a; }
 html[data-theme="light"] .cap-room-stat > strong, html[data-theme="light"] .cap-room-stat.is-over > strong { color: #0b1f3a; }
 html[data-theme="light"] .management-table th { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
 html[data-theme="light"] .management-table td { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #0b1f3a; }
@@ -105,7 +105,7 @@ html[data-theme="light"] .management-table option, html[data-theme="light"] .man
 html[data-theme="light"] .management-form { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 html[data-theme="light"] .management-form label { color: #0b1f3a; }
 html[data-theme="light"] .management-form input, html[data-theme="light"] .management-form select { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
-html[data-theme="light"] .management-form input::placeholder { color: #33496b; }
+html[data-theme="light"] .management-form input::placeholder { color: #0b1f3a; }
 html[data-theme="light"] .row-delete, html[data-theme="light"] .row-delete:hover { color: #0b1f3a; }
 html[data-theme="light"] .row-delete:hover { background-color: #dbe7f6; }
 html[data-theme="light"] .team-page-intro { background-color: #eef2f8; }
@@ -121,12 +121,12 @@ html[data-theme="light"] .row-delete:hover { color: #0b1f3a; background-color: #
   html[data-theme="light"] .admin-menu-link { border-bottom-color: #d5dde6; }
 }
 html[data-theme="light"] .season-tabs { border-bottom-color: #9fb2cb; }
-html[data-theme="light"] .season-tab { color: #33496b; }
+html[data-theme="light"] .season-tab { color: #0b1f3a; }
 html[data-theme="light"] .season-tab:hover, html[data-theme="light"] .season-tab:focus-visible { background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .season-tab.is-active { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .season-tab-actions[aria-expanded="true"] { background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .team-actions-menu { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; box-shadow: rgba(15, 35, 70, 0.158) 0px 14px 34px; }
-html[data-theme="light"] .team-actions-item { color: #33496b; }
+html[data-theme="light"] .team-actions-item { color: #0b1f3a; }
 html[data-theme="light"] .team-actions-item:hover, html[data-theme="light"] .team-actions-item:focus-visible { background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .team-actions-item.is-active { border-left-color: #1f6fc5; background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .salary-table .salary-groups th { color: #0b1f3a; }
@@ -137,23 +137,23 @@ html[data-theme="light"] .salary-table td.is-negative-savings input { color: #c0
 html[data-theme="light"] .team-page .cap-stat small a { color: #0b1f3a; }
 html[data-theme="light"] .admin-cap-table td:first-child { color: #22385a; }
 html[data-theme="light"] .admin-cap-cell input { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
-html[data-theme="light"] .admin-cap-cell input::placeholder { color: #4f6584; }
+html[data-theme="light"] .admin-cap-cell input::placeholder { color: #0b1f3a; }
 @media (max-width: 1300px) {
   html[data-theme="light"] .salary-table tbody tr { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #e6eef8; }
   html[data-theme="light"] .salary-table tbody td { border-bottom-color: #c6d4e5; }
-  html[data-theme="light"] .salary-table tbody td::before { color: #33496b; }
+  html[data-theme="light"] .salary-table tbody td::before { color: #0b1f3a; }
   html[data-theme="light"] .salary-table input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; }
 }
 html[data-theme="light"] .trade-partners label { color: #0b1f3a; }
-html[data-theme="light"] .trade-partners label span { color: #33496b; }
+html[data-theme="light"] .trade-partners label span { color: #0b1f3a; }
 html[data-theme="light"] .trade-partners select, html[data-theme="light"] .trade-asset-row select { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .trade-team-section { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #e6eef8; }
 html[data-theme="light"] .trade-team-heading h4 { color: #0b1f3a; }
-html[data-theme="light"] .trade-team-heading > span { color: #33496b; }
+html[data-theme="light"] .trade-team-heading > span { color: #0b1f3a; }
 html[data-theme="light"] .trade-impact > h4 { color: #0b1f3a; }
 html[data-theme="light"] .trade-impact-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .trade-impact-card h5 { color: #0b1f3a; }
-html[data-theme="light"] .trade-impact-card dt { color: #33496b; }
+html[data-theme="light"] .trade-impact-card dt { color: #0b1f3a; }
 html[data-theme="light"] .trade-impact-card dd { color: #0b1f3a; }
 html[data-theme="light"] .trade-impact-card dd.is-positive-savings { color: #1e7f3a; }
 html[data-theme="light"] .trade-impact-card dd.is-negative-savings { color: #c0283a; }
@@ -166,25 +166,25 @@ html[data-theme="light"] .trade-offer.is-awaiting-admin { border-left-color: #d6
 html[data-theme="light"] .trade-offer.is-approved { border-left-color: #2f9e52; }
 html[data-theme="light"] .trade-offer-head h5 { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-status { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; color: #0b1f3a; }
-html[data-theme="light"] .trade-offer-meta, html[data-theme="light"] .trade-offer-progress { color: #33496b; }
+html[data-theme="light"] .trade-offer-meta, html[data-theme="light"] .trade-offer-progress { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-progress { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-side { background-color: #e6eef8; }
-html[data-theme="light"] .trade-offer-side h6 { color: #33496b; }
+html[data-theme="light"] .trade-offer-side h6 { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-side ul { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-side li.is-unavailable { color: #b8432f; }
 html[data-theme="light"] .trade-offer-impact { border-top-color: #c6d4e5; }
-html[data-theme="light"] .trade-offer-impact dt { color: #33496b; }
+html[data-theme="light"] .trade-offer-impact dt { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-impact dd { color: #0b1f3a; }
 html[data-theme="light"] .trade-offer-impact dd.is-positive-savings { color: #1e7f3a; }
 html[data-theme="light"] .trade-offer-impact dd.is-negative-savings { color: #c0283a; }
-html[data-theme="light"] .experience-fill > span { color: #33496b; }
+html[data-theme="light"] .experience-fill > span { color: #0b1f3a; }
 html[data-theme="light"] .contracts-toolbar label { color: #0b1f3a; }
 html[data-theme="light"] .contracts-toolbar input, html[data-theme="light"] .contracts-toolbar select { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
-html[data-theme="light"] .contracts-count { color: #33496b; }
+html[data-theme="light"] .contracts-count { color: #0b1f3a; }
 html[data-theme="light"] .contracts-table-wrap { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 html[data-theme="light"] .contracts-table thead th { background-color: #dbe7f6; }
 html[data-theme="light"] .contracts-table .contracts-groups th { color: #0b1f3a; }
-html[data-theme="light"] .contracts-sort { color: #33496b; }
+html[data-theme="light"] .contracts-sort { color: #0b1f3a; }
 html[data-theme="light"] .contracts-sort:hover, html[data-theme="light"] th[aria-sort="ascending"] .contracts-sort, html[data-theme="light"] th[aria-sort="descending"] .contracts-sort { color: #0b1f3a; }
 html[data-theme="light"] .contracts-table th:first-child, html[data-theme="light"] .contracts-table td:first-child { background-color: #dbe7f6; }
 html[data-theme="light"] .contracts-name a { color: #0b1f3a; text-decoration-color: #5d7391; }
@@ -193,31 +193,31 @@ html[data-theme="light"] .contracts-table select { color: #0b1f3a; }
 html[data-theme="light"] .contracts-table select:hover, html[data-theme="light"] .contracts-table select:focus { border-top-color: #0c2b50; border-right-color: #0c2b50; border-bottom-color: #0c2b50; border-left-color: #0c2b50; background-color: #eef2f8; }
 html[data-theme="light"] .contracts-table .row-delete.is-armed { background-color: #f6e3ea; }
 html[data-theme="light"] .contracts-total { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; }
-html[data-theme="light"] .contracts-total span { color: #33496b; }
+html[data-theme="light"] .contracts-total span { color: #0b1f3a; }
 html[data-theme="light"] .contracts-total strong { color: #0b1f3a; }
 html[data-theme="light"] .experience-value { color: #0b1f3a; text-decoration-color: #556b8a; }
 html[data-theme="light"] .experience-value:hover { text-decoration-color: #0b1f3a; }
 html[data-theme="light"] .contracts-overwrite input { accent-color: #0c2b50; }
-html[data-theme="light"] .picks-owner-chip { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #33496b; }
+html[data-theme="light"] .picks-owner-chip { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .picks-owner-chip strong { color: #0b1f3a; }
 html[data-theme="light"] .picks-owner-chip:hover, html[data-theme="light"] .picks-owner-chip.is-active { border-top-color: #0c2b50; border-right-color: #0c2b50; border-bottom-color: #0c2b50; border-left-color: #0c2b50; background-color: #dbe7f6; }
 html[data-theme="light"] .picks-manager-table tr.is-traded td:first-child { box-shadow: #d6981f 3px 0px 0px inset; }
 html[data-theme="light"] .picks-danger { border-top-color: #c6d4e5; }
 html[data-theme="light"] .picks-danger .workspace-button.is-armed, html[data-theme="light"] .picks-manager-table .row-delete.is-armed { background-color: #f6e3ea; border-top-color: #e0705f; border-right-color: #e0705f; border-bottom-color: #e0705f; border-left-color: #e0705f; }
-html[data-theme="light"] .picks-table td.pick-own { color: #33496b; }
+html[data-theme="light"] .picks-table td.pick-own { color: #0b1f3a; }
 html[data-theme="light"] .picks-panel .panel-heading a { color: #0b1f3a; }
 html[data-theme="light"] .hero-logo { filter: drop-shadow(rgba(15, 35, 70, 0.122) 0px 10px 24px); }
 html[data-theme="light"] .txn-add-form input[type="date"] { color-scheme: light; }
-html[data-theme="light"] .txn-chip { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; background-color: #ffffff; color: #33496b; }
+html[data-theme="light"] .txn-chip { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .txn-chip strong { color: #0b1f3a; }
 html[data-theme="light"] .txn-chip:hover, html[data-theme="light"] .txn-chip.is-active { border-top-color: #0c2b50; border-right-color: #0c2b50; border-bottom-color: #0c2b50; background-color: #dbe7f6; color: #0b1f3a; }
-html[data-theme="light"] .txn-date { color: #33496b !important; }
-html[data-theme="light"] .txn-auto { color: #4f6584; }
+html[data-theme="light"] .txn-date { color: #0b1f3a !important; }
+html[data-theme="light"] .txn-auto { color: #0b1f3a; }
 html[data-theme="light"] .txn-team { background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] a.txn-team:hover { background-color: #dbe7f6; }
 html[data-theme="light"] .txn-details { color: #22385a !important; }
 html[data-theme="light"] .txn-table .row-delete.is-armed { background-color: #f6e3ea; }
-html[data-theme="light"] .txn-next-trade { color: #33496b; }
+html[data-theme="light"] .txn-next-trade { color: #0b1f3a; }
 html[data-theme="light"] .txn-next-trade label { color: #0b1f3a; }
 html[data-theme="light"] .txn-next-trade input { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .txn-rich strong, html[data-theme="light"] .txn-trade-head strong, html[data-theme="light"] .txn-trade-side strong { color: #0b1f3a; }
@@ -230,14 +230,14 @@ html[data-theme="light"] .standings-editor-row input { border-top-color: #9fb2cb
 html[data-theme="light"] #standings-reset.is-armed { border-top-color: #e0705f; border-right-color: #e0705f; border-bottom-color: #e0705f; border-left-color: #e0705f; background-color: #f6e3ea; }
 html[data-theme="light"] .standings-group-title { color: #0b1f3a; }
 html[data-theme="light"] .standings-table .standing-team a { color: #0b1f3a; }
-html[data-theme="light"] .standings-tag { color: #33496b; }
+html[data-theme="light"] .standings-tag { color: #0b1f3a; }
 html[data-theme="light"] .standings-table td.is-up { color: #1e7f3a; }
 html[data-theme="light"] .standings-table td.is-down { color: #c0283a; }
 html[data-theme="light"] .standings-table tr.is-leader td, html[data-theme="light"] .standings-table tr.is-playoff td { background-color: rgba(11, 31, 58, 0.056); }
 html[data-theme="light"] .standings-table tr.is-leader td:first-child, html[data-theme="light"] .standings-table tr.is-playoff td:first-child { box-shadow: #0c2b50 3px 0px 0px inset; color: #0b1f3a; }
 html[data-theme="light"] .standings-table input { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .standings-section-title { color: #0b1f3a; }
-html[data-theme="light"] .standings-leaders .standings-table th:first-child, html[data-theme="light"] .standings-leaders .standings-table td:first-child { color: #33496b; }
+html[data-theme="light"] .standings-leaders .standings-table th:first-child, html[data-theme="light"] .standings-leaders .standings-table td:first-child { color: #0b1f3a; }
 html[data-theme="light"] .standings-leaders .standings-table tbody tr td:first-child { color: #0b1f3a; }
 html[data-theme="light"] .division-board-table thead th { background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .division-board-table td { border-top-color: #e2e9f2; color: #22385a; }
@@ -246,11 +246,11 @@ html[data-theme="light"] .division-board-table .standing-team a { color: #0b1f3a
 html[data-theme="light"] #stats-clear.is-armed { border-top-color: #e0705f; border-right-color: #e0705f; border-bottom-color: #e0705f; border-left-color: #e0705f; background-color: #f6e3ea; }
 html[data-theme="light"] .stats-leader-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .stats-leader-card h3 { color: #0b1f3a; }
-html[data-theme="light"] .stats-leader-column { color: #4f6584; }
+html[data-theme="light"] .stats-leader-column { color: #0b1f3a; }
 html[data-theme="light"] .stats-leader-card li { border-top-color: #e2e9f2; }
-html[data-theme="light"] .stats-leader-card li::before { color: #4f6584; }
+html[data-theme="light"] .stats-leader-card li::before { color: #0b1f3a; }
 html[data-theme="light"] .stats-leader-name { color: #0b1f3a; }
-html[data-theme="light"] .stats-leader-name small { color: #4f6584; }
+html[data-theme="light"] .stats-leader-name small { color: #0b1f3a; }
 html[data-theme="light"] .stats-leader-card strong { color: #0b1f3a; }
 html[data-theme="light"] .stats-table-wrap { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 html[data-theme="light"] .stats-table thead th { background-color: #dbe7f6; }
@@ -260,65 +260,65 @@ html[data-theme="light"] .stats-table td a { color: #0b1f3a; text-decoration-col
 html[data-theme="light"] .stats-table tbody tr:nth-child(2n) td { background-color: rgba(11, 31, 58, 0.042); }
 html[data-theme="light"] .stats-table tbody tr:hover td { background-color: #dbe7f6; }
 html[data-theme="light"] .stats-shot { background-color: #ffffff; }
-html[data-theme="light"] .stats-shot > span { color: #33496b; }
+html[data-theme="light"] .stats-shot > span { color: #0b1f3a; }
 html[data-theme="light"] .stats-shot.is-busy > span { color: #0b1f3a; }
 html[data-theme="light"] #stats-import-panel.is-dropping { outline-color: #0c2b50; }
-html[data-theme="light"] .stats-replace { color: #33496b !important; }
+html[data-theme="light"] .stats-replace { color: #0b1f3a !important; }
 html[data-theme="light"] .stats-replace input { accent-color: #0c2b50; }
-html[data-theme="light"] .game-unavailable { color: #33496b; }
+html[data-theme="light"] .game-unavailable { color: #0b1f3a; }
 html[data-theme="light"] .game-review { background-color: #eef2f8; }
 html[data-theme="light"] .game-review h4 { color: #0b1f3a; }
 html[data-theme="light"] .game-review .game-meta label { color: #0b1f3a; }
 html[data-theme="light"] .game-review .game-meta input, html[data-theme="light"] .game-review .game-meta select { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; color: #0b1f3a; }
-html[data-theme="light"] .game-review h5 { color: #33496b; }
+html[data-theme="light"] .game-review h5 { color: #0b1f3a; }
 html[data-theme="light"] .game-review th, html[data-theme="light"] .game-review td { border-top-color: #e2e9f2; color: #22385a; }
-html[data-theme="light"] .game-review th { color: #4f6584; }
+html[data-theme="light"] .game-review th { color: #0b1f3a; }
 html[data-theme="light"] .game-review td input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .game-review .game-warning { color: #9a6600; }
 html[data-theme="light"] .game-log h5 { color: #0b1f3a; }
 html[data-theme="light"] .game-log li { background-color: #ffffff; color: #0b1f3a; }
-html[data-theme="light"] .game-log li small { color: #4f6584; }
+html[data-theme="light"] .game-log li small { color: #0b1f3a; }
 html[data-theme="light"] .game-log .row-delete.is-armed { background-color: #f6e3ea; }
-html[data-theme="light"] .stats-source { color: #4f6584; }
+html[data-theme="light"] .stats-source { color: #0b1f3a; }
 html[data-theme="light"] .scores-form input[type="date"] { color-scheme: light; }
-html[data-theme="light"] .scores-hint { color: #4f6584; }
+html[data-theme="light"] .scores-hint { color: #0b1f3a; }
 html[data-theme="light"] .scores-week { color: #0b1f3a; }
 html[data-theme="light"] .score-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
-html[data-theme="light"] .score-line { border-bottom-color: #e2e9f2; color: #33496b; }
+html[data-theme="light"] .score-line { border-bottom-color: #e2e9f2; color: #0b1f3a; }
 html[data-theme="light"] .score-line.is-winner { color: #0b1f3a; }
-html[data-theme="light"] .score-foot small { color: #4f6584; }
+html[data-theme="light"] .score-foot small { color: #0b1f3a; }
 html[data-theme="light"] .score-card .row-delete.is-armed { background-color: #f6e3ea; }
 html[data-theme="light"] .site-file-warning { background-color: #f6e3ea; color: #0b1f3a; }
 html[data-theme="light"] .leaders-section { color: #0b1f3a; }
 html[data-theme="light"] .leader-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
-html[data-theme="light"] .leader-card h3 { color: #33496b; }
+html[data-theme="light"] .leader-card h3 { color: #0b1f3a; }
 html[data-theme="light"] .leader-top { border-bottom-color: #c6d4e5; }
 html[data-theme="light"] .leader-logo { color: #0b1f3a; }
 html[data-theme="light"] .leader-top-name strong { color: #0b1f3a; }
-html[data-theme="light"] .leader-top-name span { color: #4f6584; }
+html[data-theme="light"] .leader-top-name span { color: #0b1f3a; }
 html[data-theme="light"] .leader-top-value { color: #0b1f3a; }
 html[data-theme="light"] .leader-card li { border-bottom-color: #e2e9f2; }
-html[data-theme="light"] .leader-card li::before { color: #4f6584; }
+html[data-theme="light"] .leader-card li::before { color: #0b1f3a; }
 html[data-theme="light"] .leader-name { color: #0b1f3a; }
-html[data-theme="light"] .leader-name small { color: #4f6584; }
+html[data-theme="light"] .leader-name small { color: #0b1f3a; }
 html[data-theme="light"] .leader-card li strong { color: #0b1f3a; }
-html[data-theme="light"] .leader-empty { color: #4f6584; }
+html[data-theme="light"] .leader-empty { color: #0b1f3a; }
 html[data-theme="light"] .leader-empty a { color: #0b1f3a; }
 html[data-theme="light"] .player-avatar { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .player-team-line { color: #0b1f3a; }
 html[data-theme="light"] .player-team-line a { color: #0b1f3a; }
-html[data-theme="light"] .player-facts { color: #33496b; }
+html[data-theme="light"] .player-facts { color: #0b1f3a; }
 html[data-theme="light"] .player-bio label { color: #0b1f3a; }
 html[data-theme="light"] .player-bio input, html[data-theme="light"] .player-bio textarea { border-top-color: #e2e9f2; border-right-color: #e2e9f2; border-bottom-color: #e2e9f2; border-left-color: #e2e9f2; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .player-bio input[type="date"] { color-scheme: light; }
 html[data-theme="light"] .player-bio .player-retired input { accent-color: #0c2b50; }
 html[data-theme="light"] .player-contract-summary div { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
-html[data-theme="light"] .player-contract-summary dt { color: #4f6584; }
+html[data-theme="light"] .player-contract-summary dt { color: #0b1f3a; }
 html[data-theme="light"] .player-contract-summary dd { color: #0b1f3a; }
-html[data-theme="light"] .player-subhead { color: #33496b; }
+html[data-theme="light"] .player-subhead { color: #0b1f3a; }
 html[data-theme="light"] .player-transactions li { background-color: #ffffff; color: #22385a; }
-html[data-theme="light"] .player-transactions small { color: #4f6584; }
-html[data-theme="light"] .profile-link { color: #4f6584; }
+html[data-theme="light"] .player-transactions small { color: #0b1f3a; }
+html[data-theme="light"] .profile-link { color: #0b1f3a; }
 html[data-theme="light"] .profile-link:hover { color: #0b1f3a; }
 html[data-theme="light"] .stats-table td.stats-name a, html[data-theme="light"] .leader-card a { color: #0b1f3a; }
 html[data-theme="light"] .salary-table .player-name-link { color: #0b1f3a; }
@@ -326,21 +326,21 @@ html[data-theme="light"] .leader-photo { border-top-color: #c6d4e5; border-right
 html[data-theme="light"] .player-photo-label { color: #0b1f3a; }
 html[data-theme="light"] .player-photo-upload:focus-within { outline-color: #1f6fc5; }
 html[data-theme="light"] .conference-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
-html[data-theme="light"] .conference-card h3 { color: #33496b; }
-html[data-theme="light"] .conference-table th { border-bottom-color: #c6d4e5; color: #4f6584; }
+html[data-theme="light"] .conference-card h3 { color: #0b1f3a; }
+html[data-theme="light"] .conference-table th { border-bottom-color: #c6d4e5; color: #0b1f3a; }
 html[data-theme="light"] .conference-table td { border-bottom-color: #e2e9f2; color: #0b1f3a; }
-html[data-theme="light"] .conference-table td:first-child { color: #4f6584; }
+html[data-theme="light"] .conference-table td:first-child { color: #0b1f3a; }
 html[data-theme="light"] .conference-table td.is-down { color: #c0283a; }
 html[data-theme="light"] .conference-team a { color: #0b1f3a; }
-html[data-theme="light"] .conference-team small { color: #4f6584; }
+html[data-theme="light"] .conference-team small { color: #0b1f3a; }
 html[data-theme="light"] .recent-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .recent-head h2 { color: #0b1f3a; }
 html[data-theme="light"] .recent-item { border-top-color: #e2e9f2; }
-html[data-theme="light"] .recent-meta time { color: #33496b; }
+html[data-theme="light"] .recent-meta time { color: #0b1f3a; }
 html[data-theme="light"] .recent-teams a { color: #0b1f3a; }
 html[data-theme="light"] .recent-body strong { color: #0b1f3a; }
-html[data-theme="light"] .recent-body p { color: #33496b; }
-html[data-theme="light"] .recent-empty { color: #4f6584; }
+html[data-theme="light"] .recent-body p { color: #0b1f3a; }
+html[data-theme="light"] .recent-empty { color: #0b1f3a; }
 html[data-theme="light"] .confirm-overlay { background-color: rgba(15, 30, 60, 0.432); }
 html[data-theme="light"] .confirm-box { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; box-shadow: rgba(15, 35, 70, 0.158) 0px 20px 60px; }
 html[data-theme="light"] .confirm-ok.is-danger { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #0b1f3a; }
@@ -351,18 +351,18 @@ html[data-theme="light"] .player-injury { color: #22385a; }
 html[data-theme="light"] .player-injury:hover, html[data-theme="light"] .player-injury:focus-visible { background-color: rgba(11, 31, 58, 0.070); }
 html[data-theme="light"] .key-date { border-top-color: #e2e9f2; border-right-color: #e2e9f2; border-bottom-color: #e2e9f2; border-left-color: #e2e9f2; background-color: #f5f8fc; }
 html[data-theme="light"] .key-date.is-next { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; }
-html[data-theme="light"] .key-date-stamp { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #33496b; }
+html[data-theme="light"] .key-date-stamp { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .key-date-stamp strong { color: #0b1f3a; }
 html[data-theme="light"] .key-date.is-next .key-date-stamp { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; }
 html[data-theme="light"] .key-date-body strong { color: #0b1f3a; }
 html[data-theme="light"] .key-date-countdown { color: #1561b0; }
-html[data-theme="light"] .key-date.is-past .key-date-countdown { color: #4f6584; }
-html[data-theme="light"] .key-date-body p { color: #33496b; }
+html[data-theme="light"] .key-date.is-past .key-date-countdown { color: #0b1f3a; }
+html[data-theme="light"] .key-date-body p { color: #0b1f3a; }
 html[data-theme="light"] .key-dates-editor { border-top-color: #e2e9f2; }
 html[data-theme="light"] .key-dates-form label { color: #0b1f3a; }
 html[data-theme="light"] .key-dates-form input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
 html[data-theme="light"] .key-dates-form input:focus-visible { outline-color: #1f6fc5; }
-html[data-theme="light"] .key-dates-status { color: #33496b; }
+html[data-theme="light"] .key-dates-status { color: #0b1f3a; }
 html[data-theme="light"] .key-dates-manage li { border-bottom-color: #e2e9f2; color: #22385a; }
 html[data-theme="light"] .inj-ir-field input, html[data-theme="light"] .inj-ir input { accent-color: #d23a46; }
 html[data-theme="light"] .inj-table tr.is-ir td:first-child { box-shadow: #d23a46 3px 0px 0px inset; }
@@ -376,7 +376,7 @@ html[data-theme="light"] .sample-copy { color: #22385a; }
 html[data-theme="light"] .mem-add-form input[type="date"], html[data-theme="light"] .mem-table input[type="date"] { color-scheme: light; }
 html[data-theme="light"] .mem-sheet-link { color: #1561b0; }
 html[data-theme="light"] .mem-open.is-full { color: #1e7f3a; }
-html[data-theme="light"] .mem-open-team { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #33496b; }
+html[data-theme="light"] .mem-open-team { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .mem-open-team strong { color: #0b1f3a; }
 html[data-theme="light"] .mem-open-team:hover, html[data-theme="light"] .mem-open-team:focus-visible { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; color: #0b1f3a; }
 html[data-theme="light"] .team-gm-link { color: #1561b0; }
@@ -392,7 +392,7 @@ html[data-theme="light"] .media-image-button:focus-within { outline-color: #1f6f
 html[data-theme="light"] .media-image-preview { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
 html[data-theme="light"] .media-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .media-card-image { background-color: #eef2f8; }
-html[data-theme="light"] .media-card-meta { color: #4f6584; }
+html[data-theme="light"] .media-card-meta { color: #0b1f3a; }
 html[data-theme="light"] .media-card h3 { color: #0b1f3a; }
 html[data-theme="light"] .media-card-text { color: #22385a; }
 html[data-theme="light"] .media-card-link { color: #1561b0; }
@@ -400,8 +400,8 @@ html[data-theme="light"] .news-item { border-top-color: #e2e9f2; border-right-co
 html[data-theme="light"] .news-item:hover, html[data-theme="light"] .news-item:focus-visible { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; }
 html[data-theme="light"] .news-image { background-color: #eef2f8; }
 html[data-theme="light"] .news-body strong { color: #0b1f3a; }
-html[data-theme="light"] .news-snippet { color: #33496b; }
-html[data-theme="light"] .news-teams { color: #4f6584; }
+html[data-theme="light"] .news-snippet { color: #0b1f3a; }
+html[data-theme="light"] .news-teams { color: #0b1f3a; }
 html[data-theme="light"] .media-card.is-linked { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; box-shadow: #1f6fc5 0px 0px 0px 1px; }
 html[data-theme="light"] body > .site-header, html[data-theme="light"] body > .site-header:hover, html[data-theme="light"] body > .site-header:focus-within, html[data-theme="light"] body > .site-header.is-open { border-bottom-color: #cfdbea; background-color: #ffffff; box-shadow: rgba(11, 31, 58, 0.042) 0px 1px 0px; }
 html[data-theme="light"] body > .site-header .primary-nav > a, html[data-theme="light"] body > .site-header .teams-trigger, html[data-theme="light"] body > .site-header .admin-trigger { color: #22385a; }
@@ -437,50 +437,50 @@ html[data-theme="light"] .award-card.is-open { background-color: #f5f8fc; }
 html[data-theme="light"] .award-card.is-named { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; background-image: linear-gradient(160deg, #fff4dc 0%, #ffffff 70%); }
 html[data-theme="light"] .award-name { color: #1561b0; }
 html[data-theme="light"] .award-card.is-named .award-name { color: #946100; }
-html[data-theme="light"] .award-card.is-open .award-winner { color: #4f6584; }
-html[data-theme="light"] .award-meta { color: #33496b; }
-html[data-theme="light"] .award-notes { color: #4f6584; }
-html[data-theme="light"] .award-cell-name { color: #33496b; }
-html[data-theme="light"] .award-cell-winner small { color: #4f6584; }
+html[data-theme="light"] .award-card.is-open .award-winner { color: #0b1f3a; }
+html[data-theme="light"] .award-meta { color: #0b1f3a; }
+html[data-theme="light"] .award-notes { color: #0b1f3a; }
+html[data-theme="light"] .award-cell-name { color: #0b1f3a; }
+html[data-theme="light"] .award-cell-winner small { color: #0b1f3a; }
 html[data-theme="light"] .schedule-record { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .sched-week-title { color: #0b1f3a; }
 html[data-theme="light"] .sched-game { border-top-color: #e2e9f2; border-right-color: #e2e9f2; border-bottom-color: #e2e9f2; border-left-color: #e2e9f2; background-color: #f5f8fc; }
 html[data-theme="light"] .sched-game.is-final { background-color: #ffffff; }
-html[data-theme="light"] .sched-when { color: #33496b; }
+html[data-theme="light"] .sched-when { color: #0b1f3a; }
 html[data-theme="light"] .sched-when strong { color: #0b1f3a; }
-html[data-theme="light"] .sched-at { color: #4f6584; }
+html[data-theme="light"] .sched-at { color: #0b1f3a; }
 html[data-theme="light"] .sched-team a { color: #0b1f3a; }
 html[data-theme="light"] .sched-team b { color: #1561b0; }
 html[data-theme="light"] .sched-score { color: #0b1f3a; }
-html[data-theme="light"] .sched-team.is-loser .sched-team-name, html[data-theme="light"] .sched-team.is-loser .sched-score { color: #4f6584; }
-html[data-theme="light"] .sched-status small { color: #4f6584; }
-html[data-theme="light"] .sched-state { color: #4f6584; }
+html[data-theme="light"] .sched-team.is-loser .sched-team-name, html[data-theme="light"] .sched-team.is-loser .sched-score { color: #0b1f3a; }
+html[data-theme="light"] .sched-status small { color: #0b1f3a; }
+html[data-theme="light"] .sched-state { color: #0b1f3a; }
 html[data-theme="light"] .sched-game.is-final .sched-state { color: #0b1f3a; }
 html[data-theme="light"] .sched-result.is-w { border-top-color: #2f9e52; border-right-color: #2f9e52; border-bottom-color: #2f9e52; border-left-color: #2f9e52; color: #1e7f3a; }
 html[data-theme="light"] .sched-result.is-l { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #c0283a; }
-html[data-theme="light"] .sched-result.is-t { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; color: #33496b; }
+html[data-theme="light"] .sched-result.is-t { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; color: #0b1f3a; }
 html[data-theme="light"] .schedule-editor > summary { color: #0b1f3a; }
 html[data-theme="light"] .schedule-form input[type="date"] { color-scheme: light; }
 html[data-theme="light"] .schedule-paste { color: #22385a; }
 html[data-theme="light"] .schedule-paste label { color: #0b1f3a; }
 html[data-theme="light"] .schedule-paste textarea { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
-html[data-theme="light"] .schedule-paste p { color: #4f6584; }
+html[data-theme="light"] .schedule-paste p { color: #0b1f3a; }
 html[data-theme="light"] .tb-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .tb-pos { color: #1561b0; }
-html[data-theme="light"] .tb-date { color: #4f6584; }
+html[data-theme="light"] .tb-date { color: #0b1f3a; }
 html[data-theme="light"] .tb-card h3 a { color: #0b1f3a; }
-html[data-theme="light"] .tb-facts dt { color: #4f6584; }
+html[data-theme="light"] .tb-facts dt { color: #0b1f3a; }
 html[data-theme="light"] .tb-facts dd { color: #0b1f3a; }
 html[data-theme="light"] .tb-asking { border-left-color: #d6981f; background-color: #f5f8fc; color: #0b1f3a; }
 html[data-theme="light"] .tb-asking strong { color: #9a6600; }
-html[data-theme="light"] .tb-notes { color: #33496b; }
+html[data-theme="light"] .tb-notes { color: #0b1f3a; }
 html[data-theme="light"] .tb-moved { color: #9a6600; }
 html[data-theme="light"] .tbk-status.is-injured { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #c0283a; }
 html[data-theme="light"] .tbk-status.is-listed { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; background-color: rgba(31, 111, 197, 0.120); color: #1561b0; }
 html[data-theme="light"] .tbk-table tr.is-listed td { background-color: rgba(31, 111, 197, 0.050); }
 html[data-theme="light"] .tbk-note-row td { background-color: #f5f8fc; }
 html[data-theme="light"] .tbk-note-form { border-left-color: #1f6fc5; }
-html[data-theme="light"] .tbk-note-form label { color: #4f6584; }
+html[data-theme="light"] .tbk-note-form label { color: #0b1f3a; }
 html[data-theme="light"] .tbk-note-form input { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .fa-sign-form input[type="date"] { color-scheme: light; }
 html[data-theme="light"] .cs-toolbar label { color: #0b1f3a; }
@@ -496,17 +496,17 @@ html[data-theme="light"] .cs-bar i { background-color: #1f6fc5; }
 html[data-theme="light"] .cs-bar.is-over i { background-color: #d23a46; }
 html[data-theme="light"] .rb-team { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; }
 html[data-theme="light"] .rb-team-head h3 { color: #0b1f3a; }
-html[data-theme="light"] .rb-team-head p { color: #33496b; }
+html[data-theme="light"] .rb-team-head p { color: #0b1f3a; }
 html[data-theme="light"] .rb-stack { background-color: #e2e9f2; }
 html[data-theme="light"] .rb-seg { color: #0b1f3a; }
 html[data-theme="light"] .rb-group { border-right-color: #e2e9f2; border-bottom-color: #e2e9f2; border-left-color: #e2e9f2; background-color: #f5f8fc; }
 html[data-theme="light"] .rb-group header strong { color: #0b1f3a; }
-html[data-theme="light"] .rb-group header span { color: #4f6584; }
+html[data-theme="light"] .rb-group header span { color: #0b1f3a; }
 html[data-theme="light"] .rb-group li { border-top-color: #e2e9f2; }
 html[data-theme="light"] .rb-group li a { color: #0b1f3a; }
-html[data-theme="light"] .rb-group li small { color: #4f6584; }
+html[data-theme="light"] .rb-group li small { color: #0b1f3a; }
 html[data-theme="light"] .rb-group li span { color: #22385a; }
-html[data-theme="light"] .rb-group li.rb-none { color: #4f6584; }
+html[data-theme="light"] .rb-group li.rb-none { color: #0b1f3a; }
 html[data-theme="light"] .rb-table td.rb-heat { color: #0b1f3a; }
 html[data-theme="light"] .rb-table td.rb-total { color: #0b1f3a; }
 html[data-theme="light"] .rb-table tr.is-selected td { box-shadow: #1f6fc5 0px 1px 0px inset, #1f6fc5 0px -1px 0px inset; }
@@ -521,83 +521,83 @@ html[data-theme="light"] .front-office-section .tab-button.is-active, html[data-
 html[data-theme="light"] .depth-head h3 { color: #0b1f3a; }
 html[data-theme="light"] .depth-section h4 { color: #0b1f3a; }
 html[data-theme="light"] .depth-slot { color: #0b1f3a; }
-html[data-theme="light"] .depth-n { color: #4f6584; }
+html[data-theme="light"] .depth-n { color: #0b1f3a; }
 html[data-theme="light"] .depth-select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
-html[data-theme="light"] .depth-select.is-empty { color: #4f6584; }
+html[data-theme="light"] .depth-select.is-empty { color: #0b1f3a; }
 html[data-theme="light"] .depth-select.is-stale { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; color: #9a6600; }
 html[data-theme="light"] .depth-select:focus-visible { outline-color: #1f6fc5; }
 html[data-theme="light"] .depth-schemes { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .depth-schemes h4 { color: #0b1f3a; }
 html[data-theme="light"] .depth-scheme-row { color: #0b1f3a; }
 html[data-theme="light"] .depth-scheme-row input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
-html[data-theme="light"] .depth-scheme-row input::placeholder { color: #4f6584; }
-html[data-theme="light"] .depth-count { color: #4f6584; }
+html[data-theme="light"] .depth-scheme-row input::placeholder { color: #0b1f3a; }
+html[data-theme="light"] .depth-count { color: #0b1f3a; }
 html[data-theme="light"] .su-card { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #d6981f; background-color: #ffffff; }
 html[data-theme="light"] .su-card.is-done { border-left-color: #2f9e52; }
 html[data-theme="light"] .su-team { color: #0b1f3a; }
 html[data-theme="light"] .su-team b { color: #1561b0; }
-html[data-theme="light"] .su-meta { color: #4f6584; }
-html[data-theme="light"] .su-group h4 { color: #33496b; }
+html[data-theme="light"] .su-meta { color: #0b1f3a; }
+html[data-theme="light"] .su-group h4 { color: #0b1f3a; }
 html[data-theme="light"] .su-group li { border-top-color: #e2e9f2; }
 html[data-theme="light"] .su-slot { color: #0b1f3a; }
-html[data-theme="light"] .su-from { color: #4f6584; }
-html[data-theme="light"] .su-arrow { color: #4f6584; }
+html[data-theme="light"] .su-from { color: #0b1f3a; }
+html[data-theme="light"] .su-arrow { color: #0b1f3a; }
 html[data-theme="light"] .su-to { color: #0b1f3a; }
 html[data-theme="light"] .su-to.is-empty { color: #c0283a; }
 html[data-theme="light"] .su-copy-fallback { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .depth-scheme-row select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
-html[data-theme="light"] .depth-scheme-row select.is-empty { color: #4f6584; }
-html[data-theme="light"] .depth-subs-note { color: #4f6584; }
+html[data-theme="light"] .depth-scheme-row select.is-empty { color: #0b1f3a; }
+html[data-theme="light"] .depth-subs-note { color: #0b1f3a; }
 html[data-theme="light"] .depth-subs-table { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .depth-subs-table caption { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #dbe7f6; color: #0b1f3a; }
-html[data-theme="light"] .depth-subs-table thead th { border-bottom-color: #c6d4e5; color: #33496b; }
+html[data-theme="light"] .depth-subs-table thead th { border-bottom-color: #c6d4e5; color: #0b1f3a; }
 html[data-theme="light"] .depth-subs-table tbody th { color: #0b1f3a; }
 html[data-theme="light"] .depth-subs-table td { border-left-color: #e2e9f2; }
 html[data-theme="light"] .depth-subs-table tbody tr + tr th, html[data-theme="light"] .depth-subs-table tbody tr + tr td { border-top-color: #e2e9f2; }
 html[data-theme="light"] .depth-sub input[type="range"] { accent-color: #1f6fc5; }
 html[data-theme="light"] .depth-sub input[type="number"] { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
 html[data-theme="light"] .award-short { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; color: #0b1f3a; }
-html[data-theme="light"] .award-about { color: #33496b; }
+html[data-theme="light"] .award-about { color: #0b1f3a; }
 html[data-theme="light"] .sb-latest { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; background-image: linear-gradient(120deg, #fff4dc 0%, #ffffff 65%); color: #0b1f3a; }
-html[data-theme="light"] .sb-latest.is-empty { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; color: #33496b; }
+html[data-theme="light"] .sb-latest.is-empty { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; color: #0b1f3a; }
 html[data-theme="light"] .sb-latest-logo { background-color: rgba(11, 31, 58, 0.084); }
 html[data-theme="light"] .sb-latest-kicker { color: #946100; }
-html[data-theme="light"] .sb-latest-text p { color: #33496b; }
+html[data-theme="light"] .sb-latest-text p { color: #0b1f3a; }
 html[data-theme="light"] .sb-logo-fallback { color: #946100; }
-html[data-theme="light"] .sb-boxscore { border-left-color: #1f6fc5; background-color: #f5f8fc; color: #33496b; }
+html[data-theme="light"] .sb-boxscore { border-left-color: #1f6fc5; background-color: #f5f8fc; color: #0b1f3a; }
 html[data-theme="light"] .sb-row:hover td { background-color: #e6eef8; }
 html[data-theme="light"] .sb-season { color: #946100; }
 html[data-theme="light"] .sb-team { color: #0b1f3a; }
 html[data-theme="light"] .sb-team b { color: #1561b0; }
 html[data-theme="light"] .sb-count { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; color: #946100; }
-html[data-theme="light"] .sb-notes { color: #33496b; }
-html[data-theme="light"] .sb-trophies.is-empty { color: #33496b; }
+html[data-theme="light"] .sb-notes { color: #0b1f3a; }
+html[data-theme="light"] .sb-trophies.is-empty { color: #0b1f3a; }
 html[data-theme="light"] .sb-trophy { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .sb-trophy:hover, html[data-theme="light"] .sb-trophy:focus-visible { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; }
-html[data-theme="light"] .sb-trophy-text span { color: #33496b; }
+html[data-theme="light"] .sb-trophy-text span { color: #0b1f3a; }
 html[data-theme="light"] .sb-trophy-count { color: #946100; }
 html[data-theme="light"] .sb-mvp-fields { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; }
 html[data-theme="light"] .sb-mvp-fields legend { color: #946100; }
 html[data-theme="light"] .sb-mvp-name strong, html[data-theme="light"] .sb-mvp-name a { color: #0b1f3a; }
 html[data-theme="light"] .sb-mvp-pos { color: #1561b0; }
-html[data-theme="light"] .sb-mvp-stats { color: #33496b; }
+html[data-theme="light"] .sb-mvp-stats { color: #0b1f3a; }
 html[data-theme="light"] .sb-latest-mvp > b { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; color: #946100; }
-html[data-theme="light"] .sb-mvp-hint { color: #4f6584; }
+html[data-theme="light"] .sb-mvp-hint { color: #0b1f3a; }
 html[data-theme="light"] .stat-input-group-name { color: #946100; }
 html[data-theme="light"] .stat-tile { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; }
 html[data-theme="light"] .stat-tile b { color: #0b1f3a; }
-html[data-theme="light"] .stat-tile span { color: #4f6584; }
+html[data-theme="light"] .stat-tile span { color: #0b1f3a; }
 html[data-theme="light"] .sb-latest-mvp .stat-tile { background-color: rgba(255, 255, 255, 0.700); }
 html[data-theme="light"] .sb-latest-mvp .stat-tile span { color: #946100; }
 html[data-theme="light"] .award-stats-fields { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: rgba(31, 111, 197, 0.040); }
 html[data-theme="light"] .award-stats-fields legend { color: #1561b0; }
-html[data-theme="light"] .award-stats-hint { color: #4f6584; }
+html[data-theme="light"] .award-stats-hint { color: #0b1f3a; }
 html[data-theme="light"] .award-stats-fields .stat-input-group-name { color: #1561b0; }
-html[data-theme="light"] .awards-filter-count { color: #4f6584; }
+html[data-theme="light"] .awards-filter-count { color: #0b1f3a; }
 html[data-theme="light"] .multi-year-table .my-player, html[data-theme="light"] .multi-year-table thead th:first-child, html[data-theme="light"] .multi-year-table tfoot th { background-color: #ffffff; }
 html[data-theme="light"] .multi-year-table .is-current { background-color: rgba(31, 111, 197, 0.070); }
 html[data-theme="light"] .multi-year-table thead th.is-current { color: #1561b0; }
-html[data-theme="light"] .multi-year-table tfoot th, html[data-theme="light"] .multi-year-table tfoot td { border-top-color: #c6d4e5; color: #33496b; }
+html[data-theme="light"] .multi-year-table tfoot th, html[data-theme="light"] .multi-year-table tfoot td { border-top-color: #c6d4e5; color: #0b1f3a; }
 html[data-theme="light"] .multi-year-table tfoot tr.my-room th, html[data-theme="light"] .multi-year-table tfoot tr.my-room td { border-top-color: #1f6fc5; color: #0b1f3a; }
 html[data-theme="light"] .multi-year-table tfoot tr.my-room td.is-positive { color: #1e7f3a; }
 html[data-theme="light"] .multi-year-table tfoot tr.my-room td.is-negative { color: #c0283a; }
@@ -605,17 +605,17 @@ html[data-theme="light"] .fa-offer-count { border-top-color: #1f6fc5; border-rig
 html[data-theme="light"] .fa-offer { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #1f6fc5; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .fa-offer.is-accepted { border-left-color: #2f9e52; }
 html[data-theme="light"] .fa-offer.is-declined { border-left-color: #d23a46; }
-html[data-theme="light"] .fa-offer-status { color: #4f6584; }
+html[data-theme="light"] .fa-offer-status { color: #0b1f3a; }
 html[data-theme="light"] .fa-offer.is-accepted .fa-offer-status { color: #1e7f3a; }
 html[data-theme="light"] .fa-offer.is-declined .fa-offer-status { color: #c0283a; }
 html[data-theme="light"] .fa-offer-terms { color: #0b1f3a; }
-html[data-theme="light"] .fa-offer-notes-text { color: #33496b; }
-html[data-theme="light"] .fa-offer-meta { color: #4f6584; }
+html[data-theme="light"] .fa-offer-notes-text { color: #0b1f3a; }
+html[data-theme="light"] .fa-offer-meta { color: #0b1f3a; }
 html[data-theme="light"] .fa-offer-meta.is-over { color: #c0283a; }
 html[data-theme="light"] .fao-group { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .fao-group-head { border-bottom-color: #c6d4e5; }
 html[data-theme="light"] .fao-group-head .player-name-link { color: #0b1f3a; }
-html[data-theme="light"] .fao-group-meta { color: #4f6584; }
+html[data-theme="light"] .fao-group-meta { color: #0b1f3a; }
 html[data-theme="light"] .fao-warning { color: #c0283a; }
 html[data-theme="light"] .fao-offer { border-top-color: rgba(198, 212, 229, 0.500); }
 html[data-theme="light"] .fao-team { color: #0b1f3a; }
@@ -629,50 +629,50 @@ html[data-theme="light"] .fao-team b { color: #1561b0; }
   html[data-theme="light"] body > .site-header .teams-dropdown, html[data-theme="light"] body > .site-header .primary-nav .teams-menu .teams-dropdown { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; box-shadow: rgba(15, 35, 70, 0.140) 0px 16px 36px; }
 }
 @media (min-width: 1181px) {
-  html[data-theme="light"] body > .site-header .sidebar-collapse { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #33496b; }
+  html[data-theme="light"] body > .site-header .sidebar-collapse { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #0b1f3a; }
   html[data-theme="light"] body > .site-header .sidebar-collapse:hover, html[data-theme="light"] body > .site-header .sidebar-collapse:focus-visible { background-color: #dbe7f6; color: #0b1f3a; }
 }
-html[data-theme="light"] .gl-team a { color: #33496b; }
+html[data-theme="light"] .gl-team a { color: #0b1f3a; }
 html[data-theme="light"] .gl-team b { color: #1561b0; }
 html[data-theme="light"] .gl-team.is-winner a { color: #0b1f3a; }
 html[data-theme="light"] .gl-score { color: #0b1f3a; }
 html[data-theme="light"] .gl-playoff { color: #946100; }
 html[data-theme="light"] .gl-result.is-win { color: #1e7f3a; }
 html[data-theme="light"] .gl-result.is-loss { color: #c0283a; }
-html[data-theme="light"] .gl-result.is-tie { color: #33496b; }
-html[data-theme="light"] .gl-note { color: #4f6584; }
-html[data-theme="light"] .gl-source { color: #4f6584; }
+html[data-theme="light"] .gl-result.is-tie { color: #0b1f3a; }
+html[data-theme="light"] .gl-note { color: #0b1f3a; }
+html[data-theme="light"] .gl-source { color: #0b1f3a; }
 html[data-theme="light"] .gl-source a { color: #1561b0; }
-html[data-theme="light"] .gl-import .import-hint { color: #4f6584; }
+html[data-theme="light"] .gl-import .import-hint { color: #0b1f3a; }
 html[data-theme="light"] .team-fa-cap strong.is-positive { color: #1e7f3a; }
 html[data-theme="light"] .team-fa-cap strong.is-negative { color: #c0283a; }
-html[data-theme="light"] .team-fa-preview { color: #33496b; }
+html[data-theme="light"] .team-fa-preview { color: #0b1f3a; }
 html[data-theme="light"] .team-fa-preview.is-over { color: #c0283a; }
 html[data-theme="light"] .salary-table .salary-sort:hover, html[data-theme="light"] .salary-table .salary-sort:focus-visible { color: #0b1f3a; }
 html[data-theme="light"] .salary-table th.is-sorted { color: #1561b0; }
 @media (max-width: 1300px) {
-  html[data-theme="light"] .salary-sort-select label { color: #33496b; }
+  html[data-theme="light"] .salary-sort-select label { color: #0b1f3a; }
   html[data-theme="light"] .salary-sort-select select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
 }
 html[data-theme="light"] .admin-min-table tbody th { color: #0b1f3a; }
 html[data-theme="light"] .admin-min-table thead th.is-current { color: #1561b0; }
 html[data-theme="light"] .admin-min-table td.is-current { background-color: rgba(31, 111, 197, 0.070); }
 html[data-theme="light"] .minimum-note { color: #946100; }
-html[data-theme="light"] .ce-subtitle { color: #33496b; }
+html[data-theme="light"] .ce-subtitle { color: #0b1f3a; }
 html[data-theme="light"] .contract-editor th { background-color: #c3d0df; color: #0b1f3a; }
 html[data-theme="light"] .contract-editor td { border-bottom-color: #e2e9f2; color: #0b1f3a; }
 html[data-theme="light"] .contract-editor input, html[data-theme="light"] .contract-editor select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
-html[data-theme="light"] .ce-computed { color: #33496b; }
+html[data-theme="light"] .ce-computed { color: #0b1f3a; }
 html[data-theme="light"] .ce-years tfoot th, html[data-theme="light"] .ce-years tfoot td { border-top-color: #c3d0df; background-color: #c3d0df; color: #0b1f3a; }
-html[data-theme="light"] .ce-years tr.is-void td { color: #4f6584; }
-html[data-theme="light"] .ce-controls label { color: #33496b; }
-html[data-theme="light"] .ce-proration { color: #4f6584; }
+html[data-theme="light"] .ce-years tr.is-void td { color: #0b1f3a; }
+html[data-theme="light"] .ce-controls label { color: #0b1f3a; }
+html[data-theme="light"] .ce-proration { color: #0b1f3a; }
 html[data-theme="light"] .ce-void-note { color: #946100; }
-html[data-theme="light"] .fao-contract th { background-color: #e2e9f2; color: #33496b; }
+html[data-theme="light"] .fao-contract th { background-color: #e2e9f2; color: #0b1f3a; }
 html[data-theme="light"] .fao-contract td { border-bottom-color: #e2e9f2; color: #0b1f3a; }
-html[data-theme="light"] .fao-contract tr.is-void td { color: #4f6584; }
+html[data-theme="light"] .fao-contract tr.is-void td { color: #0b1f3a; }
 html[data-theme="light"] .fao-contract tr.fao-void-note td { color: #946100; }
-html[data-theme="light"] .ce-min-hint { color: #4f6584; }
+html[data-theme="light"] .ce-min-hint { color: #0b1f3a; }
 html[data-theme="light"] .ce-min-hint.is-below { color: #c0283a; }
 html[data-theme="light"] .contract-editor td.is-below input { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; }
 html[data-theme="light"] .ce-proration.is-over { color: #c0283a; }
@@ -682,20 +682,20 @@ html[data-theme="light"] .fao-announcement { border-top-color: #2f9e52; border-r
 html[data-theme="light"] .fao-announcement-text { border-left-color: #2f9e52; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .fifth-year-mark { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; color: #b45c0c; }
 html[data-theme="light"] .contracts-fifth-year.is-set { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; color: #b45c0c; }
-html[data-theme="light"] .theme-picker { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; color: #33496b; }
+html[data-theme="light"] .theme-picker { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; color: #0b1f3a; }
 html[data-theme="light"] .theme-picker:hover, html[data-theme="light"] .theme-picker:focus-visible, html[data-theme="light"] .theme-picker[aria-expanded="true"] { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .theme-picker:focus-visible { box-shadow: #1f6fc5 0px 0px 0px 2px; }
 html[data-theme="light"] .theme-picker-swatch { border-top-color: rgba(11, 31, 58, 0.490); border-right-color: rgba(11, 31, 58, 0.490); border-bottom-color: rgba(11, 31, 58, 0.490); border-left-color: rgba(11, 31, 58, 0.490); }
 html[data-theme="light"] .theme-picker-swatch img { filter: drop-shadow(rgba(15, 35, 70, 0.210) 0px 0px 1px); }
-html[data-theme="light"] .theme-picker-text small { color: #4f6584; }
+html[data-theme="light"] .theme-picker-text small { color: #0b1f3a; }
 html[data-theme="light"] .theme-picker-name { color: #0b1f3a; }
-html[data-theme="light"] .theme-picker-chevron { color: #4f6584; }
+html[data-theme="light"] .theme-picker-chevron { color: #0b1f3a; }
 html[data-theme="light"] .team-fa-pending { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #1f6fc5; background-color: #f5f8fc; }
 html[data-theme="light"] .team-fa-pending.has-offers { border-left-color: #c98a12; }
 html[data-theme="light"] .team-fa-pending-title { color: #0b1f3a; }
-html[data-theme="light"] .rs-controls label, html[data-theme="light"] .rs-inputs label { color: #33496b; }
+html[data-theme="light"] .rs-controls label, html[data-theme="light"] .rs-inputs label { color: #0b1f3a; }
 html[data-theme="light"] .rs-controls select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
-html[data-theme="light"] .rs-sheet td small { color: #4f6584; }
+html[data-theme="light"] .rs-sheet td small { color: #0b1f3a; }
 html[data-theme="light"] .rs-inputs { border-top-color: #d2701a; border-right-color: #d2701a; border-bottom-color: #d2701a; border-left-color: #d2701a; }
 html[data-theme="light"] .rs-inputs input, html[data-theme="light"] .rs-inputs select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }
 html[data-theme="light"] .rs-note { color: #946100; }
@@ -705,29 +705,29 @@ html[data-theme="light"] .rsa-player { color: #0b1f3a; }
 html[data-theme="light"] .rsa-contract tr.is-changed td { color: #946100; }
 html[data-theme="light"] .rsa-status.is-approved { color: #1e7f3a; }
 html[data-theme="light"] .rsa-status.is-declined { color: #c0283a; }
-html[data-theme="light"] .rsa-status.is-withdrawn { color: #33496b; }
-html[data-theme="light"] .rs-message { color: #33496b; }
+html[data-theme="light"] .rsa-status.is-withdrawn { color: #0b1f3a; }
+html[data-theme="light"] .rs-message { color: #0b1f3a; }
 html[data-theme="light"] .rs-message input { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; }
 html[data-theme="light"] .ce-title.is-section .ce-subtitle, html[data-theme="light"] .ce-original .ce-title .ce-subtitle { color: #0b1f3a; }
 html[data-theme="light"] .rs-inputs input.is-below { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; }
 html[data-theme="light"] .player-portrait { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .salary-table td[data-computed$="NetSavings"].is-positive-savings { color: #1e7f3a; }
 html[data-theme="light"] .salary-table td[data-computed$="NetSavings"].is-negative-savings { color: #c0283a; }
-html[data-theme="light"] .player-cog { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #4f6584; }
+html[data-theme="light"] .player-cog { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; color: #0b1f3a; }
 html[data-theme="light"] .player-cog:hover, html[data-theme="light"] .player-cog:focus-visible, html[data-theme="light"] .player-cog[aria-expanded="true"] { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .player-menu { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; box-shadow: rgba(15, 35, 70, 0.175) 0px 16px 38px; }
-html[data-theme="light"] .player-menu-title { color: #4f6584; }
+html[data-theme="light"] .player-menu-title { color: #0b1f3a; }
 html[data-theme="light"] .player-menu-item { color: #0b1f3a; }
 html[data-theme="light"] .player-menu-item:hover:not(:disabled), html[data-theme="light"] .player-menu-item:focus-visible { background-color: #dbe7f6; }
 html[data-theme="light"] .player-menu-item.is-danger { color: #c0283a; }
-html[data-theme="light"] .player-menu-item:disabled { color: #4f6584; }
-html[data-theme="light"] .player-menu-item small { color: #4f6584; }
-html[data-theme="light"] .insider-sub { color: #4f6584; }
+html[data-theme="light"] .player-menu-item:disabled { color: #0b1f3a; }
+html[data-theme="light"] .player-menu-item small { color: #0b1f3a; }
+html[data-theme="light"] .insider-sub { color: #0b1f3a; }
 html[data-theme="light"] .insider-post { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .insider-avatar { color: #0b1f3a; }
 html[data-theme="light"] .insider-who strong { color: #0b1f3a; }
 html[data-theme="light"] .insider-check { color: #1561b0; }
-html[data-theme="light"] .insider-handle { color: #4f6584; }
+html[data-theme="light"] .insider-handle { color: #0b1f3a; }
 html[data-theme="light"] .insider-text { color: #0b1f3a; }
 html[data-theme="light"] .insider-tag { color: #1561b0; }
 html[data-theme="light"] .insider-foot { border-top-color: #e2e9f2; }
@@ -736,7 +736,7 @@ html[data-theme="light"] .theme-option { color: #22385a; }
 html[data-theme="light"] .theme-option-check { color: #1561b0; }
 html[data-theme="light"] .theme-option.is-active { background-color: #dbe7f6; color: #0b1f3a; }
 html[data-theme="light"] .theme-option.is-selected { color: #0b1f3a; }
-html[data-theme="light"] .theme-menu-heading { border-top-color: #c6d4e5; color: #4f6584; }
+html[data-theme="light"] .theme-menu-heading { border-top-color: #c6d4e5; color: #0b1f3a; }
 html[data-theme="light"] .insider-wire { border-top-color: #e2e9f2; }
 html[data-theme="light"] .insider-title { color: #0b1f3a; }
 html[data-theme="light"] .conference-card h3 { color: #0b1f3a; }
