@@ -470,6 +470,13 @@ html[data-theme="light"] .tb-asking { border-left-color: #d6981f; background-col
 html[data-theme="light"] .tb-asking strong { color: #9a6600; }
 html[data-theme="light"] .tb-notes { color: #33496b; }
 html[data-theme="light"] .tb-moved { color: #9a6600; }
+html[data-theme="light"] .tbk-status.is-injured { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #c0283a; }
+html[data-theme="light"] .tbk-status.is-listed { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; background-color: rgba(31, 111, 197, 0.120); color: #1561b0; }
+html[data-theme="light"] .tbk-table tr.is-listed td { background-color: rgba(31, 111, 197, 0.050); }
+html[data-theme="light"] .tbk-note-row td { background-color: #f5f8fc; }
+html[data-theme="light"] .tbk-note-form { border-left-color: #1f6fc5; }
+html[data-theme="light"] .tbk-note-form label { color: #556b8a; }
+html[data-theme="light"] .tbk-note-form input { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; color: #0b1f3a; }
 html[data-theme="light"] .fa-sign-form input[type="date"] { color-scheme: light; }
 html[data-theme="light"] .cs-toolbar label { color: #0b1f3a; }
 html[data-theme="light"] .cs-toolbar select { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #eef2f8; color: #0b1f3a; color-scheme: light; }

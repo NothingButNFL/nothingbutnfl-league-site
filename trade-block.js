@@ -54,8 +54,9 @@ function fillPlayers() {
   select.replaceChildren(new Option(roster.length ? "Choose a player" : "No players on this salary sheet", ""),
     ...roster.map((p) => {
       const pos = playerDisplayPosition(p, leagueYear);
-      const option = new Option(`${p.name}${pos ? ` (${pos})` : ""}${listed.has(p.id) ? " — already listed" : ""}`, p.id);
-      option.disabled = listed.has(p.id);
+      const injured = !listed.has(p.id) && injuryForPlayer(officeData, p, teamId);
+      const option = new Option(`${p.name}${pos ? ` (${pos})` : ""}${listed.has(p.id) ? " — already listed" : injured ? " — injured" : ""}`, p.id);
+      option.disabled = listed.has(p.id) || Boolean(injured); // injured players can't go on the block
       return option;
     }));
 }
@@ -137,9 +138,9 @@ function renderBlock() {
     actions.className = "tb-actions";
     const offer = document.createElement("a");
     offer.className = "workspace-button";
-    offer.href = `team.html?team=${encodeURIComponent(entry.teamId)}`;
+    offer.href = `team.html?team=${encodeURIComponent(entry.teamId)}#trade`;
     offer.textContent = "Make an offer ↗";
-    offer.title = `Open the ${teamName(entry.teamId)} sheet and use its Trade tab`;
+    offer.title = `Open the ${teamName(entry.teamId)} sheet's Team Actions › Trade Center`;
     actions.append(offer);
     if (canSave) {
       const remove = document.createElement("button");
@@ -168,6 +169,7 @@ tbForm.addEventListener("submit", (event) => {
   const teamId = tbForm.elements.team.value;
   const player = officeData.teams[teamId].roster.find((p) => p.id === tbForm.elements.player.value);
   if (!player) return;
+  if (injuryForPlayer(officeData, player, teamId)) { tbStatus.textContent = `${player.name} is on the injury report and can't be put on the trade block.`; return; }
   if (officeData.tradeBlock.length >= 2000) { tbStatus.textContent = "The trade block is full."; return; }
   const entry = { id: newRecordId("block"), player: player.name.slice(0, tradeBlockLimits.player), playerId: player.id, teamId, date: localDateString() };
   const pos = playerDisplayPosition(player, leagueYear);

@@ -1443,6 +1443,16 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .tb-asking strong { color: #f2b950; }
 .tb-notes { margin: 0; color: #c5d5e8; font-size: 13px; line-height: 1.5; }
 .tb-moved { margin: 0; color: #f2b950; font-size: 12px; }
+.tbk-status { display: inline-block; margin-right: 6px; padding: 3px 8px; border-radius: 999px; font: 700 10px var(--mono); letter-spacing: .05em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
+.tbk-status.is-injured { border: 1px solid #ff9299; background: rgba(255, 146, 153, .12); color: #ff9299; }
+.tbk-status.is-listed { border: 1px solid #8fd0ff; background: rgba(143, 208, 255, .12); color: #8fd0ff; }
+.tbk-table tr.is-listed td { background: rgba(143, 208, 255, .05); }
+.tbk-table .row-transaction:disabled { cursor: not-allowed; opacity: .45; }
+.tbk-note-row td { padding: 0 !important; background: #0a2647; }
+.tbk-note-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding: 14px 16px; border-left: 3px solid #8fd0ff; }
+.tbk-note-form label { display: grid; flex: 1 1 320px; gap: 6px; text-align: left; color: #8ca5c5; font: 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.tbk-note-form input { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #54749b; background: #0c2b50; color: #fff; font: 14px var(--body); letter-spacing: 0; text-transform: none; }
+.tbk-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .tb-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .tb-actions .workspace-button { padding: 7px 10px; font-size: 11px; }
 @media (max-width: 900px) { .tb-form { grid-template-columns: 1fr; } .tb-form .tb-notes-field, .tb-form .add-button { grid-column: auto; } }

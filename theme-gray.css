@@ -256,6 +256,9 @@ html[data-theme="gray"] .tb-date { color: #a5a8ae; }
 html[data-theme="gray"] .tb-facts dt { color: #a5a8ae; }
 html[data-theme="gray"] .tb-asking { background-color: #1e1f22; }
 html[data-theme="gray"] .tb-notes { color: #d5d7db; }
+html[data-theme="gray"] .tbk-note-row td { background-color: #1e1f22; }
+html[data-theme="gray"] .tbk-note-form label { color: #a5a8ae; }
+html[data-theme="gray"] .tbk-note-form input { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
 html[data-theme="gray"] .fa-sign-form input[type="date"] { color-scheme: dark; }
 html[data-theme="gray"] .cs-toolbar select { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; color-scheme: dark; }
 html[data-theme="gray"] .cs-bar { background-color: #303236; }

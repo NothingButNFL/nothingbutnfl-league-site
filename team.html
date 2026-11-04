@@ -42,6 +42,7 @@
     <script src="team-fa.js" defer></script>
     <script src="restructure.js" defer></script>
     <script src="extend.js" defer></script>
+    <script src="team-block.js" defer></script>
   </head>
   <body class="team-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -256,6 +257,24 @@
               </table>
             </div>
             <p class="empty-state" id="multi-year-empty" hidden>No players on this season's roster yet.</p>
+          </div>
+
+          <div class="management-panel team-block-panel" id="team-block-panel" role="tabpanel" aria-labelledby="season-tab-trade-block" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">TRADE DESK</span><h3>Trade block</h3></div>
+              <p>Put players you're shopping on the league <a href="trade-block.html">Trade Block</a>. Add a note with what you're looking for, like a specific price. Injured players can't be listed.</p>
+            </div>
+            <section class="team-fa-pending" id="tbk-listed-box" aria-labelledby="tbk-listed-title">
+              <h4 class="team-fa-pending-title" id="tbk-listed-title">On the block <span class="fa-offer-count" id="tbk-listed-count">0</span></h4>
+              <div class="fa-offer-list" id="tbk-listed"></div>
+            </section>
+            <div class="management-table-wrap">
+              <table class="management-table fa-table tbk-table">
+                <thead><tr><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">AGE</th><th scope="col" id="tbk-cap-head">CAP HIT</th><th scope="col">YRS LEFT</th><th scope="col">STATUS</th><th scope="col"><span class="sr-only">Trade block</span></th></tr></thead>
+                <tbody id="tbk-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="tbk-empty" hidden></p>
           </div>
 
           <div class="management-panel restructure-panel" id="restructure-panel" role="tabpanel" aria-labelledby="season-tab-restructure" hidden>
