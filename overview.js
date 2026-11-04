@@ -139,7 +139,7 @@ function renderConferenceLeaders() {
     const card = document.createElement("article");
     card.className = `conference-card is-${conference.toLowerCase()}`; // the conference logo sits faintly behind the table
     const title = document.createElement("h3");
-    title.textContent = conference;
+    title.textContent = conference === "AFC" ? "American Football Conference" : "National Football Conference";
     const wrap = document.createElement("div");
     wrap.className = "conference-table-wrap";
     const table = document.createElement("table");
