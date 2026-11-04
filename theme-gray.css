@@ -61,6 +61,11 @@ html[data-theme="gray"] .season-tabs { border-bottom-color: #6c6f76; }
 html[data-theme="gray"] .season-tab { color: #d5d7db; }
 html[data-theme="gray"] .season-tab:hover, html[data-theme="gray"] .season-tab:focus-visible { background-color: #3a3c41; }
 html[data-theme="gray"] .season-tab.is-active { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #3a3c41; }
+html[data-theme="gray"] .season-tab-actions[aria-expanded="true"] { background-color: #3a3c41; }
+html[data-theme="gray"] .team-actions-menu { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
+html[data-theme="gray"] .team-actions-item { color: #d5d7db; }
+html[data-theme="gray"] .team-actions-item:hover, html[data-theme="gray"] .team-actions-item:focus-visible { background-color: #3a3c41; }
+html[data-theme="gray"] .team-actions-item.is-active { background-color: #3a3c41; }
 html[data-theme="gray"] .salary-table .computed-cell + .computed-cell { color: #e2e3e6; }
 html[data-theme="gray"] .admin-cap-table td:first-child { color: #e2e3e6; }
 html[data-theme="gray"] .admin-cap-cell input { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #18191b; }

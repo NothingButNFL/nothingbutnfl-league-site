@@ -159,69 +159,190 @@ function transactionButton(player, transaction) {
   return button;
 }
 
+// Team actions live under one "Actions" dropdown at the end of the tab row.
+const teamActionItems = [
+  { id: "trade", label: "Trade" },
+  { id: "restructure", label: "Restructure" },
+  { id: "extend", label: "Extensions" },
+  { id: "free-agents", label: "Sign Player" }
+];
+const teamActionIds = teamActionItems.map((item) => item.id);
+const tabPanelFor = (id) => ({ "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
+
+function tradeBadge() {
+  const waiting = tradesAwaitingTeam(officeData, activeTeamId).length;
+  if (!waiting) return null;
+  const badge = document.createElement("span");
+  badge.className = "nav-badge tab-badge";
+  badge.textContent = waiting > 99 ? "99+" : String(waiting);
+  badge.setAttribute("aria-label", `${waiting} pending ${waiting === 1 ? "trade needs" : "trades need"} your response`);
+  badge.title = badge.getAttribute("aria-label");
+  return badge;
+}
+
+function openTeamTab(id) {
+  activeTab = ["draft-picks", "depth-chart", "multi-year", ...teamActionIds].includes(id) ? id : "salary";
+  if (activeTab === "salary") activeSeason = Number(id);
+  renderFrontOffice();
+}
+
+function closeActionsMenu(focusButton = false) {
+  const menu = document.querySelector("#team-actions-menu");
+  const button = document.querySelector("#season-tab-actions");
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  button?.setAttribute("aria-expanded", "false");
+  if (focusButton) button?.focus();
+}
+
+function openActionsMenu(focusIndex = null) {
+  const menu = document.querySelector("#team-actions-menu");
+  const button = document.querySelector("#season-tab-actions");
+  if (!menu || !button) return;
+  menu.hidden = false;
+  button.setAttribute("aria-expanded", "true");
+  button.scrollIntoView({ block: "nearest", inline: "nearest" });
+  placeActionsMenu(); // fixed position, so the tab row's horizontal scroll doesn't clip it
+  const items = [...menu.querySelectorAll("[role=menuitem]")];
+  const current = items.findIndex((item) => item.dataset.tab === activeTab);
+  if (focusIndex !== null) items[focusIndex === -1 ? items.length - 1 : focusIndex]?.focus();
+  else (items[current] || items[0])?.focus();
+}
+
 function renderSeasonTabs() {
   const tabs = document.querySelector("#season-tabs");
   tabs.replaceChildren();
+  document.querySelector("#team-actions-menu")?.remove();
   const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, { id: "multi-year", label: "MULTI-YEAR" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
     id: "draft-picks",
     label: "DRAFT PICKS"
-  }, {
-    id: "trade",
-    label: "TRADE"
-  }, {
-    id: "restructure",
-    label: "RESTRUCTURE"
-  }, {
-    id: "extend",
-    label: "EXTEND"
-  }, {
-    id: "free-agents",
-    label: "OFFER FREE AGENT"
-  }];
+  }, { id: "actions", label: "ACTIONS" }];
+  const isActive = (id) => seasons.some((year) => String(year) === id)
+    ? activeTab === "salary" && Number(id) === activeSeason
+    : id === "actions" ? teamActionIds.includes(activeTab) : activeTab === id;
   for (const { id, label } of tabItems) {
     const tab = document.createElement("button");
     tab.type = "button";
     tab.id = `season-tab-${id}`;
     tab.className = "season-tab";
     tab.setAttribute("role", "tab");
-    const active = seasons.some((year) => String(year) === id)
-      ? activeTab === "salary" && Number(id) === activeSeason
-      : activeTab === id;
+    const active = isActive(id);
     tab.setAttribute("aria-selected", String(active));
-    tab.setAttribute("aria-controls", id === "depth-chart" ? "depth-chart-panel" : id === "multi-year" ? "multi-year-panel" : id === "free-agents" ? "team-fa-panel" : id === "restructure" ? "restructure-panel" : id === "extend" ? "extend-panel" : id === "draft-picks" ? "draft-picks-panel" :
-      id === "trade" ? "trade-panel" : "salary-year-content");
     tab.tabIndex = active ? 0 : -1;
-    tab.textContent = label;
-    if (id === "trade") {
-      const waiting = tradesAwaitingTeam(officeData, activeTeamId).length;
-      if (waiting) {
-        const badge = document.createElement("span");
-        badge.className = "nav-badge tab-badge";
-        badge.textContent = waiting > 99 ? "99+" : String(waiting);
-        badge.setAttribute("aria-label", `${waiting} pending ${waiting === 1 ? "trade needs" : "trades need"} your response`);
-        badge.title = badge.getAttribute("aria-label");
-        tab.append(badge);
-      }
+    if (id === "actions") {
+      tab.classList.add("season-tab-actions");
+      tab.setAttribute("aria-haspopup", "menu");
+      tab.setAttribute("aria-expanded", "false");
+      tab.setAttribute("aria-controls", "team-actions-menu");
+      const text = document.createElement("span");
+      text.className = "season-tab-actions-label";
+      const chevron = document.createElement("span");
+      chevron.className = "season-tab-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.textContent = "▾";
+      tab.append(text, chevron);
+      const badge = tradeBadge();
+      if (badge) tab.append(badge);
+      tab.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const menu = document.querySelector("#team-actions-menu");
+        if (menu && !menu.hidden) closeActionsMenu();
+        else openActionsMenu();
+      });
+    } else {
+      tab.setAttribute("aria-controls", tabPanelFor(id));
+      tab.textContent = label;
+      tab.addEventListener("click", () => openTeamTab(id));
     }
-    tab.addEventListener("click", () => {
-      activeTab = ["draft-picks", "trade", "depth-chart", "multi-year", "free-agents", "restructure", "extend"].includes(id) ? id : "salary";
-      if (activeTab === "salary") activeSeason = Number(id);
-      renderFrontOffice();
-    });
     tab.addEventListener("keydown", (event) => {
+      if (id === "actions" && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+        event.preventDefault();
+        openActionsMenu(event.key === "ArrowDown" ? 0 : -1);
+        return;
+      }
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
       event.preventDefault();
       const direction = event.key === "ArrowRight" ? 1 : -1;
-      const currentIndex = tabItems.findIndex((item) => item.id === (activeTab === "salary" ? String(activeSeason) : activeTab));
+      const currentIndex = tabItems.findIndex((item) => item.id === id);
       const nextTab = tabItems[(currentIndex + direction + tabItems.length) % tabItems.length];
-      activeTab = seasons.some((year) => String(year) === nextTab.id) ? "salary" : nextTab.id;
-      if (activeTab === "salary") activeSeason = Number(nextTab.id);
-      renderFrontOffice();
+      if (nextTab.id === "actions") { document.querySelector("#season-tab-actions").focus(); return; }
+      openTeamTab(nextTab.id);
       document.querySelector(`#season-tab-${nextTab.id}`).focus();
     });
     tabs.append(tab);
   }
+
+  const menu = document.createElement("div");
+  menu.id = "team-actions-menu";
+  menu.className = "team-actions-menu";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "Team actions");
+  menu.hidden = true;
+  for (const { id, label } of teamActionItems) {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.id = `season-tab-${id}`; // the action panels are labelled by these
+    item.className = "team-actions-item";
+    item.setAttribute("role", "menuitem");
+    item.dataset.tab = id;
+    item.tabIndex = -1;
+    const text = document.createElement("span");
+    text.textContent = label;
+    item.append(text);
+    if (id === "trade") { const badge = tradeBadge(); if (badge) item.append(badge); }
+    item.addEventListener("click", () => {
+      closeActionsMenu();
+      openTeamTab(id);
+      document.querySelector("#season-tab-actions")?.focus();
+    });
+    item.addEventListener("keydown", (event) => {
+      const items = [...menu.querySelectorAll("[role=menuitem]")];
+      const index = items.indexOf(item);
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        items[(index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
+      } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        items[event.key === "Home" ? 0 : items.length - 1].focus();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeActionsMenu(true);
+      } else if (event.key === "Tab") closeActionsMenu();
+    });
+    menu.append(item);
+  }
+  document.body.append(menu);
+  updateActionsTab();
 }
+
+// The Actions tab shows which action is open ("ACTIONS · TRADE").
+function updateActionsTab() {
+  const label = document.querySelector("#season-tab-actions .season-tab-actions-label");
+  const current = teamActionItems.find((item) => item.id === activeTab);
+  if (label) label.textContent = current ? `ACTIONS · ${current.label.toUpperCase()}` : "ACTIONS";
+  document.querySelectorAll("#team-actions-menu .team-actions-item").forEach((item) => {
+    const active = item.dataset.tab === activeTab;
+    item.classList.toggle("is-active", active);
+    if (active) item.setAttribute("aria-current", "page"); else item.removeAttribute("aria-current");
+  });
+}
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#team-actions-menu, #season-tab-actions")) closeActionsMenu();
+});
+window.addEventListener("resize", () => closeActionsMenu());
+// Keep the open menu under its button while the page or the tab row scrolls.
+function placeActionsMenu() {
+  const menu = document.querySelector("#team-actions-menu");
+  const button = document.querySelector("#season-tab-actions");
+  if (!menu || menu.hidden || !button) return;
+  const rect = button.getBoundingClientRect();
+  const width = Math.max(rect.width, 200);
+  menu.style.minWidth = `${width}px`;
+  menu.style.top = `${rect.bottom + 4}px`;
+  menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`;
+}
+document.addEventListener("scroll", placeActionsMenu, true);
 
 function updateCapOverview() {
   document.querySelector("#salary-year-content").hidden = activeTab !== "salary";
@@ -276,13 +397,15 @@ function updateCapOverview() {
   document.querySelector("#salary-import-button-season").textContent = String(activeSeason);
   document.querySelector("#salary-panel-index").textContent = `${String(activeSeason - firstSeason + 1).padStart(2, "0")} / CONTRACTS`;
   document.querySelectorAll(".season-tab").forEach((tab) => {
-    const active = activeTab === "salary"
+    const active = tab.id === "season-tab-actions" ? teamActionIds.includes(activeTab)
+      : activeTab === "salary"
       ? Number(tab.textContent) === activeSeason
       : tab.id === `season-tab-${activeTab}`;
     tab.classList.toggle("is-active", active);
     tab.setAttribute("aria-selected", String(active));
     tab.tabIndex = active ? 0 : -1;
   });
+  updateActionsTab();
 }
 
 function normalizeSpreadsheetHeader(value) {

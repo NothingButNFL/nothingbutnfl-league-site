@@ -504,6 +504,15 @@ body > main, body > footer { margin-left: 58px; }
 .season-tab { min-width: 78px; padding: 12px 15px; border: 1px solid transparent; border-bottom: 0; background: transparent; color: #c5d5e8; cursor: pointer; font: 11px var(--mono); }
 .season-tab:hover, .season-tab:focus-visible { background: #174477; color: #fff; }
 .season-tab.is-active { border-color: #54749b; background: #174477; color: #fff; }
+.season-tab-actions { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; margin-left: auto; white-space: nowrap; }
+.season-tab-chevron { font-size: 10px; transition: transform .15s ease; }
+.season-tab-actions[aria-expanded="true"] { background: #174477; color: #fff; }
+.season-tab-actions[aria-expanded="true"] .season-tab-chevron { transform: rotate(180deg); }
+.team-actions-menu { position: fixed; z-index: 80; display: grid; gap: 2px; padding: 5px; border: 1px solid #54749b; border-radius: 4px; background: #0c2b50; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); }
+.team-actions-menu[hidden] { display: none; }
+.team-actions-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border: 0; border-left: 2px solid transparent; border-radius: 3px; background: transparent; color: #c5d5e8; cursor: pointer; font: 12px var(--mono); letter-spacing: .04em; text-align: left; text-transform: uppercase; }
+.team-actions-item:hover, .team-actions-item:focus-visible { background: #174477; color: #fff; outline: none; }
+.team-actions-item.is-active { border-left-color: #8fd0ff; background: #174477; color: #fff; }
 .salary-col-player { width: 9.5%; }
 .salary-col-exp { width: 4.5%; }
 .salary-col-position { width: 5.5%; }

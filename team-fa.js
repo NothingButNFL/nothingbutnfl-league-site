@@ -1,4 +1,4 @@
-// Team sheet "Offer Free Agent" tab: this team's offers on current free agents (league-core.js submitFaOffer).
+// Team sheet Actions › Sign Player: this team's offers on current free agents (league-core.js submitFaOffer).
 // Offers go to Admin › Free Agent Offers. Uses front-office.js globals (officeData, activeTeamId, saveOfficeData).
 const teamFaRows = document.querySelector("#team-fa-rows");
 const teamFaSearch = document.querySelector("#team-fa-search");
