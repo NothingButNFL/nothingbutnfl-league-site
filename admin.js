@@ -190,6 +190,50 @@ adminMinRows.addEventListener("focusout", (event) => {
   if (input && value) input.value = formatCurrency(value);
 });
 
+// Paste a block of cells from Excel / Google Sheets. Plain values fill right and down from the box you pasted into.
+// If the block includes the header row (years) or the experience column, those are used to place each value.
+function minimumTierFromLabel(text) {
+  const t = String(text || "").trim().toLowerCase().replace(/\s+/g, "").replace(/[–—]/g, "-");
+  const m = t.match(/^(0|1|2|3|4-6|7\+)(\(.*\)|yrs?|years?)?$/) || t.match(/^(0|1|2|3|4-6|7\+)(?![\d,.kKmM])/);
+  return m && minimumTiers.includes(m[1]) ? m[1] : null;
+}
+adminMinRows.addEventListener("paste", (event) => {
+  const input = event.target.closest("[data-min-tier]");
+  const text = event.clipboardData?.getData("text/plain") || "";
+  if (!input || !safeToSave || !/[\t\n]/.test(text.trim())) return; // a single value pastes normally
+  event.preventDefault();
+  let grid = text.replace(/\r/g, "").split("\n").map((line) => line.split("\t"));
+  while (grid.length && grid[grid.length - 1].every((c) => !c.trim())) grid.pop();
+  // Header row: cells that are seasons in this table.
+  let years = null;
+  const headerYears = grid[0].map((c) => (/^\s*\d{4}\s*$/.test(c) && minimumSeasons.includes(Number(c)) ? Number(c) : null));
+  if (headerYears.some(Boolean)) { years = headerYears; grid = grid.slice(1); }
+  else if (grid[0].every((c) => parseMoneyText(c) === undefined || !c.trim())) grid = grid.slice(1); // text-only header
+  // Experience column: every row starts with a bracket label and there's more than one column.
+  const labelled = grid.length > 0 && grid.every((r) => r.length > 1 && minimumTierFromLabel(r[0]))
+    && (years ? years[0] === null : grid.some((r) => /[-+(a-z]/i.test(r[0])) || grid.length === minimumTiers.length);
+  const startYearIdx = minimumSeasons.indexOf(Number(input.dataset.minYear));
+  const startTierIdx = minimumTiers.indexOf(input.dataset.minTier);
+  const table = JSON.parse(JSON.stringify(officeData.minimumSalaries || {}));
+  let filled = 0, skipped = 0;
+  grid.forEach((row, r) => {
+    const tier = labelled ? minimumTierFromLabel(row[0]) : minimumTiers[startTierIdx + r];
+    const cells = labelled ? row.slice(1) : row;
+    cells.forEach((cell, c) => {
+      const col = labelled ? c + 1 : c;
+      const year = years ? years[col] : minimumSeasons[startYearIdx + c];
+      if (!tier || !year) { if (cell.trim()) skipped += 1; return; }
+      const value = parseMoneyText(cell);
+      if (value === undefined) { skipped += 1; return; }
+      table[year] = { ...(table[year] || {}), [tier]: value };
+      filled += 1;
+    });
+  });
+  if (!filled) { adminStatus.textContent = "Nothing to paste: no dollar amounts were found in the copied cells."; return; }
+  const extra = skipped ? ` ${skipped} cell${skipped === 1 ? " was" : "s were"} skipped (not a dollar amount, or outside the table).` : "";
+  if (saveMinimums({ ...officeData, minimumSalaries: table }, `Pasted ${filled} minimum salar${filled === 1 ? "y" : "ies"}.${extra}`)) renderMinimums(officeData);
+});
+
 document.querySelector("#admin-min-copy").addEventListener("click", () => {
   const from = minimumYear();
   const source = officeData.minimumSalaries?.[from] || {};
