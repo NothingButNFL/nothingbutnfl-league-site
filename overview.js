@@ -140,10 +140,10 @@ function renderConferenceLeaders() {
     card.className = "conference-card";
     const title = document.createElement("h3");
     title.className = "conference-title";
-    // Conference logo from ESPN (same source as the team logos); if it can't load, just the name shows.
+    // Conference logo (assets/afc.png, assets/nfc.png); if it can't load, just the name shows.
     const logo = document.createElement("img");
     logo.className = "conference-logo";
-    logo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${conference.toLowerCase()}.png`;
+    logo.src = `assets/${conference.toLowerCase()}.png`;
     logo.alt = "";
     logo.loading = "lazy";
     logo.addEventListener("error", () => logo.remove(), { once: true });

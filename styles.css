@@ -2077,4 +2077,4 @@ form.is-minimum input[readonly] { opacity: .75; }
 .insider-wire { margin-top: 18px; padding-top: 16px; border-top: 1px solid #1d3a5f; }
 .insider-title { margin: 0; color: #fff; font: 700 18px var(--display); letter-spacing: -.01em; }
 .conference-title { display: flex; align-items: center; gap: 12px; }
-.conference-logo { width: 44px; height: 44px; object-fit: contain; }
+.conference-logo { box-sizing: content-box; width: 40px; height: 34px; padding: 5px 6px; border-radius: 8px; background: #fff; object-fit: contain; }
