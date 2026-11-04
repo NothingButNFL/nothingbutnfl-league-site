@@ -502,7 +502,7 @@ const contractFields = [
 // Click a salary-table heading to sort by it; click again to flip the order, a third time to go back to sheet order.
 const salarySortKeys = ["name", "position", "rosterType", "experience", ...contractFields.map(([field]) => field)];
 const salaryTextKeys = new Set(["name", "position", "rosterType"]);
-let salarySort = null; // { key, direction: 1 | -1 }
+let salarySort = { key: "capHit", direction: -1 }; // { key, direction: 1 | -1 }; largest cap hit first by default
 
 function salarySortValue(player, key) {
   const entry = seasonEntry(player, activeSeason);
