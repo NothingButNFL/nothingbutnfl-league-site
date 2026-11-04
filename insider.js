@@ -177,7 +177,7 @@ function insiderPostFor(entry) {
 // The newest reports are the moves most recently added to the Transaction Log (entries are appended as they're
 // recorded), not the latest dates: a move made today should lead even if the log already has later-dated entries
 // (the sample league's season runs into December).
-function insiderPosts(data, limit = 6) {
+function insiderPosts(data, limit = 4) {
   return (data.transactions || []).map((entry, index) => ({ entry, index }))
     .sort((a, b) => b.index - a.index)
     .slice(0, limit).map(({ entry }) => insiderPostFor(entry));

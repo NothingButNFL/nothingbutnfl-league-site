@@ -2044,7 +2044,7 @@ form.is-minimum input[readonly] { opacity: .75; }
 
 /* Overview › Insider Wire: tweet-style transaction reports */
 .insider-sub { margin: 4px 0 0; color: #8ca5c5; font-size: 13px; }
-.insider-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; margin-top: 14px; }
+.insider-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; margin-top: 14px; }
 .insider-post { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 14px 16px 12px; border: 1px solid #31527a; border-radius: 12px; background: #0a2647; }
 .insider-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .insider-avatar { display: grid; flex: none; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: #fff; font: 800 13px var(--display); letter-spacing: .02em; }
