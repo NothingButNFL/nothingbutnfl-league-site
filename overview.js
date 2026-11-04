@@ -119,7 +119,7 @@ function renderLeaders() {
   }));
 }
 
-// Top 6 teams per conference by record (same order as the Standings page).
+// Top 7 teams per conference by record (same order as the Standings page).
 function renderConferenceLeaders() {
   let data = emptyOfficeData();
   try {
@@ -130,12 +130,12 @@ function renderConferenceLeaders() {
   const season = data.standings?.season;
   const anyGames = nflTeams.some(({ id }) => { const r = teamRecord(data, id); return r.w + r.l + r.t > 0; });
   document.querySelector("#top-teams-subtitle").textContent = anyGames
-    ? `Top 6 teams in each conference${season ? ` · ${season} season` : ""}.`
+    ? `Top 7 teams in each conference${season ? ` · ${season} season` : ""}.`
     : "No records entered yet. Add them on the Standings page.";
   const grid = document.querySelector("#conference-grid");
   grid.replaceChildren(...["AFC", "NFC"].map((conference) => {
     const teamIds = nflDivisions.filter((division) => division.conference === conference).flatMap((division) => division.teams);
-    const ranked = teamIds.map((teamId) => ({ teamId, record: teamRecord(data, teamId) })).sort(compareRecords).slice(0, 6);
+    const ranked = teamIds.map((teamId) => ({ teamId, record: teamRecord(data, teamId) })).sort(compareRecords).slice(0, 7);
     const card = document.createElement("article");
     card.className = "conference-card";
     const title = document.createElement("h3");
