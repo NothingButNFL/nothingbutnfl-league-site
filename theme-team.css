@@ -446,3 +446,9 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-title { color: 
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:hover:not(:disabled), html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:focus-visible { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item:disabled { color: rgb(var(--tm-8ca5c5)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .player-menu-item small { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-sub { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-post { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-check { color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-handle { color: rgb(var(--tm-8ca5c5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-tag { color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-foot { border-top-color: rgb(var(--tm-1d3a5f)); }

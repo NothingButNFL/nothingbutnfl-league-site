@@ -2041,3 +2041,21 @@ form.is-minimum input[readonly] { opacity: .75; }
 .leader-card li strong { flex: none; }
 .leader-top-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 801px) and (max-width: 1499px) { .leaders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Overview › Insider Wire: tweet-style transaction reports */
+.insider-sub { margin: 4px 0 0; color: #8ca5c5; font-size: 13px; }
+.insider-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; margin-top: 14px; }
+.insider-post { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 14px 16px 12px; border: 1px solid #31527a; border-radius: 12px; background: #0a2647; }
+.insider-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.insider-avatar { display: grid; flex: none; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: #fff; font: 800 13px var(--display); letter-spacing: .02em; }
+.insider-who { display: grid; min-width: 0; line-height: 1.25; }
+.insider-who strong { display: flex; align-items: center; gap: 4px; color: #fff; font: 700 14px var(--body); }
+.insider-check { display: inline-flex; color: #8fd0ff; }
+.insider-handle { overflow: hidden; color: #8ca5c5; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.insider-text { margin: 0; color: #fff; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.insider-tag { color: #8fd0ff; }
+.insider-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid #1d3a5f; }
+.insider-teams { display: flex; gap: 6px; }
+.insider-teams a { display: grid; width: 26px; height: 26px; place-items: center; }
+.insider-teams img, .insider-teams .leader-logo { width: 26px; height: 26px; }
+.insider-copy { min-height: 30px; padding: 4px 10px; font-size: 12px; }

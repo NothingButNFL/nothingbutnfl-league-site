@@ -385,3 +385,7 @@ html[data-theme="gray"] .player-menu-title { color: #a5a8ae; }
 html[data-theme="gray"] .player-menu-item:hover:not(:disabled), html[data-theme="gray"] .player-menu-item:focus-visible { background-color: #3a3c41; }
 html[data-theme="gray"] .player-menu-item:disabled { color: #a5a8ae; }
 html[data-theme="gray"] .player-menu-item small { color: #a5a8ae; }
+html[data-theme="gray"] .insider-sub { color: #a5a8ae; }
+html[data-theme="gray"] .insider-post { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .insider-handle { color: #a5a8ae; }
+html[data-theme="gray"] .insider-foot { border-top-color: #303236; }
