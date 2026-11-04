@@ -365,7 +365,7 @@ html[data-theme="gray"] .fao-contract tr.is-void td { color: #a5a8ae; }
 html[data-theme="gray"] .ce-min-hint { color: #a5a8ae; }
 html[data-theme="gray"] .fao-announcement-text { background-color: #18191b; }
 html[data-theme="gray"] .theme-picker { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; color: #d5d7db; }
-html[data-theme="gray"] .theme-picker:hover, html[data-theme="gray"] .theme-picker:focus-within { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #3a3c41; }
+html[data-theme="gray"] .theme-picker:hover, html[data-theme="gray"] .theme-picker:focus-visible, html[data-theme="gray"] .theme-picker[aria-expanded="true"] { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #3a3c41; }
 html[data-theme="gray"] .theme-picker-text small { color: #a5a8ae; }
 html[data-theme="gray"] .theme-picker-chevron { color: #a5a8ae; }
 html[data-theme="gray"] .team-fa-pending { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }
@@ -389,3 +389,7 @@ html[data-theme="gray"] .insider-sub { color: #a5a8ae; }
 html[data-theme="gray"] .insider-post { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
 html[data-theme="gray"] .insider-handle { color: #a5a8ae; }
 html[data-theme="gray"] .insider-foot { border-top-color: #303236; }
+html[data-theme="gray"] .theme-menu { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
+html[data-theme="gray"] .theme-option { color: #e2e3e6; }
+html[data-theme="gray"] .theme-option.is-active { background-color: #3a3c41; }
+html[data-theme="gray"] .theme-menu-heading { border-top-color: #47494f; color: #a5a8ae; }

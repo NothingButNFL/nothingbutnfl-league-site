@@ -295,6 +295,22 @@ function applyThemeVars(theme) {
   try { localStorage.setItem(themeVarsKey, Object.entries(vars).map(([p, v]) => `${p}:${v}`).join(";")); } catch { /* storage unavailable */ }
   return vars;
 }
+const themeLogoUrl = (teamId) => `https://a.espncdn.com/i/teamlogos/nfl/500/${nflTeams.find(({ id }) => id === teamId).logo}.png`;
+// A round swatch in the theme's two colors; team themes also show the team logo on top (the colors stay if it can't load).
+function fillThemeSwatch(swatch, choice) {
+  swatch.style.background = `linear-gradient(135deg, ${choice.swatch[0]} 0 50%, ${choice.swatch[1]} 50% 100%)`;
+  swatch.classList.toggle("has-logo", Boolean(choice.teamId));
+  let logo = swatch.querySelector("img");
+  if (!choice.teamId) { logo?.remove(); return; }
+  if (!logo) {
+    logo = document.createElement("img");
+    logo.alt = "";
+    logo.addEventListener("error", () => { logo.remove(); swatch.classList.remove("has-logo"); });
+    swatch.append(logo);
+  }
+  logo.src = themeLogoUrl(choice.teamId);
+}
+
 function setTheme(theme) {
   const choice = findTheme(theme) || themeModes[0];
   document.documentElement.dataset.theme = choice.id;
@@ -303,34 +319,140 @@ function setTheme(theme) {
   const pageColor = vars ? `rgb(${vars["--tm-071a33"].replace(/ /g, ", ")})` : choice.color;
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", pageColor);
   document.querySelectorAll(".theme-picker").forEach((picker) => {
-    picker.querySelector("select").value = choice.id;
     picker.querySelector(".theme-picker-name").textContent = choice.label;
     picker.title = `Theme: ${choice.label}`;
-    const swatch = picker.querySelector(".theme-picker-swatch");
-    swatch.style.background = `linear-gradient(135deg, ${choice.swatch[0]} 0 50%, ${choice.swatch[1]} 50% 100%)`;
-    const logo = swatch.querySelector("img");
-    if (choice.teamId) {
-      logo.hidden = false;
-      logo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${nflTeams.find(({ id }) => id === choice.teamId).logo}.png`;
-    } else { logo.hidden = true; logo.removeAttribute("src"); }
+    picker.setAttribute("aria-label", `Site theme: ${choice.label}`);
+    fillThemeSwatch(picker.querySelector(".theme-picker-swatch"), choice);
+  });
+  document.querySelectorAll("#theme-menu [role=option]").forEach((option) => {
+    const selected = option.dataset.theme === choice.id;
+    option.setAttribute("aria-selected", String(selected));
+    option.classList.toggle("is-selected", selected);
   });
 }
+
+// The theme dropdown: a list with each theme's swatch (and team logos), opened from the picker button.
+function buildThemeMenu(button) {
+  const menu = document.createElement("div");
+  menu.id = "theme-menu";
+  menu.className = "theme-menu";
+  menu.setAttribute("role", "listbox");
+  menu.setAttribute("aria-label", "Site theme");
+  menu.tabIndex = -1;
+  menu.hidden = true;
+  const option = (choice) => {
+    const item = document.createElement("div");
+    item.className = "theme-option";
+    item.id = `theme-option-${choice.id}`;
+    item.setAttribute("role", "option");
+    item.dataset.theme = choice.id;
+    const swatch = document.createElement("span");
+    swatch.className = "theme-picker-swatch";
+    swatch.setAttribute("aria-hidden", "true");
+    fillThemeSwatch(swatch, choice);
+    const label = document.createElement("span");
+    label.className = "theme-option-label";
+    label.textContent = choice.label;
+    const check = document.createElement("span");
+    check.className = "theme-option-check";
+    check.setAttribute("aria-hidden", "true");
+    check.textContent = "✓";
+    item.append(swatch, label, check);
+    return item;
+  };
+  const heading = document.createElement("div");
+  heading.className = "theme-menu-heading";
+  heading.setAttribute("role", "presentation");
+  heading.textContent = "NFL teams";
+  menu.append(...themeModes.map(option), heading, ...teamThemes.map(option));
+  const options = () => [...menu.querySelectorAll("[role=option]")];
+  let active = null;
+  const setActive = (item) => {
+    active?.classList.remove("is-active");
+    active = item;
+    if (!item) { menu.removeAttribute("aria-activedescendant"); return; }
+    item.classList.add("is-active");
+    menu.setAttribute("aria-activedescendant", item.id);
+    item.scrollIntoView({ block: "nearest" });
+  };
+  const place = () => {
+    if (menu.hidden) return;
+    const rect = button.getBoundingClientRect();
+    const width = Math.max(240, Math.min(300, window.innerWidth - 16));
+    menu.style.width = `${width}px`;
+    const room = { below: window.innerHeight - rect.bottom - 12, above: rect.top - 12 };
+    const collapsedSidebar = rect.width < 60 && rect.left < 100 && window.innerWidth > 1180;
+    const maxHeight = Math.min(520, Math.max(room.below, room.above, 200));
+    menu.style.maxHeight = `${maxHeight}px`;
+    const height = Math.min(menu.scrollHeight, maxHeight);
+    let top, left;
+    if (collapsedSidebar) { left = rect.right + 8; top = Math.min(rect.bottom - height, window.innerHeight - height - 8); }
+    else {
+      left = Math.min(rect.left, window.innerWidth - width - 8);
+      top = room.below >= height || room.below >= room.above ? rect.bottom + 6 : rect.top - 6 - height;
+    }
+    menu.style.left = `${Math.max(8, left)}px`;
+    menu.style.top = `${Math.max(8, top)}px`;
+  };
+  const open = () => {
+    menu.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+    place();
+    setActive(options().find((o) => o.dataset.theme === currentTheme()) || options()[0]);
+    menu.focus({ preventScroll: true });
+  };
+  const close = (focusButton = true) => {
+    if (menu.hidden) return;
+    menu.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+    setActive(null);
+    if (focusButton) button.focus();
+  };
+  const choose = (item) => { if (item) setTheme(item.dataset.theme); close(); };
+  button.addEventListener("click", () => (menu.hidden ? open() : close()));
+  button.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); open(); }
+  });
+  menu.addEventListener("click", (event) => choose(event.target.closest("[role=option]")));
+  menu.addEventListener("mousemove", (event) => { const item = event.target.closest("[role=option]"); if (item && item !== active) setActive(item); });
+  let typed = "", typedAt = 0;
+  menu.addEventListener("keydown", (event) => {
+    const list = options();
+    const index = list.indexOf(active);
+    if (event.key === "ArrowDown") { event.preventDefault(); setActive(list[Math.min(list.length - 1, index + 1)]); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); setActive(list[Math.max(0, index - 1)]); }
+    else if (event.key === "Home" || event.key === "End") { event.preventDefault(); setActive(event.key === "Home" ? list[0] : list[list.length - 1]); }
+    else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(active); }
+    else if (event.key === "Escape") { event.preventDefault(); close(); }
+    else if (event.key === "Tab") close(false);
+    else if (event.key.length === 1 && /\S/.test(event.key)) {
+      // Type a team name to jump to it.
+      typed = Date.now() - typedAt < 700 ? typed + event.key.toLowerCase() : event.key.toLowerCase();
+      typedAt = Date.now();
+      const match = list.find((o) => o.textContent.toLowerCase().startsWith(typed))
+        || list.find((o) => o.textContent.toLowerCase().split(" ").some((w) => w.startsWith(typed)));
+      if (match) setActive(match);
+    }
+  });
+  document.addEventListener("click", (event) => {
+    if (!menu.hidden && !event.target.closest("#theme-menu, .theme-picker")) close(false);
+  });
+  window.addEventListener("resize", () => close(false));
+  document.addEventListener("scroll", (event) => { if (!menu.contains(event.target)) place(); }, true);
+  document.body.append(menu);
+}
+
 if (siteHeader) {
-  const picker = document.createElement("label");
+  const picker = document.createElement("button");
+  picker.type = "button";
   picker.className = "theme-picker";
-  picker.innerHTML = '<span class="theme-picker-swatch" aria-hidden="true"><img alt="" hidden></span><span class="theme-picker-text"><small>Theme</small><span class="theme-picker-name"></span></span><span class="theme-picker-chevron" aria-hidden="true">▾</span>';
-  picker.querySelector("img").addEventListener("error", (event) => { event.target.hidden = true; });
-  const select = document.createElement("select");
-  select.setAttribute("aria-label", "Site theme");
-  select.append(...themeModes.map(({ id, label }) => new Option(label, id)));
-  const group = document.createElement("optgroup");
-  group.label = "NFL teams";
-  group.append(...teamThemes.map(({ id, label }) => new Option(label, id)));
-  select.append(group);
-  select.addEventListener("change", () => setTheme(select.value));
-  picker.append(select);
+  picker.setAttribute("aria-haspopup", "listbox");
+  picker.setAttribute("aria-expanded", "false");
+  picker.setAttribute("aria-controls", "theme-menu");
+  picker.innerHTML = '<span class="theme-picker-swatch" aria-hidden="true"></span><span class="theme-picker-text"><small>Theme</small><span class="theme-picker-name"></span></span><span class="theme-picker-chevron" aria-hidden="true">▾</span>';
   const collapse = siteHeader.querySelector(".sidebar-collapse");
   if (collapse) collapse.before(picker); else siteHeader.append(picker);
+  buildThemeMenu(picker);
   setTheme(currentTheme());
 }
 
