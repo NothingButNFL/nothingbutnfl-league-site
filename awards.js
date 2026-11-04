@@ -345,7 +345,7 @@ awardsForm.addEventListener("submit", (event) => {
   awardsForm.reset();
   f.season.value = String(viewSeason);
   showStatBoxes("");
-  document.querySelector("#awards-form-title").textContent = "Add an award";
+  document.querySelector("#awards-form-title").textContent = "Add An Award";
   renderAwards();
 });
 
