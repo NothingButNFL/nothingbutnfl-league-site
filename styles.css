@@ -2630,3 +2630,14 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .insider-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .insider-tools { display: flex; gap: 6px; }
 .md-tick-record { font-size: 13px; font-weight: 700; opacity: .85; }
+/* Game of the Week: the background flows — the vector art drifts slowly and a soft light sweep passes across. */
+.md-gotw::before { inset: -8%; animation: md-gotw-drift 22s ease-in-out infinite alternate; will-change: transform; }
+.md-gotw::after { position: absolute; inset: 0; z-index: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .09) 48%, rgba(255, 255, 255, .14) 50%, rgba(255, 255, 255, .09) 52%, transparent 65%) 0 0 / 250% 100% no-repeat; content: ""; pointer-events: none; animation: md-gotw-sweep 9s linear infinite; }
+.md-gotw > * { z-index: 1; }
+@keyframes md-gotw-drift {
+  0% { transform: translate3d(-3%, -2%, 0) scale(1.02); }
+  50% { transform: translate3d(2%, 1.5%, 0) scale(1.06); }
+  100% { transform: translate3d(-1%, 2.5%, 0) scale(1.03); }
+}
+@keyframes md-gotw-sweep { 0% { background-position: 160% 0; } 60%, 100% { background-position: -60% 0; } }
+@media (prefers-reduced-motion: reduce) { .md-gotw::before, .md-gotw::after { animation: none; } }
