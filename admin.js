@@ -327,11 +327,11 @@ const adminPsRows = document.querySelector("#admin-ps-rows");
 const adminPsWeek = document.querySelector("#admin-ps-week");
 function renderPsSalaries(data) {
   const head = document.createElement("tr");
-  for (const label of ["EXPERIENCE", ...minimumSeasons.map(String)]) {
+  for (const label of ["EXPERIENCE", `${minimumYear()} WEEKLY SALARY`]) {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = label;
-    if (label === String(minimumYear())) th.className = "is-current";
+    if (label !== "EXPERIENCE") th.className = "is-current";
     head.append(th);
   }
   adminPsHead.replaceChildren(head);
@@ -341,7 +341,7 @@ function renderPsSalaries(data) {
     th.scope = "row";
     th.textContent = label;
     row.append(th);
-    for (const year of minimumSeasons) {
+    for (const year of [minimumYear()]) {  // only the current league year is needed
       const cell = row.insertCell();
       cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
       const input = document.createElement("input");
