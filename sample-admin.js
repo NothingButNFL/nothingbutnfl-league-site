@@ -102,6 +102,9 @@ try {
   const note = sessionStorage.getItem("nbf-sample-status");
   if (note) { sampleStatus.textContent = note; sessionStorage.removeItem("nbf-sample-status"); }
 } catch { /* storage unavailable */ }
+// The reload above lands on the Sample league card once; drop the #sample-league from the address afterwards so the
+// Overview doesn't keep jumping there every time it's opened or refreshed.
+if (location.hash === "#sample-league") history.replaceState(null, "", location.pathname + location.search);
 
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderSamplePanel();
