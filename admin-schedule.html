@@ -149,8 +149,9 @@
               <button class="workspace-button" id="si-template" type="button">Download template</button>
             </div>
             <label class="si-paste-label" for="si-paste">Or paste rows here</label>
-            <textarea id="si-paste" rows="8" spellcheck="false" placeholder="Week&#9;Away&#9;Home&#9;Date&#9;Time&#9;Note"></textarea>
-            <p class="si-help">Columns it understands (any order, extra columns are ignored): <b>Week</b> (1–18, or Wild Card, Divisional, Conference, Super Bowl), <b>Away</b>, <b>Home</b>, <b>Date</b>, <b>Time</b> / Kickoff, <b>Note</b> / TV. Instead of Away and Home you can use one <b>Matchup</b> column like "BUF @ NYJ" or "Bills at Jets". Teams can be abbreviations, nicknames or full names.</p>
+            <textarea id="si-paste" rows="8" spellcheck="false" placeholder="TEAM&#9;1&#9;2&#9;3 …&#10;ARI&#9;@LAC&#9;SEA&#9;@SF …"></textarea>
+            <p class="si-help"><b>ESPN schedule grid:</b> open <a href="https://www.espn.com/nfl/schedulegrid" target="_blank" rel="noopener">espn.com/nfl/schedulegrid</a>, select the whole table from TEAM down to the last team's row, copy, and paste it here. Each cell is that team's opponent ("SEA" = at home, "@LAC" = away) or BYE; both teams' rows are merged into one game.</p>
+            <p class="si-help"><b>Or a game list.</b> Columns it understands (any order, extra columns are ignored): <b>Week</b> (1–18, or Wild Card, Divisional, Conference, Super Bowl), <b>Away</b>, <b>Home</b>, <b>Date</b>, <b>Time</b> / Kickoff, <b>Note</b> / TV. Instead of Away and Home you can use one <b>Matchup</b> column like "BUF @ NYJ" or "Bills at Jets". Teams can be abbreviations, nicknames or full names.</p>
             <label class="si-replace"><input type="checkbox" id="si-replace"> Replace the whole <span id="si-replace-season">2026</span> schedule (removes games already on it for that season first)</label>
           </div>
 

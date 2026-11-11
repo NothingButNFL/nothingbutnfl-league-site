@@ -105,19 +105,67 @@ function siMatchup(text) {
   return null;
 }
 
+// ESPN-style schedule grid (espn.com/nfl/schedulegrid): a TEAM column, then one column per week. Each cell is the
+// opponent ("SEA" = home vs Seattle, "@LAC" = at the Chargers) or BYE. Every game shows up in both teams' rows, so
+// the two are merged; if they disagree, the clash is flagged.
+function siGridHeader(cells) {
+  const weeks = cells.slice(1).filter((c) => /^\s*\d{1,2}\s*$/.test(c)).length;
+  return /^\s*team\s*$/i.test(cells[0] || "") && weeks >= 2;
+}
+function siParseGrid(table, headerIndex) {
+  const header = table[headerIndex];
+  const weekCols = [];
+  header.forEach((cell, i) => { const w = Number(String(cell).trim()); if (i > 0 && Number.isInteger(w) && w >= 1 && w <= 22 && /^\s*\d+\s*$/.test(cell)) weekCols.push([i, w]); });
+  const games = new Map();
+  const rows = [];
+  for (let i = headerIndex + 1; i < table.length; i += 1) {
+    const cells = table[i];
+    if (cells.every((c) => !String(c).trim())) continue;
+    const label = String(cells[0]).trim();
+    const team = lookupTeamId(label);
+    if (!team) { rows.push({ row: i + 1, week: null, away: "", home: "", date: "", time: "", note: "", problem: `Team "${label}" not recognized` }); continue; }
+    for (const [col, week] of weekCols) {
+      const value = String(cells[col] ?? "").trim();
+      if (!value || /^bye$/i.test(value)) continue;
+      const atOpp = value.startsWith("@");
+      const oppText = value.replace(/^@\s*/, "").replace(/^vs\.?\s*/i, "");
+      const opp = lookupTeamId(oppText);
+      if (!opp || opp === team) {
+        rows.push({ row: i + 1, week, away: atOpp ? team : "", home: atOpp ? "" : team, date: "", time: "", note: "", problem: `${team}, ${scheduleWeekName(week)}: opponent "${value}" not recognized` });
+        continue;
+      }
+      const away = atOpp ? team : opp, home = atOpp ? opp : team;
+      const key = `${week}|${away}|${home}`;
+      if (!games.has(key)) {
+        const game = { row: i + 1, week, away, home, date: "", time: "", note: "", problem: "" };
+        games.set(key, game);
+        rows.push(game);
+      }
+    }
+  }
+  return rows;
+}
+
 function siParse(text) {
   const season = Number(siSeason.value) || leagueSeason();
-  const table = siTable(text);
+  // Space-separated rows (e.g. copied from a PDF) become cells too.
+  const table = siTable(text).map((cells) => (cells.length === 1 && /\S\s+\S/.test(cells[0]) ? cells[0].trim().split(/\s+/) : cells));
+  const gridIndex = table.findIndex(siGridHeader);
+  if (gridIndex !== -1) {
+    const rows = siParseGrid(table, gridIndex);
+    siFlagClashes(rows);
+    rows.sort((a, b) => (a.week || 99) - (b.week || 99) || a.row - b.row);
+    return { rows, season, grid: true };
+  }
   const headerIndex = table.findIndex((cells) => {
     const f = cells.map(siField);
     return (f.includes("away") && f.includes("home")) || f.includes("matchup");
   });
-  if (headerIndex === -1) return { error: "Couldn't find a header row with Away and Home columns (or a Matchup column). Include the header row." };
+  if (headerIndex === -1) return { error: "Couldn't find a header row: either a schedule grid (TEAM, 1, 2, 3 …) or Week / Away / Home columns (or a Matchup column). Include the header row." };
   const columns = new Map();
   table[headerIndex].forEach((cell, i) => { const f = siField(cell); if (f && !columns.has(f)) columns.set(f, i); });
   if (!columns.has("week")) return { error: "Couldn't find a Week column in the header row." };
   const rows = [];
-  const seen = new Map();
   for (let i = headerIndex + 1; i < table.length; i += 1) {
     const cells = table[i];
     if (cells.every((c) => !String(c).trim())) continue;
@@ -138,17 +186,23 @@ function siParse(text) {
     else if (!out.home) out.problem = `Home team "${homeText}" not recognized`;
     else if (out.away === out.home) out.problem = "Away and home are the same team";
     else if (date === null) out.problem = `Date "${cell("date")}" not recognized`;
-    if (!out.problem) {
-      // A team can only play once per week within the file.
-      for (const team of [out.away, out.home]) {
-        const key = `${out.week}|${team}`;
-        if (seen.has(key)) { out.problem = `${team} already plays in ${scheduleWeekName(out.week)} (row ${seen.get(key)})`; break; }
-      }
-      if (!out.problem) for (const team of [out.away, out.home]) seen.set(`${out.week}|${team}`, out.row);
-    }
     rows.push(out);
   }
+  siFlagClashes(rows);
   return { rows, season };
+}
+
+// A team can only play once per week within the file.
+function siFlagClashes(rows) {
+  const seen = new Map();
+  for (const out of rows) {
+    if (out.problem) continue;
+    for (const team of [out.away, out.home]) {
+      const key = `${out.week}|${team}`;
+      if (seen.has(key)) { const other = seen.get(key); out.problem = `${team} already plays in ${scheduleWeekName(out.week)} (${other.away} @ ${other.home})`; break; }
+    }
+    if (!out.problem) for (const team of [out.away, out.home]) seen.set(`${out.week}|${team}`, out);
+  }
 }
 
 const siExisting = (season, r) => officeData.schedule.find((g) => g.season === season && g.week === r.week &&
@@ -187,7 +241,7 @@ function loadText(text, source) {
   const result = siParse(text);
   if (result.error) { parsed = []; siStatus.textContent = `${source}: ${result.error} Nothing was changed.`; renderPreview(); return; }
   parsed = result.rows;
-  siStatus.textContent = parsed.length ? `${source} read. Check the preview, then import.` : `${source} has a header row but no games.`;
+  siStatus.textContent = parsed.length ? `${source} read${result.grid ? " as a schedule grid" : ""}. Check the preview, then import.` : `${source} has a header row but no games.`;
   renderPreview();
 }
 
