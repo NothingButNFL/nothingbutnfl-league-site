@@ -2619,6 +2619,9 @@ function validWaivers(waivers) {
   });
 }
 
+// "Waive" for players who'd go on waivers (fewer than 4 accrued seasons, or unknown), "Release" for vested veterans.
+const isVestedVeteran = (player) => player?.experience !== null && player?.experience !== undefined && player.experience >= vestedVeteranSeasons;
+const releaseVerb = (player) => (isVestedVeteran(player) ? "Release" : "Waive");
 const openWaivers = (data) => (data.waivers || []).filter((w) => w.status === "open");
 const waiverExpired = (entry, now = Date.now()) => Date.parse(entry.clearsAt) <= now;
 
@@ -2628,7 +2631,7 @@ function releaseToWaiversOrFreeAgency(data, player, teamId, year) {
   const entry = seasonEntry(player, year);
   const experience = player.experience ?? null;
   const base = { playerName: player.name, position: entry.position || "", experience };
-  if (experience !== null && experience >= vestedVeteranSeasons) {
+  if (isVestedVeteran(player)) {
     addFreeAgent(data, { ...base, profile: player.profile, birthDate: player.birthDate });
     return { waived: false };
   }

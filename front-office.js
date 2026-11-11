@@ -43,10 +43,11 @@ async function recordRosterTransaction(player, transaction) {
     (futureIsTrackable ? ` and ${formatCurrency(futureAmount)} on the ${nextYear} dead-cap table` :
       futureAmount > 0 ? `; future dead cap is not tracked because the ledger covers only ${deadCapSeasons.join(" and ")}` : "") +
     `. Their ${year} and later salary sheets will be removed.`;
-  const question = transaction === "release" ? `Are you sure you want to cut ${player.name}? ` : "";
-  const confirmed = await confirmAction(question + summary, { confirmLabel: transaction === "trade" ? `Trade ${player.name}` : `Release ${player.name}`, danger: true });
+  const verb = transaction === "trade" ? "Trade" : releaseVerb(player);
+  const question = transaction === "release" ? `Are you sure you want to ${verb.toLowerCase()} ${player.name}? ` : "";
+  const confirmed = await confirmAction(question + summary.replace(" released ", verb === "Waive" ? " waived " : " released "), { confirmLabel: `${verb} ${player.name}`, danger: true });
   if (!confirmed) {
-    workspaceStatus.textContent = `${transaction === "trade" ? "Trade" : "Release"} canceled. No changes were made.`;
+    workspaceStatus.textContent = `${verb === "Waive" ? "Waiver" : verb === "Trade" ? "Trade" : "Release"} canceled. No changes were made.`;
     return;
   }
 
@@ -81,7 +82,7 @@ async function recordRosterTransaction(player, transaction) {
     });
   }
   renderFrontOffice();
-  saveOfficeData(`${player.name} ${transaction === "trade" ? "traded" : "released"}; dead cap recorded for ${year}${futureIsTrackable ? ` and ${nextYear}` : ""}.` +
+  saveOfficeData(`${player.name} ${transaction === "trade" ? "traded" : waiverOutcome?.waived ? "waived" : "released"}; dead cap recorded for ${year}${futureIsTrackable ? ` and ${nextYear}` : ""}.` +
     (waiverOutcome ? (waiverOutcome.waived ? ` He's on the Waiver Wire for ${waiverPeriodHours} hours.` : " As a vested veteran he skips waivers and is now a free agent.") : ""));
 }
 
@@ -159,8 +160,10 @@ function transactionButton(player, transaction) {
   button.type = "button";
   button.className = "row-transaction";
   button.dataset.transaction = transaction;
-  button.textContent = transaction === "trade" ? "Trade" : "Release";
-  button.setAttribute("aria-label", `${transaction === "trade" ? "Trade" : "Release"} ${player.name}`);
+  const verb = transaction === "trade" ? "Trade" : releaseVerb(player);
+  button.textContent = verb;
+  button.setAttribute("aria-label", `${verb} ${player.name}`);
+  if (transaction === "release") button.title = verb === "Waive" ? "Fewer than 4 accrued seasons: he goes on the Waiver Wire for 24 hours." : "Vested veteran (4+ accrued seasons): he skips waivers and becomes a free agent.";
   return button;
 }
 
@@ -884,7 +887,7 @@ function salarySectionRow(section, activeCount, psCount) {
     cell.append(label);
   } else {
     cell.className = "salary-section-empty";
-    cell.textContent = "No one is on the practice squad. Use a player's ⚙ menu → Move To Practice Squad, or type \"Practice Squad\" as his roster type.";
+    cell.textContent = "No one is on the practice squad. Use a player's ⚙ menu → Waive / Release To Practice Squad, or type \"Practice Squad\" as his roster type.";
   }
   row.append(cell);
   return row;
@@ -1676,7 +1679,7 @@ function openPlayerMenu(cog, player) {
   };
   const onCurrent = isPlayerOnSeason(player, year);
   const notCurrent = thisYear ? "" : `Open the ${year} sheet to do this.`;
-  add("release", "Release", !storageIsAvailable ? "Saving is unavailable." : notCurrent || (!onCurrent ? `Not on the ${year} sheet.` : ""), true);
+  add("release", releaseVerb(player), !storageIsAvailable ? "Saving is unavailable." : notCurrent || (!onCurrent ? `Not on the ${year} sheet.` : ""), true);
   if (onCurrent && isExtensionEligible(player)) add("extend", "Offer Extension", storageIsAvailable ? "" : "Saving is unavailable.");
   add("restructure", "Restructure Contract", onCurrent ? "" : `Not on the ${year} sheet.`);
   const blockProblem = typeof tbkProblem === "function" ? tbkProblem(player) : "";
@@ -1691,7 +1694,7 @@ function openPlayerMenu(cog, player) {
     add("ps-elevate", isPsElevated(entry) ? "Remove Game-Day Elevation" : "Elevate For Game Day", noSave);
   } else if (entry) {
     const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
-    add("ps-move", "Move To Practice Squad", noSave || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
+    add("ps-move", `${releaseVerb(player)} To Practice Squad`, noSave || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
   }
   menu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-menu-action]");
@@ -1723,7 +1726,7 @@ function runPlayerMenuAction(action, player) {
       entry.rosterType = practiceSquadRosterType;
       delete entry.psElevated;
       const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
-      message = `${player.name} moved to the ${activeSeason} practice squad (${practiceSquad} / ${practiceSquadLimit}).`;
+      message = `${player.name} ${releaseVerb(player) === "Waive" ? "waived" : "released"} to the ${activeSeason} practice squad (${practiceSquad} / ${practiceSquadLimit}).`;
     } else if (action === "ps-promote") {
       entry.rosterType = "Active";
       delete entry.psElevated;
