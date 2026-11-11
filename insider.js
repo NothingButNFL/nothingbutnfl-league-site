@@ -350,22 +350,6 @@ function renderInsiderComposer(data) {
     t.value = was;
   }
   document.querySelector("#insider-new-reporter").hidden = select.value !== "__new";
-  const list = document.querySelector("#insider-reporter-list");
-  const own = data.insiderReporters || [];
-  list.replaceChildren(...own.map((r) => {
-    const li = document.createElement("li");
-    const av = insiderAvatarEl({ ...r, initials: insiderInitials(r.name) });
-    const label = document.createElement("span");
-    label.textContent = `${r.name} ${r.handle}`;
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "workspace-button";
-    del.textContent = "Remove";
-    del.dataset.deleteReporter = r.id;
-    li.append(av, label, del);
-    return li;
-  }));
-  if (!own.length) { const li = document.createElement("li"); li.textContent = "No custom reporters yet. Pick “+ New reporter…” in Post as."; list.append(li); }
 }
 
 function insiderAvatarEl(reporter) {
@@ -416,7 +400,6 @@ function insiderResizePhoto(file) {
   };
   toggle.addEventListener("click", () => open(form.hidden));
   document.querySelector("#insider-cancel").addEventListener("click", () => { form.reset(); pendingPhoto = ""; status.textContent = ""; open(false); });
-  document.querySelector("#insider-manage").addEventListener("click", () => { const list = document.querySelector("#insider-reporter-list"); list.hidden = !list.hidden; });
   form.elements.reporter.addEventListener("change", () => { document.querySelector("#insider-new-reporter").hidden = form.elements.reporter.value !== "__new"; showPreview(); });
   for (const name of ["rName", "rColor", "rPhotoUrl"]) form.elements[name].addEventListener("input", showPreview);
   form.elements.rPhoto.addEventListener("change", async () => {
@@ -453,12 +436,6 @@ function insiderResizePhoto(file) {
       count.textContent = "0 / 600";
       if (newReporter) { form.elements.reporter.value = newReporter.id; document.querySelector("#insider-new-reporter").hidden = true; for (const n of ["rName", "rHandle", "rPhotoUrl"]) form.elements[n].value = ""; form.elements.rPhoto.value = ""; pendingPhoto = ""; }
     }
-  });
-  document.querySelector("#insider-reporter-list").addEventListener("click", async (event) => {
-    const id = event.target.closest("[data-delete-reporter]")?.dataset.deleteReporter;
-    if (!id) return;
-    if (!await confirmAction("Remove this reporter? Their posts stay, shown as a league reporter.", { confirmLabel: "Remove reporter", danger: true })) return;
-    insiderSaveData((data) => { data.insiderReporters = (data.insiderReporters || []).filter((r) => r.id !== id); }, "Reporter removed.");
   });
 })();
 

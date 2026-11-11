@@ -41,6 +41,8 @@
     <script src="teams.js" defer></script>
     <script src="league-core.js" defer></script>
     <script src="media.js" defer></script>
+    <script src="insider.js" defer></script>
+    <script src="media-reporters.js" defer></script>
   </head>
   <body class="admin-page media-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -180,6 +182,39 @@
           </div>
           <div class="media-feed" id="media-feed"></div>
           <p class="empty-state" id="media-empty" hidden></p>
+        </div>
+      </section>
+
+      <section class="front-office-section admin-section" id="reporters" aria-labelledby="reporters-title">
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>02</span> INSIDER WIRE</div>
+              <h2 id="reporters-title">Manage <span>Reporters</span></h2>
+              <p class="section-subtitle">The reporters who post on the Overview's Insider Wire. The two built-in insiders write the automatic reports; add your own with a name, @handle, color and profile picture, then post as them from "Write a post" on the Overview.</p>
+            </div>
+          </div>
+          <p class="workspace-status" id="rep-status" role="status" aria-live="polite"></p>
+          <div class="rep-layout">
+            <div class="management-panel rep-list-panel">
+              <div class="panel-heading"><div><span class="panel-index">REPORTERS</span><h3>On the wire</h3></div></div>
+              <ul class="rep-list" id="rep-list"></ul>
+            </div>
+            <form class="management-panel rep-form" id="rep-form">
+              <div class="panel-heading"><div><span class="panel-index" id="rep-form-kicker">NEW</span><h3 id="rep-form-title">Add a reporter</h3></div></div>
+              <div class="rep-form-preview" id="rep-preview" aria-hidden="true"></div>
+              <label>Name<input name="name" maxlength="40" required placeholder="e.g. Gridiron Gossip"></label>
+              <label>Handle<input name="handle" maxlength="29" required placeholder="e.g. GridironGossip"></label>
+              <label>Color<input name="color" type="color" value="#2f9e5b"></label>
+              <label>Profile picture<input name="photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+              <label>…or picture URL<input name="photoUrl" type="url" maxlength="500" placeholder="https://…"></label>
+              <label class="rep-clear-photo" hidden><input type="checkbox" name="clearPhoto"> Remove the current picture</label>
+              <div class="rep-form-actions">
+                <button class="workspace-button" type="button" id="rep-cancel" hidden>Cancel edit</button>
+                <button class="button button-lime" type="submit" id="rep-submit">Add reporter</button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
     </main>

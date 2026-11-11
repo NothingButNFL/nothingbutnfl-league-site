@@ -2649,3 +2649,22 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 /* Scoreboard: 10 games visible, then it scrolls. */
 .md-board-game { box-sizing: border-box; height: 38px; padding-top: 0; padding-bottom: 0; }
 .md-board-list { flex: none; max-height: calc(38px * 10); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+/* News › Manage Reporters */
+.rep-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .rep-layout { grid-template-columns: 1fr; } }
+.rep-layout .management-panel { margin-top: 0; }
+.rep-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.rep-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #31527a; border-radius: 8px; }
+.rep-item.is-builtin { opacity: .85; }
+.rep-text { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.rep-text strong { color: #fff; font: 700 15px var(--body); }
+.rep-text span { overflow: hidden; color: #fff; font-size: 13px; opacity: .8; text-overflow: ellipsis; white-space: nowrap; }
+.rep-actions { display: flex; gap: 6px; }
+.rep-form { display: grid; gap: 12px; }
+.rep-form label { display: grid; gap: 6px; }
+.rep-form input[type="color"] { width: 64px; height: 40px; padding: 2px; }
+.rep-form .rep-clear-photo { display: flex; align-items: center; gap: 8px; }
+.rep-form .rep-clear-photo[hidden] { display: none; }
+.rep-preview-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px dashed #54749b; border-radius: 8px; }
+.rep-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.rep-form-actions [hidden] { display: none; }

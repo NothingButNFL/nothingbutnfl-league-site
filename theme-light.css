@@ -858,3 +858,7 @@ html[data-theme="light"] .insider-new-reporter { border-top-color: #9fb2cb; bord
 html[data-theme="light"] .insider-count { color: #0b1f3a; }
 html[data-theme="light"] .md-gotw::after { background-image: linear-gradient(105deg, transparent 35%, rgba(11, 31, 58, 0.126) 48%, rgba(11, 31, 58, 0.196) 50%, rgba(11, 31, 58, 0.126) 52%, transparent 65%); }
 html[data-theme="light"] #md-slate .md-slate-head .md-best-title { color: #0b1f3a; }
+html[data-theme="light"] .rep-item { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
+html[data-theme="light"] .rep-text strong { color: #0b1f3a; }
+html[data-theme="light"] .rep-text span { color: #0b1f3a; }
+html[data-theme="light"] .rep-preview-card { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
