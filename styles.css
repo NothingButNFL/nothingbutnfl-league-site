@@ -2291,3 +2291,8 @@ a.md-top-name:hover { text-decoration: underline; }
   .md-top-info { padding-right: 12px; padding-left: 12px; }
 }
 .md-top-who { flex: 1 1 auto; }
+/* Game of the Week: position over the full player name, which shrinks to fit its side. */
+.md-gotw-side { min-width: 0; }
+.md-gotw-name { width: 100%; min-width: 0; justify-items: center; }
+.md-gotw-pos { color: #fff; font: 700 14px var(--display); letter-spacing: .1em; opacity: .9; }
+.md-gotw-name .md-fit-name { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: clip; }

@@ -179,14 +179,16 @@ function mdTeamPanel(teamId, record, featured, side) {
   if (!featured) photo.append(overviewLogo(teamId));
   const name = mdEl("div", "md-gotw-name");
   if (featured) {
-    const last = featured.name.split(" ").slice(1).join(" ") || featured.name;
+    const side = mdOffImpact(featured.values) >= mdDefImpact(featured.values) ? "offense" : "defense";
+    name.append(mdEl("span", "md-gotw-pos", mdPosition(featured.name, teamId, featured.values, side)));
     const link = mdPlayerName(featured.name, teamId);
-    link.textContent = last.toUpperCase();
+    link.textContent = featured.name.toUpperCase();
     link.title = featured.name;
+    link.classList.add("md-fit-name");
     name.append(link);
     const lines = mdLines(featured.values, featured.games || 0);
     if (lines.length) name.append(mdEl("span", "md-gotw-line", lines[0]));
-    name.append(mdEl("span", "md-gotw-sub", featured.games ? `${featured.name} · season` : featured.name));
+    if (featured.games) name.append(mdEl("span", "md-gotw-sub", "Season averages"));
   }
   const team = mdEl("a", "md-gotw-team");
   team.href = `team.html?team=${encodeURIComponent(teamId)}`;
@@ -242,6 +244,8 @@ function renderGameOfWeek(pick, records) {
   const strip = mdEl("div", "md-gotw-notes");
   for (const n of notes) strip.append(mdEl("span", "", n.toUpperCase()));
   box.replaceChildren(head, stage, strip);
+  mdFitTopNames();
+  box.querySelectorAll(".md-gotw-name").forEach((el) => mdFitObserver?.observe(el));
   box.style.setProperty("--md-away", (teamThemePalettes[pick.away] || ["#0c2b50"])[0]);
   box.style.setProperty("--md-home", (teamThemePalettes[pick.home] || ["#0c2b50"])[0]);
 }
@@ -436,7 +440,7 @@ function mdTopCard({ conf, side, player }) {
 
 // Full names on one line: shrink each name's text until it fits its card (never below 12px).
 function mdFitTopNames() {
-  for (const el of document.querySelectorAll(".md-top-name")) {
+  for (const el of document.querySelectorAll(".md-top-name, .md-fit-name")) {
     el.style.fontSize = "";
     let size = parseFloat(getComputedStyle(el).fontSize);
     while (el.scrollWidth > el.clientWidth + 1 && size > 12) {
@@ -473,6 +477,7 @@ function renderWeeksBest(games) {
   box.replaceChildren(tabs, grid);
   mdFitTopNames();
   mdFitObserver?.disconnect();
+  document.querySelectorAll(".md-gotw-name").forEach((el) => mdFitObserver?.observe(el));
   grid.querySelectorAll(".md-top-who").forEach((el) => mdFitObserver?.observe(el));
   const active = tabs.querySelector(".is-active");
   if (active) tabs.scrollLeft = active.offsetLeft - tabs.clientWidth / 2 + active.offsetWidth / 2;
