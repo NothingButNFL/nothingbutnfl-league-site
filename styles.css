@@ -2546,3 +2546,6 @@ a.md-top-name:hover { text-decoration: underline; }
 /* On desktop the scoreboard matches the Game of the Week's height and scrolls inside. */
 @media (min-width: 1101px) { .md-board { max-height: none; contain: size; } }
 @media (max-width: 1100px) { .md-board { max-height: 560px; } }
+/* Scoreboard shows every game without scrolling; the Game of the Week stretches to match. */
+.md-board { max-height: none !important; contain: none !important; }
+.md-board-list { overflow: visible; flex: none; }
