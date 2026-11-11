@@ -2668,3 +2668,4 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .rep-preview-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px dashed #54749b; border-radius: 8px; }
 .rep-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .rep-form-actions [hidden] { display: none; }
+#news-feed[hidden], #reporters[hidden], #media-filter-type-field[hidden] { display: none; }

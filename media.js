@@ -67,7 +67,7 @@ function fillAuthors() {
 function resetForm() {
   mediaForm.reset();
   mediaForm.elements.date.value = localDateString();
-  mediaForm.elements.type.value = "article";
+  mediaForm.elements.type.value = window.mediaViewType || "article";
   setImage("");
   editingId = null;
   document.querySelector("#media-submit").firstChild.textContent = "Publish post ";
@@ -155,6 +155,7 @@ function fillFilters() {
   mediaFilterType.replaceChildren(new Option("All types", ""), ...Object.entries(mediaTypes).map(([id, label]) => new Option(label, id)));
   mediaFilterTeam.replaceChildren(new Option("All teams", ""), ...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id)));
   [mediaFilterType.value, mediaFilterTeam.value] = keep;
+  if (window.mediaViewType) mediaFilterType.value = window.mediaViewType; // News › Power Rankings / Mock Drafts / Independent Media
 }
 
 function paragraphs(text) {

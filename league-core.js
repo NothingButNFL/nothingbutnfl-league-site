@@ -1403,7 +1403,7 @@ function teamManagers(data, teamId) {
 
 // ---- Media posts ----
 // data.media = [{ id, title, type, date, author?, teams: [], url?, image? (data URI), body?, createdAt }]
-const mediaTypes = { article: "Article", video: "Video", podcast: "Podcast", presser: "Press Conference", rankings: "Power Rankings", graphic: "Graphic", announcement: "Announcement" };
+const mediaTypes = { article: "Article", video: "Video", podcast: "Podcast", presser: "Press Conference", rankings: "Power Rankings", mock: "Mock Draft", independent: "Independent Media", graphic: "Graphic", announcement: "Announcement" };
 const mediaTextLimits = { title: 120, author: 60, url: 500, body: 4000 };
 
 function validMedia(media) {

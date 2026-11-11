@@ -98,7 +98,18 @@
           </div>
         </div>
         <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
-        <a href="media.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 5.5h13v12.5a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v9a2 2 0 0 1-2 2"/><path d="M7 9h7M7 12.5h7M7 16h4"/></svg></span><span class="nav-label">News</span></a>
+        <div class="admin-menu season-menu news-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="news-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 5.5h13v12.5a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v9a2 2 0 0 1-2 2"/><path d="M7 9h7M7 12.5h7M7 16h4"/></svg></span><span class="nav-label">News</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="news-dropdown" aria-label="News pages">
+            <a class="admin-menu-link" href="media.html" role="menuitem"><span>All News</span></a>
+            <a class="admin-menu-link" href="media.html?view=power-rankings" role="menuitem"><span>Power Rankings</span></a>
+            <a class="admin-menu-link" href="media.html?view=mock-drafts" role="menuitem"><span>Mock Drafts</span></a>
+            <a class="admin-menu-link" href="media.html?view=independent-media" role="menuitem"><span>Independent Media</span></a>
+            <a class="admin-menu-link" href="media.html?view=reporters" role="menuitem"><span>Manage Reporters</span></a>
+          </div>
+        </div>
         <div class="admin-menu">
           <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
             <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-total" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
