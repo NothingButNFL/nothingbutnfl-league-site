@@ -44,8 +44,8 @@
   document.querySelector("#media-title-input").placeholder = view.placeholder;
   document.querySelector("#media-filter-type-field").hidden = true;
 
-  // Power Rankings and Mock Drafts usually cover the whole league: one button ticks (or clears) all 32 teams.
-  if (view.type === "rankings" || view.type === "mock") {
+  // Power Rankings, Mock Drafts and Independent Media often cover the whole league: one button ticks (or clears) all 32 teams.
+  if (["rankings", "mock", "independent"].includes(view.type)) {
     const button = document.querySelector("#media-select-all");
     const boxes = () => [...document.querySelectorAll('#media-team-picks input[name="teams"]')];
     const sync = () => { const all = boxes(); button.textContent = all.length && all.every((b) => b.checked) ? "Clear all" : "Select all"; };
