@@ -866,7 +866,7 @@ function renderSalaryRows() {
     }
     if (entry.psEarned) {
       const base = row.querySelector('[data-field="baseSalary"]');
-      if (base) base.title = `Promoted from the practice squad: prorated 1-year minimum plus ${formatCurrency(entry.psEarned)} of practice squad pay already earned.`;
+      if (base) base.title = `Signed from the practice squad: prorated 1-year minimum plus ${formatCurrency(entry.psEarned)} of practice squad pay already earned.`;
     }
     if (entry.psWeekly !== undefined && isPracticeSquad(entry)) {
       const base = row.querySelector('[data-field="baseSalary"]');
@@ -944,8 +944,8 @@ function renderPracticeSquadRows(practice) {
     promote.type = "button";
     promote.className = "row-transaction";
     promote.dataset.psAction = "ps-promote";
-    promote.textContent = "Promote";
-    promote.title = `Promote ${player.name} to the active roster`;
+    promote.textContent = "Sign To Active Roster";
+    promote.title = `Sign ${player.name} to the active roster`;
     promote.disabled = !storageIsAvailable;
     actions.append(promote);
     return row;
@@ -1802,7 +1802,7 @@ function openPlayerMenu(cog, player) {
   const entry = isPlayerOnSeason(player, activeSeason) ? seasonEntry(player, activeSeason) : null;
   const noSave = storageIsAvailable ? "" : "Saving is unavailable.";
   if (entry && isPracticeSquad(entry)) {
-    add("ps-promote", "Promote To Active Roster", noSave);
+    add("ps-promote", "Sign To Active Roster", noSave);
     add("ps-elevate", isPsElevated(entry) ? "Remove Game-Day Elevation" : "Elevate For Game Day", noSave);
   } else if (entry) {
     const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
@@ -1844,27 +1844,27 @@ async function promoteFromPracticeSquad(player) {
   if (amount === null || amount === undefined) {
     // The minimum isn't set: say so in a dialog (the status line is easy to miss) and offer to promote at $0.
     const anyway = await confirmAction(`${player.name} can't be put on a minimum deal yet: the ${year} minimum salary for ${minimumTierLabel(tier)} of experience isn't set. ` +
-      `Set it on Admin › League Cap Directory, then promote him again, or promote him now at a $0 salary and fix his base salary on the sheet.`,
-      { confirmLabel: "Promote at $0", cancelLabel: "Cancel" });
-    if (!anyway) { workspaceStatus.textContent = `${player.name} wasn't promoted. Set the ${year} minimum for ${minimumTierLabel(tier)} on Admin › League Cap Directory.`; return; }
+      `Set it on Admin › League Cap Directory, then sign him again, or sign him now at a $0 salary and fix his base salary on the sheet.`,
+      { confirmLabel: "Sign at $0", cancelLabel: "Cancel" });
+    if (!anyway) { workspaceStatus.textContent = `${player.name} wasn't signed to the active roster. Set the ${year} minimum for ${minimumTierLabel(tier)} on Admin › League Cap Directory.`; return; }
   }
   const prorated = Math.round(((amount || 0) * weeks) / regularSeasonWeeks);
   const math = amount == null ? "minimum not set, $0 for now"
     : `${formatCurrency(amount)} ${year} minimum (${minimumTierLabel(tier)}${noExperience ? ", no experience on file" : ""}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
-  const ok = amount == null || await confirmAction(`Promote ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
+  const ok = amount == null || await confirmAction(`Sign ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
     (earned ? ` His ${formatCurrency(earned)} of practice squad pay already earned (${served} week${served === 1 ? "" : "s"} × ${formatCurrency(entry.psWeekly)}) stays on the cap, for a ${year} cap hit of ${formatCurrency(prorated + earned)}.` : ""),
-    { confirmLabel: `Promote ${player.name}` });
+    { confirmLabel: `Sign ${player.name}` });
   if (!ok) return;
   player.seasons[year] = { ...emptySeasonData(entry.position, "Active"), experience: entry.experience ?? null, baseSalary: prorated + earned };
   if (earned) player.seasons[year].psEarned = earned;
   const { active } = rosterCounts(activeTeamId, year);
   logTransaction(officeData, { type: "signing", teams: [activeTeamId], player: player.name, auto: true,
-    details: `${player.name}${entry.position ? ` (${entry.position})` : ""} promoted from the practice squad to the active roster: 1-year minimum, ${math}.` +
+    details: `${player.name}${entry.position ? ` (${entry.position})` : ""} signed from the practice squad to the active roster: 1-year minimum, ${math}.` +
       (earned ? ` Plus ${formatCurrency(earned)} practice squad pay already earned.` : "") });
   renderSalaryRows();
   updateCapOverview();
   if (typeof renderDepthChart === "function") renderDepthChart();
-  saveOfficeData(`${player.name} promoted to the ${year} active roster on a 1-year minimum: ${formatCurrency(prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
+  saveOfficeData(`${player.name} signed to the ${year} active roster on a 1-year minimum: ${formatCurrency(prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
 }
 
 function runPlayerMenuAction(action, player) {
