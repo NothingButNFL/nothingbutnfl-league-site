@@ -148,8 +148,14 @@ function renderTicker(games, week) {
 }
 
 // ---------- Game of the Week ----------
+// The season the Overview follows: the standings' season, else the latest season on the schedule.
+function mdSeason(data) {
+  if (data.standings?.season) return data.standings.season;
+  const seasons = (data.schedule || []).map((s) => s.season).filter(Number.isInteger);
+  return seasons.length ? Math.max(...seasons) : null;
+}
 function mdPickUpcoming(data, records, nextWeek) {
-  const season = data.standings?.season;
+  const season = mdSeason(data);
   const slate = (data.schedule || []).filter((s) => s.week === nextWeek && (!season || !s.season || s.season === season));
   const played = new Set((data.games || []).filter((g) => g.week === nextWeek).flatMap((g) => g.teams.map((t) => t.team)));
   const open = slate.filter((s) => !played.has(s.away) && !played.has(s.home));
@@ -255,7 +261,7 @@ function renderGameOfWeek(pick, records) {
 // the logged results.
 function mdWeekSlate(data, pick, games) {
   if (!pick) return [];
-  const season = data.standings?.season;
+  const season = mdSeason(data);
   const results = games.filter((g) => g.week === pick.week);
   const resultFor = (away, home) => results.find((g) => g.teams.some((t) => t.team === away) && g.teams.some((t) => t.team === home));
   const sched = (data.schedule || []).filter((s) => s.week === pick.week && (!season || !s.season || s.season === season));
@@ -523,13 +529,16 @@ function renderMatchday() {
   try { data = readStoredOffice() || emptyOfficeData(); } catch { data = emptyOfficeData(); }
   mdData = data;
   const games = (data.games || []).filter((g) => g.teams?.length === 2 && g.week != null);
-  if (!games.length) { section.hidden = true; document.querySelector("#md-ticker").hidden = true; return; }
-  const week = Math.max(...games.map((g) => g.week));
-  const lastWeek = games.filter((g) => g.week === week).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
   const records = mdRecords(data);
+  // No box scores yet (start of a season): preview the first scheduled week. Scores and Top Players need box scores.
+  const season = mdSeason(data);
+  const scheduledWeeks = (data.schedule || []).filter((s) => !season || !s.season || s.season === season).map((s) => s.week);
+  const week = games.length ? Math.max(...games.map((g) => g.week)) : (scheduledWeeks.length ? Math.min(...scheduledWeeks) - 1 : 0);
+  const lastWeek = games.filter((g) => g.week === week).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
+  const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
+  if (!pick) { section.hidden = true; document.querySelector("#md-ticker").hidden = true; return; }
   section.hidden = false;
   renderTicker(lastWeek, week);
-  const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games), pick, records);
   renderWeeksBest(games);
