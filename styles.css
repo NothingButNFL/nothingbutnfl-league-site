@@ -2495,9 +2495,16 @@ a.md-top-name:hover { text-decoration: underline; }
 .fa-ps-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 7px 2px 4px; border-radius: 10px; background: #f2b950; color: #0a2647; font: 800 11px var(--display); letter-spacing: .04em; vertical-align: middle; white-space: nowrap; }
 .fa-ps-badge .leader-logo, .fa-ps-badge .leader-logo img { width: 16px; height: 16px; object-fit: contain; }
 .fa-ps-badge .leader-logo:empty { display: none; }
-.fa-ps-row .psm-team-select { min-width: 90px; margin-right: 6px; }
+.fa-ps-row .psm-team-select { width: 100px; min-width: 0; }
 .fa-ps-row td:last-child { white-space: nowrap; }
 .fa-ps-offer { background: #f2b950 !important; color: #0a2647 !important; }
 .fa-ps-waiting { color: #f2b950; font-weight: 700; }
 .contracts-toolbar label.fa-ps-toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 8px; height: 40px; padding: 0 14px; }
 .contracts-toolbar label.fa-ps-toggle input { flex: none; width: 18px !important; min-width: 0; height: 18px !important; margin: 0; padding: 0; border: 0; box-shadow: none; }
+.fa-table td.fa-action-cell { white-space: nowrap; text-align: left !important; }
+.fa-action-cell .row-transaction { margin-left: 4px; }
+.fa-ps-row .fa-action-cell .psm-team-select { margin: 0; }
+.fa-ps-row td:last-child { white-space: normal; }
+.fa-table th:first-child, .fa-table td.fa-action-cell { width: 170px; }
+.fa-table td.fa-action-cell + td { text-align: left !important; }
+.fa-table thead th:nth-child(2) { text-align: left !important; }

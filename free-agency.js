@@ -67,6 +67,8 @@ function renderFreeAgents() {
   faRows.replaceChildren(...shown.map((p) => {
     const tr = document.createElement("tr");
     tr.dataset.playerId = p.id;
+    const action = tr.insertCell();
+    action.className = "fa-action-cell";
     const name = tr.insertCell();
     const link = document.createElement("a");
     link.className = "player-name-link";
@@ -88,7 +90,6 @@ function renderFreeAgents() {
       badge.title = offers.map((o) => o.teamId).join(", ");
       offerCell.append(badge);
     } else offerCell.textContent = "—";
-    const action = tr.insertCell();
     const sign = document.createElement("button");
     sign.type = "button";
     sign.className = "row-transaction";

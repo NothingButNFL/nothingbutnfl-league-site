@@ -32,6 +32,8 @@ function psMarketRow({ player, teamId, entry, year }) {
   tr.className = "fa-ps-row";
   tr.dataset.psPlayer = player.id;
   tr.dataset.psTeam = teamId;
+  const action = tr.insertCell();
+  action.className = "fa-action-cell";
   const name = tr.insertCell();
   const link = psmEl("a", "player-name-link", player.name);
   link.href = profileUrl(player.id);
@@ -55,8 +57,7 @@ function psMarketRow({ player, teamId, entry, year }) {
     tag.title = `The ${teamName(offer.toTeam)} want to sign him; the ${teamName(teamId)} have until then to match.`;
     offerCell.append(tag);
   } else offerCell.textContent = "—";
-  const action = tr.insertCell();
-  if (offer) { action.textContent = "Waiting on a match"; action.className = "fa-ps-waiting"; return tr; }
+  if (offer) { action.textContent = "Waiting on a match"; action.classList.add("fa-ps-waiting"); return tr; }
   const select = document.createElement("select");
   select.className = "psm-team-select";
   select.setAttribute("aria-label", `Team signing ${player.name}`);
