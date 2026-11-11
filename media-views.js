@@ -43,4 +43,22 @@
   document.querySelector("#media-compose-title").textContent = view.compose;
   document.querySelector("#media-title-input").placeholder = view.placeholder;
   document.querySelector("#media-filter-type-field").hidden = true;
+
+  // Power Rankings and Mock Drafts usually cover the whole league: one button ticks (or clears) all 32 teams.
+  if (view.type === "rankings" || view.type === "mock") {
+    const button = document.querySelector("#media-select-all");
+    const boxes = () => [...document.querySelectorAll('#media-team-picks input[name="teams"]')];
+    const sync = () => { const all = boxes(); button.textContent = all.length && all.every((b) => b.checked) ? "Clear all" : "Select all"; };
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const all = boxes();
+      const check = !all.every((b) => b.checked);
+      for (const box of all) box.checked = check;
+      sync();
+    });
+    document.querySelector("#media-team-picks").addEventListener("change", sync);
+    // The form is reset or filled for editing by media.js; keep the label right afterwards.
+    document.querySelector("#media-form").addEventListener("reset", () => setTimeout(sync));
+    document.querySelector("#media-feed").addEventListener("click", () => setTimeout(sync));
+  }
 })();
