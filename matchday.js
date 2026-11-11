@@ -205,14 +205,13 @@ function renderGameOfWeek(pick, records) {
   const star = (teamId) => final
     ? perf.filter((p) => p.team === teamId).sort((a, b) => b.impact - a.impact)[0] || null
     : mdTeamStar(mdData, teamId);
-  const [y, m, d] = String(pick.date || "").split("-").map(Number);
-  const when = pick.date ? new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric", year: "2-digit" }).toUpperCase() : "";
+  // No dates: the league's streams don't happen on the scheduled game dates.
 
-  // Centered heading: "WEEK 18 | GAME OF THE WEEK", with the status and date underneath.
+  // Centered heading: "WEEK 18 | GAME OF THE WEEK", with the status underneath.
   const head = mdEl("div", "md-gotw-head");
   const title = mdEl("strong", "md-gotw-title");
   title.append(mdEl("span", "md-gotw-week", pick.week > 18 ? "PLAYOFFS" : `WEEK ${pick.week}`), mdEl("span", "md-gotw-divider", "|"), mdEl("span", "", "GAME OF THE WEEK"));
-  head.append(title, mdEl("span", "md-gotw-date", [final ? "FINAL" : `${pick.slate} GAME${pick.slate === 1 ? "" : "S"} THIS WEEK`, when, !final && pick.time ? pick.time : ""].filter(Boolean).join(" · ")));
+  head.append(title, mdEl("span", "md-gotw-date", final ? "FINAL" : `${pick.slate} GAME${pick.slate === 1 ? "" : "S"} THIS WEEK`));
   const center = mdEl("div", "md-gotw-vs");
   if (final) {
     const [a, b] = g.teams;
