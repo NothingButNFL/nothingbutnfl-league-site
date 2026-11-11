@@ -114,11 +114,28 @@ function mdPlayerName(name, teamId) {
 }
 
 // ---------- Ticker ----------
-function renderTicker(games, week) {
+// Last week's scores; before any box scores are logged, the upcoming week's matchups (with records) instead.
+function renderTicker(games, week, upcoming = null, records = null) {
   const box = document.querySelector("#md-ticker");
-  if (!games.length) { box.hidden = true; return; }
+  if (!games.length && !upcoming?.slate?.length) { box.hidden = true; return; }
   box.hidden = false;
   const label = mdEl("span", "md-ticker-label");
+  if (!games.length) {
+    label.append(mdEl("b", "", upcoming.week > 18 ? "PLAYOFFS" : `WEEK ${upcoming.week}`), " MATCHUPS");
+    const items = upcoming.slate.map((s) => {
+      const a = mdEl("a", "md-tick");
+      a.href = "schedule.html";
+      a.title = `${teamName(s.away)} at ${teamName(s.home)}`;
+      [s.away, s.home].forEach((id, i) => {
+        if (i) a.append(mdEl("span", "md-tick-at", "@"));
+        const side = mdEl("span", "md-tick-team is-winner");
+        side.append(overviewLogo(id), mdEl("span", "md-tick-code", id), mdEl("b", "md-tick-score md-tick-record", mdRecordText(records?.[id])));
+        a.append(side);
+      });
+      return a;
+    });
+    return mdFillTicker(box, label, items);
+  }
   label.append(mdEl("b", "", week > 18 ? "PLAYOFFS" : `WEEK ${week}`), " SCORES");
   const items = games.map((g) => {
     const a = mdEl("a", "md-tick");
@@ -133,6 +150,9 @@ function renderTicker(games, week) {
     });
     return a;
   });
+  mdFillTicker(box, label, items);
+}
+function mdFillTicker(box, label, items) {
   const track = mdEl("div", "md-ticker-track");
   const run = mdEl("div", "md-ticker-run");
   run.append(...items);
@@ -141,7 +161,7 @@ function renderTicker(games, week) {
   copy.setAttribute("aria-hidden", "true");
   copy.querySelectorAll("a").forEach((a) => { a.tabIndex = -1; });
   track.append(run, copy);
-  track.style.setProperty("--md-ticker-time", `${Math.max(30, games.length * 5)}s`);
+  track.style.setProperty("--md-ticker-time", `${Math.max(30, items.length * 5)}s`);
   const viewport = mdEl("div", "md-ticker-viewport");
   viewport.append(track);
   box.replaceChildren(label, viewport);
@@ -615,7 +635,7 @@ function renderMatchday() {
   const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
   if (!pick) { section.hidden = true; document.querySelector("#md-ticker").hidden = true; return; }
   section.hidden = false;
-  renderTicker(lastWeek, week);
+  renderTicker(lastWeek, week, pick.kind === "upcoming" ? { week: pick.week, slate: mdWeekSlate(data, pick, games) } : null, records);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games).filter((item) => !item.featured), pick, records); // the Game of the Week has its own panel
   renderScoreboard(data, pick, games, records);
