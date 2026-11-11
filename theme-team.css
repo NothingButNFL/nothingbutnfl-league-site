@@ -376,3 +376,16 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-tab.is-active { ba
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-game { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-byes { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-bye-label { color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-preview { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-close { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-sub { color: rgb(var(--tm-cfd8e6)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-team, html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-card { border-top-color: rgb(var(--tm-263a5c)); border-right-color: rgb(var(--tm-263a5c)); border-bottom-color: rgb(var(--tm-263a5c)); border-left-color: rgb(var(--tm-263a5c)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-recent small { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-h2h dt { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-switch-track { background-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-switch input:focus-visible + .mdp-switch-track { outline-color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-starter-list li { border-top-color: rgb(var(--tm-1f3355)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-pos { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-exp { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-muted { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-note { color: rgb(var(--tm-9fb0c8)); }

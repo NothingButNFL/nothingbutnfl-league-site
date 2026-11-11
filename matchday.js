@@ -301,10 +301,16 @@ function mdSlatePane(item, records) {
     if (stars.length) note = `Players to watch: ${stars.map((p) => `${p.name} (${p.team})`).join(", ")}`;
   }
   if (note) pane.append(mdEl("p", "md-slate-note", note));
+  const preview = mdEl("button", "md-slate-preview", g ? "Game recap" : "Preview");
+  preview.type = "button";
+  preview.addEventListener("click", () => openGamePreview(item, mdCurrentWeek));
+  pane.append(preview);
   return pane;
 }
+let mdCurrentWeek = null;
 
 function renderWeekSlate(slate, pick, records) {
+  mdCurrentWeek = pick?.week ?? null;
   const box = document.querySelector("#md-slate");
   if (!slate.length) { box.hidden = true; return; }
   box.hidden = false;
@@ -613,3 +619,179 @@ function renderMatchday() {
 
 renderMatchday();
 window.addEventListener("storage", (event) => { if (event.key === officeStorageKey) renderMatchday(); });
+
+
+// ---------- Game preview pop-out (from a Week Games pane) ----------
+// Both teams' last 5 games, head to head, and projected starters from each depth chart (falling back to the salary
+// sheet by position): away defense vs home offense, with a switch for away offense vs home defense.
+const mdOffenseSlots = [["QB", 1], ["HB", 1], ["WR", 3], ["TE", 1], ["LT", 1], ["LG", 1], ["C", 1], ["RG", 1], ["RT", 1]];
+const mdDefenseSlots = [["LE", 1], ["DT", 2], ["RE", 1], ["SAM", 1], ["MIKE", 1], ["WILL", 1], ["CB", 2], ["FS", 1], ["SS", 1]];
+const mdSlotFits = {
+  QB: ["QB"], HB: ["HB", "RB"], WR: ["WR"], TE: ["TE"], LT: ["LT", "OT", "T", "OL"], RT: ["RT", "OT", "T", "OL"],
+  LG: ["LG", "OG", "G", "IOL", "OL"], RG: ["RG", "OG", "G", "IOL", "OL"], C: ["C", "IOL", "OL"],
+  LE: ["LE", "DE", "EDGE", "ED"], RE: ["RE", "DE", "EDGE", "ED"], DT: ["DT", "NT", "IDL", "DL"],
+  SAM: ["SAM", "OLB", "LB"], MIKE: ["MIKE", "MLB", "ILB", "LB"], WILL: ["WILL", "OLB", "LB"],
+  CB: ["CB", "DB"], FS: ["FS", "S", "SAF", "DB"], SS: ["SS", "S", "SAF", "DB"]
+};
+
+// [{ slot, label, player|null }] for one side of the ball.
+function mdStarters(teamId, side) {
+  const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const chart = mdData.depthCharts?.[teamId]?.slots || {};
+  const roster = (mdData.teams[teamId]?.roster || []).filter((p) => isPlayerOnSeason(p, year) && !(isPracticeSquad(seasonEntry(p, year)) && !isPsElevated(seasonEntry(p, year))));
+  const used = new Set();
+  const rows = [];
+  for (const [slot, count] of side === "offense" ? mdOffenseSlots : mdDefenseSlots) {
+    for (let i = 0; i < count; i += 1) {
+      let player = null;
+      const id = (chart[slot] || [])[i];
+      if (id) player = roster.find((p) => p.id === id) || null;
+      if (!player) {
+        // Not on the depth chart: the best fit by position, highest cap hit first.
+        const fits = mdSlotFits[slot] || [slot];
+        player = roster.filter((p) => !used.has(p.id) && fits.includes(String(seasonEntry(p, year).position || "").toUpperCase().split(/[\s/,-]+/)[0]))
+          .sort((a, b) => fits.indexOf(String(seasonEntry(a, year).position).toUpperCase()) - fits.indexOf(String(seasonEntry(b, year).position).toUpperCase()) ||
+            capHitFor(seasonEntry(b, year)) - capHitFor(seasonEntry(a, year)))[0] || null;
+      }
+      if (player) used.add(player.id);
+      rows.push({ slot, label: count > 1 ? `${slot}${i + 1}` : slot, player, fromChart: Boolean(id && player && player.id === id) });
+    }
+  }
+  return rows;
+}
+
+// A team's most recent games (box scores) before a week: [{ game, me, them, home }]
+function mdRecentGames(teamId, beforeWeek, limit = 5) {
+  return (mdData.games || []).filter((g) => g.teams?.length === 2 && g.teams.some((t) => t.team === teamId) && (beforeWeek == null || (g.week ?? 0) < beforeWeek))
+    .sort((a, b) => (b.week ?? 0) - (a.week ?? 0) || String(b.date).localeCompare(String(a.date))).slice(0, limit)
+    .map((g) => ({ game: g, me: g.teams.find((t) => t.team === teamId), them: g.teams.find((t) => t.team !== teamId), home: g.teams[1].team === teamId }));
+}
+
+function mdPreviewTeamCard(teamId, records, beforeWeek) {
+  const [base] = teamThemePalettes[teamId] || ["#0c2b50"];
+  const card = mdEl("section", "mdp-team");
+  card.style.setProperty("--mdp-team", base);
+  const head = mdEl("div", "mdp-team-head");
+  const name = mdEl("a", "mdp-team-name");
+  name.href = `team.html?team=${encodeURIComponent(teamId)}`;
+  name.append(overviewLogo(teamId), mdEl("b", "", (teamName(teamId) || teamId).toUpperCase()));
+  head.append(name, mdEl("strong", "mdp-team-record", mdRecordText(records[teamId])));
+  card.append(head);
+  const recent = mdRecentGames(teamId, beforeWeek);
+  if (!recent.length) card.append(mdEl("p", "mdp-muted", "No games played yet."));
+  else {
+    card.append(mdEl("p", "mdp-sub", `Last ${recent.length} game${recent.length === 1 ? "" : "s"}`));
+    const list = mdEl("ol", "mdp-recent");
+    for (const r of recent) {
+      const result = r.me.score > r.them.score ? "W" : r.me.score < r.them.score ? "L" : "T";
+      const li = mdEl("li");
+      li.append(mdEl("b", `mdp-result is-${result.toLowerCase()}`, result), mdEl("span", "", `${r.me.score}–${r.them.score} ${r.home ? "vs" : "@"} ${r.them.team}`),
+        mdEl("small", "", r.game.week ? (r.game.week > 18 ? mdWeekName(r.game.week) : `Week ${r.game.week}`) : ""));
+      list.append(li);
+    }
+    card.append(list);
+  }
+  return card;
+}
+
+function mdHeadToHead(away, home, beforeWeek) {
+  const all = (typeof archivedGames === "function" ? archivedGames(mdData) : [])
+    .filter((g) => [g.away, g.home].includes(away) && [g.away, g.home].includes(home) && Number.isFinite(g.awayScore) && Number.isFinite(g.homeScore));
+  const wins = { [away]: 0, [home]: 0 }, playoff = { [away]: 0, [home]: 0 };
+  for (const g of all) {
+    if (g.awayScore === g.homeScore) continue;
+    const w = g.awayScore > g.homeScore ? g.away : g.home;
+    wins[w] += 1;
+    if (g.week > 18) playoff[w] += 1;
+  }
+  const leads = (r) => r[away] === r[home] ? (r[away] ? `Tied ${r[away]}–${r[home]}` : "No games yet") : r[away] > r[home] ? `${away} leads ${r[away]}–${r[home]}` : `${home} leads ${r[home]}–${r[away]}`;
+  const season = mdSeason(mdData);
+  const thisSeason = all.filter((g) => (!season || g.season === season) && (beforeWeek == null || (g.week ?? 0) < beforeWeek));
+  const last = [...all].sort((a, b) => (b.season - a.season) || ((b.week ?? 0) - (a.week ?? 0)))[0];
+  const box = mdEl("section", "mdp-card mdp-h2h");
+  box.append(mdEl("h3", "", "HEAD TO HEAD"));
+  const dl = mdEl("dl");
+  const row = (k, v) => dl.append(mdEl("dt", "", k), mdEl("dd", "", v));
+  row("All-time", leads(wins));
+  row("Playoffs", playoff[away] + playoff[home] ? leads(playoff) : "No playoff meetings");
+  row("This season", thisSeason.length ? thisSeason.map((g) => `${g.away} ${g.awayScore} @ ${g.home} ${g.homeScore}`).join(" · ") : "First meeting");
+  row("Last meeting", last ? `${last.season}${last.week ? ` Week ${last.week}` : ""}: ${last.away} ${last.awayScore} @ ${last.home} ${last.homeScore}` : "—");
+  box.append(dl);
+  return box;
+}
+
+function mdStarterColumn(teamId, side) {
+  const col = mdEl("section", "mdp-card mdp-starters");
+  const [base] = teamThemePalettes[teamId] || ["#0c2b50"];
+  col.style.setProperty("--mdp-team", base);
+  const h = mdEl("h3");
+  h.append(overviewLogo(teamId), `${teamId} ${side === "offense" ? "OFFENSE" : "DEFENSE"}`);
+  col.append(h);
+  const rows = mdStarters(teamId, side);
+  const list = mdEl("ol", "mdp-starter-list");
+  for (const r of rows) {
+    const li = mdEl("li");
+    li.append(mdEl("span", "mdp-pos", r.label));
+    if (r.player) {
+      const a = mdEl("a", "mdp-player", r.player.name);
+      a.href = profileUrl(r.player.id);
+      li.append(typeof playerPortrait === "function" ? playerPortrait(r.player) : "", a);
+      const exp = r.player.experience;
+      li.append(mdEl("span", "mdp-exp", exp === null || exp === undefined ? "" : `${exp} yr${exp === 1 ? "" : "s"}`));
+    } else li.append(mdEl("span", "mdp-muted", "—"), mdEl("span"));
+    list.append(li);
+  }
+  col.append(list);
+  if (!rows.some((r) => r.fromChart)) col.append(mdEl("p", "mdp-note", "No depth chart set: picked from the salary sheet by position."));
+  return col;
+}
+
+function openGamePreview(item, week) {
+  document.querySelector("#md-preview")?.remove();
+  const records = mdRecords(mdData);
+  const { away, home } = item;
+  const g = item.game;
+  const dialog = document.createElement("dialog");
+  dialog.id = "md-preview";
+  dialog.className = "md-preview";
+  dialog.setAttribute("aria-label", `${away} at ${home} preview`);
+  const close = mdEl("button", "mdp-close", "×");
+  close.type = "button";
+  close.setAttribute("aria-label", "Close preview");
+  close.addEventListener("click", () => dialog.close());
+  // Title: logos, AWAY @ HOME (with the final score once played)
+  const title = mdEl("header", "mdp-title");
+  const h = mdEl("h2");
+  const score = (id) => g ? ` ${g.teams.find((t) => t.team === id)?.score}` : "";
+  h.append(overviewLogo(away), mdEl("b", "", `${away}${score(away)}`), mdEl("span", "mdp-at", "@"), overviewLogo(home), mdEl("b", "", `${home}${score(home)}`));
+  const sched = (mdData.schedule || []).find((s) => s.week === week && s.away === away && s.home === home);
+  title.append(h, mdEl("p", "mdp-sub", [week ? (week > 18 ? mdWeekName(week) : `Week ${week}`) : "", g ? "Final" : "Preview", sched?.note || ""].filter(Boolean).join(" · ")));
+  // Team cards with the last 5 games
+  const teams = mdEl("div", "mdp-grid");
+  teams.append(mdPreviewTeamCard(away, records, g ? g.week : week), mdPreviewTeamCard(home, records, g ? g.week : week));
+  // Projected starters with the matchup switch
+  const startersHead = mdEl("div", "mdp-starters-head");
+  startersHead.append(mdEl("h3", "", "PROJECTED STARTERS"));
+  const toggle = mdEl("label", "mdp-switch");
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("role", "switch");
+  const caption = mdEl("span", "mdp-switch-text");
+  toggle.append(input, mdEl("span", "mdp-switch-track"), caption);
+  startersHead.append(toggle);
+  const starters = mdEl("div", "mdp-grid");
+  const drawStarters = () => {
+    const swapped = input.checked;
+    caption.textContent = swapped ? `${away} offense vs ${home} defense` : `${away} defense vs ${home} offense`;
+    starters.replaceChildren(mdStarterColumn(away, swapped ? "offense" : "defense"), mdStarterColumn(home, swapped ? "defense" : "offense"));
+  };
+  input.addEventListener("change", drawStarters);
+  drawStarters();
+  const body = mdEl("div", "mdp-body");
+  body.append(title, teams, mdHeadToHead(away, home, g ? g.week : week), startersHead, starters);
+  dialog.append(close, body);
+  dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener("close", () => dialog.remove());
+  document.body.append(dialog);
+  dialog.showModal();
+}
