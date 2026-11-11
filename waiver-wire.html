@@ -144,23 +144,28 @@
           <div class="ww-toolbar">
             <button class="button button-lime" id="ww-process-all" type="button" hidden>Process all expired waivers</button>
           </div>
-          <div class="ww-list" id="ww-open"></div>
-          <p class="empty-state" id="ww-empty" hidden>Nobody is on waivers right now. Players land here when a team releases them from its salary sheet.</p>
+          <div class="ww-layout">
+            <div class="ww-main">
+              <div class="ww-list" id="ww-open"></div>
+              <p class="empty-state ww-empty" id="ww-empty" hidden>Nobody is on waivers right now. Players land here when a team waives them from its salary sheet.</p>
+            </div>
+            <aside class="management-panel ww-order-panel" aria-labelledby="ww-order-title">
+              <div class="ww-order-head">
+                <span class="panel-index">WAIVER PRIORITY</span>
+                <h3 id="ww-order-title">Waiver Priority</h3>
+                <p>Worst record claims first. From the standings (or the logged box scores).</p>
+              </div>
+              <ol class="ww-order" id="ww-order"></ol>
+            </aside>
+          </div>
         </div>
       </section>
 
       <section class="front-office-section admin-section">
-        <div class="section-wrap ww-lower">
-          <div class="management-panel ww-order-panel">
-            <div class="panel-heading">
-              <div><span class="panel-index">02 / PRIORITY</span><h3>Waiver order</h3></div>
-              <p>Worst record first, from the standings (or the logged box scores).</p>
-            </div>
-            <ol class="ww-order" id="ww-order"></ol>
-          </div>
+        <div class="section-wrap">
           <div class="management-panel ww-history-panel">
             <div class="panel-heading">
-              <div><span class="panel-index">03 / RESULTS</span><h3>Recent waiver results</h3></div>
+              <div><span class="panel-index">02 / RESULTS</span><h3>Recent waiver results</h3></div>
               <p>Claims awarded and players who cleared, newest first.</p>
             </div>
             <ul class="ww-history" id="ww-history"></ul>

@@ -156,9 +156,9 @@ function wwRender() {
   // Waiver order
   const claimsFor = new Map();
   for (const w of open) for (const c of w.claims) claimsFor.set(c.teamId, (claimsFor.get(c.teamId) || 0) + 1);
-  document.querySelector("#ww-order").replaceChildren(...waiverPriority(officeData).map(({ id, record }) => {
+  document.querySelector("#ww-order").replaceChildren(...waiverPriority(officeData).map(({ id, record }, i) => {
     const li = wwEl("li");
-    li.append(wwLogo(id), wwEl("span", "ww-order-team", teamName(id)), wwEl("span", "ww-order-record", `${record.w}-${record.l}${record.t ? `-${record.t}` : ""}`));
+    li.append(wwEl("b", "ww-order-rank", String(i + 1)), wwLogo(id), wwEl("span", "ww-order-team", teamName(id)), wwEl("span", "ww-order-record", `${record.w}-${record.l}${record.t ? `-${record.t}` : ""}`));
     if (claimsFor.get(id)) li.append(wwEl("small", "ww-order-claims", `${claimsFor.get(id)} claim${claimsFor.get(id) === 1 ? "" : "s"}`));
     return li;
   }));

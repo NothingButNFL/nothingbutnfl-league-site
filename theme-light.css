@@ -816,3 +816,6 @@ html[data-theme="light"] .ww-no-claims { color: #0b1f3a; }
 html[data-theme="light"] .ww-admin { border-top-color: #c6d4e5; }
 html[data-theme="light"] .ww-history li { background-color: rgba(11, 31, 58, 0.042); }
 html[data-theme="light"] .ww-history li.is-cleared { border-left-color: #d6981f; }
+html[data-theme="light"] .ww-empty { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
+html[data-theme="light"] .ww-order-head p { color: #0b1f3a; }
+html[data-theme="light"] .ww-order-panel .ww-order li { border-bottom-color: #e2e9f2; }
