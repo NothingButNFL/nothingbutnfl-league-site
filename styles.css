@@ -2463,3 +2463,5 @@ a.md-top-name:hover { text-decoration: underline; }
 .ps-table td.ps-name-cell { text-align: left !important; }
 .ps-hit { font-weight: 700; }
 #ps-panel .empty-state[hidden] { display: none; }
+.admin-vmb-table { width: auto; min-width: 360px; }
+.admin-vmb-table input { min-width: 160px; }

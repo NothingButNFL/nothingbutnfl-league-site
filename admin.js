@@ -260,11 +260,11 @@ const adminVmbHead = document.querySelector("#admin-vmb-head");
 const adminVmbRows = document.querySelector("#admin-vmb-rows");
 function renderVmbLimits(data) {
   const head = document.createElement("tr");
-  for (const label of ["", ...minimumSeasons.map(String)]) {
+  for (const label of ["", `${minimumYear()} BONUS LIMIT`]) {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = label;
-    if (label === String(minimumYear())) th.className = "is-current";
+    if (label) th.className = "is-current";
     head.append(th);
   }
   adminVmbHead.replaceChildren(head);
@@ -273,7 +273,7 @@ function renderVmbLimits(data) {
   th.scope = "row";
   th.textContent = "Bonus limit";
   row.append(th);
-  for (const year of minimumSeasons) {
+  for (const year of [minimumYear()]) {  // only the current league year
     const cell = row.insertCell();
     cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
     const input = document.createElement("input");
