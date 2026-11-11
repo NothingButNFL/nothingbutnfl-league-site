@@ -118,7 +118,7 @@ function renderTicker(games, week) {
   if (!games.length) { box.hidden = true; return; }
   box.hidden = false;
   const label = mdEl("span", "md-ticker-label");
-  label.append(mdEl("b", "", week > 18 ? "PLAYOFFS" : `WEEK ${week}`), " FINAL");
+  label.append(mdEl("b", "", week > 18 ? "PLAYOFFS" : `WEEK ${week}`), " SCORES");
   const items = games.map((g) => {
     const a = mdEl("a", "md-tick");
     a.href = "stats.html";
