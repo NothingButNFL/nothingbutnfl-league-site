@@ -279,3 +279,6 @@ html[data-theme="gray"] .si-week { border-top-color: #47494f; border-right-color
 @media (max-width: 1300px) {
   html[data-theme="gray"] .salary-table tbody tr.salary-section-row td.salary-section-empty { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
 }
+@media (min-width: 1301px) {
+  html[data-theme="gray"] .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: #47494f 0px -2px 0px inset; }
+}

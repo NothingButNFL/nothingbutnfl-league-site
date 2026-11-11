@@ -2367,3 +2367,11 @@ a.md-top-name:hover { text-decoration: underline; }
   .salary-table tbody tr.salary-section-row td.salary-section-empty { display: block; border: 1px dashed #54749b; }
   .salary-table tbody tr.salary-section-row td.salary-section-empty::before { content: none; }
 }
+/* Salary sheet: the column titles stay on screen while scrolling down (desktop table layout; phones use cards).
+   The table scrolls inside its own box so the header can stick in both directions. */
+@media (min-width: 1301px) {
+  .salary-table-scroll { max-height: calc(100vh - 32px); overflow: auto; overscroll-behavior: contain; }
+  .salary-table-scroll .salary-table thead { position: sticky; top: 0; z-index: 4; }
+  .salary-table-scroll .salary-table thead th { background: var(--paper); }
+  .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: inset 0 -2px 0 #31527a; }
+}

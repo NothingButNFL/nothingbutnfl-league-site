@@ -353,3 +353,6 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .rb-ps-tag { color: rgb(var(
 @media (max-width: 1300px) {
   html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table tbody tr.salary-section-row td.salary-section-empty { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 }
+@media (min-width: 1301px) {
+  html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: rgb(var(--tm-31527a)) 0px -2px 0px inset; }
+}
