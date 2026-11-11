@@ -864,6 +864,10 @@ function renderSalaryRows() {
         cell.append(currencyInput(entry[field], ariaLabel, field, signed === true, false));
       }
     }
+    if (entry.psEarned) {
+      const base = row.querySelector('[data-field="baseSalary"]');
+      if (base) base.title = `Promoted from the practice squad: prorated 1-year minimum plus ${formatCurrency(entry.psEarned)} of practice squad pay already earned.`;
+    }
     if (entry.psWeekly !== undefined && isPracticeSquad(entry)) {
       const base = row.querySelector('[data-field="baseSalary"]');
       if (base) base.title = `Practice squad pay: ${formatCurrency(entry.psWeekly)} a week × ${entry.psWeeks ?? 0} week${entry.psWeeks === 1 ? "" : "s"} left when he joined.`;
@@ -1825,18 +1829,42 @@ function openPlayerMenu(cog, player) {
   menu.querySelector(".player-menu-item:not(:disabled)")?.focus();
 }
 
+// Promotion: he signs a 1-year minimum deal for his years of experience, prorated to the regular-season weeks left
+// (counting the current week). Practice squad pay he's already earned (weeks served × weekly rate) stays on the cap.
+async function promoteFromPracticeSquad(player) {
+  const year = activeSeason;
+  const entry = seasonEntry(player, year);
+  const minimum = minimumSalaryFor(officeData, player, year);
+  if (minimum.error) { workspaceStatus.textContent = `${minimum.error} ${player.name} wasn't promoted.`; return; }
+  const weeks = psWeeksRemaining(officeData);
+  const prorated = Math.round((minimum.amount * weeks) / regularSeasonWeeks);
+  const served = entry.psWeeks !== undefined ? Math.max(0, entry.psWeeks - weeks) : 0;
+  const earned = (entry.psWeekly || 0) * served;
+  const math = `${formatCurrency(minimum.amount)} ${year} minimum (${minimumTierLabel(minimum.tier)}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
+  const ok = await confirmAction(`Promote ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
+    (earned ? ` His ${formatCurrency(earned)} of practice squad pay already earned (${served} week${served === 1 ? "" : "s"} × ${formatCurrency(entry.psWeekly)}) stays on the cap, for a ${year} cap hit of ${formatCurrency(prorated + earned)}.` : ""),
+    { confirmLabel: `Promote ${player.name}` });
+  if (!ok) return;
+  player.seasons[year] = { ...emptySeasonData(entry.position, "Active"), experience: entry.experience ?? null, baseSalary: prorated + earned };
+  if (earned) player.seasons[year].psEarned = earned;
+  const { active } = rosterCounts(activeTeamId, year);
+  logTransaction(officeData, { type: "signing", teams: [activeTeamId], player: player.name, auto: true,
+    details: `${player.name}${entry.position ? ` (${entry.position})` : ""} promoted from the practice squad to the active roster: 1-year minimum, ${math}.` +
+      (earned ? ` Plus ${formatCurrency(earned)} practice squad pay already earned.` : "") });
+  renderSalaryRows();
+  updateCapOverview();
+  if (typeof renderDepthChart === "function") renderDepthChart();
+  saveOfficeData(`${player.name} promoted to the ${year} active roster on a 1-year minimum: ${formatCurrency(prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
+}
+
 function runPlayerMenuAction(action, player) {
   if (action === "release") { recordRosterTransaction(player, "release"); return; }
   if (action === "ps-move") { recordRosterTransaction(player, "release", { toPracticeSquad: true }); return; }
-  if (action === "ps-promote" || action === "ps-elevate") {
+  if (action === "ps-promote") { promoteFromPracticeSquad(player); return; }
+  if (action === "ps-elevate") {
     const entry = seasonEntry(player, activeSeason);
     let message;
-    if (action === "ps-promote") {
-      entry.rosterType = "Active";
-      delete entry.psElevated;
-      const { active } = rosterCounts(activeTeamId, activeSeason);
-      message = `${player.name} promoted to the ${activeSeason} active roster (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `: that's over the ${activeRosterLimit}-man limit` : ""}.`;
-    } else if (entry.psElevated) {
+    if (entry.psElevated) {
       delete entry.psElevated;
       message = `${player.name} is back on the practice squad (no longer elevated for game day).`;
     } else {

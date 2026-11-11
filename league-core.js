@@ -106,7 +106,8 @@ function validateOfficeData(data) {
             (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean") ||
             (entry.psElevated !== undefined && typeof entry.psElevated !== "boolean") ||
             (entry.psWeekly !== undefined && !isIntegerInRange(entry.psWeekly, 0, 9999999)) ||
-            (entry.psWeeks !== undefined && !isIntegerInRange(entry.psWeeks, 0, regularSeasonWeeks))) return false;
+            (entry.psWeeks !== undefined && !isIntegerInRange(entry.psWeeks, 0, regularSeasonWeeks)) ||
+            (entry.psEarned !== undefined && !isIntegerInRange(entry.psEarned, 0, 99999999))) return false;
       }
     }
   }
