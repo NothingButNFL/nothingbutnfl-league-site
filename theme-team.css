@@ -332,3 +332,12 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option-check { color:
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-option.is-active { background-color: rgb(var(--tm-174477)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .theme-menu-heading { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-wire { border-top-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-ticker { border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-ticker-label { background-color: rgb(var(--tm-1f6fc5)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-tick { border-right-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-tick:hover { background-color: rgb(var(--tm-174477)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-gotw { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-gotw-photo.is-logo .leader-logo { color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-best { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-best-item { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-best-photo.is-logo .leader-logo { color: rgb(var(--tm-0c2b50)); }

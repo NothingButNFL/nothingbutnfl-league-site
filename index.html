@@ -43,6 +43,7 @@
     <script src="stat-totals.js" defer></script>
     <script src="overview.js" defer></script>
     <script src="insider.js" defer></script>
+    <script src="matchday.js" defer></script>
     <script src="sample-league.js" defer></script>
     <script src="sample-admin.js" defer></script>
   </head>
@@ -118,6 +119,14 @@
     </header>
 
     <main id="main">
+      <!-- Score ticker, Game of the Week and the week's best performances (matchday.js) -->
+      <div class="md-ticker" id="md-ticker" role="region" aria-label="Latest scores" hidden></div>
+      <section class="matchday" id="matchday" aria-label="This week" hidden>
+        <div class="section-wrap matchday-grid">
+          <article class="md-gotw" id="md-gotw" aria-label="Game of the Week" hidden></article>
+          <aside class="md-best" id="md-best" aria-label="Best performances" hidden></aside>
+        </div>
+      </section>
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-dot"></span> A football GM role-playing league</p>
