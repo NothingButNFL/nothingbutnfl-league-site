@@ -417,7 +417,7 @@ function mdTopCard({ conf, side, player }) {
   who.append(mdEl("span", "md-top-pos", mdPosition(player.name, player.team, player.values, side)));
   const name = mdPlayerName(player.name, player.team);
   name.classList.add("md-top-name");
-  name.textContent = mdShortName(player.name);
+  name.textContent = player.name.toUpperCase();
   name.title = player.name;
   who.append(name);
   const team = mdEl("a", "md-top-team");
@@ -433,6 +433,21 @@ function mdTopCard({ conf, side, player }) {
   card.append(body);
   return card;
 }
+
+// Full names on one line: shrink each name's text until it fits its card (never below 12px).
+function mdFitTopNames() {
+  for (const el of document.querySelectorAll(".md-top-name")) {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth + 1 && size > 12) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+  }
+}
+// Refit whenever the cards change width (window resize, sidebar collapse) and once the web font loads.
+const mdFitObserver = typeof ResizeObserver === "function" ? new ResizeObserver(() => requestAnimationFrame(mdFitTopNames)) : null;
+document.fonts?.ready.then(mdFitTopNames);
 
 let mdTopWeek = null;
 function renderWeeksBest(games) {
@@ -456,6 +471,9 @@ function renderWeeksBest(games) {
   grid.setAttribute("role", "tabpanel");
   grid.append(...mdTopPlayers(games.filter((g) => g.week === mdTopWeek)).map(mdTopCard));
   box.replaceChildren(tabs, grid);
+  mdFitTopNames();
+  mdFitObserver?.disconnect();
+  grid.querySelectorAll(".md-top-who").forEach((el) => mdFitObserver?.observe(el));
   const active = tabs.querySelector(".is-active");
   if (active) tabs.scrollLeft = active.offsetLeft - tabs.clientWidth / 2 + active.offsetWidth / 2;
 }

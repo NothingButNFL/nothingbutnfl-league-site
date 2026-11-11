@@ -2262,7 +2262,7 @@ table td ul { padding-left: 0 !important; list-style-position: inside; }
 .md-top-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid rgba(255, 255, 255, .25); }
 .md-top-who { display: grid; min-width: 0; }
 .md-top-pos { color: #dfe4ee; font: 600 15px var(--display); letter-spacing: .06em; }
-.md-top-name { overflow: hidden; color: #fff; font: 800 clamp(24px, 2.6vw, 40px)/1.05 var(--display); letter-spacing: -.01em; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.md-top-name { display: block; overflow: hidden; color: #fff; font: 800 clamp(24px, 2.6vw, 40px)/1.05 var(--display); letter-spacing: -.01em; text-decoration: none; text-overflow: clip; white-space: nowrap; }
 a.md-top-name:hover { text-decoration: underline; }
 .md-top-team { flex: none; }
 .md-top-team .leader-logo, .md-top-team .leader-logo img { width: 56px; height: 56px; object-fit: contain; }
@@ -2279,5 +2279,15 @@ a.md-top-name:hover { text-decoration: underline; }
 .md-top-art:not(:has(.md-top-photo)) .md-top-conf { transform: translateX(-50%); top: 50%; translate: 0 -50%; }
 @media (max-width: 560px) {
   .md-top-body { grid-template-columns: 92px minmax(0, 1fr); }
-  .md-top-name { white-space: normal; overflow-wrap: anywhere; font-size: 22px; }
+  .md-top-name { font-size: 22px; }
 }
+@media (max-width: 560px) {
+  /* Give the name the full width: the team logo sits up beside the position. */
+  .md-top-head { position: relative; }
+  .md-top-who { width: 100%; }
+  .md-top-pos { padding-right: 40px; min-height: 32px; display: flex; align-items: center; }
+  .md-top-team { position: absolute; top: 0; right: 0; }
+  .md-top-team .leader-logo, .md-top-team .leader-logo img { width: 32px; height: 32px; }
+  .md-top-info { padding-right: 12px; padding-left: 12px; }
+}
+.md-top-who { flex: 1 1 auto; }
