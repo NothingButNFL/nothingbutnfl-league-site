@@ -2646,3 +2646,6 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 /* Week Games panes: the same static abstract artwork as the Game of the Week (no light sweep). */
 .md-slate-pane::before { background: url("assets/gotw-abstract.svg") center / cover no-repeat, linear-gradient(180deg, rgba(5, 14, 30, .45), rgba(5, 14, 30, .7)); }
 #md-slate .md-slate-head .md-best-title { color: #fff; }
+/* Scoreboard: 10 games visible, then it scrolls. */
+.md-board-game { box-sizing: border-box; height: 38px; padding-top: 0; padding-bottom: 0; }
+.md-board-list { flex: none; max-height: calc(38px * 10); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
