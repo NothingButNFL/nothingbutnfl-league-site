@@ -2489,3 +2489,15 @@ a.md-top-name:hover { text-decoration: underline; }
 .psm-offers .psm-none { border-left-color: transparent; opacity: .8; }
 .ps-table td:last-child .row-transaction { white-space: nowrap; }
 .psm-table td.psm-has-offer { color: #f2b950 !important; }
+/* Free Agency: practice squad players in the free-agent table */
+.fa-ps-toggle { display: inline-flex; align-items: center; gap: 8px; align-self: flex-end; padding: 10px 12px; border: 1px solid #31527a; border-radius: 4px; color: #fff; font: 700 14px var(--display); cursor: pointer; white-space: nowrap; }
+.fa-ps-toggle input { width: 16px; height: 16px; accent-color: #f2b950; }
+.fa-ps-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 7px 2px 4px; border-radius: 10px; background: #f2b950; color: #0a2647; font: 800 11px var(--display); letter-spacing: .04em; vertical-align: middle; white-space: nowrap; }
+.fa-ps-badge .leader-logo, .fa-ps-badge .leader-logo img { width: 16px; height: 16px; object-fit: contain; }
+.fa-ps-badge .leader-logo:empty { display: none; }
+.fa-ps-row .psm-team-select { min-width: 90px; margin-right: 6px; }
+.fa-ps-row td:last-child { white-space: nowrap; }
+.fa-ps-offer { background: #f2b950 !important; color: #0a2647 !important; }
+.fa-ps-waiting { color: #f2b950; font-weight: 700; }
+.contracts-toolbar label.fa-ps-toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 8px; height: 40px; padding: 0 14px; }
+.contracts-toolbar label.fa-ps-toggle input { flex: none; width: 18px !important; min-width: 0; height: 18px !important; margin: 0; padding: 0; border: 0; box-shadow: none; }

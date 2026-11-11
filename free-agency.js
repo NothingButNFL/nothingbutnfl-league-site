@@ -47,8 +47,11 @@ function lastContract(player) {
 
 function renderFreeAgents() {
   const all = freeAgents();
+  // Practice squad players (free-agency-ps.js) are listed in the same table with a PS badge.
+  const psPlayers = typeof psMarketPlayers === "function" ? psMarketPlayers() : [];
+  const psOnly = document.querySelector("#fa-ps-only")?.checked;
   const keep = [faFilterPos.value, faFilterType.value];
-  const groups = [...new Set(all.map((p) => positionGroupFor(p.position)))];
+  const groups = [...new Set([...all.map((p) => positionGroupFor(p.position)), ...psPlayers.map(({ entry }) => positionGroupFor(entry.position))])];
   faFilterPos.replaceChildren(new Option("All positions", ""), ...rosterPositionGroups.filter(([k]) => groups.includes(k)).map(([k, label]) => new Option(label, k)), ...(groups.includes("OTHER") ? [new Option("Other / not set", "OTHER")] : []));
   const types = [...new Set(all.map((p) => p.faType).filter(Boolean))].sort();
   faFilterType.replaceChildren(new Option("All types", ""), ...types.map((t) => new Option(t, t)));
@@ -57,7 +60,10 @@ function renderFreeAgents() {
   const query = faSearch.value.trim().toLowerCase();
   const shown = all.filter((p) => (!faFilterPos.value || positionGroupFor(p.position) === faFilterPos.value) &&
     (!faFilterType.value || p.faType === faFilterType.value) && (!query || p.name.toLowerCase().includes(query)))
-    .sort((a, b) => (contractAav(playerContract(b)) ?? -1) - (contractAav(playerContract(a)) ?? -1) || a.name.localeCompare(b.name));
+    .sort((a, b) => (contractAav(playerContract(b)) ?? -1) - (contractAav(playerContract(a)) ?? -1) || a.name.localeCompare(b.name))
+    .filter(() => !psOnly);
+  const shownPs = faFilterType.value ? [] : psPlayers.filter(({ player, entry }) => (!faFilterPos.value || positionGroupFor(entry.position) === faFilterPos.value) &&
+    (!query || player.name.toLowerCase().includes(query)));
   faRows.replaceChildren(...shown.map((p) => {
     const tr = document.createElement("tr");
     tr.dataset.playerId = p.id;
@@ -92,12 +98,16 @@ function renderFreeAgents() {
     sign.disabled = !canSave;
     action.append(sign);
     return tr;
-  }));
-  document.querySelector("#fa-count").textContent = String(shown.length);
-  faEmpty.hidden = shown.length > 0;
-  faEmpty.textContent = all.length ? "No free agents match these filters." : "No free agents yet. On Player Contracts, set a player's team to FA to list him here.";
+  }), ...(typeof psMarketRow === "function" ? shownPs.map(psMarketRow) : []));
+  const total = shown.length + shownPs.length;
+  document.querySelector("#fa-count").textContent = String(total);
+  document.querySelector("#fa-count-label").textContent = psOnly ? "ON PRACTICE SQUADS" : "PLAYERS";
+  faEmpty.hidden = total > 0;
+  faEmpty.textContent = psOnly ? (psPlayers.length ? "No practice squad players match these filters." : "No players are on practice squads right now.")
+    : all.length || psPlayers.length ? "No players match these filters." : "No free agents yet. On Player Contracts, set a player's team to FA to list him here.";
 
   renderOffers();
+  if (typeof renderPsOffers === "function") renderPsOffers();
 
   // Recent signings from the Transaction Log.
   const signings = [...(officeData.transactions || [])].filter((t) => t.type === "signing")
@@ -133,6 +143,7 @@ function renderFreeAgents() {
 faSearch.addEventListener("input", renderFreeAgents);
 faFilterPos.addEventListener("change", renderFreeAgents);
 faFilterType.addEventListener("change", renderFreeAgents);
+document.querySelector("#fa-ps-only")?.addEventListener("change", renderFreeAgents);
 
 faRows.addEventListener("click", (event) => {
   const button = event.target.closest('[data-action="sign"]');

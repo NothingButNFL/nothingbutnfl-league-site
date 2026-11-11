@@ -367,3 +367,6 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .ww-history li.is-practice-s
 html:is([data-theme^="team-"], [data-theme="neon"]) .ps-offer-notice.is-outgoing { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-8fd0ff) / 0.08); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .psm-offers li.is-matched { border-left-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .psm-offers li.is-withdrawn { border-left-color: rgb(var(--tm-6b7f99)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-toggle { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-badge { color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-offer { color: rgb(var(--tm-0a2647)) !important; }
