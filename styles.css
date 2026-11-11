@@ -2349,7 +2349,10 @@ a.md-top-name:hover { text-decoration: underline; }
 /* ===== Practice squad ===== */
 .salary-section-row th { padding: 0 !important; border: 0; background: transparent; text-align: left !important; }
 .salary-section-label { position: sticky; left: 0; display: inline-flex; align-items: center; gap: 12px; margin: 10px 0 4px; padding: 7px 14px; border-left: 4px solid #8fd0ff; background: #0f3460; color: #fff; font: 800 14px var(--display); letter-spacing: .08em; }
-.salary-section-row.is-ps .salary-section-label { border-left-color: #f2b950; }
+.salary-section-label.is-ps { border-left-color: #f2b950; }
+.salary-section-counters { position: sticky; left: 0; display: inline-flex; flex-wrap: wrap; gap: 10px; }
+.salary-section-counters .salary-section-label { position: static; }
+.salary-table tbody td.salary-section-empty { padding: 14px 16px !important; color: #fff; font-size: 14px; text-align: left !important; opacity: .85; }
 .salary-section-count { padding: 2px 8px; border-radius: 10px; background: rgba(255, 255, 255, .14); font: 700 13px var(--mono); letter-spacing: 0; }
 .salary-section-count.is-over { background: #b3261e; }
 .ps-elevated-mark { border-color: #4caf7a !important; color: #9be3b8 !important; }
@@ -2359,4 +2362,8 @@ a.md-top-name:hover { text-decoration: underline; }
   .salary-table tbody tr.salary-section-row { display: block; border: 0; background: transparent; }
   .salary-table tbody tr.salary-section-row th { display: block; width: auto; padding: 0 !important; border: 0; }
   .salary-table tbody tr.salary-section-row .salary-section-label { position: static; display: flex; justify-content: space-between; margin: 8px 0 0; writing-mode: horizontal-tb; }
+  .salary-table tbody tr.salary-section-row .salary-section-counters { position: static; display: grid; width: 100%; grid-template-columns: minmax(0, 1fr); gap: 6px; justify-items: stretch; }
+  .salary-table tbody tr.salary-section-row .salary-section-counters .salary-section-label { margin: 0; }
+  .salary-table tbody tr.salary-section-row td.salary-section-empty { display: block; border: 1px dashed #54749b; }
+  .salary-table tbody tr.salary-section-row td.salary-section-empty::before { content: none; }
 }

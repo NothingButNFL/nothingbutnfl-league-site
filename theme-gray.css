@@ -276,3 +276,6 @@ html[data-theme="gray"] .md-slate { border-top-color: #47494f; border-right-colo
 html[data-theme="gray"] .md-slate-pane { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
 html[data-theme="gray"] .si-table th, html[data-theme="gray"] .si-table td { border-bottom-color: #303236; }
 html[data-theme="gray"] .si-week { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }
+@media (max-width: 1300px) {
+  html[data-theme="gray"] .salary-table tbody tr.salary-section-row td.salary-section-empty { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
+}

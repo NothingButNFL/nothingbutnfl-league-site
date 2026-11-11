@@ -731,7 +731,8 @@ function renderSalaryRows() {
   // Two sections: the 53-man active roster, then the practice squad (roster type "Practice Squad").
   const onPs = (player) => isPracticeSquad(seasonEntry(player, activeSeason));
   const active = roster.filter((player) => !onPs(player)), practice = roster.filter(onPs);
-  const sequence = roster.length ? [{ section: "active" }, ...active, ...(practice.length ? [{ section: "ps" }, ...practice] : [])] : [];
+  // The practice squad section shows even when it's empty.
+  const sequence = roster.length ? [{ section: "active" }, ...active, { section: "ps" }, ...(practice.length ? practice : [{ section: "ps-empty" }])] : [];
   for (const item of sequence) {
     if (item.section) { salaryRows.append(salarySectionRow(item.section, active.length, practice.length)); continue; }
     const player = item;
@@ -847,24 +848,40 @@ function renderSalaryRows() {
   updateComputedCells();
 }
 
-// Section header rows on the salary sheet: "ACTIVE ROSTER 52 / 53" and "PRACTICE SQUAD 4 / 16".
+// Section header rows on the salary sheet. The top one carries both counters ("ACTIVE ROSTER 52 / 53" and
+// "PRACTICE SQUAD 4 / 16"); the practice squad section below has its own heading, and a note when it's empty.
 function salarySectionRow(section, activeCount, psCount) {
   const row = document.createElement("tr");
-  row.className = `salary-section-row is-${section}`;
-  const cell = document.createElement("th");
-  cell.scope = "colgroup";
+  row.className = `salary-section-row is-${section === "ps-empty" ? "ps-empty" : section}`;
+  const cell = document.createElement(section === "ps-empty" ? "td" : "th");
+  if (section !== "ps-empty") cell.scope = "colgroup";
   cell.colSpan = 16;
-  const label = document.createElement("span");
-  label.className = "salary-section-label";
-  const ps = section === "ps";
-  const count = ps ? psCount : activeCount, limit = ps ? practiceSquadLimit : activeRosterLimit;
-  const over = ps ? count > practiceSquadLimit + 1 : count > activeRosterLimit;
-  label.append(Object.assign(document.createElement("b"), { textContent: ps ? "PRACTICE SQUAD" : "ACTIVE ROSTER" }),
-    Object.assign(document.createElement("span"), { className: `salary-section-count${over ? " is-over" : ""}`, textContent: `${count} / ${limit}` }));
-  label.title = ps
-    ? `Practice squad limit: ${practiceSquadLimit} players (${practiceSquadLimit + 1} with an International Player Pathway exemption). Their cap hits count against the cap.`
-    : `Active roster limit: ${activeRosterLimit} players. Practice squad players aren't counted here.`;
-  cell.append(label);
+  const counter = (name, count, limit, overAt, title) => {
+    const label = document.createElement("span");
+    label.className = `salary-section-label${name === "PRACTICE SQUAD" ? " is-ps" : ""}`;
+    label.title = title;
+    label.append(Object.assign(document.createElement("b"), { textContent: name }),
+      Object.assign(document.createElement("span"), { className: `salary-section-count${count > overAt ? " is-over" : ""}`, textContent: `${count} / ${limit}` }));
+    return label;
+  };
+  const psTitle = `Practice squad limit: ${practiceSquadLimit} players (${practiceSquadLimit + 1} with an International Player Pathway exemption). Their cap hits count against the cap.`;
+  if (section === "active") {
+    const wrap = document.createElement("div");
+    wrap.className = "salary-section-counters";
+    wrap.append(
+      counter("ACTIVE ROSTER", activeCount, activeRosterLimit, activeRosterLimit, `Active roster limit: ${activeRosterLimit} players. Practice squad players aren't counted here.`),
+      counter("PRACTICE SQUAD", psCount, practiceSquadLimit, practiceSquadLimit + 1, psTitle));
+    cell.append(wrap);
+  } else if (section === "ps") {
+    const label = document.createElement("span");
+    label.className = "salary-section-label is-ps";
+    label.title = psTitle;
+    label.append(Object.assign(document.createElement("b"), { textContent: "PRACTICE SQUAD" }));
+    cell.append(label);
+  } else {
+    cell.className = "salary-section-empty";
+    cell.textContent = "No one is on the practice squad. Use a player's ⚙ menu → Move To Practice Squad, or type \"Practice Squad\" as his roster type.";
+  }
   row.append(cell);
   return row;
 }

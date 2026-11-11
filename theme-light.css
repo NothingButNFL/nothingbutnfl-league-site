@@ -793,6 +793,10 @@ html[data-theme="light"] .si-table th, html[data-theme="light"] .si-table td { b
 html[data-theme="light"] .si-week { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; background-color: #f5f8fc; }
 html[data-theme="light"] .si-week.is-short { border-left-color: #d6981f; }
 html[data-theme="light"] .salary-section-label { border-left-color: #1f6fc5; color: #0b1f3a; }
-html[data-theme="light"] .salary-section-row.is-ps .salary-section-label { border-left-color: #d6981f; }
+html[data-theme="light"] .salary-section-label.is-ps { border-left-color: #d6981f; }
+html[data-theme="light"] .salary-table tbody td.salary-section-empty { color: #0b1f3a; }
 html[data-theme="light"] .salary-section-count { background-color: rgba(11, 31, 58, 0.196); }
 html[data-theme="light"] .rb-ps-tag { background-color: #d6981f; }
+@media (max-width: 1300px) {
+  html[data-theme="light"] .salary-table tbody tr.salary-section-row td.salary-section-empty { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
+}
