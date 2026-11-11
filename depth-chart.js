@@ -26,10 +26,12 @@ function depthChartFor(teamId) {
   return chart;
 }
 
+// Practice squad players stay off the depth chart unless they're elevated for game day.
 function depthRoster() {
   const year = currentLeagueYear();
   return selectedTeamData().roster
     .filter((p) => !p.activeSeasons.length || p.activeSeasons.some((season) => season >= year))
+    .filter((p) => { const entry = p.seasons[year]; return !isPracticeSquad(entry) || isPsElevated(entry); })
     .map((p) => {
       const season = p.seasons[year] || p.seasons[p.activeSeasons[0]] || {};
       return { id: p.id, name: p.name, position: String(playerDisplayPosition(p, year) || "").toUpperCase(), cap: season.baseSalary !== undefined ? capHitFor(season) : 0 };
@@ -66,7 +68,8 @@ function slotSelect(slot, index, chosen, roster) {
   }
   if (chosen && !roster.some((p) => p.id === chosen)) {
     const found = findPlayerById(officeData, chosen);
-    select.append(new Option(`${found ? found.player.name : "Removed player"} (not on roster)`, chosen));
+    const onPs = found && isPracticeSquad(found.player.seasons?.[currentLeagueYear()]);
+    select.append(new Option(`${found ? found.player.name : "Removed player"} (${onPs ? "practice squad, not elevated" : "not on roster"})`, chosen));
     select.classList.add("is-stale");
   }
   select.value = chosen || "";

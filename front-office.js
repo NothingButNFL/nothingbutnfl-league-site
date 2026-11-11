@@ -728,7 +728,13 @@ function renderSalaryRows() {
   const roster = sortedSalaryRoster(selectedTeamData().roster.filter((player) => isPlayerOnSeason(player, activeSeason)));
   salaryRows.replaceChildren();
   salaryEmpty.hidden = roster.length > 0;
-  for (const player of roster) {
+  // Two sections: the 53-man active roster, then the practice squad (roster type "Practice Squad").
+  const onPs = (player) => isPracticeSquad(seasonEntry(player, activeSeason));
+  const active = roster.filter((player) => !onPs(player)), practice = roster.filter(onPs);
+  const sequence = roster.length ? [{ section: "active" }, ...active, ...(practice.length ? [{ section: "ps" }, ...practice] : [])] : [];
+  for (const item of sequence) {
+    if (item.section) { salaryRows.append(salarySectionRow(item.section, active.length, practice.length)); continue; }
+    const player = item;
     const entry = seasonEntry(player, activeSeason);
     const row = salaryRows.insertRow();
     row.dataset.playerId = player.id;
@@ -769,6 +775,16 @@ function renderSalaryRows() {
       fifth.title = `${activeSeason} is ${player.name}'s 5th-year option. Click to remove the tag.`;
       fifth.setAttribute("aria-label", `${player.name}: 5th-year option. Click to remove`);
       nameCell.append(fifth);
+    }
+    if (isPsElevated(entry)) {
+      const up = document.createElement("button");
+      up.type = "button";
+      up.className = "vmb-mark ps-elevated-mark";
+      up.dataset.action = "remove-elevation";
+      up.textContent = "Elevated";
+      up.title = `${player.name} is elevated from the practice squad for game day (he can go on the depth chart). Click to send him back.`;
+      up.setAttribute("aria-label", `${player.name}: elevated for game day. Click to remove`);
+      nameCell.append(up);
     }
     const injury = injuryForPlayer(officeData, player, activeTeamId);
     if (injury) {
@@ -829,6 +845,28 @@ function renderSalaryRows() {
     actionCell.append(actions);
   }
   updateComputedCells();
+}
+
+// Section header rows on the salary sheet: "ACTIVE ROSTER 52 / 53" and "PRACTICE SQUAD 4 / 16".
+function salarySectionRow(section, activeCount, psCount) {
+  const row = document.createElement("tr");
+  row.className = `salary-section-row is-${section}`;
+  const cell = document.createElement("th");
+  cell.scope = "colgroup";
+  cell.colSpan = 16;
+  const label = document.createElement("span");
+  label.className = "salary-section-label";
+  const ps = section === "ps";
+  const count = ps ? psCount : activeCount, limit = ps ? practiceSquadLimit : activeRosterLimit;
+  const over = ps ? count > practiceSquadLimit + 1 : count > activeRosterLimit;
+  label.append(Object.assign(document.createElement("b"), { textContent: ps ? "PRACTICE SQUAD" : "ACTIVE ROSTER" }),
+    Object.assign(document.createElement("span"), { className: `salary-section-count${over ? " is-over" : ""}`, textContent: `${count} / ${limit}` }));
+  label.title = ps
+    ? `Practice squad limit: ${practiceSquadLimit} players (${practiceSquadLimit + 1} with an International Player Pathway exemption). Their cap hits count against the cap.`
+    : `Active roster limit: ${activeRosterLimit} players. Practice squad players aren't counted here.`;
+  cell.append(label);
+  row.append(cell);
+  return row;
 }
 
 // Hover text for the calculated dead-cap and net-savings cells.
@@ -1451,6 +1489,10 @@ document.querySelector("#add-player-form").addEventListener("submit", (event) =>
 document.querySelector("#import-salary-paste").addEventListener("click", importSalaryPaste);
 
 salaryRows.addEventListener("click", async (event) => {
+  const elevated = event.target.closest('[data-action="remove-elevation"]');
+  const elevatedRow = elevated?.closest("[data-player-id]");
+  const elevatedPlayer = elevatedRow && selectedTeamData().roster.find(({ id }) => id === elevatedRow.dataset.playerId);
+  if (elevatedPlayer) { runPlayerMenuAction("ps-elevate", elevatedPlayer); return; }
   const fifth = event.target.closest('[data-action="remove-5yo"]');
   const fifthRow = fifth?.closest("[data-player-id]");
   const fifthPlayer = fifthRow && selectedTeamData().roster.find(({ id }) => id === fifthRow.dataset.playerId);
@@ -1492,8 +1534,19 @@ salaryRows.addEventListener("change", (event) => {
       renderSalaryRows();
       return;
     }
+    const wasPs = isPracticeSquad(seasonEntry(player, activeSeason));
     if (field === "name") player.name = value;
     else seasonEntry(player, activeSeason)[field] = field === "position" ? value.toUpperCase() : value;
+    // Typing "Practice Squad" (or "Active") in Roster Type moves him between the two sections.
+    if (field === "rosterType" && wasPs !== isPracticeSquad(seasonEntry(player, activeSeason))) {
+      delete seasonEntry(player, activeSeason).psElevated;
+      applyRosterTypeTags(player, activeSeason);
+      renderSalaryRows();
+      updateCapOverview();
+      if (typeof renderDepthChart === "function") renderDepthChart();
+      saveOfficeData(`${player.name} ${wasPs ? "moved to the active roster" : "moved to the practice squad"} for ${activeSeason}.`);
+      return;
+    }
     // Roster-type tags: "VMB"/"Vet Ben" marks a Veteran Minimum Benefit season and "5YO"/"5th Year Option" a 5th-year option.
     // The tag text is taken out of the roster type and shown as a badge instead (click the badge to remove it).
     if (field === "rosterType") {
@@ -1609,6 +1662,16 @@ function openPlayerMenu(cog, player) {
   add("trade-block", (officeData.tradeBlock || []).some((e) => e.playerId === player.id && e.teamId === activeTeamId) ? "On the Trade Block ✓" : "Add To Trade Block",
     !storageIsAvailable ? "Saving is unavailable." : blockProblem.replace(/^.*already on the trade block\.$/, "Already listed."));
   add("trade", "Trade Player", onCurrent ? "" : `Not on the ${year} sheet.`);
+  // Practice squad moves apply to the season on screen.
+  const entry = isPlayerOnSeason(player, activeSeason) ? seasonEntry(player, activeSeason) : null;
+  const noSave = storageIsAvailable ? "" : "Saving is unavailable.";
+  if (entry && isPracticeSquad(entry)) {
+    add("ps-promote", "Promote To Active Roster", noSave);
+    add("ps-elevate", isPsElevated(entry) ? "Remove Game-Day Elevation" : "Elevate For Game Day", noSave);
+  } else if (entry) {
+    const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
+    add("ps-move", "Move To Practice Squad", noSave || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
+  }
   menu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-menu-action]");
     if (!item || item.disabled) return;
@@ -1632,6 +1695,32 @@ function openPlayerMenu(cog, player) {
 
 function runPlayerMenuAction(action, player) {
   if (action === "release") { recordRosterTransaction(player, "release"); return; }
+  if (action === "ps-move" || action === "ps-promote" || action === "ps-elevate") {
+    const entry = seasonEntry(player, activeSeason);
+    let message;
+    if (action === "ps-move") {
+      entry.rosterType = practiceSquadRosterType;
+      delete entry.psElevated;
+      const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
+      message = `${player.name} moved to the ${activeSeason} practice squad (${practiceSquad} / ${practiceSquadLimit}).`;
+    } else if (action === "ps-promote") {
+      entry.rosterType = "Active";
+      delete entry.psElevated;
+      const { active } = rosterCounts(activeTeamId, activeSeason);
+      message = `${player.name} promoted to the ${activeSeason} active roster (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `: that's over the ${activeRosterLimit}-man limit` : ""}.`;
+    } else if (entry.psElevated) {
+      delete entry.psElevated;
+      message = `${player.name} is back on the practice squad (no longer elevated for game day).`;
+    } else {
+      entry.psElevated = true;
+      message = `${player.name} is elevated from the practice squad for game day and can now be placed on the depth chart.`;
+    }
+    renderSalaryRows();
+    updateCapOverview();
+    if (typeof renderDepthChart === "function") renderDepthChart();
+    saveOfficeData(message);
+    return;
+  }
   if (action === "trade-block") {
     const problem = tbkAdd(player);
     if (problem) { workspaceStatus.textContent = problem; return; }

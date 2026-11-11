@@ -103,7 +103,8 @@ function validateOfficeData(data) {
             Math.abs(entry.tradeNetSavings) > 999999999 || !isIntegerInRange(entry.releasePenalty) ||
             !Number.isSafeInteger(entry.releaseNetSavings) || Math.abs(entry.releaseNetSavings) > 999999999 ||
             (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999)) ||
-            (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean")) return false;
+            (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean") ||
+            (entry.psElevated !== undefined && typeof entry.psElevated !== "boolean")) return false;
       }
     }
   }
@@ -362,6 +363,27 @@ function capHitFor(entry) {
 const isVmbSeason = (entry) => Number.isSafeInteger(entry?.vmbCapBase);
 // A first-round rookie's 5th-year option season (often all $0 until it's exercised).
 const isFifthYearOption = (entry) => entry?.fifthYearOption === true;
+
+// ---- Practice squad ----
+// A season is on the practice squad when its roster type says so ("Practice Squad", "PS", "P-Squad").
+// Practice squad cap hits still count against the cap (as in the NFL); they're kept apart from the 53-man roster
+// counts and off the depth chart unless elevated for game day (psElevated on that season).
+const activeRosterLimit = 53;
+const practiceSquadLimit = 16; // 17 with an International Player Pathway exemption
+const practiceSquadRosterType = "Practice Squad";
+const isPracticeSquad = (entry) => /practice|^\s*p[\s.-]*s(?:quad)?\b/i.test(entry?.rosterType || "");
+const isPsElevated = (entry) => isPracticeSquad(entry) && entry?.psElevated === true;
+// { active, practiceSquad, elevated } for one team and season.
+function rosterCounts(teamId, year, data = officeData) {
+  const counts = { active: 0, practiceSquad: 0, elevated: 0 };
+  for (const player of data.teams[teamId]?.roster || []) {
+    if (!isPlayerOnSeason(player, year)) continue;
+    const entry = seasonEntry(player, year);
+    if (isPracticeSquad(entry)) { counts.practiceSquad += 1; if (isPsElevated(entry)) counts.elevated += 1; }
+    else counts.active += 1;
+  }
+  return counts;
+}
 const vmbRosterTypePattern = /\(?\s*\b(vmb|vet\s*ben|veteran minimum( benefit)?)\b\s*\)?/ig;
 const fifthYearRosterTypePattern = /\(?\s*\b(5\s*yo|5th[\s-]*year( option)?|fifth[\s-]*year( option)?)\b\s*\)?/ig;
 

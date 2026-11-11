@@ -59,8 +59,8 @@ function renderTeamDetail() {
   const h = document.createElement("h3");
   h.textContent = `${teamName(teamId)} · ${rbSeason}`;
   const sub = document.createElement("p");
-  const count = groupKeys.reduce((t, k) => t + groups[k].count, 0);
-  sub.textContent = `${count} players · ${formatCurrency(total)} in cap hits`;
+  const counts = rosterCounts(teamId, rbSeason, officeData);
+  sub.textContent = `${counts.active} active · ${counts.practiceSquad} practice squad · ${formatCurrency(total)} in cap hits`;
   const link = document.createElement("a");
   link.className = "workspace-button";
   link.href = `team.html?team=${encodeURIComponent(teamId)}`;
@@ -101,6 +101,13 @@ function renderTeamDetail() {
       who.textContent = player.name;
       const pos = document.createElement("small");
       pos.textContent = entry.position || "";
+      if (isPracticeSquad(entry)) {
+        const tag = document.createElement("abbr");
+        tag.className = "rb-ps-tag";
+        tag.textContent = isPsElevated(entry) ? "PS ↑" : "PS";
+        tag.title = isPsElevated(entry) ? "Practice squad, elevated for game day" : "Practice squad";
+        pos.append(" ", tag);
+      }
       const hit = document.createElement("span");
       hit.textContent = formatCurrency(cap);
       li.append(who, pos, hit);

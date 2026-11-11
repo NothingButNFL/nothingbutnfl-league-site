@@ -10,7 +10,7 @@ let csSeason = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : sea
 let csSort = { key: "remaining", direction: -1 };
 
 const csColumns = [
-  ["team", "TEAM"], ["players", "PLAYERS"], ["baseCap", "BASE CAP"], ["rollover", "ROLLOVER"], ["adjustment", "ADJUSTMENT"],
+  ["team", "TEAM"], ["players", "ACTIVE"], ["practiceSquad", "PRACTICE SQ."], ["baseCap", "BASE CAP"], ["rollover", "ROLLOVER"], ["adjustment", "ADJUSTMENT"],
   ["totalCap", "TOTAL CAP"], ["payroll", "PAYROLL"], ["deadCap", "DEAD CAP"], ["remaining", "CAP ROOM"], ["used", "% USED"]
 ];
 
@@ -18,9 +18,9 @@ function teamRows() {
   return nflTeams.map(({ id }) => {
     const figures = seasonCapFigures(id, csSeason, officeData);
     const team = officeData.teams[id];
-    const players = team.roster.filter((p) => isPlayerOnSeason(p, csSeason)).length;
+    const counts = rosterCounts(id, csSeason, officeData);
     const used = figures.totalCap ? (figures.payroll + figures.deadCap) / figures.totalCap : null;
-    return { id, players, adjustment: team.seasons[csSeason].manualAdjustment, used, ...figures };
+    return { id, players: counts.active, practiceSquad: counts.practiceSquad, adjustment: team.seasons[csSeason].manualAdjustment, used, ...figures };
   });
 }
 
@@ -73,7 +73,12 @@ function renderSummary() {
     code.textContent = row.id;
     link.append(code, teamName(row.id));
     teamCell.append(link);
-    tr.insertCell().textContent = String(row.players);
+    const active = tr.insertCell();
+    active.textContent = String(row.players);
+    if (row.players > activeRosterLimit) { active.className = "cs-over-limit"; active.title = `Over the ${activeRosterLimit}-man active roster limit`; }
+    const ps = tr.insertCell();
+    ps.textContent = String(row.practiceSquad);
+    if (row.practiceSquad > practiceSquadLimit + 1) { ps.className = "cs-over-limit"; ps.title = `Over the ${practiceSquadLimit}-player practice squad limit`; }
     tr.insertCell().textContent = money(row.baseCap);
     tr.insertCell().textContent = money(row.rollover);
     tr.insertCell().textContent = row.adjustment ? money(row.adjustment, true) : "—";

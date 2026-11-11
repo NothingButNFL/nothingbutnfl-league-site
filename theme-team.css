@@ -348,3 +348,5 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate-pane.is-featured .
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-top-tab.is-active { background-color: rgb(var(--tm-eef1f6)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .si-table th, html:is([data-theme^="team-"], [data-theme="neon"]) .si-table td { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .si-week { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .salary-section-label { border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-0f3460)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .rb-ps-tag { color: rgb(var(--tm-0a2647)); }

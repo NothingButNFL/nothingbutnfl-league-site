@@ -192,7 +192,8 @@
             <form class="management-form salary-form" id="add-player-form">
               <label>Player name<input name="name" required maxlength="70" placeholder="e.g. Player name"></label>
               <label>Position<input name="position" required maxlength="8" placeholder="e.g. QB"></label>
-              <label>Roster type<input name="rosterType" required maxlength="30" placeholder="e.g. Active"></label>
+              <label>Roster type<input name="rosterType" required maxlength="30" placeholder="e.g. Active" list="roster-type-options"></label>
+              <datalist id="roster-type-options"><option value="Active"></option><option value="Practice Squad"></option></datalist>
               <button class="button button-lime add-button" type="submit">Add player <span aria-hidden="true">+</span></button>
             </form>
             <div class="management-table-wrap">
