@@ -208,13 +208,11 @@ function renderGameOfWeek(pick, records) {
   const [y, m, d] = String(pick.date || "").split("-").map(Number);
   const when = pick.date ? new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric", year: "2-digit" }).toUpperCase() : "";
 
-  const intro = mdEl("div", "md-gotw-intro");
-  intro.append(
-    mdEl("strong", "md-gotw-week", pick.week > 18 ? "PLAYOFFS" : `WEEK ${pick.week}`),
-    mdEl("span", "md-gotw-kicker", final ? "FINAL" : `${pick.slate} GAME${pick.slate === 1 ? "" : "S"} THIS WEEK`),
-    mdEl("span", "md-gotw-date", [when, !final && pick.time ? pick.time : ""].filter(Boolean).join(" · "))
-  );
-  const badge = mdEl("span", "md-gotw-badge", "GAME OF THE WEEK");
+  // Centered heading: "WEEK 18 | GAME OF THE WEEK", with the status and date underneath.
+  const head = mdEl("div", "md-gotw-head");
+  const title = mdEl("strong", "md-gotw-title");
+  title.append(mdEl("span", "md-gotw-week", pick.week > 18 ? "PLAYOFFS" : `WEEK ${pick.week}`), mdEl("span", "md-gotw-divider", "|"), mdEl("span", "", "GAME OF THE WEEK"));
+  head.append(title, mdEl("span", "md-gotw-date", [final ? "FINAL" : `${pick.slate} GAME${pick.slate === 1 ? "" : "S"} THIS WEEK`, when, !final && pick.time ? pick.time : ""].filter(Boolean).join(" · ")));
   const center = mdEl("div", "md-gotw-vs");
   if (final) {
     const [a, b] = g.teams;
@@ -243,7 +241,7 @@ function renderGameOfWeek(pick, records) {
   }
   const strip = mdEl("div", "md-gotw-notes");
   for (const n of notes) strip.append(mdEl("span", "", n.toUpperCase()));
-  box.replaceChildren(badge, intro, stage, strip);
+  box.replaceChildren(head, stage, strip);
   box.style.setProperty("--md-away", (teamThemePalettes[pick.away] || ["#0c2b50"])[0]);
   box.style.setProperty("--md-home", (teamThemePalettes[pick.home] || ["#0c2b50"])[0]);
 }
@@ -260,6 +258,9 @@ function renderWeeksBest(games, week) {
   const list = mdEl("ol", "md-best-list");
   list.append(...best.map((p) => {
     const li = mdEl("li", "md-best-item");
+    const [base, accent] = teamThemePalettes[p.team] || ["#0c2b50", "#8fd0ff"];
+    li.style.setProperty("--md-team", base);
+    li.style.setProperty("--md-accent", accent);
     li.append(mdPlayerPhoto(p.name, p.team, "md-best-photo"));
     const text = mdEl("div", "md-best-text");
     text.append(mdPlayerName(p.name, p.team));
