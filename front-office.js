@@ -286,6 +286,7 @@ function renderSeasonTabs() {
       if (id === String(currentLeagueYear())) {
         const waiting = pendingPsOffers(officeData).filter((o) => o.fromTeam === activeTeamId).length;
         if (waiting) {
+          tab.classList.add("season-tab-with-badge"); // sits beside the year like the Team Actions trade badge
           const badge = document.createElement("span");
           badge.className = "nav-badge tab-badge ps-tab-badge";
           badge.textContent = String(waiting);

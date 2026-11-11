@@ -2510,3 +2510,5 @@ a.md-top-name:hover { text-decoration: underline; }
 .fa-table thead th:nth-child(2) { text-align: left !important; }
 #salary-year-content > .ps-offer-notices { margin: 0 0 16px; }
 .ps-tab-badge { background: #e5383b !important; color: #fff !important; }
+.season-tab-with-badge { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }
+.season-tab-with-badge .tab-badge { margin-left: 0; }
