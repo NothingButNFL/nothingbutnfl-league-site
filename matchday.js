@@ -342,7 +342,7 @@ function renderWeeksBest(games, week) {
   const all = games.flatMap((g) => mdGamePerformers(g).map((p) => ({ ...p, game: g })));
   const best = all.sort((a, b) => b.impact - a.impact).slice(0, 5);
   const head = mdEl("h3", "md-best-title");
-  head.append(`${week > 18 ? "Playoffs" : `Week ${week}`}'s Best`);
+  head.append(`Top Players: ${week > 18 ? "Playoffs" : `Week ${week}`}`);
   const list = mdEl("ol", "md-best-list");
   list.append(...best.map((p) => {
     const li = mdEl("li", "md-best-item");
