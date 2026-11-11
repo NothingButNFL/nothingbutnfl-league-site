@@ -128,6 +128,11 @@ const big = (c) => c.total >= 40e6;
 function insiderReleaseText(entry, seed) {
   const team = entry.teams[0];
   const who = insiderWho(insiderPlayer(entry));
+  if (/placed on waivers/i.test(entry.details)) return insiderPick([
+    `${insiderThe(team)} are waiving ${who}, sources tell me. He's on the wire for 24 hours.`,
+    `Sources: ${insiderTag(team)} have waived ${who}. Teams have a day to put in a claim.`,
+    `Roster move: ${who} waived by the ${insiderTag(team)}, per me. Watch the waiver wire.`
+  ], seed).replace(/\s+/g, " ").trim();
   const dead = insiderDollars(entry.details)[0];
   const deadText = dead ? `${insiderMoney(dead)} in dead cap` : "";
   return insiderPick([
@@ -140,6 +145,11 @@ function insiderReleaseText(entry, seed) {
 function insiderWaiverText(entry, seed) {
   const team = entry.teams[0];
   const who = insiderWho(insiderPlayer(entry));
+  if (/cleared waivers/i.test(entry.details)) return insiderPick([
+    `${who} has cleared waivers and is a free agent, sources tell me. Open market now.`,
+    `No takers: ${who} went unclaimed on waivers and is now a free agent, per sources.`,
+    `Sources: ${who} clears waivers. Any team can sign him now.`
+  ], seed);
   return insiderPick([
     `${insiderThe(team)} have claimed ${who} off waivers, sources tell me.`,
     `Waiver claim: ${who} is headed to the ${insiderTag(team)}, per sources.`,

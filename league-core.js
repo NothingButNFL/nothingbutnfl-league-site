@@ -121,7 +121,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers);
 }
 
 function migrateLegacyData(data) {
@@ -2585,3 +2585,136 @@ function minimumProblem(data, player, contract, startYear) {
   return "";
 }
 
+
+
+// ---- Waiver wire ----
+// Released players with fewer than 4 accrued seasons go on waivers; vested veterans (4+) become free agents at once.
+// data.waivers = [{ id, playerName, position, fromTeam, experience, releasedAt, clearsAt (ISO), profile?, birthDate?,
+//   seasons: [{ year, baseSalary, rosterBonus, guaranteedSalary, proratedBonus }], claims: [{ teamId, at }],
+//   status: "open" | "claimed" | "cleared" | "removed", awardedTo?, processedAt? }]
+// A claiming team takes on his remaining base salaries and roster bonuses; prorated signing bonus stays with the old team.
+const waiverPeriodHours = 24;
+const vestedVeteranSeasons = 4;
+const waiverStatuses = ["open", "claimed", "cleared", "removed"];
+
+function validWaivers(waivers) {
+  if (waivers === undefined) return true;
+  if (!Array.isArray(waivers) || waivers.length > 3000) return false;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const ids = new Set();
+  return waivers.every((w) => {
+    if (!w || typeof w.id !== "string" || !w.id || ids.has(w.id) || typeof w.playerName !== "string" || !w.playerName.trim() || w.playerName.length > 70 ||
+        typeof w.position !== "string" || w.position.length > 8 || !teamIds.has(w.fromTeam) || !waiverStatuses.includes(w.status) ||
+        typeof w.releasedAt !== "string" || typeof w.clearsAt !== "string" ||
+        (w.experience !== null && w.experience !== undefined && !isIntegerInRange(w.experience, 0, 40)) ||
+        (w.profile !== undefined && !validPlayerProfile(w.profile)) ||
+        (w.birthDate !== undefined && (typeof w.birthDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(w.birthDate))) ||
+        (w.awardedTo !== undefined && !teamIds.has(w.awardedTo)) ||
+        !Array.isArray(w.seasons) || w.seasons.length > seasonCount ||
+        !w.seasons.every((x) => x && isIntegerInRange(x.year, 2000, 2100) && ["baseSalary", "rosterBonus", "guaranteedSalary", "proratedBonus"].every((k) => isIntegerInRange(x[k] ?? 0))) ||
+        !Array.isArray(w.claims) || w.claims.length > 32 || new Set(w.claims.map((c) => c?.teamId)).size !== w.claims.length ||
+        !w.claims.every((c) => c && teamIds.has(c.teamId) && c.teamId !== w.fromTeam && typeof c.at === "string")) return false;
+    ids.add(w.id);
+    return true;
+  });
+}
+
+const openWaivers = (data) => (data.waivers || []).filter((w) => w.status === "open");
+const waiverExpired = (entry, now = Date.now()) => Date.parse(entry.clearsAt) <= now;
+
+// Called when a team releases a player (before his seasons are taken off the sheet).
+// Returns { waived: true, entry } or { waived: false } (vested veteran, added to free agency).
+function releaseToWaiversOrFreeAgency(data, player, teamId, year) {
+  const entry = seasonEntry(player, year);
+  const experience = player.experience ?? null;
+  const base = { playerName: player.name, position: entry.position || "", experience };
+  if (experience !== null && experience >= vestedVeteranSeasons) {
+    addFreeAgent(data, { ...base, profile: player.profile, birthDate: player.birthDate });
+    return { waived: false };
+  }
+  const now = new Date();
+  const waiver = {
+    id: newRecordId("waiver"), ...base, fromTeam: teamId,
+    releasedAt: now.toISOString(),
+    clearsAt: new Date(now.getTime() + waiverPeriodHours * 3600 * 1000).toISOString(),
+    seasons: player.activeSeasons.filter((y) => y >= year).sort((a, b) => a - b).map((y) => {
+      const s = seasonEntry(player, y);
+      return { year: y, baseSalary: s.baseSalary || 0, rosterBonus: s.rosterBonus || 0, guaranteedSalary: s.guaranteedSalary || 0, proratedBonus: s.proratedBonus || 0 };
+    }),
+    claims: [], status: "open"
+  };
+  if (player.profile && validPlayerProfile(player.profile)) waiver.profile = player.profile;
+  if (typeof player.birthDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(player.birthDate)) waiver.birthDate = player.birthDate;
+  if (!Array.isArray(data.waivers)) data.waivers = [];
+  if (data.waivers.length >= 3000) data.waivers = data.waivers.filter((w) => w.status === "open").concat(data.waivers.filter((w) => w.status !== "open").slice(-2000));
+  data.waivers.push(waiver);
+  return { waived: true, entry: waiver };
+}
+
+// Puts a player in the free-agent pool (Player Contracts / Free Agency, team "FA").
+function addFreeAgent(data, { playerName, position, experience, profile, birthDate }) {
+  if (!Array.isArray(data.contractPlayers)) data.contractPlayers = [];
+  const fa = { id: newRecordId("fa"), name: playerName, team: freeAgentTeamId, position: String(position || "").slice(0, 8) };
+  if (experience !== null && experience !== undefined) fa.experience = experience;
+  if (profile && validPlayerProfile(profile)) fa.profile = profile;
+  if (typeof birthDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)) fa.birthDate = birthDate;
+  data.contractPlayers.push(fa);
+  return fa;
+}
+
+// Waiver order: worst record first (win %, then fewer wins), from the standings or the logged box scores.
+function waiverPriority(data) {
+  const rec = Object.fromEntries(nflTeams.map(({ id }) => [id, { w: 0, l: 0, t: 0 }]));
+  const saved = data.standings?.teams;
+  if (saved && Object.values(saved).some((r) => (Number(r.w) || 0) + (Number(r.l) || 0) + (Number(r.t) || 0) > 0)) {
+    for (const [id, r] of Object.entries(saved)) if (rec[id]) rec[id] = { w: Number(r.w) || 0, l: Number(r.l) || 0, t: Number(r.t) || 0 };
+  } else {
+    for (const g of data.games || []) {
+      if (!Array.isArray(g.teams) || g.teams.length !== 2 || (g.week != null && g.week > 18)) continue;
+      const [a, b] = g.teams;
+      if (!rec[a.team] || !rec[b.team]) continue;
+      if (a.score === b.score) { rec[a.team].t += 1; rec[b.team].t += 1; }
+      else { rec[a.score > b.score ? a.team : b.team].w += 1; rec[a.score > b.score ? b.team : a.team].l += 1; }
+    }
+  }
+  const pct = (r) => { const n = r.w + r.l + r.t; return n ? (r.w + r.t / 2) / n : 0; };
+  return nflTeams.map(({ id }) => ({ id, record: rec[id], pct: pct(rec[id]) }))
+    .sort((x, y) => x.pct - y.pct || x.record.w - y.record.w || teamName(x.id).localeCompare(teamName(y.id)));
+}
+
+// Awards an open waiver to the highest-priority claimant, or clears him to free agency. Returns a status message.
+function processWaiver(data, waiver) {
+  const order = waiverPriority(data).map(({ id }) => id);
+  const claims = [...waiver.claims].sort((a, b) => order.indexOf(a.teamId) - order.indexOf(b.teamId));
+  waiver.processedAt = new Date().toISOString();
+  const pos = waiver.position ? ` (${waiver.position})` : "";
+  if (!claims.length) {
+    waiver.status = "cleared";
+    addFreeAgent(data, waiver);
+    logTransaction(data, { type: "waiver", teams: [waiver.fromTeam], player: waiver.playerName, auto: true,
+      details: `${waiver.playerName}${pos} cleared waivers after his release by ${waiver.fromTeam} and is now a free agent.` });
+    return `${waiver.playerName} cleared waivers and is now a free agent.`;
+  }
+  const to = claims[0].teamId;
+  const years = waiver.seasons.filter((s) => seasons.includes(s.year)).map((s) => s.year);
+  if (!years.length) years.push(seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]);
+  const byYear = Object.fromEntries(waiver.seasons.map((s) => [s.year, s]));
+  const player = {
+    id: newRecordId("player"), name: waiver.playerName, activeSeasons: years,
+    seasons: Object.fromEntries(seasons.map((y) => [y, years.includes(y)
+      ? { ...emptySeasonData(waiver.position, "Active"), baseSalary: byYear[y]?.baseSalary || 0, rosterBonus: byYear[y]?.rosterBonus || 0, guaranteedSalary: byYear[y]?.guaranteedSalary || 0 }
+      : emptySeasonData()]))
+  };
+  if (waiver.experience !== null && waiver.experience !== undefined) player.experience = waiver.experience;
+  if (waiver.profile) player.profile = waiver.profile;
+  if (waiver.birthDate) player.birthDate = waiver.birthDate;
+  data.teams[to].roster.push(player);
+  waiver.status = "claimed";
+  waiver.awardedTo = to;
+  const first = byYear[years[0]];
+  const hit = first ? (first.baseSalary || 0) + (first.rosterBonus || 0) : 0;
+  const others = claims.length > 1 ? ` Other claims: ${claims.slice(1).map((c) => c.teamId).join(", ")}.` : "";
+  logTransaction(data, { type: "waiver", teams: [to, waiver.fromTeam], player: waiver.playerName, auto: true,
+    details: `${teamName(to)} claimed ${waiver.playerName}${pos} off waivers from ${teamName(waiver.fromTeam)}. ${years.length}-year contract, ${formatCurrency(hit)} cap hit in ${years[0]}.${others}` });
+  return `${teamName(to)} were awarded ${waiver.playerName} off waivers${claims.length > 1 ? ` (${claims.length} claims)` : ""}.`;
+}

@@ -282,3 +282,7 @@ html[data-theme="gray"] .si-week { border-top-color: #47494f; border-right-color
 @media (min-width: 1301px) {
   html[data-theme="gray"] .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: #47494f 0px -2px 0px inset; }
 }
+html[data-theme="gray"] .ww-photo .leader-logo { color: #18191b; }
+html[data-theme="gray"] .ww-contract-table th, html[data-theme="gray"] .ww-contract-table td { border-bottom-color: #303236; }
+html[data-theme="gray"] .ww-claim-list li { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
+html[data-theme="gray"] .ww-admin { border-top-color: #47494f; }

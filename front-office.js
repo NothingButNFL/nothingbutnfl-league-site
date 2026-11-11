@@ -63,6 +63,8 @@ async function recordRosterTransaction(player, transaction) {
   team.deadCap[year].push(makeRecord(currentAmount));
   if (futureIsTrackable) team.deadCap[nextYear].push(makeRecord(futureAmount));
   accelerateVoidDeadCap(team, player, year);
+  // A released player goes on the Waiver Wire (or straight to free agency if he's a vested veteran).
+  const waiverOutcome = transaction === "release" ? releaseToWaiversOrFreeAgency(officeData, player, activeTeamId, year) : null;
   player.activeSeasons = player.activeSeasons.filter((season) => season < year);
   if (!player.activeSeasons.length) {
     team.roster = team.roster.filter(({ id }) => id !== player.id);
@@ -73,12 +75,14 @@ async function recordRosterTransaction(player, transaction) {
       teams: [activeTeamId],
       player: player.name,
       details: `${player.name}${seasonEntry(player, year).position ? ` (${seasonEntry(player, year).position})` : ""} released. Dead cap: ${formatCurrency(currentAmount)} in ${year}` +
-        (futureIsTrackable ? ` and ${formatCurrency(futureAmount)} in ${nextYear}.` : "."),
+        (futureIsTrackable ? ` and ${formatCurrency(futureAmount)} in ${nextYear}.` : ".") +
+        (waiverOutcome?.waived ? " Placed on waivers." : " Vested veteran: now a free agent."),
       auto: true
     });
   }
   renderFrontOffice();
-  saveOfficeData(`${player.name} ${transaction === "trade" ? "traded" : "released"}; dead cap recorded for ${year}${futureIsTrackable ? ` and ${nextYear}` : ""}.`);
+  saveOfficeData(`${player.name} ${transaction === "trade" ? "traded" : "released"}; dead cap recorded for ${year}${futureIsTrackable ? ` and ${nextYear}` : ""}.` +
+    (waiverOutcome ? (waiverOutcome.waived ? ` He's on the Waiver Wire for ${waiverPeriodHours} hours.` : " As a vested veteran he skips waivers and is now a free agent.") : ""));
 }
 
 function selectedTeam() {

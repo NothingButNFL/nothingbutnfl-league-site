@@ -803,3 +803,16 @@ html[data-theme="light"] .rb-ps-tag { background-color: #d6981f; }
 @media (min-width: 1301px) {
   html[data-theme="light"] .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: #c6d4e5 0px -2px 0px inset; }
 }
+html[data-theme="light"] .ww-photo .leader-logo { color: #0b1f3a; }
+html[data-theme="light"] .ww-name { color: #0b1f3a; }
+html[data-theme="light"] .ww-meta { color: #0b1f3a; }
+html[data-theme="light"] .ww-by { color: #0b1f3a; }
+html[data-theme="light"] .ww-clock { border-top-color: #1f6fc5; border-right-color: #1f6fc5; border-bottom-color: #1f6fc5; border-left-color: #1f6fc5; color: #1561b0; }
+html[data-theme="light"] .ww-clock.is-ready { border-top-color: #d6981f; border-right-color: #d6981f; border-bottom-color: #d6981f; border-left-color: #d6981f; color: #9a6600; }
+html[data-theme="light"] .ww-contract-note { color: #0b1f3a; }
+html[data-theme="light"] .ww-contract-table th, html[data-theme="light"] .ww-contract-table td { border-bottom-color: #e2e9f2; }
+html[data-theme="light"] .ww-claim-list li { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; }
+html[data-theme="light"] .ww-no-claims { color: #0b1f3a; }
+html[data-theme="light"] .ww-admin { border-top-color: #c6d4e5; }
+html[data-theme="light"] .ww-history li { background-color: rgba(11, 31, 58, 0.042); }
+html[data-theme="light"] .ww-history li.is-cleared { border-left-color: #d6981f; }

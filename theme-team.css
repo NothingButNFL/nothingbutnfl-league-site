@@ -356,3 +356,8 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .rb-ps-tag { color: rgb(var(
 @media (min-width: 1301px) {
   html:is([data-theme^="team-"], [data-theme="neon"]) .salary-table-scroll .salary-table thead tr:last-child th { box-shadow: rgb(var(--tm-31527a)) 0px -2px 0px inset; }
 }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-photo .leader-logo { color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-clock { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-contract-table th, html:is([data-theme^="team-"], [data-theme="neon"]) .ww-contract-table td { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-claim-list li { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-admin { border-top-color: rgb(var(--tm-31527a)); }
