@@ -2922,13 +2922,18 @@ function processExpiredPsOffers(data, now = Date.now()) {
 // ---- Insider Wire: custom reporters and posts (on top of the automatic ones) ----
 // data.insiderReporters = [{ id, name, handle, color, photo? (small data: URL or https URL) }]
 // data.insiderPosts = [{ id, reporterId, text, teams: [teamId], createdAt, date }]
+const validReporterFields = (r) => r && typeof r.name === "string" && r.name.trim() && r.name.length <= 40 &&
+  typeof r.handle === "string" && r.handle.length <= 30 && typeof r.color === "string" && /^#[0-9a-f]{6}$/i.test(r.color) &&
+  (r.photo === undefined || (typeof r.photo === "string" && r.photo.length <= 200000 && /^(data:image\/(png|jpeg|webp);base64,|https:\/\/)/.test(r.photo)));
+
 function validInsiderCustom(data) {
   const reporters = data.insiderReporters, posts = data.insiderPosts;
   const teamIds = new Set(nflTeams.map(({ id }) => id));
-  if (reporters !== undefined && (!Array.isArray(reporters) || reporters.length > 50 || !reporters.every((r) => r && typeof r.id === "string" && r.id &&
-      typeof r.name === "string" && r.name.trim() && r.name.length <= 40 && typeof r.handle === "string" && r.handle.length <= 30 &&
-      typeof r.color === "string" && /^#[0-9a-f]{6}$/i.test(r.color) &&
-      (r.photo === undefined || (typeof r.photo === "string" && r.photo.length <= 200000 && /^(data:image\/(png|jpeg|webp);base64,|https:\/\/)/.test(r.photo)))))) return false;
+  if (reporters !== undefined && (!Array.isArray(reporters) || reporters.length > 50 || !reporters.every((r) => r && typeof r.id === "string" && r.id && validReporterFields(r)))) return false;
+  // data.insiderBuiltinEdits = { insider: { name, handle, color, photo? }, sources: {…} }: admin edits to the built-in reporters.
+  const edits = data.insiderBuiltinEdits;
+  if (edits !== undefined && (!edits || typeof edits !== "object" || Array.isArray(edits) ||
+      !Object.entries(edits).every(([id, r]) => ["insider", "sources"].includes(id) && validReporterFields(r)))) return false;
   if (posts !== undefined && (!Array.isArray(posts) || posts.length > 2000 || !posts.every((p) => p && typeof p.id === "string" && p.id &&
       typeof p.reporterId === "string" && typeof p.text === "string" && p.text.trim() && p.text.length <= 600 &&
       Array.isArray(p.teams) && p.teams.length <= 3 && p.teams.every((t) => teamIds.has(t)) &&

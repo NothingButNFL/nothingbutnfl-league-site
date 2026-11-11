@@ -1,5 +1,6 @@
-// News › Manage Reporters: the Insider Wire's reporters. Built-in insiders are listed read-only; the league's own
-// reporters (data.insiderReporters) can be added, edited and removed. Uses insider.js helpers (insiderAllReporters,
+// News › Manage Reporters: the Insider Wire's reporters. The built-in insiders (who write the automatic reports) can be
+// edited and reset (data.insiderBuiltinEdits); the league's own reporters (data.insiderReporters) can be added, edited
+// and removed. Uses insider.js helpers (insiderAllReporters,
 // insiderAvatarEl, insiderInitials, insiderResizePhoto) and league-core.js storage.
 (function manageReporters() {
   const list = document.querySelector("#rep-list");
@@ -21,6 +22,9 @@
     return true;
   }
 
+  const isBuiltin = (id) => insiderReporters.some((r) => r.id === id);
+  const findReporter = (id) => insiderAllReporters(read() || emptyOfficeData()).find((r) => r.id === id);
+
   function render() {
     const data = read() || emptyOfficeData();
     const counts = new Map();
@@ -34,13 +38,14 @@
       name.textContent = r.name;
       const handle = document.createElement("span");
       const posts = counts.get(r.id) || 0;
-      handle.textContent = `${r.handle} · ${r.custom ? `${posts} post${posts === 1 ? "" : "s"}` : "Built-in · writes the automatic reports"}`;
+      handle.textContent = `${r.handle} · ${r.custom ? `${posts} post${posts === 1 ? "" : "s"}` : `Built-in${r.edited ? " (edited)" : ""} · writes the automatic reports`}`;
       text.append(name, handle);
       li.append(insiderAvatarEl(r), text);
-      if (r.custom) {
+      {
         const actions = document.createElement("span");
         actions.className = "rep-actions";
-        for (const [action, label] of [["edit", "Edit"], ["remove", "Remove"]]) {
+        const buttons = r.custom ? [["edit", "Edit"], ["remove", "Remove"]] : [["edit", "Edit"], ...(r.edited ? [["reset", "Reset"]] : [])];
+        for (const [action, label] of buttons) {
           const b = document.createElement("button");
           b.type = "button";
           b.className = "workspace-button";
@@ -58,7 +63,7 @@
 
   function showPreview() {
     const name = form.elements.name.value.trim() || "New Reporter";
-    const current = editingId ? (read()?.insiderReporters || []).find((r) => r.id === editingId) : null;
+    const current = editingId ? findReporter(editingId) : null;
     const url = form.elements.photoUrl.value.trim();
     const photo = form.elements.clearPhoto.checked ? "" : pendingPhoto || (url.startsWith("https://") ? url : current?.photo || "");
     const handle = form.elements.handle.value.trim().replace(/^@+/, "");
@@ -106,7 +111,17 @@
     const url = form.elements.photoUrl.value.trim();
     const fields = { name, handle: `@${handle}`.slice(0, 30), color: form.elements.color.value };
     const photo = pendingPhoto || (url.startsWith("https://") ? url : null);
-    if (editingId) {
+    if (editingId && isBuiltin(editingId)) {
+      // Built-in insiders: the edit is stored on top of the default, so it can be reset later.
+      const id = editingId;
+      const ok = save((data) => {
+        const current = insiderBuiltinReporters(data).find((r) => r.id === id);
+        const next = { ...fields };
+        if (!form.elements.clearPhoto.checked && (photo || current.photo)) next.photo = photo || current.photo;
+        data.insiderBuiltinEdits = { ...(data.insiderBuiltinEdits || {}), [id]: next };
+      }, `${name} updated. The automatic reports now go out under this name.`);
+      if (ok) resetForm();
+    } else if (editingId) {
       const id = editingId;
       const ok = save((data) => {
         data.insiderReporters = (data.insiderReporters || []).map((r) => {
@@ -129,7 +144,7 @@
   list.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-action]");
     if (!button) return;
-    const reporter = (read()?.insiderReporters || []).find((r) => r.id === button.dataset.id);
+    const reporter = findReporter(button.dataset.id);
     if (!reporter) return;
     if (button.dataset.action === "edit") {
       editingId = reporter.id;
@@ -147,6 +162,16 @@
       showPreview();
       form.scrollIntoView({ behavior: "smooth", block: "nearest" });
       form.elements.name.focus({ preventScroll: true });
+    } else if (button.dataset.action === "reset") {
+      const base = insiderReporters.find((r) => r.id === reporter.id);
+      if (await confirmAction(`Reset ${reporter.name} to the original ${base.name} (${base.handle})?`, { confirmLabel: "Reset reporter" })) {
+        save((data) => {
+          const edits = { ...(data.insiderBuiltinEdits || {}) };
+          delete edits[reporter.id];
+          if (Object.keys(edits).length) data.insiderBuiltinEdits = edits; else delete data.insiderBuiltinEdits;
+        }, `${base.name} reset.`);
+        if (editingId === reporter.id) resetForm();
+      }
     } else if (await confirmAction(`Remove ${reporter.name}? Their posts stay on the Insider Wire, shown as a league reporter.`, { confirmLabel: "Remove reporter", danger: true })) {
       save((data) => { data.insiderReporters = (data.insiderReporters || []).filter((r) => r.id !== reporter.id); }, `${reporter.name} removed.`);
       if (editingId === reporter.id) resetForm();

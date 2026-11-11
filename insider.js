@@ -183,9 +183,9 @@ function insiderRestructureText(entry, seed) {
   ], seed).replace(/\s+/g, " ").trim();
 }
 
-function insiderPostFor(entry) {
+function insiderPostFor(entry, builtins = insiderReporters) {
   const seed = insiderHash(entry.id);
-  const reporter = insiderReporters[seed % insiderReporters.length];
+  const reporter = builtins[seed % builtins.length];
   const text = entry.type === "trade" ? insiderTradeText(entry, seed)
     : entry.type === "signing" ? insiderSigningText(entry, seed)
     : entry.type === "extension" ? insiderExtensionText(entry, seed)
@@ -202,12 +202,13 @@ function insiderPostFor(entry) {
 function insiderPosts(data, limit = 4) {
   // Automatic posts in Transaction Log order (newest recorded first) and the league's own posts, merged by when they
   // were made. Log entries without a creation time (e.g. imported ones) count as older than any written post.
+  const builtins = insiderBuiltinReporters(data);
   const auto = (data.transactions || []).map((entry, index) => ({ entry, index }))
     .sort((a, b) => b.index - a.index).slice(0, limit)
     .map(({ entry }, order) => {
       // A creation time in the future (e.g. the sample league's made-up dates) can't be compared, so it counts as older.
       const t = Date.parse(entry.createdAt || "");
-      return { post: insiderPostFor(entry), time: Number.isFinite(t) && t <= Date.now() + 60000 ? t : -Infinity, order };
+      return { post: insiderPostFor(entry, builtins), time: Number.isFinite(t) && t <= Date.now() + 60000 ? t : -Infinity, order };
     });
   const reporters = insiderAllReporters(data);
   const custom = (data.insiderPosts || []).map((p) => ({
@@ -218,8 +219,17 @@ function insiderPosts(data, limit = 4) {
 }
 
 // Built-in reporters plus the league's own.
+// The two automatic-report insiders, with any admin edits (News › Manage Reporters) applied.
+function insiderBuiltinReporters(data) {
+  const edits = data?.insiderBuiltinEdits || {};
+  return insiderReporters.map((r) => {
+    const e = edits[r.id];
+    return e ? { ...r, ...e, initials: insiderInitials(e.name), edited: true } : r;
+  });
+}
+
 function insiderAllReporters(data) {
-  return [...insiderReporters, ...(data.insiderReporters || []).map((r) => ({ ...r, initials: insiderInitials(r.name), custom: true }))];
+  return [...insiderBuiltinReporters(data), ...(data.insiderReporters || []).map((r) => ({ ...r, initials: insiderInitials(r.name), custom: true }))];
 }
 const insiderInitials = (name) => String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("") || "?";
 
