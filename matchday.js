@@ -3,7 +3,7 @@
 // - Game of the Week: next week's biggest matchup (best combined records), or, when nothing is scheduled after the
 //   last results, last week's best game with its final score,
 // - one preview pane per game that week (three at a time, PREV / NEXT),
-// - the Week's Best: the top individual performances from that most recent week.
+// - Top Players: a tab per week with the AFC / NFC offensive and defensive player of the week.
 // Uses teams.js / league-core.js / overview.js globals (overviewLogo, teamThemePalettes, playerPortrait ...).
 
 let mdData = emptyOfficeData();
@@ -334,33 +334,130 @@ function renderWeekSlate(slate, pick, records) {
   box._mdResize.observe(viewport);
 }
 
-// ---------- Week's Best ----------
-function renderWeeksBest(games, week) {
+// ---------- Top Players: one tab per week; AFC / NFC offense and defense player of the week ----------
+const mdConference = (teamId) => nflDivisions.find((d) => d.teams.includes(teamId))?.conference || "";
+const mdWeekName = (week) => ({ 19: "WILD CARD", 20: "DIVISIONAL", 21: "CONF. CHAMPIONSHIP", 22: "SUPER BOWL" })[week] || `WEEK ${week}`;
+const mdOffImpact = (v) => mdNum(v.passYds) * 0.04 + mdNum(v.passTd) * 4 - mdNum(v.int) * 2 + mdNum(v.rushYds) * 0.1 + mdNum(v.rushTd) * 6 +
+  mdNum(v.recYds) * 0.1 + mdNum(v.recTd) * 6 + mdNum(v.rec) * 0.5;
+const mdDefImpact = (v) => mdNum(v.tackles) * 0.8 + mdNum(v.tfl) + mdNum(v.sacks) * 4 + mdNum(v.defInt) * 5 + mdNum(v.ff) * 3 + mdNum(v.fr) * 3 + mdNum(v.pd) + mdNum(v.defTd) * 6;
+
+// "J.COOK III"
+function mdShortName(name) {
+  const parts = String(name).trim().split(/\s+/);
+  return (parts.length > 1 ? `${parts[0][0]}.${parts.slice(1).join(" ")}` : parts[0]).toUpperCase();
+}
+function mdPosition(name, teamId, values, side) {
+  const found = findPlayerByName(mdData, name, teamId);
+  const pos = found ? (found.source === "sheet" ? playerDisplayPosition(found.player) : found.player.position) : "";
+  if (pos) return String(pos).toUpperCase();
+  if (side === "defense") return "DEF";
+  if (values.att) return "QB";
+  return mdNum(values.rushYds) > mdNum(values.recYds) ? "HB" : "WR";
+}
+// Full comma-separated line, e.g. "25 CAR, 206 RUSH YDS, 8.2 RUSH AVG, 2 RUSH TD, 4 REC, 14 REC YDS".
+function mdFullLine(v, side) {
+  const out = [];
+  const add = (n, label, always = false) => { if (always || mdNum(n)) out.push(`${mdFmt(mdNum(n))} ${label}`); };
+  const avg = (yds, n) => (Math.round((mdNum(yds) / n) * 10) / 10).toFixed(1);
+  if (side === "defense") {
+    add(v.tackles, "TKL", true); add(v.tfl, "TFL"); add(v.sacks, mdNum(v.sacks) === 1 ? "SACK" : "SACKS"); add(v.defInt, "INT");
+    add(v.ff, "FF"); add(v.fr, "FR"); add(v.pd, "PD"); add(v.defTd, "TD");
+    return out.join(", ");
+  }
+  if (mdNum(v.att)) { out.push(`${mdNum(v.cmp)}-${mdNum(v.att)}`); add(v.passYds, "PASS YDS", true); add(v.passTd, "PASS TD"); add(v.int, "INT"); }
+  if (mdNum(v.rushAtt) || mdNum(v.rushYds)) {
+    add(v.rushAtt, "CAR"); add(v.rushYds, "RUSH YDS", true);
+    if (!mdNum(v.att) && mdNum(v.rushAtt) >= 5) out.push(`${avg(v.rushYds, mdNum(v.rushAtt))} RUSH AVG`);
+    add(v.rushTd, "RUSH TD");
+  }
+  if (mdNum(v.rec)) { add(v.rec, "REC"); add(v.recYds, "REC YDS", true); if (mdNum(v.rec) >= 2) out.push(`${avg(v.recYds, mdNum(v.rec))} REC AVG`); add(v.recTd, "REC TD"); }
+  return out.join(", ");
+}
+
+function mdTopPlayers(weekGames) {
+  const all = weekGames.flatMap((g) => mdGamePerformers(g));
+  const pick = (conf, side) => {
+    const score = side === "offense" ? mdOffImpact : mdDefImpact;
+    return all.filter((p) => mdConference(p.team) === conf)
+      .filter((p) => side === "offense" ? mdOffImpact(p.values) >= mdDefImpact(p.values) : mdDefImpact(p.values) > mdOffImpact(p.values))
+      .sort((a, b) => score(b.values) - score(a.values))[0] || null;
+  };
+  return [["AFC", "offense"], ["NFC", "offense"], ["AFC", "defense"], ["NFC", "defense"]].map(([conf, side]) => ({ conf, side, player: pick(conf, side) }));
+}
+
+function mdTopCard({ conf, side, player }) {
+  const card = mdEl("article", `md-top-card is-${conf.toLowerCase()}`);
+  card.append(mdEl("h4", "md-top-label", `${conf} ${side.toUpperCase()}`));
+  const body = mdEl("div", "md-top-body");
+  const art = mdEl("div", "md-top-art");
+  const confLogo = document.createElement("img");
+  confLogo.className = "md-top-conf";
+  confLogo.src = `assets/${conf.toLowerCase()}.png`;
+  confLogo.alt = "";
+  art.append(confLogo);
+  const info = mdEl("div", "md-top-info");
+  if (!player) {
+    info.append(mdEl("p", "md-top-empty", "No stats logged"));
+    body.append(art, info);
+    card.append(body);
+    return card;
+  }
+  const found = findPlayerByName(mdData, player.name, player.team);
+  const src = found ? profilePhotoSrc(playerProfile(found.player)) : "";
+  if (src) {
+    const img = document.createElement("img");
+    img.className = "md-top-photo";
+    img.src = src;
+    img.alt = "";
+    img.addEventListener("error", () => img.remove(), { once: true });
+    art.append(img);
+  }
+  const top = mdEl("div", "md-top-head");
+  const who = mdEl("div", "md-top-who");
+  who.append(mdEl("span", "md-top-pos", mdPosition(player.name, player.team, player.values, side)));
+  const name = mdPlayerName(player.name, player.team);
+  name.classList.add("md-top-name");
+  name.textContent = mdShortName(player.name);
+  name.title = player.name;
+  who.append(name);
+  const team = mdEl("a", "md-top-team");
+  team.href = `team.html?team=${encodeURIComponent(player.team)}`;
+  team.title = teamName(player.team);
+  team.append(overviewLogo(player.team));
+  top.append(who, team);
+  // Each stat stays on one line; the list wraps between stats.
+  const stats = mdEl("p", "md-top-stats");
+  mdFullLine(player.values, side).split(", ").forEach((part, i, all) => stats.append(mdEl("span", "", i < all.length - 1 ? `${part},` : part), i < all.length - 1 ? " " : ""));
+  info.append(top, stats);
+  body.append(art, info);
+  card.append(body);
+  return card;
+}
+
+let mdTopWeek = null;
+function renderWeeksBest(games) {
   const box = document.querySelector("#md-best");
-  if (!games.length) { box.hidden = true; return; }
+  const weeks = [...new Set(games.map((g) => g.week))].sort((a, b) => a - b);
+  if (!weeks.length) { box.hidden = true; return; }
   box.hidden = false;
-  const all = games.flatMap((g) => mdGamePerformers(g).map((p) => ({ ...p, game: g })));
-  const best = all.sort((a, b) => b.impact - a.impact).slice(0, 5);
-  const head = mdEl("h3", "md-best-title");
-  head.append(`Top Players: ${week > 18 ? "Playoffs" : `Week ${week}`}`);
-  const list = mdEl("ol", "md-best-list");
-  list.append(...best.map((p) => {
-    const li = mdEl("li", "md-best-item");
-    const [base, accent] = teamThemePalettes[p.team] || ["#0c2b50", "#8fd0ff"];
-    li.style.setProperty("--md-team", base);
-    li.style.setProperty("--md-accent", accent);
-    li.append(mdPlayerPhoto(p.name, p.team, "md-best-photo"));
-    const text = mdEl("div", "md-best-text");
-    text.append(mdPlayerName(p.name, p.team));
-    const lines = mdLines(p.values);
-    if (lines.length) text.append(mdEl("span", "md-best-line", lines[0]));
-    const meta = mdEl("span", "md-best-meta");
-    meta.append(overviewLogo(p.team), `${p.team} · ${mdResult(p.game, p.team)}`);
-    text.append(meta);
-    li.append(text);
-    return li;
-  }));
-  box.replaceChildren(head, list);
+  if (!weeks.includes(mdTopWeek)) mdTopWeek = weeks[weeks.length - 1];
+  const tabs = mdEl("div", "md-top-tabs");
+  tabs.setAttribute("role", "tablist");
+  tabs.setAttribute("aria-label", "Top players by week");
+  for (const w of weeks) {
+    const tab = mdEl("button", `md-top-tab${w === mdTopWeek ? " is-active" : ""}`, `TOP PLAYERS: ${mdWeekName(w)}`);
+    tab.type = "button";
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(w === mdTopWeek));
+    tab.addEventListener("click", () => { mdTopWeek = w; renderWeeksBest(games); });
+    tabs.append(tab);
+  }
+  const grid = mdEl("div", "md-top-grid");
+  grid.setAttribute("role", "tabpanel");
+  grid.append(...mdTopPlayers(games.filter((g) => g.week === mdTopWeek)).map(mdTopCard));
+  box.replaceChildren(tabs, grid);
+  const active = tabs.querySelector(".is-active");
+  if (active) tabs.scrollLeft = active.offsetLeft - tabs.clientWidth / 2 + active.offsetWidth / 2;
 }
 
 function renderMatchday() {
@@ -379,7 +476,7 @@ function renderMatchday() {
   const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games), pick, records);
-  renderWeeksBest(lastWeek, week);
+  renderWeeksBest(games);
 }
 
 renderMatchday();

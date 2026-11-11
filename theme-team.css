@@ -345,3 +345,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate { border-top-color
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate-nav:hover:not(:disabled), html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate-nav:focus-visible { color: rgb(var(--tm-07162b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate-pane { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-slate-pane.is-featured .md-slate-tag { color: rgb(var(--tm-07162b)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-top-tab.is-active { background-color: rgb(var(--tm-eef1f6)); }
