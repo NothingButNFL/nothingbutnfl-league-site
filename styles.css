@@ -2596,3 +2596,6 @@ a.md-top-name:hover { text-decoration: underline; }
 .mdp-muted { color: #9fb0c8; }
 .mdp-note { margin: 8px 0 0; color: #9fb0c8; font-size: 12px; }
 .mdp-team-record { white-space: nowrap; }
+.mdp-starter-list li { grid-template-columns: 48px 26px minmax(0, 1fr); }
+.mdp-who { display: grid; min-width: 0; gap: 1px; }
+.mdp-stats { overflow: hidden; color: #cfd8e6; font: 600 12px var(--body); text-overflow: ellipsis; white-space: nowrap; }

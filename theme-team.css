@@ -389,3 +389,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-pos { color: rgb(var(--
 html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-exp { color: rgb(var(--tm-9fb0c8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-muted { color: rgb(var(--tm-9fb0c8)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-note { color: rgb(var(--tm-9fb0c8)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-stats { color: rgb(var(--tm-cfd8e6)); }

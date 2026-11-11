@@ -735,10 +735,16 @@ function mdStarterColumn(teamId, side) {
     if (r.player) {
       const a = mdEl("a", "mdp-player", r.player.name);
       a.href = profileUrl(r.player.id);
-      li.append(typeof playerPortrait === "function" ? playerPortrait(r.player) : "", a);
-      const exp = r.player.experience;
-      li.append(mdEl("span", "mdp-exp", exp === null || exp === undefined ? "" : `${exp} yr${exp === 1 ? "" : "s"}`));
-    } else li.append(mdEl("span", "mdp-muted", "—"), mdEl("span"));
+      // His season so far, from the logged box scores (regular season).
+      const totals = typeof seasonBoxScoreStats === "function" ? seasonBoxScoreStats(mdData, r.player.name) : null;
+      const lines = totals ? mdLines(totals.values) : [];
+      const lineman = ["LT", "LG", "C", "RG", "RT"].includes(r.slot); // box scores don't track offensive linemen
+      const who = mdEl("div", "mdp-who");
+      const stats = mdEl("span", "mdp-stats", lines[0] || (lineman ? "" : "No stats yet"));
+      if (lines.length) stats.title = `${lines.join(" · ")}${totals.games ? ` (${totals.games} game${totals.games === 1 ? "" : "s"})` : ""}`;
+      who.append(a, stats);
+      li.append(typeof playerPortrait === "function" ? playerPortrait(r.player) : "", who);
+    } else li.append(mdEl("span"), mdEl("span", "mdp-muted", "—"));
     list.append(li);
   }
   col.append(list);
