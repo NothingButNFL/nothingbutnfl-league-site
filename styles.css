@@ -2508,3 +2508,5 @@ a.md-top-name:hover { text-decoration: underline; }
 .fa-table th:first-child, .fa-table td.fa-action-cell { width: 170px; }
 .fa-table td.fa-action-cell + td { text-align: left !important; }
 .fa-table thead th:nth-child(2) { text-align: left !important; }
+#salary-year-content > .ps-offer-notices { margin: 0 0 16px; }
+.ps-tab-badge { background: #e5383b !important; color: #fff !important; }

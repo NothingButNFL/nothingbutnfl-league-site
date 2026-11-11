@@ -168,6 +168,8 @@
 
           <div class="season-tabs" id="season-tabs" role="tablist" aria-label="Team front-office sections"></div>
           <div id="salary-year-content">
+          <!-- Offers from other teams for this team's practice squad players (and this team's own offers), with match buttons. -->
+          <div class="ps-offer-notices" id="ps-offer-notices" role="status" aria-live="polite" hidden></div>
           <div class="cap-overview" aria-label="Selected team season salary overview">
             <article class="cap-stat" id="dead-cap-card"><span>DEAD CAP · <span id="dead-cap-card-year">2026</span></span><strong id="dead-cap-card-total">$0</strong><small>Recorded for this salary year</small></article>
             <article class="cap-stat"><span>BASE SALARY CAP</span><strong id="base-cap-value">Not set</strong><small>Shared league-wide base · <a href="admin.html">Set in Admin</a></small></article>
@@ -232,7 +234,6 @@
               <div><span class="panel-index">02 / PRACTICE SQUAD</span><h3><span id="ps-ledger-year">2026</span> Practice Squad <span class="salary-section-count" id="ps-ledger-count">0 / 16</span></h3></div>
               <p>Players on the practice squad for the selected salary year. Pay is the practice squad weekly salary × the regular-season weeks left when he joined; it counts against the cap. Use the ⚙ menu to sign a player to the active roster, elevate him for game day, or move him.</p>
             </div>
-            <div class="ps-offer-notices" id="ps-offer-notices" role="status" aria-live="polite" hidden></div>
             <div class="management-table-wrap">
               <table class="management-table ps-table">
                 <thead><tr><th scope="col">PLAYER</th><th scope="col">POSITION</th><th scope="col">YRS EXP</th><th scope="col">WEEKLY SALARY</th><th scope="col">WEEKS</th><th scope="col">CAP HIT</th><th scope="col">CAP %</th><th scope="col">STATUS</th><th scope="col"><span class="sr-only">ACTIONS</span></th></tr></thead>

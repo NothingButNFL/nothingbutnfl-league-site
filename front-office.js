@@ -282,6 +282,18 @@ function renderSeasonTabs() {
     } else {
       tab.setAttribute("aria-controls", tabPanelFor(id));
       tab.textContent = label;
+      // Red badge on the current season's tab when another team is trying to sign one of our practice squad players.
+      if (id === String(currentLeagueYear())) {
+        const waiting = pendingPsOffers(officeData).filter((o) => o.fromTeam === activeTeamId).length;
+        if (waiting) {
+          const badge = document.createElement("span");
+          badge.className = "nav-badge tab-badge ps-tab-badge";
+          badge.textContent = String(waiting);
+          badge.setAttribute("aria-label", `${waiting} practice squad ${waiting === 1 ? "offer needs" : "offers need"} a match decision`);
+          badge.title = badge.getAttribute("aria-label");
+          tab.append(badge);
+        }
+      }
       tab.addEventListener("click", () => openTeamTab(id));
     }
     tab.addEventListener("keydown", (event) => {
