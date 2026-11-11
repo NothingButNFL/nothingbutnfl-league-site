@@ -2645,3 +2645,4 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .md-gotw::before { inset: 0; animation: none; transform: none; filter: none; will-change: auto; }
 /* Week Games panes: the same static abstract artwork as the Game of the Week (no light sweep). */
 .md-slate-pane::before { background: url("assets/gotw-abstract.svg") center / cover no-repeat, linear-gradient(180deg, rgba(5, 14, 30, .45), rgba(5, 14, 30, .7)); }
+#md-slate .md-slate-head .md-best-title { color: #fff; }
