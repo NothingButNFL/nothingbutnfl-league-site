@@ -2132,7 +2132,7 @@ table td ul { padding-left: 0 !important; list-style-position: inside; }
 @media (max-width: 1100px) { .matchday-grid { grid-template-columns: 1fr; } }
 
 .md-gotw { position: relative; display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; overflow: hidden; min-height: 360px; border: 1px solid #31527a; border-radius: 6px;
-  background: linear-gradient(115deg, var(--md-away, #123f73) 0 49.6%, #c9a227 49.6% 50.4%, var(--md-home, #0c2b50) 50.4% 100%); }
+  background: linear-gradient(90deg, var(--md-away, #123f73) 0 calc(50% - 2px), #c9a227 calc(50% - 2px) calc(50% + 2px), var(--md-home, #0c2b50) calc(50% + 2px) 100%); }
 .md-gotw[hidden] { display: none; }
 .md-gotw::before { position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255, 255, 255, .045) 0 2px, transparent 2px 22px), linear-gradient(180deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .35)); content: ""; pointer-events: none; }
 .md-gotw > * { position: relative; }
