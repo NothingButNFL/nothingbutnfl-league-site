@@ -2643,3 +2643,5 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 @media (prefers-reduced-motion: reduce) { .md-gotw::before, .md-gotw::after { animation: none; } }
 /* Back to the static abstract artwork (no drift, ripple or honeycomb); the light sweep (::after) stays. */
 .md-gotw::before { inset: 0; animation: none; transform: none; filter: none; will-change: auto; }
+/* Week Games panes: the same static abstract artwork as the Game of the Week (no light sweep). */
+.md-slate-pane::before { background: url("assets/gotw-abstract.svg") center / cover no-repeat, linear-gradient(180deg, rgba(5, 14, 30, .45), rgba(5, 14, 30, .7)); }
