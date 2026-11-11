@@ -2238,3 +2238,9 @@ table td ul { padding-left: 0 !important; list-style-position: inside; }
   .md-best-meta { justify-content: center; }
 }
 .md-best-item, .md-best-item:last-child { border-bottom: 0; }
+
+/* Game of the Week: chalk playbook drawings behind each team (defense for the away side, offense for the home side). */
+.md-gotw::before { background:
+  url("assets/play-defense.svg") left center / 50% auto no-repeat,
+  url("assets/play-offense.svg") right center / 50% auto no-repeat,
+  linear-gradient(180deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .35)); }
