@@ -105,6 +105,7 @@
           </button>
           <div class="admin-dropdown season-dropdown" id="news-dropdown" aria-label="News pages">
             <a class="admin-menu-link" href="media.html" role="menuitem" aria-current="page"><span>All News</span></a>
+            <a class="admin-menu-link" href="media.html?view=insider-wire" role="menuitem"><span>Insider Wire</span></a>
             <a class="admin-menu-link" href="media.html?view=power-rankings" role="menuitem"><span>Power Rankings</span></a>
             <a class="admin-menu-link" href="media.html?view=mock-drafts" role="menuitem"><span>Mock Drafts</span></a>
             <a class="admin-menu-link" href="media.html?view=independent-media" role="menuitem"><span>Independent Media</span></a>
@@ -194,6 +195,47 @@
           </div>
           <div class="media-feed" id="media-feed"></div>
           <p class="empty-state" id="media-empty" hidden></p>
+        </div>
+      </section>
+
+      <section class="front-office-section admin-section" id="insider-page" aria-labelledby="insider-title" hidden>
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>01</span> BREAKING NEWS</div>
+              <h2 id="insider-title">Insider <span>Wire</span></h2>
+            </div>
+          </div>
+            <div class="insider-wire insider-wire-page" id="insider-wire" aria-labelledby="insider-title">
+                            <div class="insider-top">
+                <p class="insider-sub">Breaking-news reports on the latest moves, written automatically from the Transaction Log by the league's (made-up) insiders, plus posts written by the league.</p>
+                <button class="button button-lime insider-compose-toggle" id="insider-compose-toggle" type="button" aria-expanded="false" aria-controls="insider-compose">Write a post <span aria-hidden="true">+</span></button>
+              </div>
+              <form class="management-panel insider-compose" id="insider-compose" hidden>
+                <div class="insider-compose-row">
+                  <label>Post as<select name="reporter" id="insider-reporter"></select></label>
+                  <label>Tag teams<span class="insider-team-pickers"><select name="team1"></select><select name="team2"></select></span></label>
+                </div>
+                <fieldset class="insider-new-reporter" id="insider-new-reporter" hidden>
+                  <legend>New reporter</legend>
+                  <label>Name<input name="rName" maxlength="40" placeholder="e.g. Gridiron Gossip"></label>
+                  <label>Handle<input name="rHandle" maxlength="29" placeholder="e.g. GridironGossip"></label>
+                  <label>Color<input name="rColor" type="color" value="#2f9e5b"></label>
+                  <label>Profile picture<input name="rPhoto" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                  <label class="insider-url">…or picture URL<input name="rPhotoUrl" type="url" maxlength="500" placeholder="https://…"></label>
+                  <span class="insider-preview-avatar" id="insider-avatar-preview" aria-hidden="true"></span>
+                </fieldset>
+                <label class="insider-text-field">Post<textarea name="text" maxlength="600" rows="3" placeholder="Sources: #Bills are… (#Team hashtags turn blue)"></textarea></label>
+                <div class="insider-compose-actions">
+                  <span class="insider-count" id="insider-count">0 / 600</span>
+                  <a class="workspace-button" href="media.html?view=reporters">Manage reporters ↗</a>
+                  <button class="workspace-button" type="button" id="insider-cancel">Cancel</button>
+                  <button class="button button-lime" type="submit">Post</button>
+                </div>
+                <p class="workspace-status" id="insider-status" role="status" aria-live="polite"></p>
+              </form>
+              <div class="insider-list" id="insider-list" data-limit="60"></div>
+            </div>
         </div>
       </section>
 

@@ -2669,3 +2669,7 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .rep-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .rep-form-actions [hidden] { display: none; }
 #news-feed[hidden], #reporters[hidden], #media-filter-type-field[hidden] { display: none; }
+#insider-page[hidden] { display: none; }
+.insider-wire-page { margin-top: 0; padding-top: 0; border-top: 0; }
+.insider-all { margin-left: 10px; color: #8fd0ff; font: 600 13px var(--body); text-decoration: none; vertical-align: middle; }
+.insider-all:hover, .insider-all:focus-visible { text-decoration: underline; }

@@ -239,7 +239,7 @@ function renderInsiderWire() {
   if (!list) return;
   let data = emptyOfficeData();
   try { data = readStoredOffice() || data; } catch { /* show the empty state */ }
-  const posts = insiderPosts(data);
+  const posts = insiderPosts(data, Number(list.dataset.limit) || 4); // Overview shows 4; News › Insider Wire shows more
   if (!posts.length) {
     const empty = document.createElement("p");
     empty.className = "recent-empty";

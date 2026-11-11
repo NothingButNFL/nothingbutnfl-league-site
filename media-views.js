@@ -8,6 +8,7 @@
       subtitle: "Mock drafts and big boards for the upcoming draft. Post the picks as a write-up, a graphic or a link, and tag the teams on the clock.", placeholder: "e.g. Mock Draft 2.0: QB run in the top five" },
     "independent-media": { type: "independent", h1: "Independent Media", kicker: "INDEPENDENT MEDIA", title: ["Independent", "Media"], compose: "Share Independent Media",
       subtitle: "Shows, channels, podcasts and blogs made by league members. Link the video or stream, credit the creator, and tag the teams covered.", placeholder: "e.g. The Cap Space Podcast, Ep. 12" },
+    "insider-wire": { h1: "Insider Wire" },
     reporters: { h1: "Manage Reporters" }
   };
   const id = new URLSearchParams(location.search).get("view");
@@ -21,6 +22,12 @@
   if (!view) return;
   document.title = `${view.h1} | Nothing But NFL`;
   document.querySelector(".team-page-intro h1").textContent = view.h1;
+  if (id === "insider-wire") {
+    document.querySelector(".team-page-intro .team-page-subtitle").textContent = "Every Insider Wire report: the automatic ones from the Transaction Log and the posts written by the league.";
+    document.querySelector("#news-feed").hidden = true;
+    document.querySelector("#insider-page").hidden = false;
+    return;
+  }
   if (id === "reporters") {
     document.querySelector(".team-page-intro .team-page-subtitle").textContent = "The reporters who post on the Overview's Insider Wire.";
     document.querySelector("#news-feed").hidden = true;

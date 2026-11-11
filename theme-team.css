@@ -395,3 +395,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .md-gotw-preview:hover, html
 html:is([data-theme^="team-"], [data-theme="neon"]) .insider-new-reporter { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rep-item { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .rep-preview-card { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-all { color: rgb(var(--tm-8fd0ff)); }
