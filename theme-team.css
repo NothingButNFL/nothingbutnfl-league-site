@@ -370,3 +370,9 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .psm-offers li.is-withdrawn 
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-toggle { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-badge { color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .fa-ps-offer { color: rgb(var(--tm-0a2647)) !important; }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board { border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-toggle { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-tab.is-active { background-color: rgb(var(--tm-eef1f6)); color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-game { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-byes { border-top-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .md-board-bye-label { color: rgb(var(--tm-0a2647)); }

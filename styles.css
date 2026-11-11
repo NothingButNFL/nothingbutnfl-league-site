@@ -2512,3 +2512,37 @@ a.md-top-name:hover { text-decoration: underline; }
 .ps-tab-badge { background: #e5383b !important; color: #fff !important; }
 .season-tab-with-badge { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }
 .season-tab-with-badge .tab-badge { margin-left: 0; }
+/* ===== Overview: Scoreboard beside the Game of the Week ===== */
+.md-top-row { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: stretch; }
+.md-top-row > .md-gotw:only-child, .md-top-row > .md-gotw:has(+ .md-board[hidden]) { grid-column: 1 / -1; }
+@media (max-width: 1100px) { .md-top-row { grid-template-columns: 1fr; } }
+.md-board { display: flex; flex-direction: column; min-height: 0; max-height: 640px; padding: 14px 14px 12px; border: 1px solid #31527a; border-top: 3px solid #fff; border-radius: 6px; background: #0a2647; color: #fff; }
+.md-board[hidden] { display: none; }
+.md-board-head { display: grid; gap: 10px; margin-bottom: 8px; }
+.md-board-title { margin: 0; font: 800 22px var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.md-board-toggle { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid #31527a; border-radius: 3px; overflow: hidden; }
+.md-board-tab { padding: 6px 8px; border: 0; background: transparent; color: #fff; font: 600 13px var(--body); cursor: pointer; opacity: .8; }
+.md-board-tab.is-active { background: #eef1f6; color: #0a2647; opacity: 1; }
+.md-board-list { flex: 1; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.md-board-game { display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 14px; align-items: center; gap: 4px; padding: 8px 6px; border-bottom: 1px solid #1d3a5f; border-left: 3px solid transparent; }
+.md-board-game.is-featured { border-left-color: #e5383b; background: rgba(229, 56, 59, .12); }
+.md-board-team { display: flex; align-items: center; gap: 6px; min-width: 0; color: #fff; text-decoration: none; }
+.md-board-team:hover b { text-decoration: underline; }
+.md-board-team .leader-logo, .md-board-team .leader-logo img { width: 20px; height: 20px; object-fit: contain; flex: none; }
+.md-board-team .leader-logo { display: inline-grid; place-items: center; font: 800 8px var(--display); }
+.md-board-team b { font: 800 14px var(--display); }
+.md-board-num { margin-left: auto; font: 600 13px var(--mono); opacity: .85; }
+.md-board-game.is-final .md-board-num { font-weight: 800; opacity: 1; }
+.md-board-team.is-loser { opacity: .6; }
+.md-board-at { text-align: center; font-size: 12px; opacity: .6; }
+.md-board-status { font: 700 11px var(--mono); opacity: .7; }
+.md-board-empty { padding: 12px 6px; opacity: .8; }
+.md-board-byes { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 6px 0; border-top: 1px solid #31527a; margin-top: 4px; }
+.md-board-bye-label { padding: 2px 6px; border-radius: 3px; background: #f2b950; color: #0a2647; font: 800 11px var(--display); letter-spacing: .06em; }
+.md-board-bye-teams { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.md-board-bye-team { display: inline-flex; align-items: center; gap: 4px; color: #fff; font: 700 12px var(--display); text-decoration: none; }
+.md-board-bye-team .leader-logo, .md-board-bye-team .leader-logo img { width: 18px; height: 18px; object-fit: contain; }
+.md-board-bye-team .leader-logo { display: inline-grid; place-items: center; font: 800 7px var(--display); }
+/* On desktop the scoreboard matches the Game of the Week's height and scrolls inside. */
+@media (min-width: 1101px) { .md-board { max-height: none; contain: size; } }
+@media (max-width: 1100px) { .md-board { max-height: 560px; } }

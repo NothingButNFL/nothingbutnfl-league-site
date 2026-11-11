@@ -360,6 +360,72 @@ function renderWeekSlate(slate, pick, records) {
   box._mdResize.observe(viewport);
 }
 
+// ---------- Scoreboard (right of the Game of the Week): every game of the week + teams on bye ----------
+let mdBoardWeek = null;
+function renderScoreboard(data, pick, games, records) {
+  const box = document.querySelector("#md-board");
+  if (!box) return;
+  if (!pick) { box.hidden = true; return; }
+  box.hidden = false;
+  const thisWeek = pick.week;
+  const lastWeek = thisWeek > 1 ? thisWeek - 1 : null;
+  if (mdBoardWeek !== thisWeek && mdBoardWeek !== lastWeek) mdBoardWeek = thisWeek;
+  const week = mdBoardWeek;
+  const label = (w) => (w > 18 ? mdWeekName(w).replace(/\B\w+/g, (m) => m.toLowerCase()) : `Week ${w}`);
+  const head = mdEl("div", "md-board-head");
+  head.append(mdEl("h3", "md-board-title", "Scoreboard"));
+  const toggle = mdEl("div", "md-board-toggle");
+  toggle.setAttribute("role", "tablist");
+  for (const [w, text] of [[lastWeek, lastWeek ? label(lastWeek) : ""], [thisWeek, `${label(thisWeek)}${pick.kind === "upcoming" ? " · This week" : ""}`]]) {
+    if (!w) continue;
+    const b = mdEl("button", `md-board-tab${w === week ? " is-active" : ""}`, text);
+    b.type = "button";
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(w === week));
+    b.addEventListener("click", () => { mdBoardWeek = w; renderScoreboard(data, pick, games, records); });
+    toggle.append(b);
+  }
+  head.append(toggle);
+  const slate = mdWeekSlate(data, week === thisWeek ? pick : { week, away: "", home: "" }, games);
+  const list = mdEl("ol", "md-board-list");
+  for (const item of slate) {
+    const li = mdEl("li", `md-board-game${item.featured ? " is-featured" : ""}${item.game ? " is-final" : ""}`);
+    li.title = item.featured ? "Game of the Week" : "";
+    const g = item.game;
+    const scoreOf = (id) => g?.teams.find((t) => t.team === id)?.score;
+    const winner = g && g.teams[0].score !== g.teams[1].score ? (g.teams[0].score > g.teams[1].score ? g.teams[0].team : g.teams[1].team) : null;
+    const side = (id) => {
+      const a = mdEl("a", `md-board-team${winner === id ? " is-winner" : ""}${winner && winner !== id ? " is-loser" : ""}`);
+      a.href = `team.html?team=${encodeURIComponent(id)}`;
+      a.title = teamName(id);
+      a.append(overviewLogo(id), mdEl("b", "", id), mdEl("span", "md-board-num", g ? String(scoreOf(id)) : mdRecordText(records[id])));
+      return a;
+    };
+    li.append(side(item.away), mdEl("span", "md-board-at", "@"), side(item.home), mdEl("span", "md-board-status", g ? "F" : ""));
+    list.append(li);
+  }
+  if (!slate.length) list.append(mdEl("li", "md-board-empty", "No games scheduled."));
+  // Teams with no game this week (only when the week has games).
+  const playing = new Set(slate.flatMap((s) => [s.away, s.home]));
+  const byes = slate.length && week <= 18 ? nflTeams.map(({ id }) => id).filter((id) => !playing.has(id)) : [];
+  const parts = [head, list];
+  if (byes.length) {
+    const bye = mdEl("div", "md-board-byes");
+    bye.append(mdEl("span", "md-board-bye-label", "BYE"));
+    const teams = mdEl("div", "md-board-bye-teams");
+    for (const id of byes) {
+      const a = mdEl("a", "md-board-bye-team");
+      a.href = `team.html?team=${encodeURIComponent(id)}`;
+      a.title = `${teamName(id)} (${mdRecordText(records[id])})`;
+      a.append(overviewLogo(id), mdEl("b", "", id));
+      teams.append(a);
+    }
+    bye.append(teams);
+    parts.push(bye);
+  }
+  box.replaceChildren(...parts);
+}
+
 // ---------- Top Players: one tab per week; AFC / NFC offense and defense player of the week ----------
 const mdConference = (teamId) => nflDivisions.find((d) => d.teams.includes(teamId))?.conference || "";
 const mdWeekName = (week) => ({ 19: "WILD CARD", 20: "DIVISIONAL", 21: "CONF. CHAMPIONSHIP", 22: "SUPER BOWL" })[week] || `WEEK ${week}`;
@@ -541,6 +607,7 @@ function renderMatchday() {
   renderTicker(lastWeek, week);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games), pick, records);
+  renderScoreboard(data, pick, games, records);
   renderWeeksBest(games);
 }
 
