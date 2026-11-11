@@ -1834,14 +1834,24 @@ function openPlayerMenu(cog, player) {
 async function promoteFromPracticeSquad(player) {
   const year = activeSeason;
   const entry = seasonEntry(player, year);
-  const minimum = minimumSalaryFor(officeData, player, year);
-  if (minimum.error) { workspaceStatus.textContent = `${minimum.error} ${player.name} wasn't promoted.`; return; }
+  // No experience on Player Contracts: he's paid the rookie (0-year) minimum.
+  const noExperience = player.experience === null || player.experience === undefined;
+  const tier = noExperience ? "0" : minimumTierFor(player.experience);
+  const amount = officeData.minimumSalaries?.[year]?.[tier];
   const weeks = psWeeksRemaining(officeData);
-  const prorated = Math.round((minimum.amount * weeks) / regularSeasonWeeks);
   const served = entry.psWeeks !== undefined ? Math.max(0, entry.psWeeks - weeks) : 0;
   const earned = (entry.psWeekly || 0) * served;
-  const math = `${formatCurrency(minimum.amount)} ${year} minimum (${minimumTierLabel(minimum.tier)}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
-  const ok = await confirmAction(`Promote ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
+  if (amount === null || amount === undefined) {
+    // The minimum isn't set: say so in a dialog (the status line is easy to miss) and offer to promote at $0.
+    const anyway = await confirmAction(`${player.name} can't be put on a minimum deal yet: the ${year} minimum salary for ${minimumTierLabel(tier)} of experience isn't set. ` +
+      `Set it on Admin › League Cap Directory, then promote him again, or promote him now at a $0 salary and fix his base salary on the sheet.`,
+      { confirmLabel: "Promote at $0", cancelLabel: "Cancel" });
+    if (!anyway) { workspaceStatus.textContent = `${player.name} wasn't promoted. Set the ${year} minimum for ${minimumTierLabel(tier)} on Admin › League Cap Directory.`; return; }
+  }
+  const prorated = Math.round(((amount || 0) * weeks) / regularSeasonWeeks);
+  const math = amount == null ? "minimum not set, $0 for now"
+    : `${formatCurrency(amount)} ${year} minimum (${minimumTierLabel(tier)}${noExperience ? ", no experience on file" : ""}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
+  const ok = amount == null || await confirmAction(`Promote ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
     (earned ? ` His ${formatCurrency(earned)} of practice squad pay already earned (${served} week${served === 1 ? "" : "s"} × ${formatCurrency(entry.psWeekly)}) stays on the cap, for a ${year} cap hit of ${formatCurrency(prorated + earned)}.` : ""),
     { confirmLabel: `Promote ${player.name}` });
   if (!ok) return;
