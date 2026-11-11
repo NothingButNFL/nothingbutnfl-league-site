@@ -2456,3 +2456,10 @@ a.md-top-name:hover { text-decoration: underline; }
 .admin-ps-week p { margin: 0 0 8px; color: #fff; font-size: 14px; }
 .admin-ps-table { width: auto; min-width: 360px; }
 .admin-ps-table input { min-width: 160px; }
+/* Practice squad table (team salary page) */
+#ps-ledger-count { margin-left: 8px; vertical-align: middle; }
+.ps-table td { text-align: center; }
+.ps-name { display: flex; align-items: center; justify-content: flex-start !important; gap: 8px; width: 100%; }
+.ps-table td.ps-name-cell { text-align: left !important; }
+.ps-hit { font-weight: 700; }
+#ps-panel .empty-state[hidden] { display: none; }

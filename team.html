@@ -227,9 +227,23 @@
             <p class="empty-state" id="salary-empty">No players on this salary sheet yet. Add a player below.</p>
           </div>
 
+          <div class="management-panel picks-panel ps-panel" id="ps-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">02 / PRACTICE SQUAD</span><h3><span id="ps-ledger-year">2026</span> Practice Squad <span class="salary-section-count" id="ps-ledger-count">0 / 16</span></h3></div>
+              <p>Players on the practice squad for the selected salary year. Pay is the practice squad weekly salary × the regular-season weeks left when he joined; it counts against the cap. Use the ⚙ menu to promote, elevate for game day, or move a player.</p>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table ps-table">
+                <thead><tr><th scope="col">PLAYER</th><th scope="col">POSITION</th><th scope="col">YRS EXP</th><th scope="col">WEEKLY SALARY</th><th scope="col">WEEKS</th><th scope="col">CAP HIT</th><th scope="col">CAP %</th><th scope="col">STATUS</th><th scope="col"><span class="sr-only">ACTIONS</span></th></tr></thead>
+                <tbody id="ps-rows"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="ps-empty">No one is on the practice squad. Use a player's ⚙ menu → Waive / Release To Practice Squad.</p>
+          </div>
+
           <div class="management-panel picks-panel" id="dead-cap-panel">
             <div class="panel-heading">
-              <div><span class="panel-index">02 / CONTRACT MOVES</span><h3><span id="dead-cap-ledger-year">2026</span> Dead Cap</h3></div>
+              <div><span class="panel-index">03 / CONTRACT MOVES</span><h3><span id="dead-cap-ledger-year">2026</span> Dead Cap</h3></div>
               <p>Dead-cap entries shown here follow the selected salary-year tab. Trade or release a player from the current sheet to record dead cap. Only the first two salary years have dead-cap tables.</p>
             </div>
             <details class="salary-import-panel dead-cap-import-panel">

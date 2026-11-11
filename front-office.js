@@ -16,6 +16,8 @@ let storageIsAvailable = true;
 let tradePartnerIds = ["", ""];
 let tradeLines = {};
 let tradeLineCounter = 0;
+const playerCogSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+
 
 
 // { toPracticeSquad: true }: "Waive / Release To Practice Squad". He's released under the same dead-cap rules
@@ -758,7 +760,8 @@ function renderSalaryRows() {
   const onPs = (player) => isPracticeSquad(seasonEntry(player, activeSeason));
   const active = roster.filter((player) => !onPs(player)), practice = roster.filter(onPs);
   // The practice squad section shows even when it's empty.
-  const sequence = roster.length ? [{ section: "active" }, ...active, { section: "ps" }, ...(practice.length ? practice : [{ section: "ps-empty" }])] : [];
+  // The practice squad has its own table below (renderPracticeSquadRows); the counters for both sit on top here.
+  const sequence = roster.length ? [{ section: "active" }, ...active] : [];
   for (const item of sequence) {
     if (item.section) { salaryRows.append(salarySectionRow(item.section, active.length, practice.length)); continue; }
     const player = item;
@@ -781,7 +784,7 @@ function renderSalaryRows() {
     cog.setAttribute("aria-expanded", "false");
     cog.setAttribute("aria-label", `Actions for ${player.name}`);
     cog.title = `Actions for ${player.name}`;
-    cog.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+    cog.innerHTML = playerCogSvg;
     nameCell.append(cog, playerPortrait(player), nameLink);
     if (isVmbSeason(entry)) {
       const vmb = document.createElement("button");
@@ -876,7 +879,89 @@ function renderSalaryRows() {
     actionCell.append(actions);
   }
   updateComputedCells();
+  renderPracticeSquadRows(practice);
 }
+
+// The team's practice squad for the selected salary year, in its own table (like the dead-cap table).
+function renderPracticeSquadRows(practice) {
+  const body = document.querySelector("#ps-rows");
+  if (!body) return;
+  const { totalCap } = seasonCapFigures(activeTeamId, activeSeason);
+  document.querySelector("#ps-ledger-year").textContent = activeSeason;
+  const count = document.querySelector("#ps-ledger-count");
+  count.textContent = `${practice.length} / ${practiceSquadLimit}`;
+  count.classList.toggle("is-over", practice.length > practiceSquadLimit + 1);
+  document.querySelector("#ps-empty").hidden = practice.length > 0;
+  body.replaceChildren(...[...practice].sort((a, b) => capHitFor(seasonEntry(b, activeSeason)) - capHitFor(seasonEntry(a, activeSeason)) || a.name.localeCompare(b.name)).map((player) => {
+    const entry = seasonEntry(player, activeSeason);
+    const row = document.createElement("tr");
+    row.dataset.playerId = player.id;
+    const cell = (label, text) => { const td = row.insertCell(); td.dataset.label = label; if (text !== undefined) td.textContent = text; return td; };
+    const nameCell = cell("Player");
+    nameCell.className = "ps-name-cell";
+    const cog = document.createElement("button");
+    cog.type = "button";
+    cog.className = "player-cog";
+    cog.dataset.action = "player-menu";
+    cog.setAttribute("aria-haspopup", "menu");
+    cog.setAttribute("aria-expanded", "false");
+    cog.setAttribute("aria-label", `Actions for ${player.name}`);
+    cog.title = `Actions for ${player.name}`;
+    cog.innerHTML = playerCogSvg;
+    const link = document.createElement("a");
+    link.className = "player-name-link";
+    link.href = profileUrl(player.id);
+    link.textContent = player.name;
+    const nameWrap = document.createElement("span");
+    nameWrap.className = "ps-name";
+    nameWrap.append(cog, playerPortrait(player), link);
+    nameCell.append(nameWrap);
+    cell("Position", entry.position || "—");
+    const exp = projectedExperience(player, activeSeason);
+    cell("Yrs exp", exp === null ? "—" : String(exp));
+    cell("Weekly salary", entry.psWeekly !== undefined ? formatCurrency(entry.psWeekly) : "—");
+    cell("Weeks", entry.psWeeks !== undefined ? String(entry.psWeeks) : "—");
+    const hit = capHitFor(entry);
+    const hitCell = cell("Cap hit", formatCurrency(hit));
+    hitCell.className = "ps-hit";
+    cell("Cap %", totalCap > 0 ? `${((hit / totalCap) * 100).toFixed(2)}%` : "—");
+    const status = cell("Status");
+    if (isPsElevated(entry)) {
+      const up = document.createElement("button");
+      up.type = "button";
+      up.className = "vmb-mark ps-elevated-mark";
+      up.dataset.action = "remove-elevation";
+      up.textContent = "Elevated";
+      up.title = `${player.name} is elevated for game day. Click to send him back.`;
+      status.append(up);
+    } else status.textContent = "Practice squad";
+    const actions = cell("Actions");
+    const promote = document.createElement("button");
+    promote.type = "button";
+    promote.className = "row-transaction";
+    promote.dataset.psAction = "ps-promote";
+    promote.textContent = "Promote";
+    promote.title = `Promote ${player.name} to the active roster`;
+    promote.disabled = !storageIsAvailable;
+    actions.append(promote);
+    return row;
+  }));
+}
+
+document.querySelector("#ps-rows")?.addEventListener("click", (event) => {
+  const row = event.target.closest("[data-player-id]");
+  const player = row && selectedTeamData().roster.find(({ id }) => id === row.dataset.playerId);
+  if (!player) return;
+  const cog = event.target.closest('[data-action="player-menu"]');
+  if (cog) {
+    if (cog.getAttribute("aria-expanded") === "true") closePlayerMenu();
+    else openPlayerMenu(cog, player);
+    return;
+  }
+  if (event.target.closest('[data-action="remove-elevation"]')) { runPlayerMenuAction("ps-elevate", player); return; }
+  const button = event.target.closest("[data-ps-action]");
+  if (button) runPlayerMenuAction(button.dataset.psAction, player);
+});
 
 // Section header rows on the salary sheet. The top one carries both counters ("ACTIVE ROSTER 52 / 53" and
 // "PRACTICE SQUAD 4 / 16"); the practice squad section below has its own heading, and a note when it's empty.
@@ -1660,7 +1745,7 @@ document.querySelector("#cap-adjustment").addEventListener("blur", (event) => {
 function closePlayerMenu(focusCog = false) {
   const menu = document.querySelector("#player-menu");
   if (!menu) return;
-  const cog = salaryRows.querySelector(`.player-cog[aria-expanded="true"]`);
+  const cog = document.querySelector(`.player-cog[aria-expanded="true"]`);
   cog?.setAttribute("aria-expanded", "false");
   menu.remove();
   if (focusCog) cog?.focus();
@@ -1668,7 +1753,7 @@ function closePlayerMenu(focusCog = false) {
 
 function placePlayerMenu() {
   const menu = document.querySelector("#player-menu");
-  const cog = salaryRows.querySelector(`.player-cog[aria-expanded="true"]`);
+  const cog = document.querySelector(`.player-cog[aria-expanded="true"]`);
   if (!menu || !cog) return;
   const rect = cog.getBoundingClientRect();
   const height = menu.offsetHeight, width = menu.offsetWidth;
