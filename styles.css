@@ -2239,8 +2239,8 @@ table td ul { padding-left: 0 !important; list-style-position: inside; }
 }
 .md-best-item, .md-best-item:last-child { border-bottom: 0; }
 
-/* Game of the Week: chalk playbook drawings behind each team (defense for the away side, offense for the home side). */
+/* Game of the Week: one chalk play behind the matchup: the away defense (left) lined up against the home offense
+   (right), with the line of scrimmage on the center divider. */
 .md-gotw::before { background:
-  url("assets/play-defense.svg") left center / 50% auto no-repeat,
-  url("assets/play-offense.svg") right center / 50% auto no-repeat,
+  url("assets/play-matchup.svg") center / cover no-repeat,
   linear-gradient(180deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .35)); }
