@@ -460,7 +460,7 @@ function renderWeeksBest(games) {
   if (!weeks.length) { box.hidden = true; return; }
   box.hidden = false;
   if (!weeks.includes(mdTopWeek)) mdTopWeek = weeks[weeks.length - 1];
-  // Heading with PREV / NEXT, and one dot per week underneath the cards.
+  // Heading, then the cards, then PREV / one dot per week / NEXT.
   const at = weeks.indexOf(mdTopWeek);
   const go = (w) => { mdTopWeek = w; renderWeeksBest(games); box.querySelector(`.md-top-dot[data-week="${w}"], .md-slate-nav:not(:disabled)`)?.focus({ preventScroll: true }); };
   const head = mdEl("div", "md-slate-head md-top-head-row");
@@ -474,16 +474,11 @@ function renderWeeksBest(games) {
   next.disabled = at >= weeks.length - 1;
   prev.addEventListener("click", () => go(weeks[at - 1]));
   next.addEventListener("click", () => go(weeks[at + 1]));
-  const nav = mdEl("div", "md-slate-navs");
-  nav.append(prev, next);
-  nav.hidden = weeks.length === 1;
-  head.append(nav);
   const grid = mdEl("div", "md-top-grid");
   grid.setAttribute("aria-live", "polite");
   grid.append(...mdTopPlayers(games.filter((g) => g.week === mdTopWeek)).map(mdTopCard));
   const dots = mdEl("div", "md-top-dots");
   dots.setAttribute("aria-label", "Weeks");
-  dots.hidden = weeks.length === 1;
   for (const w of weeks) {
     const dot = mdEl("button", `md-top-dot${w === mdTopWeek ? " is-active" : ""}`);
     dot.type = "button";
@@ -494,7 +489,11 @@ function renderWeeksBest(games) {
     dot.addEventListener("click", () => go(w));
     dots.append(dot);
   }
-  box.replaceChildren(head, grid, dots);
+  // PREV · dots · NEXT along the bottom.
+  const pager = mdEl("div", "md-top-pager");
+  pager.hidden = weeks.length === 1;
+  pager.append(prev, dots, next);
+  box.replaceChildren(head, grid, pager);
   mdFitTopNames();
   mdFitObserver?.disconnect();
   document.querySelectorAll(".md-gotw-name").forEach((el) => mdFitObserver?.observe(el));

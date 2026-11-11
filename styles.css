@@ -2310,3 +2310,12 @@ a.md-top-name:hover { text-decoration: underline; }
   .md-top-dot { width: 8px; height: 8px; }
   .md-top-dot.is-active { width: 18px; }
 }
+.md-top-pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 4px; }
+.md-top-pager[hidden] { display: none; }
+.md-top-pager .md-top-dots { padding-top: 0; }
+@media (max-width: 560px) { .md-top-pager { gap: 8px; } .md-top-pager .md-slate-nav { min-width: 0; padding: 6px 10px; font-size: 12px; } .md-top-pager .md-top-dots { flex: 1; min-width: 0; } }
+@media (max-width: 560px) {
+  .md-top-pager .md-top-dots { flex-wrap: nowrap; gap: 4px; }
+  .md-top-pager .md-top-dot { flex: none; width: 6px; height: 6px; }
+  .md-top-pager .md-top-dot.is-active { width: 14px; }
+}
