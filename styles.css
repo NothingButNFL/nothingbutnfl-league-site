@@ -2641,3 +2641,7 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 }
 @keyframes md-gotw-sweep { 0% { background-position: 160% 0; } 60%, 100% { background-position: -60% 0; } }
 @media (prefers-reduced-motion: reduce) { .md-gotw::before, .md-gotw::after { animation: none; } }
+/* Ripple instead of drift: the artwork bends gently in place (SVG filter #md-ripple in index.html); the light sweep stays. */
+.md-ripple-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.md-gotw::before { inset: -3%; animation: none; transform: none; filter: url(#md-ripple); will-change: auto; }
+@media (prefers-reduced-motion: reduce) { .md-gotw::before { filter: none; } }
