@@ -226,6 +226,10 @@ function renderGameOfWeek(pick, records) {
     const [a, b] = g.teams;
     center.append(mdEl("strong", "md-gotw-score", `${a.score}–${b.score}`), mdEl("span", "", `${pick.away} @ ${pick.home} · FINAL`));
   } else center.append(mdEl("strong", "md-gotw-vs-text", "VS"), mdEl("span", "", `${pick.away} @ ${pick.home}`));
+  const previewButton = mdEl("button", "md-gotw-preview", final ? "GAME RECAP" : "PREVIEW");
+  previewButton.type = "button";
+  previewButton.addEventListener("click", () => openGamePreview({ away: pick.away, home: pick.home, game: final ? g : null }, pick.week));
+  center.append(previewButton);
   const stage = mdEl("div", "md-gotw-stage");
   stage.append(
     mdTeamPanel(pick.away, mdRecordText(records[pick.away]), star(pick.away), "away"),
@@ -281,7 +285,12 @@ function mdSlatePane(item, records) {
   const scoreOf = (id) => g ? g.teams.find((t) => t.team === id)?.score : null;
   const top = g ? Math.max(...g.teams.map((t) => t.score)) : null;
   const tied = g && g.teams[0].score === g.teams[1].score;
-  pane.append(mdEl("span", "md-slate-tag", item.featured ? "GAME OF THE WEEK" : g ? "FINAL" : "PREVIEW"));
+  // The tag opens the game preview (or recap, once it's been played).
+  const tag = mdEl("button", "md-slate-tag", g ? "FINAL" : "PREVIEW");
+  tag.type = "button";
+  tag.title = g ? `${item.away} @ ${item.home}: game recap` : `${item.away} @ ${item.home}: game preview`;
+  tag.addEventListener("click", () => openGamePreview(item, mdCurrentWeek));
+  pane.append(tag);
   const rows = mdEl("div", "md-slate-rows");
   for (const [id, where] of [[item.away, "AWAY"], [item.home, "HOME"]]) {
     const row = mdEl("a", `md-slate-team${g && !tied && scoreOf(id) === top ? " is-winner" : ""}`);
@@ -301,10 +310,6 @@ function mdSlatePane(item, records) {
     if (stars.length) note = `Players to watch: ${stars.map((p) => `${p.name} (${p.team})`).join(", ")}`;
   }
   if (note) pane.append(mdEl("p", "md-slate-note", note));
-  const preview = mdEl("button", "md-slate-preview", g ? "Game recap" : "Preview");
-  preview.type = "button";
-  preview.addEventListener("click", () => openGamePreview(item, mdCurrentWeek));
-  pane.append(preview);
   return pane;
 }
 let mdCurrentWeek = null;
@@ -612,7 +617,7 @@ function renderMatchday() {
   section.hidden = false;
   renderTicker(lastWeek, week);
   renderGameOfWeek(pick, records);
-  renderWeekSlate(mdWeekSlate(data, pick, games), pick, records);
+  renderWeekSlate(mdWeekSlate(data, pick, games).filter((item) => !item.featured), pick, records); // the Game of the Week has its own panel
   renderScoreboard(data, pick, games, records);
   renderWeeksBest(games);
 }

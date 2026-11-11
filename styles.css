@@ -2599,3 +2599,7 @@ a.md-top-name:hover { text-decoration: underline; }
 .mdp-starter-list li { grid-template-columns: 48px 26px minmax(0, 1fr); }
 .mdp-who { display: grid; min-width: 0; gap: 1px; }
 .mdp-stats { overflow: hidden; color: #cfd8e6; font: 600 12px var(--body); text-overflow: ellipsis; white-space: nowrap; }
+button.md-slate-tag { background: rgba(5, 14, 30, .45); color: #fff; cursor: pointer; }
+button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9a227; background: #c9a227; color: #07162b; }
+.md-gotw-preview { margin-top: 10px; padding: 7px 16px; border: 1px solid #c9a227; border-radius: 3px; background: rgba(5, 14, 30, .78); color: #fff; font: 800 13px var(--display); letter-spacing: .1em; cursor: pointer; }
+.md-gotw-preview:hover, .md-gotw-preview:focus-visible { background: #c9a227; color: #07162b; }

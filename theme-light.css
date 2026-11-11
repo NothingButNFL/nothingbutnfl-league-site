@@ -852,3 +852,5 @@ html[data-theme="light"] .mdp-switch-track { background-color: #c6d4e5; }
 html[data-theme="light"] .mdp-switch-track::after { background-color: #0c2b50; }
 html[data-theme="light"] .mdp-switch input:focus-visible + .mdp-switch-track { outline-color: #1f6fc5; }
 html[data-theme="light"] .mdp-player { color: #0b1f3a; }
+html[data-theme="light"] button.md-slate-tag { color: #0b1f3a; }
+html[data-theme="light"] .md-gotw-preview { color: #0b1f3a; }
