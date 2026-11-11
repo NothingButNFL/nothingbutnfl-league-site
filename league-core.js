@@ -104,7 +104,9 @@ function validateOfficeData(data) {
             !Number.isSafeInteger(entry.releaseNetSavings) || Math.abs(entry.releaseNetSavings) > 999999999 ||
             (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999)) ||
             (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean") ||
-            (entry.psElevated !== undefined && typeof entry.psElevated !== "boolean")) return false;
+            (entry.psElevated !== undefined && typeof entry.psElevated !== "boolean") ||
+            (entry.psWeekly !== undefined && !isIntegerInRange(entry.psWeekly, 0, 9999999)) ||
+            (entry.psWeeks !== undefined && !isIntegerInRange(entry.psWeeks, 0, regularSeasonWeeks))) return false;
       }
     }
   }
@@ -121,7 +123,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers);
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -2595,7 +2597,7 @@ function minimumProblem(data, player, contract, startYear) {
 // A claiming team takes on his remaining base salaries and roster bonuses; prorated signing bonus stays with the old team.
 const waiverPeriodHours = 24;
 const vestedVeteranSeasons = 4;
-const waiverStatuses = ["open", "claimed", "cleared", "removed"];
+const waiverStatuses = ["open", "claimed", "cleared", "practice-squad", "removed"];
 
 function validWaivers(waivers) {
   if (waivers === undefined) return true;
@@ -2610,6 +2612,7 @@ function validWaivers(waivers) {
         (w.profile !== undefined && !validPlayerProfile(w.profile)) ||
         (w.birthDate !== undefined && (typeof w.birthDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(w.birthDate))) ||
         (w.awardedTo !== undefined && !teamIds.has(w.awardedTo)) ||
+        (w.psTeam !== undefined && w.psTeam !== w.fromTeam) || (w.playerId !== undefined && typeof w.playerId !== "string") ||
         !Array.isArray(w.seasons) || w.seasons.length > seasonCount ||
         !w.seasons.every((x) => x && isIntegerInRange(x.year, 2000, 2100) && ["baseSalary", "rosterBonus", "guaranteedSalary", "proratedBonus"].every((k) => isIntegerInRange(x[k] ?? 0))) ||
         !Array.isArray(w.claims) || w.claims.length > 32 || new Set(w.claims.map((c) => c?.teamId)).size !== w.claims.length ||
@@ -2627,13 +2630,16 @@ const waiverExpired = (entry, now = Date.now()) => Date.parse(entry.clearsAt) <=
 
 // Called when a team releases a player (before his seasons are taken off the sheet).
 // Returns { waived: true, entry } or { waived: false } (vested veteran, added to free agency).
-function releaseToWaiversOrFreeAgency(data, player, teamId, year) {
+// With { practiceSquad: true } the team means to keep him on its practice squad: a vested veteran signs to it right
+// away (the caller does that once his old contract is off the sheet); anyone else goes on waivers and only joins the
+// practice squad if nobody claims him.
+function releaseToWaiversOrFreeAgency(data, player, teamId, year, { practiceSquad = false } = {}) {
   const entry = seasonEntry(player, year);
   const experience = player.experience ?? null;
   const base = { playerName: player.name, position: entry.position || "", experience };
   if (isVestedVeteran(player)) {
-    addFreeAgent(data, { ...base, profile: player.profile, birthDate: player.birthDate });
-    return { waived: false };
+    if (!practiceSquad) addFreeAgent(data, { ...base, profile: player.profile, birthDate: player.birthDate });
+    return { waived: false, practiceSquad };
   }
   const now = new Date();
   const waiver = {
@@ -2646,6 +2652,7 @@ function releaseToWaiversOrFreeAgency(data, player, teamId, year) {
     }),
     claims: [], status: "open"
   };
+  if (practiceSquad) { waiver.psTeam = teamId; waiver.playerId = player.id; }
   if (player.profile && validPlayerProfile(player.profile)) waiver.profile = player.profile;
   if (typeof player.birthDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(player.birthDate)) waiver.birthDate = player.birthDate;
   if (!Array.isArray(data.waivers)) data.waivers = [];
@@ -2691,6 +2698,16 @@ function processWaiver(data, waiver) {
   const claims = [...waiver.claims].sort((a, b) => order.indexOf(a.teamId) - order.indexOf(b.teamId));
   waiver.processedAt = new Date().toISOString();
   const pos = waiver.position ? ` (${waiver.position})` : "";
+  if (!claims.length && waiver.psTeam) {
+    const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+    const existing = data.teams[waiver.psTeam].roster.find((p) => p.id === waiver.playerId) || null;
+    const signed = signToPracticeSquad(data, waiver.psTeam, existing, waiver, year);
+    waiver.status = "practice-squad";
+    const s0 = seasonEntry(signed, year);
+    logTransaction(data, { type: "waiver", teams: [waiver.psTeam], player: waiver.playerName, auto: true,
+      details: `${waiver.playerName}${pos} cleared waivers and signed to the ${teamName(waiver.psTeam)} practice squad (${formatCurrency(s0.psWeekly || 0)} a week for ${s0.psWeeks ?? 0} weeks).` });
+    return `${waiver.playerName} cleared waivers and joined the ${teamName(waiver.psTeam)} practice squad.`;
+  }
   if (!claims.length) {
     waiver.status = "cleared";
     addFreeAgent(data, waiver);
@@ -2720,4 +2737,51 @@ function processWaiver(data, waiver) {
   logTransaction(data, { type: "waiver", teams: [to, waiver.fromTeam], player: waiver.playerName, auto: true,
     details: `${teamName(to)} claimed ${waiver.playerName}${pos} off waivers from ${teamName(waiver.fromTeam)}. ${years.length}-year contract, ${formatCurrency(hit)} cap hit in ${years[0]}.${others}` });
   return `${teamName(to)} were awarded ${waiver.playerName} off waivers${claims.length > 1 ? ` (${claims.length} claims)` : ""}.`;
+}
+
+
+// ---- Practice squad salaries ----
+// data.psWeeklySalaries = { [year]: { "0-1": n, "2": n, "3+": n } } (League Cap Directory). A practice squad player's
+// salary is that weekly amount times the regular-season weeks left, counting the current week, when he joins.
+// data.currentWeek (optional, 1–19; 19 = regular season over) overrides the week worked out from the box scores.
+const regularSeasonWeeks = 18;
+const psSalaryTiers = [["0-1", "0–1 yrs"], ["2", "2 yrs"], ["3+", "3+ yrs"]];
+function validPsWeeklySalaries(table) {
+  if (table === undefined) return true;
+  if (!table || typeof table !== "object" || Array.isArray(table)) return false;
+  return Object.entries(table).every(([year, row]) => seasons.includes(Number(year)) && row && typeof row === "object" && !Array.isArray(row) &&
+    Object.entries(row).every(([tier, value]) => psSalaryTiers.some(([t]) => t === tier) && (value === null || isIntegerInRange(value, 0, 9999999))));
+}
+const psTierFor = (experience) => (experience === null || experience === undefined || experience <= 1 ? "0-1" : experience === 2 ? "2" : "3+");
+function psWeeklySalaryFor(data, year, experience) {
+  const value = data.psWeeklySalaries?.[year]?.[psTierFor(experience)];
+  return value === undefined ? null : value;
+}
+// { week, source }: the commissioner's setting, else the week after the last one with a logged regular-season box score.
+function leagueCurrentWeek(data) {
+  if (isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1)) return { week: data.currentWeek, source: "set" };
+  const played = (data.games || []).map((g) => g.week).filter((w) => Number.isInteger(w) && w >= 1 && w <= regularSeasonWeeks);
+  return { week: played.length ? Math.min(regularSeasonWeeks + 1, Math.max(...played) + 1) : 1, source: played.length ? "games" : "default" };
+}
+const psWeeksRemaining = (data) => Math.max(0, regularSeasonWeeks - leagueCurrentWeek(data).week + 1);
+
+// Puts a player on a team's practice squad for one season at the practice squad rate. Reuses his roster record when
+// he still has one (e.g. earlier seasons on the sheet). Returns the player.
+function signToPracticeSquad(data, teamId, existing, info, year) {
+  const team = data.teams[teamId];
+  const player = existing || {
+    id: newRecordId("player"), name: info.playerName, activeSeasons: [],
+    seasons: Object.fromEntries(seasons.map((y) => [y, emptySeasonData()]))
+  };
+  if (!existing) {
+    if (info.experience !== null && info.experience !== undefined) player.experience = info.experience;
+    if (info.profile && validPlayerProfile(info.profile)) player.profile = info.profile;
+    if (typeof info.birthDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(info.birthDate)) player.birthDate = info.birthDate;
+  }
+  const weekly = psWeeklySalaryFor(data, year, player.experience ?? info.experience ?? null) || 0;
+  const weeks = psWeeksRemaining(data);
+  player.seasons[year] = { ...emptySeasonData(info.position || "", practiceSquadRosterType), baseSalary: weekly * weeks, psWeekly: weekly, psWeeks: weeks };
+  if (!player.activeSeasons.includes(year)) player.activeSeasons = [...player.activeSeasons, year].sort((a, b) => a - b);
+  if (!team.roster.includes(player)) team.roster.push(player);
+  return player;
 }

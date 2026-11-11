@@ -18,7 +18,9 @@ let tradeLines = {};
 let tradeLineCounter = 0;
 
 
-async function recordRosterTransaction(player, transaction) {
+// { toPracticeSquad: true }: "Waive / Release To Practice Squad". He's released under the same dead-cap rules
+// (pre/post June 1); a vested veteran then signs straight to the practice squad, anyone else goes on waivers first.
+async function recordRosterTransaction(player, transaction, { toPracticeSquad = false } = {}) {
   const year = currentLeagueYear();
   if (activeSeason !== year || !seasons.includes(year)) {
     workspaceStatus.textContent = `Trade or release actions are available only on the current league year's (${year}) salary sheet.`;
@@ -44,8 +46,19 @@ async function recordRosterTransaction(player, transaction) {
       futureAmount > 0 ? `; future dead cap is not tracked because the ledger covers only ${deadCapSeasons.join(" and ")}` : "") +
     `. Their ${year} and later salary sheets will be removed.`;
   const verb = transaction === "trade" ? "Trade" : releaseVerb(player);
-  const question = transaction === "release" ? `Are you sure you want to ${verb.toLowerCase()} ${player.name}? ` : "";
-  const confirmed = await confirmAction(question + summary.replace(" released ", verb === "Waive" ? " waived " : " released "), { confirmLabel: `${verb} ${player.name}`, danger: true });
+  const question = transaction === "release" ? `Are you sure you want to ${verb.toLowerCase()} ${player.name}${toPracticeSquad ? " to the practice squad" : ""}? ` : "";
+  let psNote = "";
+  if (toPracticeSquad) {
+    const weekly = psWeeklySalaryFor(officeData, year, player.experience ?? null);
+    const weeks = psWeeksRemaining(officeData);
+    const pay = weekly === null ? `Practice squad pay for his experience isn't set yet (Admin › League Cap Directory), so it starts at $0.`
+      : `Practice squad pay: ${formatCurrency(weekly)} a week × ${weeks} week${weeks === 1 ? "" : "s"} left = ${formatCurrency(weekly * weeks)}.`;
+    psNote = verb === "Waive"
+      ? ` He goes on the Waiver Wire for ${waiverPeriodHours} hours. If no team claims him, he joins your practice squad. ${pay}`
+      : ` As a vested veteran he skips waivers and signs to your practice squad right away. ${pay}`;
+  }
+  const confirmed = await confirmAction(question + summary.replace(" released ", verb === "Waive" ? " waived " : " released ") + psNote,
+    { confirmLabel: `${verb} ${player.name}${toPracticeSquad ? " to PS" : ""}`, danger: true });
   if (!confirmed) {
     workspaceStatus.textContent = `${verb === "Waive" ? "Waiver" : verb === "Trade" ? "Trade" : "Release"} canceled. No changes were made.`;
     return;
@@ -65,10 +78,15 @@ async function recordRosterTransaction(player, transaction) {
   if (futureIsTrackable) team.deadCap[nextYear].push(makeRecord(futureAmount));
   accelerateVoidDeadCap(team, player, year);
   // A released player goes on the Waiver Wire (or straight to free agency if he's a vested veteran).
-  const waiverOutcome = transaction === "release" ? releaseToWaiversOrFreeAgency(officeData, player, activeTeamId, year) : null;
+  const waiverOutcome = transaction === "release" ? releaseToWaiversOrFreeAgency(officeData, player, activeTeamId, year, { practiceSquad: toPracticeSquad }) : null;
+  const position = seasonEntry(player, year).position;
   player.activeSeasons = player.activeSeasons.filter((season) => season < year);
   if (!player.activeSeasons.length) {
     team.roster = team.roster.filter(({ id }) => id !== player.id);
+  }
+  if (toPracticeSquad && waiverOutcome && !waiverOutcome.waived) {
+    delete player.seasons[year].psElevated;
+    signToPracticeSquad(officeData, activeTeamId, player, { playerName: player.name, position, experience: player.experience }, year);
   }
   if (transaction === "release") {
     logTransaction(officeData, {
@@ -77,13 +95,14 @@ async function recordRosterTransaction(player, transaction) {
       player: player.name,
       details: `${player.name}${seasonEntry(player, year).position ? ` (${seasonEntry(player, year).position})` : ""} released. Dead cap: ${formatCurrency(currentAmount)} in ${year}` +
         (futureIsTrackable ? ` and ${formatCurrency(futureAmount)} in ${nextYear}.` : ".") +
-        (waiverOutcome?.waived ? " Placed on waivers." : " Vested veteran: now a free agent."),
+        (waiverOutcome?.waived ? ` Placed on waivers${toPracticeSquad ? " (to the practice squad if he clears)" : ""}.` : toPracticeSquad ? " Vested veteran: signed to the practice squad." : " Vested veteran: now a free agent."),
       auto: true
     });
   }
   renderFrontOffice();
   saveOfficeData(`${player.name} ${transaction === "trade" ? "traded" : waiverOutcome?.waived ? "waived" : "released"}; dead cap recorded for ${year}${futureIsTrackable ? ` and ${nextYear}` : ""}.` +
-    (waiverOutcome ? (waiverOutcome.waived ? ` He's on the Waiver Wire for ${waiverPeriodHours} hours.` : " As a vested veteran he skips waivers and is now a free agent.") : ""));
+    (waiverOutcome ? (waiverOutcome.waived ? ` He's on the Waiver Wire for ${waiverPeriodHours} hours${toPracticeSquad ? " and joins the practice squad if nobody claims him" : ""}.`
+      : toPracticeSquad ? " As a vested veteran he skips waivers and is on the practice squad now." : " As a vested veteran he skips waivers and is now a free agent.") : ""));
 }
 
 function selectedTeam() {
@@ -841,6 +860,10 @@ function renderSalaryRows() {
       } else {
         cell.append(currencyInput(entry[field], ariaLabel, field, signed === true, false));
       }
+    }
+    if (entry.psWeekly !== undefined && isPracticeSquad(entry)) {
+      const base = row.querySelector('[data-field="baseSalary"]');
+      if (base) base.title = `Practice squad pay: ${formatCurrency(entry.psWeekly)} a week × ${entry.psWeeks ?? 0} week${entry.psWeeks === 1 ? "" : "s"} left when he joined.`;
     }
     const actionCell = row.insertCell();
     actionCell.dataset.label = "Actions";
@@ -1694,7 +1717,7 @@ function openPlayerMenu(cog, player) {
     add("ps-elevate", isPsElevated(entry) ? "Remove Game-Day Elevation" : "Elevate For Game Day", noSave);
   } else if (entry) {
     const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
-    add("ps-move", `${releaseVerb(player)} To Practice Squad`, noSave || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
+    add("ps-move", `${releaseVerb(player)} To Practice Squad`, noSave || notCurrent || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
   }
   menu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-menu-action]");
@@ -1719,15 +1742,11 @@ function openPlayerMenu(cog, player) {
 
 function runPlayerMenuAction(action, player) {
   if (action === "release") { recordRosterTransaction(player, "release"); return; }
-  if (action === "ps-move" || action === "ps-promote" || action === "ps-elevate") {
+  if (action === "ps-move") { recordRosterTransaction(player, "release", { toPracticeSquad: true }); return; }
+  if (action === "ps-promote" || action === "ps-elevate") {
     const entry = seasonEntry(player, activeSeason);
     let message;
-    if (action === "ps-move") {
-      entry.rosterType = practiceSquadRosterType;
-      delete entry.psElevated;
-      const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
-      message = `${player.name} ${releaseVerb(player) === "Waive" ? "waived" : "released"} to the ${activeSeason} practice squad (${practiceSquad} / ${practiceSquadLimit}).`;
-    } else if (action === "ps-promote") {
+    if (action === "ps-promote") {
       entry.rosterType = "Active";
       delete entry.psElevated;
       const { active } = rosterCounts(activeTeamId, activeSeason);

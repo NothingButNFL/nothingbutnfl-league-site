@@ -319,3 +319,94 @@ renderVmbLimits(officeData);
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderVmbLimits(officeData);
 });
+
+
+// ---- Practice squad weekly salaries (by experience tier and season) and the current week ----
+const adminPsHead = document.querySelector("#admin-ps-head");
+const adminPsRows = document.querySelector("#admin-ps-rows");
+const adminPsWeek = document.querySelector("#admin-ps-week");
+function renderPsSalaries(data) {
+  const head = document.createElement("tr");
+  for (const label of ["EXPERIENCE", ...minimumSeasons.map(String)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    if (label === String(minimumYear())) th.className = "is-current";
+    head.append(th);
+  }
+  adminPsHead.replaceChildren(head);
+  adminPsRows.replaceChildren(...psSalaryTiers.map(([tier, label]) => {
+    const row = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = label;
+    row.append(th);
+    for (const year of minimumSeasons) {
+      const cell = row.insertCell();
+      cell.className = `admin-cap-cell${year === minimumYear() ? " is-current" : ""}`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = "decimal";
+      input.maxLength = 12;
+      const value = data.psWeeklySalaries?.[year]?.[tier];
+      input.value = value === null || value === undefined ? "" : formatCurrency(value);
+      input.placeholder = "Not set";
+      input.dataset.psYear = String(year);
+      input.dataset.psTier = tier;
+      input.disabled = !safeToSave;
+      input.setAttribute("aria-label", `${year} practice squad weekly salary, ${label} of experience`);
+      cell.append(input);
+    }
+    return row;
+  }));
+  // Current week
+  const { week, source } = leagueCurrentWeek(data);
+  adminPsWeek.replaceChildren(new Option("Automatic (from box scores)", ""),
+    ...Array.from({ length: regularSeasonWeeks }, (_, i) => new Option(`Week ${i + 1}`, String(i + 1))),
+    new Option("Regular season over", String(regularSeasonWeeks + 1)));
+  adminPsWeek.value = source === "set" ? String(week) : "";
+  adminPsWeek.disabled = !safeToSave;
+  const left = psWeeksRemaining(data);
+  document.querySelector("#admin-ps-week-note").textContent =
+    `${week > regularSeasonWeeks ? "The regular season is over" : `It's week ${week}`}${source === "games" ? " (the week after the last logged box score)" : source === "default" ? " (no box scores logged yet)" : ""}: ` +
+    `a player joining a practice squad now is paid for ${left} week${left === 1 ? "" : "s"}.`;
+}
+adminPsRows.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-ps-tier]");
+  if (!input || !safeToSave) return;
+  const year = Number(input.dataset.psYear), tier = input.dataset.psTier;
+  const value = input.value.trim() ? parseMoneyText(input.value) : null;
+  const old = officeData.psWeeklySalaries?.[year]?.[tier];
+  if (value === undefined || (value !== null && value > 9999999)) {
+    input.setCustomValidity("Enter a whole dollar amount per week, such as $14,000.");
+    input.reportValidity();
+    input.setCustomValidity("");
+    input.value = old === null || old === undefined ? "" : formatCurrency(old);
+    return;
+  }
+  const table = JSON.parse(JSON.stringify(officeData.psWeeklySalaries || {}));
+  table[year] = { ...(table[year] || {}), [tier]: value };
+  const label = psSalaryTiers.find(([t]) => t === tier)[1];
+  if (saveMinimums({ ...officeData, psWeeklySalaries: table }, `${year} practice squad pay for ${label} ${value === null ? "cleared" : `set to ${formatCurrency(value)} a week`}.`)) {
+    input.value = value === null ? "" : formatCurrency(value);
+  }
+});
+adminPsRows.addEventListener("focusin", (event) => {
+  const input = event.target.closest("[data-ps-tier]");
+  if (input) input.value = input.value.replace(/[$,\s]/g, "");
+});
+adminPsRows.addEventListener("focusout", (event) => {
+  const input = event.target.closest("[data-ps-tier]");
+  const value = input && parseMoneyText(input.value);
+  if (input && value) input.value = formatCurrency(value);
+});
+adminPsWeek.addEventListener("change", () => {
+  if (!safeToSave) return;
+  const updated = { ...officeData };
+  if (adminPsWeek.value) updated.currentWeek = Number(adminPsWeek.value); else delete updated.currentWeek;
+  if (saveMinimums(updated, adminPsWeek.value ? `Current week set to ${adminPsWeek.selectedOptions[0].textContent}.` : "Current week now follows the logged box scores.")) renderPsSalaries(officeData);
+});
+renderPsSalaries(officeData);
+window.addEventListener("storage", (event) => {
+  if (event.key === officeStorageKey) renderPsSalaries(officeData);
+});

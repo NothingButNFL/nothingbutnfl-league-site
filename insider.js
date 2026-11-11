@@ -128,6 +128,14 @@ const big = (c) => c.total >= 40e6;
 function insiderReleaseText(entry, seed) {
   const team = entry.teams[0];
   const who = insiderWho(insiderPlayer(entry));
+  if (/signed to the practice squad/i.test(entry.details)) return insiderPick([
+    `${insiderThe(team)} are releasing ${who} and bringing him back on the practice squad, sources tell me.`,
+    `Sources: ${who} is staying with the ${insiderTag(team)}, moving to the practice squad.`
+  ], seed).replace(/\s+/g, " ").trim();
+  if (/placed on waivers \(to the practice squad/i.test(entry.details)) return insiderPick([
+    `${insiderThe(team)} are waiving ${who} with the plan to bring him back on the practice squad, sources tell me. Other teams get the first shot.`,
+    `Sources: ${insiderTag(team)} waive ${who}, hoping he clears for the practice squad.`
+  ], seed).replace(/\s+/g, " ").trim();
   if (/placed on waivers/i.test(entry.details)) return insiderPick([
     `${insiderThe(team)} are waiving ${who}, sources tell me. He's on the wire for 24 hours.`,
     `Sources: ${insiderTag(team)} have waived ${who}. Teams have a day to put in a claim.`,
@@ -145,6 +153,10 @@ function insiderReleaseText(entry, seed) {
 function insiderWaiverText(entry, seed) {
   const team = entry.teams[0];
   const who = insiderWho(insiderPlayer(entry));
+  if (/cleared waivers and signed to the .* practice squad/i.test(entry.details)) return insiderPick([
+    `${who} cleared waivers and is back with the ${insiderTag(team)} on their practice squad, sources tell me.`,
+    `Sources: ${who} went unclaimed and signs to the ${insiderTag(team)} practice squad.`
+  ], seed);
   if (/cleared waivers/i.test(entry.details)) return insiderPick([
     `${who} has cleared waivers and is a free agent, sources tell me. Open market now.`,
     `No takers: ${who} went unclaimed on waivers and is now a free agent, per sources.`,

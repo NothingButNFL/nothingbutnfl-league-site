@@ -2449,3 +2449,8 @@ a.md-top-name:hover { text-decoration: underline; }
 }
 @media (max-width: 1599px) { .ww-layout .ww-card { grid-template-columns: 1fr; } }
 .ww-order-panel .ww-order .leader-logo { width: 24px; overflow: hidden; font-size: 8px; }
+.ww-ps-note { grid-column: 1 / -1; margin: 0; padding: 8px 12px; border-left: 3px solid #f2b950; background: rgba(242, 185, 80, .1); color: #fff; font-size: 14px; }
+.ww-history li.is-practice-squad { border-left-color: #8fd0ff; }
+.admin-ps-week { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-top: 14px; }
+.admin-ps-week label { display: grid; gap: 6px; min-width: 220px; }
+.admin-ps-week p { margin: 0 0 8px; color: #fff; font-size: 14px; }

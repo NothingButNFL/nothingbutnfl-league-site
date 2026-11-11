@@ -73,6 +73,11 @@ function wwCard(entry, order) {
   const clock = wwEl("span", `ww-clock${left ? "" : " is-ready"}`, left ? `Clears in ${left}` : "Waiver period over");
   clock.title = `Released ${new Date(entry.releasedAt).toLocaleString()} · clears ${new Date(entry.clearsAt).toLocaleString()}`;
   head.append(photo, who, clock);
+  if (entry.psTeam) {
+    const ps = wwEl("p", "ww-ps-note");
+    ps.append(wwEl("b", "", "Waived to the practice squad. "), `If no team claims him, he signs to the ${teamName(entry.psTeam)} practice squad.`);
+    head.append(ps);
+  }
 
   // Contract a claiming team takes on
   const contract = wwEl("div", "ww-contract");
@@ -127,7 +132,7 @@ function wwCard(entry, order) {
 
   // Commissioner
   const admin = wwEl("div", "ww-admin");
-  const process = wwEl("button", "workspace-button", sorted.length ? `Award to ${sorted[0].teamId}` : "Clear to free agency");
+  const process = wwEl("button", "workspace-button", sorted.length ? `Award to ${sorted[0].teamId}` : entry.psTeam ? `Sign to ${entry.psTeam} practice squad` : "Clear to free agency");
   process.type = "button";
   process.dataset.action = "process";
   process.disabled = !canSave;
@@ -164,7 +169,7 @@ function wwRender() {
   }));
 
   // History
-  const done = officeData.waivers.filter((w) => w.status === "claimed" || w.status === "cleared")
+  const done = officeData.waivers.filter((w) => w.status === "claimed" || w.status === "cleared" || w.status === "practice-squad")
     .sort((a, b) => String(b.processedAt).localeCompare(String(a.processedAt))).slice(0, 25);
   const history = document.querySelector("#ww-history");
   history.replaceChildren(...done.map((w) => {
@@ -172,7 +177,9 @@ function wwRender() {
     li.append(wwLogo(w.status === "claimed" ? w.awardedTo : w.fromTeam));
     const text = wwEl("span");
     text.append(wwEl("b", "", w.playerName), w.position ? ` (${w.position})` : "",
-      w.status === "claimed" ? ` claimed by ${teamName(w.awardedTo)} from ${w.fromTeam}` : ` cleared waivers (released by ${w.fromTeam}) · free agent`);
+      w.status === "claimed" ? ` claimed by ${teamName(w.awardedTo)} from ${w.fromTeam}`
+        : w.status === "practice-squad" ? ` cleared waivers · signed to the ${teamName(w.fromTeam)} practice squad`
+        : ` cleared waivers (released by ${w.fromTeam}) · free agent`);
     li.append(text, wwEl("small", "", w.processedAt ? new Date(w.processedAt).toLocaleDateString() : ""));
     return li;
   }));
@@ -198,8 +205,9 @@ wwOpen.addEventListener("click", async (event) => {
   } else if (action === "process") {
     const left = wwTimeLeft(entry);
     const leader = [...entry.claims].sort((a, b) => { const o = waiverPriority(officeData).map(({ id }) => id); return o.indexOf(a.teamId) - o.indexOf(b.teamId); })[0];
-    const what = leader ? `Award ${entry.playerName} to the ${teamName(leader.teamId)}? He goes on their salary sheet with his remaining contract.` : `No team claimed ${entry.playerName}. Clear him to free agency?`;
-    if (!await confirmAction(`${what}${left ? ` His waiver period still has ${left} left.` : ""}`, { confirmLabel: leader ? `Award to ${leader.teamId}` : "Clear to free agency" })) return;
+    const what = leader ? `Award ${entry.playerName} to the ${teamName(leader.teamId)}? He goes on their salary sheet with his remaining contract.`
+      : entry.psTeam ? `No team claimed ${entry.playerName}. Sign him to the ${teamName(entry.psTeam)} practice squad?` : `No team claimed ${entry.playerName}. Clear him to free agency?`;
+    if (!await confirmAction(`${what}${left ? ` His waiver period still has ${left} left.` : ""}`, { confirmLabel: leader ? `Award to ${leader.teamId}` : entry.psTeam ? "Sign to practice squad" : "Clear to free agency" })) return;
     wwSave(processWaiver(officeData, entry));
   } else if (action === "remove") {
     if (!await confirmAction(`Take ${entry.playerName} off waivers? He won't go to any team or to free agency. His release (and its dead cap) stays recorded.`, { confirmLabel: "Remove from wire", danger: true })) return;

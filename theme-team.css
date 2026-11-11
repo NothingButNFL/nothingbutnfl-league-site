@@ -363,3 +363,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .ww-claim-list li { border-t
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-admin { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-empty { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-order-panel .ww-order li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ww-history li.is-practice-squad { border-left-color: rgb(var(--tm-8fd0ff)); }
