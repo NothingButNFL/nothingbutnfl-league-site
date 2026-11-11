@@ -2465,3 +2465,27 @@ a.md-top-name:hover { text-decoration: underline; }
 #ps-panel .empty-state[hidden] { display: none; }
 .admin-vmb-table { width: auto; min-width: 360px; }
 .admin-vmb-table input { min-width: 160px; }
+/* Practice squad offers (team page notices) */
+.ps-offer-notices { display: grid; gap: 10px; margin: 0 0 14px; }
+.ps-offer-notices[hidden] { display: none; }
+.ps-offer-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border: 1px solid #f2b950; border-left-width: 5px; border-radius: 4px; background: rgba(242, 185, 80, .1); color: #fff; }
+.ps-offer-notice.is-outgoing { border-color: #8fd0ff; background: rgba(143, 208, 255, .08); }
+.ps-offer-notice p { flex: 1 1 420px; margin: 0; font-size: 14px; line-height: 1.45; }
+.ps-offer-notice strong { display: block; margin-bottom: 2px; font-size: 15px; }
+.ps-offer-actions { display: flex; gap: 8px; }
+.ps-offer-tag { display: block; margin-top: 4px; color: #f2b950; font: 700 12px var(--display); }
+/* Free Agency › practice squad players */
+.psm-team { white-space: nowrap; }
+.psm-team .leader-logo, .psm-team .leader-logo img, .psm-offers .leader-logo, .psm-offers .leader-logo img { width: 22px; height: 22px; object-fit: contain; vertical-align: middle; }
+.psm-has-offer { color: #f2b950; font-weight: 700; }
+.psm-table td:last-child { white-space: nowrap; }
+.psm-team-select { min-width: 150px; margin-right: 6px; }
+.psm-offers { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.psm-offers li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 10px; border-left: 3px solid #4caf7a; background: rgba(255, 255, 255, .03); }
+.psm-offers li.is-pending { border-left-color: #f2b950; }
+.psm-offers li.is-matched { border-left-color: #8fd0ff; }
+.psm-offers li.is-withdrawn { border-left-color: #6b7f99; opacity: .85; }
+.psm-offers li small { margin-left: auto; opacity: .8; }
+.psm-offers .psm-none { border-left-color: transparent; opacity: .8; }
+.ps-table td:last-child .row-transaction { white-space: nowrap; }
+.psm-table td.psm-has-offer { color: #f2b950 !important; }

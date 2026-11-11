@@ -896,6 +896,8 @@ function renderPracticeSquadRows(practice) {
   count.textContent = `${practice.length} / ${practiceSquadLimit}`;
   count.classList.toggle("is-over", practice.length > practiceSquadLimit + 1);
   document.querySelector("#ps-empty").hidden = practice.length > 0;
+  renderPsOfferNotices();
+  const offerFor = (playerId) => pendingPsOffers(officeData).find((o) => o.fromTeam === activeTeamId && o.playerId === playerId);
   body.replaceChildren(...[...practice].sort((a, b) => capHitFor(seasonEntry(b, activeSeason)) - capHitFor(seasonEntry(a, activeSeason)) || a.name.localeCompare(b.name)).map((player) => {
     const entry = seasonEntry(player, activeSeason);
     const row = document.createElement("tr");
@@ -939,6 +941,14 @@ function renderPracticeSquadRows(practice) {
       up.title = `${player.name} is elevated for game day. Click to send him back.`;
       status.append(up);
     } else status.textContent = "Practice squad";
+    const offer = offerFor(player.id);
+    if (offer) {
+      const tag = document.createElement("span");
+      tag.className = "ps-offer-tag";
+      tag.textContent = `Offer from ${offer.toTeam} · ${psOfferTimeLeft(offer) || "time's up"}`;
+      tag.title = `The ${teamName(offer.toTeam)} want to sign him. Match it in the notice above the table.`;
+      status.append(tag);
+    }
     const actions = cell("Actions");
     const promote = document.createElement("button");
     promote.type = "button";
@@ -951,6 +961,79 @@ function renderPracticeSquadRows(practice) {
     return row;
   }));
 }
+
+// Notices above the practice squad table: other teams trying to sign this team's practice squad players (match or let
+// him go), and this team's own offers to other teams' practice squad players (withdraw).
+function renderPsOfferNotices() {
+  const box = document.querySelector("#ps-offer-notices");
+  if (!box) return;
+  const incoming = pendingPsOffers(officeData).filter((o) => o.fromTeam === activeTeamId);
+  const outgoing = pendingPsOffers(officeData).filter((o) => o.toTeam === activeTeamId);
+  box.hidden = !incoming.length && !outgoing.length;
+  box.replaceChildren(...incoming.map((o) => {
+    const card = document.createElement("div");
+    card.className = "ps-offer-notice is-incoming";
+    card.dataset.offer = o.id;
+    const text = document.createElement("p");
+    const left = psOfferTimeLeft(o);
+    text.append(Object.assign(document.createElement("strong"), { textContent: `The ${teamName(o.toTeam)} want to sign ${o.playerName}${o.position ? ` (${o.position})` : ""} off your practice squad.` }),
+      ` You have ${left || "no time"} left to match: he'd sign to your active roster on a 1-year minimum prorated to the weeks left. If you don't, he joins the ${teamName(o.toTeam)} active roster on the same terms.`);
+    const actions = document.createElement("div");
+    actions.className = "ps-offer-actions";
+    for (const [action, label, cls] of [["match", "Match offer", "button button-lime"], ["release", "Let him go", "workspace-button"]]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = cls;
+      b.dataset.offerAction = action;
+      b.textContent = label;
+      b.disabled = !storageIsAvailable;
+      actions.append(b);
+    }
+    card.append(text, actions);
+    return card;
+  }), ...outgoing.map((o) => {
+    const card = document.createElement("div");
+    card.className = "ps-offer-notice is-outgoing";
+    card.dataset.offer = o.id;
+    const text = document.createElement("p");
+    text.append(Object.assign(document.createElement("strong"), { textContent: `Your offer to ${o.playerName} (${teamName(o.fromTeam)} practice squad)` }),
+      ` is waiting: they have ${psOfferTimeLeft(o) || "no time"} left to match.`);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "workspace-button";
+    b.dataset.offerAction = "withdraw";
+    b.textContent = "Withdraw offer";
+    b.disabled = !storageIsAvailable;
+    card.append(text, b);
+    return card;
+  }));
+}
+
+document.querySelector("#ps-offer-notices")?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-offer-action]");
+  const offer = button && (officeData.psOffers || []).find((o) => o.id === button.closest("[data-offer]")?.dataset.offer && o.status === "pending");
+  if (!offer || !storageIsAvailable) return;
+  const action = button.dataset.offerAction;
+  if (action === "match") {
+    const found = psOfferPlayer(officeData, offer);
+    const contract = found && psActiveContract(officeData, found.player, found.entry, found.year);
+    if (!await confirmAction(`Match the ${teamName(offer.toTeam)}' offer? ${offer.playerName} signs to your active roster on a 1-year minimum: ${contract ? contract.math : "his prorated minimum"}.` +
+      (contract?.earned ? ` His ${formatCurrency(contract.earned)} of practice squad pay already earned stays on your cap.` : ""), { confirmLabel: "Match offer" })) return;
+    const message = matchPsOffer(officeData, offer);
+    renderFrontOffice();
+    saveOfficeData(message);
+  } else if (action === "release") {
+    if (!await confirmAction(`Let ${offer.playerName} go? He signs with the ${teamName(offer.toTeam)} now instead of when the 24 hours are up.`, { confirmLabel: "Let him go", danger: true })) return;
+    const message = completePsOffer(officeData, offer);
+    renderFrontOffice();
+    saveOfficeData(message);
+  } else if (action === "withdraw") {
+    offer.status = "withdrawn";
+    offer.resolvedAt = new Date().toISOString();
+    renderFrontOffice();
+    saveOfficeData(`Offer to ${offer.playerName} withdrawn.`);
+  }
+});
 
 document.querySelector("#ps-rows")?.addEventListener("click", (event) => {
   const row = event.target.closest("[data-player-id]");
@@ -1834,29 +1917,23 @@ function openPlayerMenu(cog, player) {
 async function promoteFromPracticeSquad(player) {
   const year = activeSeason;
   const entry = seasonEntry(player, year);
-  // No experience on Player Contracts: he's paid the rookie (0-year) minimum.
-  const noExperience = player.experience === null || player.experience === undefined;
-  const tier = noExperience ? "0" : minimumTierFor(player.experience);
-  const amount = officeData.minimumSalaries?.[year]?.[tier];
-  const weeks = psWeeksRemaining(officeData);
-  const served = entry.psWeeks !== undefined ? Math.max(0, entry.psWeeks - weeks) : 0;
-  const earned = (entry.psWeekly || 0) * served;
-  if (amount === null || amount === undefined) {
-    // The minimum isn't set: say so in a dialog (the status line is easy to miss) and offer to promote at $0.
-    const anyway = await confirmAction(`${player.name} can't be put on a minimum deal yet: the ${year} minimum salary for ${minimumTierLabel(tier)} of experience isn't set. ` +
+  const contract = psActiveContract(officeData, player, entry, year);
+  if (contract.amount === null) {
+    // The minimum isn't set: say so in a dialog (the status line is easy to miss) and offer to sign at $0.
+    const anyway = await confirmAction(`${player.name} can't be put on a minimum deal yet: the ${year} minimum salary for ${minimumTierLabel(contract.tier)} of experience isn't set. ` +
       `Set it on Admin › League Cap Directory, then sign him again, or sign him now at a $0 salary and fix his base salary on the sheet.`,
       { confirmLabel: "Sign at $0", cancelLabel: "Cancel" });
-    if (!anyway) { workspaceStatus.textContent = `${player.name} wasn't signed to the active roster. Set the ${year} minimum for ${minimumTierLabel(tier)} on Admin › League Cap Directory.`; return; }
+    if (!anyway) { workspaceStatus.textContent = `${player.name} wasn't signed to the active roster. Set the ${year} minimum for ${minimumTierLabel(contract.tier)} on Admin › League Cap Directory.`; return; }
   }
-  const prorated = Math.round(((amount || 0) * weeks) / regularSeasonWeeks);
-  const math = amount == null ? "minimum not set, $0 for now"
-    : `${formatCurrency(amount)} ${year} minimum (${minimumTierLabel(tier)}${noExperience ? ", no experience on file" : ""}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
-  const ok = amount == null || await confirmAction(`Sign ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
-    (earned ? ` His ${formatCurrency(earned)} of practice squad pay already earned (${served} week${served === 1 ? "" : "s"} × ${formatCurrency(entry.psWeekly)}) stays on the cap, for a ${year} cap hit of ${formatCurrency(prorated + earned)}.` : ""),
+  const { earned, served, math } = contract;
+  const ok = contract.amount === null || await confirmAction(`Sign ${player.name} to the active roster? He signs a 1-year minimum deal: ${math}.` +
+    (earned ? ` His ${formatCurrency(earned)} of practice squad pay already earned (${served} week${served === 1 ? "" : "s"} × ${formatCurrency(entry.psWeekly)}) stays on the cap, for a ${year} cap hit of ${formatCurrency(contract.prorated + earned)}.` : ""),
     { confirmLabel: `Sign ${player.name}` });
   if (!ok) return;
-  player.seasons[year] = { ...emptySeasonData(entry.position, "Active"), experience: entry.experience ?? null, baseSalary: prorated + earned };
-  if (earned) player.seasons[year].psEarned = earned;
+  // An open offer from another team is settled by this: it counts as a match.
+  const offer = pendingPsOffers(officeData, activeTeamId).find((o) => o.playerId === player.id && o.fromTeam === activeTeamId);
+  if (offer) { const message = matchPsOffer(officeData, offer); renderFrontOffice(); saveOfficeData(message); return; }
+  applyActiveMinimum(player, entry, year, contract);
   const { active } = rosterCounts(activeTeamId, year);
   logTransaction(officeData, { type: "signing", teams: [activeTeamId], player: player.name, auto: true,
     details: `${player.name}${entry.position ? ` (${entry.position})` : ""} signed from the practice squad to the active roster: 1-year minimum, ${math}.` +
@@ -1864,7 +1941,7 @@ async function promoteFromPracticeSquad(player) {
   renderSalaryRows();
   updateCapOverview();
   if (typeof renderDepthChart === "function") renderDepthChart();
-  saveOfficeData(`${player.name} signed to the ${year} active roster on a 1-year minimum: ${formatCurrency(prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
+  saveOfficeData(`${player.name} signed to the ${year} active roster on a 1-year minimum: ${formatCurrency(contract.prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
 }
 
 function runPlayerMenuAction(action, player) {
@@ -2025,7 +2102,19 @@ window.addEventListener("storage", (event) => {
   }
 });
 
+// Practice squad offers whose 24 hours ran out without a match go through now.
+if (storageIsAvailable) {
+  const finished = processExpiredPsOffers(officeData);
+  if (finished.length) saveOfficeData(finished.join(" "));
+}
 renderFrontOffice();
+// Keep the match countdowns current (skipped while a menu or dialog is open).
+setInterval(() => {
+  if (document.hidden || document.querySelector("#player-menu, .confirm-overlay")) return;
+  const finished = storageIsAvailable ? processExpiredPsOffers(officeData) : [];
+  if (finished.length) { saveOfficeData(finished.join(" ")); renderFrontOffice(); }
+  else if (pendingPsOffers(officeData, activeTeamId).length) renderPracticeSquadRows(selectedTeamData().roster.filter((p) => isPlayerOnSeason(p, activeSeason) && isPracticeSquad(seasonEntry(p, activeSeason))));
+}, 60000);
 
 // Following a #depth-chart link while already on the sheet switches to that tab.
 window.addEventListener("hashchange", () => {

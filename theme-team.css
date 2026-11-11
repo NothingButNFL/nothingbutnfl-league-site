@@ -364,3 +364,6 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .ww-admin { border-top-color
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-empty { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-order-panel .ww-order li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .ww-history li.is-practice-squad { border-left-color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .ps-offer-notice.is-outgoing { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-8fd0ff) / 0.08); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .psm-offers li.is-matched { border-left-color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .psm-offers li.is-withdrawn { border-left-color: rgb(var(--tm-6b7f99)); }

@@ -124,7 +124,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -2786,4 +2786,134 @@ function signToPracticeSquad(data, teamId, existing, info, year) {
   if (!player.activeSeasons.includes(year)) player.activeSeasons = [...player.activeSeasons, year].sort((a, b) => a - b);
   if (!team.roster.includes(player)) team.roster.push(player);
   return player;
+}
+
+
+// ---- Signing a player off another team's practice squad ----
+// data.psOffers = [{ id, playerId, playerName, position, fromTeam (his practice squad), toTeam (the team signing him),
+//   createdAt, expiresAt, status: "pending" | "matched" | "signed" | "withdrawn", resolvedAt? }]
+// His team has 24 hours to match. If it doesn't, he joins the other team's active roster on a 1-year minimum
+// prorated to the regular-season weeks left. Matching signs him to his own team's active roster on the same terms.
+const psMatchHours = 24;
+const psOfferStatuses = ["pending", "matched", "signed", "withdrawn"];
+function validPsOffers(offers) {
+  if (offers === undefined) return true;
+  if (!Array.isArray(offers) || offers.length > 3000) return false;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  const ids = new Set();
+  return offers.every((o) => {
+    if (!o || typeof o.id !== "string" || !o.id || ids.has(o.id) || typeof o.playerId !== "string" ||
+        typeof o.playerName !== "string" || !o.playerName.trim() || o.playerName.length > 70 ||
+        (o.position !== undefined && (typeof o.position !== "string" || o.position.length > 8)) ||
+        !teamIds.has(o.fromTeam) || !teamIds.has(o.toTeam) || o.fromTeam === o.toTeam || !psOfferStatuses.includes(o.status) ||
+        typeof o.createdAt !== "string" || typeof o.expiresAt !== "string" || (o.resolvedAt !== undefined && typeof o.resolvedAt !== "string")) return false;
+    ids.add(o.id);
+    return true;
+  });
+}
+const pendingPsOffers = (data, teamId = null) => (data.psOffers || []).filter((o) => o.status === "pending" && (!teamId || o.fromTeam === teamId || o.toTeam === teamId));
+const psOfferHoursLeft = (offer, now = Date.now()) => Math.max(0, (Date.parse(offer.expiresAt) - now) / 3600000);
+function psOfferTimeLeft(offer) {
+  const ms = Date.parse(offer.expiresAt) - Date.now();
+  if (ms <= 0) return "";
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  return h ? `${h}h ${m}m` : `${Math.max(1, m)}m`;
+}
+
+// The 1-year prorated minimum a practice squad player signs onto an active roster.
+// { amount (minimum or null if unset), tier, noExperience, weeks, prorated, served, earned (PS pay already earned; only
+// counts for the team he's on), math (text) }
+function psActiveContract(data, player, entry, year, { includeEarned = true } = {}) {
+  const noExperience = player.experience === null || player.experience === undefined;
+  const tier = noExperience ? "0" : minimumTierFor(player.experience);
+  const raw = data.minimumSalaries?.[year]?.[tier];
+  const amount = raw === undefined ? null : raw;
+  const weeks = psWeeksRemaining(data);
+  const prorated = Math.round(((amount || 0) * weeks) / regularSeasonWeeks);
+  const served = includeEarned && entry?.psWeeks !== undefined ? Math.max(0, entry.psWeeks - weeks) : 0;
+  const earned = includeEarned ? (entry?.psWeekly || 0) * served : 0;
+  const math = amount === null ? "minimum not set, $0 for now"
+    : `${formatCurrency(amount)} ${year} minimum (${minimumTierLabel(tier)}${noExperience ? ", no experience on file" : ""}) × ${weeks}/${regularSeasonWeeks} weeks left = ${formatCurrency(prorated)}`;
+  return { amount, tier, noExperience, weeks, prorated, served, earned, math };
+}
+// Puts the contract on his sheet as an active-roster season.
+function applyActiveMinimum(player, entry, year, contract) {
+  player.seasons[year] = { ...emptySeasonData(entry.position, "Active"), experience: entry.experience ?? null, baseSalary: contract.prorated + contract.earned };
+  if (contract.earned) player.seasons[year].psEarned = contract.earned;
+  if (!player.activeSeasons.includes(year)) player.activeSeasons = [...player.activeSeasons, year].sort((a, b) => a - b);
+}
+
+const psOfferYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]);
+function psOfferPlayer(data, offer) {
+  const year = psOfferYear();
+  const player = data.teams[offer.fromTeam]?.roster.find((p) => p.id === offer.playerId);
+  if (!player || !isPlayerOnSeason(player, year) || !isPracticeSquad(seasonEntry(player, year))) return null;
+  return { player, entry: seasonEntry(player, year), year };
+}
+
+// A team tries to sign another team's practice squad player. Returns the offer or { error }.
+function makePsOffer(data, fromTeam, playerId, toTeam) {
+  if (fromTeam === toTeam) return { error: "A team can't sign its own practice squad player this way. Use Sign To Active Roster on its sheet." };
+  const year = psOfferYear();
+  const player = data.teams[fromTeam]?.roster.find((p) => p.id === playerId);
+  if (!player || !isPlayerOnSeason(player, year) || !isPracticeSquad(seasonEntry(player, year))) return { error: "That player isn't on a practice squad anymore." };
+  const open = pendingPsOffers(data).find((o) => o.playerId === playerId && o.fromTeam === fromTeam);
+  if (open) return { error: `The ${teamName(open.toTeam)} already have an offer out to ${player.name}. ${teamName(fromTeam)} have until it runs out to match.` };
+  if (!Array.isArray(data.psOffers)) data.psOffers = [];
+  if (data.psOffers.length >= 3000) data.psOffers = data.psOffers.filter((o) => o.status === "pending").concat(data.psOffers.filter((o) => o.status !== "pending").slice(-2000));
+  const now = new Date();
+  const offer = { id: newRecordId("psoffer"), playerId, playerName: player.name, position: seasonEntry(player, year).position || "", fromTeam, toTeam,
+    createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + psMatchHours * 3600000).toISOString(), status: "pending" };
+  data.psOffers.push(offer);
+  return offer;
+}
+
+// His team matches: he signs to its active roster on the 1-year prorated minimum (plus PS pay already earned).
+function matchPsOffer(data, offer) {
+  const found = psOfferPlayer(data, offer);
+  offer.resolvedAt = new Date().toISOString();
+  if (!found) { offer.status = "withdrawn"; return `${offer.playerName} isn't on the ${offer.fromTeam} practice squad anymore, so the offer was closed.`; }
+  const { player, entry, year } = found;
+  const contract = psActiveContract(data, player, entry, year);
+  applyActiveMinimum(player, entry, year, contract);
+  offer.status = "matched";
+  const pos = entry.position ? ` (${entry.position})` : "";
+  logTransaction(data, { type: "signing", teams: [offer.fromTeam], player: player.name, auto: true,
+    details: `${teamName(offer.fromTeam)} matched the ${teamName(offer.toTeam)}' offer and signed ${player.name}${pos} from their practice squad to the active roster: 1-year minimum, ${contract.math}.` });
+  return `${teamName(offer.fromTeam)} matched and signed ${player.name} to their active roster.`;
+}
+
+// Not matched (time ran out, or his team let him go): he leaves the practice squad for the other team's active roster.
+// The practice squad pay his old team already paid stays on its books as dead cap.
+function completePsOffer(data, offer) {
+  const found = psOfferPlayer(data, offer);
+  offer.resolvedAt = new Date().toISOString();
+  if (!found) { offer.status = "withdrawn"; return `${offer.playerName} isn't on the ${offer.fromTeam} practice squad anymore, so the offer was closed.`; }
+  const { player, entry, year } = found;
+  const oldTeam = data.teams[offer.fromTeam];
+  const earned = psActiveContract(data, player, entry, year).earned;
+  if (earned && Array.isArray(oldTeam.deadCap[year])) {
+    oldTeam.deadCap[year].push({ id: newRecordId("dead-cap"), playerName: player.name, position: entry.position || "", transaction: "release",
+      transactionYear: year, amount: earned, date: new Date().toISOString() });
+  }
+  player.activeSeasons = player.activeSeasons.filter((y) => y !== year);
+  if (!player.activeSeasons.length) oldTeam.roster = oldTeam.roster.filter((p) => p !== player);
+  const signed = { id: newRecordId("player"), name: player.name, activeSeasons: [],
+    seasons: Object.fromEntries(seasons.map((y) => [y, emptySeasonData()])) };
+  if (player.experience !== null && player.experience !== undefined) signed.experience = player.experience;
+  if (player.profile) signed.profile = player.profile;
+  if (player.birthDate) signed.birthDate = player.birthDate;
+  const contract = psActiveContract(data, signed, entry, year, { includeEarned: false });
+  applyActiveMinimum(signed, entry, year, contract);
+  data.teams[offer.toTeam].roster.push(signed);
+  offer.status = "signed";
+  const pos = entry.position ? ` (${entry.position})` : "";
+  logTransaction(data, { type: "signing", teams: [offer.toTeam, offer.fromTeam], player: player.name, auto: true,
+    details: `${teamName(offer.toTeam)} signed ${player.name}${pos} off the ${teamName(offer.fromTeam)} practice squad: 1-year minimum, ${contract.math}.` });
+  return `${player.name} signed with the ${teamName(offer.toTeam)} off the ${teamName(offer.fromTeam)} practice squad.`;
+}
+
+// Offers whose 24 hours are up and weren't matched go through. Run when a page with practice squads loads.
+function processExpiredPsOffers(data, now = Date.now()) {
+  return pendingPsOffers(data).filter((o) => Date.parse(o.expiresAt) <= now).map((o) => completePsOffer(data, o));
 }

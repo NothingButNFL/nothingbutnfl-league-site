@@ -42,6 +42,7 @@
     <script src="league-core.js" defer></script>
     <script src="contract-editor.js" defer></script>
     <script src="free-agency.js" defer></script>
+    <script src="free-agency-ps.js" defer></script>
   </head>
   <body class="admin-page free-agency-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -130,6 +131,7 @@
         </div>
       </section>
 
+
       <section class="front-office-section admin-section">
         <div class="section-wrap">
           <div class="section-heading-row front-office-heading">
@@ -197,6 +199,38 @@
               <p>Free agent signings from the Transaction Log, newest first.</p>
             </div>
             <ol class="recent-list" id="fa-signings"></ol>
+          </div>
+        </div>
+      </section>
+      <section class="front-office-section admin-section" aria-labelledby="ps-market-title">
+        <div class="section-wrap">
+          <div class="section-heading-row front-office-heading">
+            <div>
+              <div class="section-kicker"><span>02</span> PRACTICE SQUADS</div>
+              <h2 id="ps-market-title">Practice squad <span>players.</span></h2>
+              <p class="section-subtitle">Any team can sign another team's practice squad player to its active roster. His team gets 24 hours to match; if it doesn't, he joins your active roster on a 1-year minimum prorated to the regular-season weeks left.</p>
+            </div>
+          </div>
+          <p class="workspace-status" id="psm-status" role="status" aria-live="polite"></p>
+          <div class="contracts-toolbar">
+            <label>Search<input id="psm-search" type="search" placeholder="Player name" maxlength="60"></label>
+            <label>Team<select id="psm-team"></select></label>
+            <label>Position<select id="psm-pos"></select></label>
+            <div class="contracts-total"><span>ON PRACTICE SQUADS</span><strong id="psm-count">0</strong></div>
+          </div>
+          <div class="management-table-wrap">
+            <table class="management-table psm-table">
+              <thead><tr><th scope="col">PLAYER</th><th scope="col">TEAM</th><th scope="col">POS</th><th scope="col">YRS EXP</th><th scope="col">WOULD SIGN FOR</th><th scope="col">STATUS</th><th scope="col">SIGN TO YOUR ACTIVE ROSTER</th></tr></thead>
+              <tbody id="psm-rows"></tbody>
+            </table>
+          </div>
+          <p class="empty-state" id="psm-empty" hidden>No players are on practice squads right now.</p>
+          <div class="management-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">WAITING ON A MATCH</span><h3>Practice squad offers</h3></div>
+              <p>Each offer runs 24 hours. The player's team can match it from its salary sheet; if it doesn't, the signing goes through.</p>
+            </div>
+            <ul class="psm-offers" id="psm-offers"></ul>
           </div>
         </div>
       </section>
