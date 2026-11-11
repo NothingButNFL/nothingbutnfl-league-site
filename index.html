@@ -213,7 +213,34 @@
             <div class="news-list" id="news-list"></div>
             <div class="insider-wire" id="insider-wire" aria-labelledby="insider-title">
               <h3 class="insider-title" id="insider-title">Insider Wire</h3>
-              <p class="insider-sub">Breaking-news reports on the latest moves, written automatically from the Transaction Log by the league's (made-up) insiders.</p>
+              <div class="insider-top">
+                <p class="insider-sub">Breaking-news reports on the latest moves, written automatically from the Transaction Log by the league's (made-up) insiders, plus posts written by the league.</p>
+                <button class="button button-lime insider-compose-toggle" id="insider-compose-toggle" type="button" aria-expanded="false" aria-controls="insider-compose">Write a post <span aria-hidden="true">+</span></button>
+              </div>
+              <form class="management-panel insider-compose" id="insider-compose" hidden>
+                <div class="insider-compose-row">
+                  <label>Post as<select name="reporter" id="insider-reporter"></select></label>
+                  <label>Tag teams<span class="insider-team-pickers"><select name="team1"></select><select name="team2"></select></span></label>
+                </div>
+                <fieldset class="insider-new-reporter" id="insider-new-reporter" hidden>
+                  <legend>New reporter</legend>
+                  <label>Name<input name="rName" maxlength="40" placeholder="e.g. Gridiron Gossip"></label>
+                  <label>Handle<input name="rHandle" maxlength="29" placeholder="e.g. GridironGossip"></label>
+                  <label>Color<input name="rColor" type="color" value="#2f9e5b"></label>
+                  <label>Profile picture<input name="rPhoto" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                  <label class="insider-url">…or picture URL<input name="rPhotoUrl" type="url" maxlength="500" placeholder="https://…"></label>
+                  <span class="insider-preview-avatar" id="insider-avatar-preview" aria-hidden="true"></span>
+                </fieldset>
+                <label class="insider-text-field">Post<textarea name="text" maxlength="600" rows="3" placeholder="Sources: #Bills are… (#Team hashtags turn blue)"></textarea></label>
+                <div class="insider-compose-actions">
+                  <span class="insider-count" id="insider-count">0 / 600</span>
+                  <button class="workspace-button" type="button" id="insider-manage">Manage reporters</button>
+                  <button class="workspace-button" type="button" id="insider-cancel">Cancel</button>
+                  <button class="button button-lime" type="submit">Post</button>
+                </div>
+                <ul class="insider-reporter-list" id="insider-reporter-list" hidden></ul>
+                <p class="workspace-status" id="insider-status" role="status" aria-live="polite"></p>
+              </form>
               <div class="insider-list" id="insider-list"></div>
             </div>
           </article>

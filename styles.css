@@ -2603,3 +2603,29 @@ button.md-slate-tag { background: rgba(5, 14, 30, .45); color: #fff; cursor: poi
 button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9a227; background: #c9a227; color: #07162b; }
 .md-gotw-preview { margin-top: 10px; padding: 7px 16px; border: 1px solid #c9a227; border-radius: 3px; background: rgba(5, 14, 30, .78); color: #fff; font: 800 13px var(--display); letter-spacing: .1em; cursor: pointer; }
 .md-gotw-preview:hover, .md-gotw-preview:focus-visible { background: #c9a227; color: #07162b; }
+/* Insider Wire: writing posts, custom reporters */
+.insider-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; }
+.insider-top .insider-sub { flex: 1 1 320px; }
+.insider-compose-toggle { flex: none; }
+.insider-compose { display: grid; gap: 12px; margin-top: 12px; padding: 16px; }
+.insider-compose[hidden] { display: none; }
+.insider-compose label { display: grid; gap: 6px; }
+.insider-compose-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.insider-compose-row > label { flex: 1 1 220px; }
+.insider-team-pickers { display: flex; gap: 8px; }
+.insider-team-pickers select { flex: 1; min-width: 0; }
+.insider-new-reporter { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); align-items: end; gap: 10px; margin: 0; padding: 12px; border: 1px dashed #54749b; border-radius: 6px; }
+.insider-new-reporter[hidden] { display: none; }
+.insider-new-reporter legend { padding: 0 6px; font: 700 13px var(--display); }
+.insider-new-reporter input[type="color"] { height: 40px; padding: 2px; }
+.insider-preview-avatar { display: flex; align-items: center; justify-content: center; min-height: 40px; }
+.insider-text-field textarea { width: 100%; resize: vertical; }
+.insider-compose-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.insider-count { margin-right: auto; color: #fff; font: 12px var(--mono); opacity: .8; }
+.insider-reporter-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.insider-reporter-list[hidden] { display: none; }
+.insider-reporter-list li { display: flex; align-items: center; gap: 10px; }
+.insider-reporter-list li span:nth-child(2) { flex: 1; }
+.insider-avatar { overflow: hidden; }
+.insider-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.insider-tools { display: flex; gap: 6px; }

@@ -124,7 +124,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -2916,4 +2916,22 @@ function completePsOffer(data, offer) {
 // Offers whose 24 hours are up and weren't matched go through. Run when a page with practice squads loads.
 function processExpiredPsOffers(data, now = Date.now()) {
   return pendingPsOffers(data).filter((o) => Date.parse(o.expiresAt) <= now).map((o) => completePsOffer(data, o));
+}
+
+
+// ---- Insider Wire: custom reporters and posts (on top of the automatic ones) ----
+// data.insiderReporters = [{ id, name, handle, color, photo? (small data: URL or https URL) }]
+// data.insiderPosts = [{ id, reporterId, text, teams: [teamId], createdAt, date }]
+function validInsiderCustom(data) {
+  const reporters = data.insiderReporters, posts = data.insiderPosts;
+  const teamIds = new Set(nflTeams.map(({ id }) => id));
+  if (reporters !== undefined && (!Array.isArray(reporters) || reporters.length > 50 || !reporters.every((r) => r && typeof r.id === "string" && r.id &&
+      typeof r.name === "string" && r.name.trim() && r.name.length <= 40 && typeof r.handle === "string" && r.handle.length <= 30 &&
+      typeof r.color === "string" && /^#[0-9a-f]{6}$/i.test(r.color) &&
+      (r.photo === undefined || (typeof r.photo === "string" && r.photo.length <= 200000 && /^(data:image\/(png|jpeg|webp);base64,|https:\/\/)/.test(r.photo)))))) return false;
+  if (posts !== undefined && (!Array.isArray(posts) || posts.length > 2000 || !posts.every((p) => p && typeof p.id === "string" && p.id &&
+      typeof p.reporterId === "string" && typeof p.text === "string" && p.text.trim() && p.text.length <= 600 &&
+      Array.isArray(p.teams) && p.teams.length <= 3 && p.teams.every((t) => teamIds.has(t)) &&
+      typeof p.createdAt === "string" && typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)))) return false;
+  return true;
 }

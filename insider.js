@@ -200,10 +200,28 @@ function insiderPostFor(entry) {
 // recorded), not the latest dates: a move made today should lead even if the log already has later-dated entries
 // (the sample league's season runs into December).
 function insiderPosts(data, limit = 4) {
-  return (data.transactions || []).map((entry, index) => ({ entry, index }))
-    .sort((a, b) => b.index - a.index)
-    .slice(0, limit).map(({ entry }) => insiderPostFor(entry));
+  // Automatic posts in Transaction Log order (newest recorded first) and the league's own posts, merged by when they
+  // were made. Log entries without a creation time (e.g. imported ones) count as older than any written post.
+  const auto = (data.transactions || []).map((entry, index) => ({ entry, index }))
+    .sort((a, b) => b.index - a.index).slice(0, limit)
+    .map(({ entry }, order) => {
+      // A creation time in the future (e.g. the sample league's made-up dates) can't be compared, so it counts as older.
+      const t = Date.parse(entry.createdAt || "");
+      return { post: insiderPostFor(entry), time: Number.isFinite(t) && t <= Date.now() + 60000 ? t : -Infinity, order };
+    });
+  const reporters = insiderAllReporters(data);
+  const custom = (data.insiderPosts || []).map((p) => ({
+    post: { id: p.id, custom: true, reporter: reporters.find((r) => r.id === p.reporterId) || { id: "?", name: "League reporter", handle: "@NBNFL", initials: "NB", color: "#6b7f99" },
+      text: p.text, date: p.date, createdAt: p.createdAt, teams: p.teams, type: "custom" },
+    time: Date.parse(p.createdAt) || 0, order: -1 }));
+  return [...custom, ...auto].sort((a, b) => b.time - a.time || a.order - b.order).slice(0, limit).map(({ post }) => post);
 }
+
+// Built-in reporters plus the league's own.
+function insiderAllReporters(data) {
+  return [...insiderReporters, ...(data.insiderReporters || []).map((r) => ({ ...r, initials: insiderInitials(r.name), custom: true }))];
+}
+const insiderInitials = (name) => String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("") || "?";
 
 function insiderWhen(post) {
   const [y, m, d] = post.date.split("-").map(Number);
@@ -225,7 +243,7 @@ function renderInsiderWire() {
   if (!posts.length) {
     const empty = document.createElement("p");
     empty.className = "recent-empty";
-    empty.textContent = "Quiet out there. Trades, signings, extensions, restructures and releases get reported here as soon as they hit the Transaction Log.";
+    empty.textContent = "Quiet out there. Trades, signings, extensions, restructures and releases get reported here as soon as they hit the Transaction Log, along with posts written by the league.";
     list.replaceChildren(empty);
     return;
   }
@@ -237,7 +255,13 @@ function renderInsiderWire() {
     const avatar = document.createElement("span");
     avatar.className = "insider-avatar";
     avatar.style.background = post.reporter.color;
-    avatar.textContent = post.reporter.initials;
+    if (post.reporter.photo) {
+      const img = document.createElement("img");
+      img.src = post.reporter.photo;
+      img.alt = "";
+      img.addEventListener("error", () => { img.remove(); avatar.textContent = post.reporter.initials; }, { once: true });
+      avatar.append(img);
+    } else avatar.textContent = post.reporter.initials;
     avatar.setAttribute("aria-hidden", "true");
     const who = document.createElement("div");
     who.className = "insider-who";
@@ -281,11 +305,169 @@ function renderInsiderWire() {
       copy.textContent = ok ? "Copied ✓" : "Couldn't copy";
       setTimeout(() => { copy.textContent = "Copy"; }, 1600);
     });
-    foot.append(teams, copy);
+    const tools = document.createElement("span");
+    tools.className = "insider-tools";
+    tools.append(copy);
+    if (post.custom) {
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "workspace-button insider-copy";
+      del.textContent = "Delete";
+      del.dataset.deletePost = post.id;
+      del.setAttribute("aria-label", `Delete this ${post.reporter.name} post`);
+      tools.append(del);
+    }
+    foot.append(teams, tools);
     card.append(head, text, foot);
     return card;
   }));
 }
+
+// ---- Writing posts and managing the league's own reporters ----
+function insiderSaveData(mutate, message) {
+  const status = document.querySelector("#insider-status");
+  let data;
+  try { data = readStoredOffice() || emptyOfficeData(); } catch (error) { status.textContent = "Saved league data couldn't be read, so nothing was saved."; return false; }
+  mutate(data);
+  try { writeStoredOffice(data); } catch (error) { status.textContent = `Couldn't save: ${error.message}.`; return false; }
+  status.textContent = message;
+  renderInsiderWire();
+  renderInsiderComposer(data);
+  return true;
+}
+
+function renderInsiderComposer(data) {
+  const form = document.querySelector("#insider-compose");
+  if (!form) return;
+  const select = form.elements.reporter;
+  const keep = select.value;
+  select.replaceChildren(...insiderAllReporters(data).map((r) => new Option(`${r.name} (${r.handle})`, r.id)), new Option("+ New reporter…", "__new"));
+  select.value = [...select.options].some((o) => o.value === keep) ? keep : select.options[0].value;
+  for (const name of ["team1", "team2"]) {
+    const t = form.elements[name];
+    const was = t.value;
+    if (t.options.length !== nflTeams.length + 1) t.replaceChildren(new Option("No team", ""), ...nflTeams.map(({ id, name: n }) => new Option(n, id)));
+    t.value = was;
+  }
+  document.querySelector("#insider-new-reporter").hidden = select.value !== "__new";
+  const list = document.querySelector("#insider-reporter-list");
+  const own = data.insiderReporters || [];
+  list.replaceChildren(...own.map((r) => {
+    const li = document.createElement("li");
+    const av = insiderAvatarEl({ ...r, initials: insiderInitials(r.name) });
+    const label = document.createElement("span");
+    label.textContent = `${r.name} ${r.handle}`;
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "workspace-button";
+    del.textContent = "Remove";
+    del.dataset.deleteReporter = r.id;
+    li.append(av, label, del);
+    return li;
+  }));
+  if (!own.length) { const li = document.createElement("li"); li.textContent = "No custom reporters yet. Pick “+ New reporter…” in Post as."; list.append(li); }
+}
+
+function insiderAvatarEl(reporter) {
+  const avatar = document.createElement("span");
+  avatar.className = "insider-avatar";
+  avatar.style.background = reporter.color;
+  if (reporter.photo) { const img = document.createElement("img"); img.src = reporter.photo; img.alt = ""; avatar.append(img); }
+  else avatar.textContent = reporter.initials;
+  return avatar;
+}
+
+// Shrinks an uploaded picture to a 128px square (cropped to the center) so it fits in browser storage.
+function insiderResizePhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("couldn't read the picture"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("that file isn't a picture the browser can open"));
+      img.onload = () => {
+        const size = 128, side = Math.min(img.width, img.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = size;
+        canvas.getContext("2d").drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+(function setupInsiderComposer() {
+  const form = document.querySelector("#insider-compose");
+  const toggle = document.querySelector("#insider-compose-toggle");
+  if (!form || !toggle) return;
+  let pendingPhoto = "";
+  const status = document.querySelector("#insider-status");
+  const preview = document.querySelector("#insider-avatar-preview");
+  const showPreview = () => {
+    const name = form.elements.rName.value.trim() || "New Reporter";
+    preview.replaceChildren(insiderAvatarEl({ name, initials: insiderInitials(name), color: form.elements.rColor.value, photo: pendingPhoto || (form.elements.rPhotoUrl.value.startsWith("https://") ? form.elements.rPhotoUrl.value : "") }));
+  };
+  const open = (yes) => {
+    form.hidden = !yes;
+    toggle.setAttribute("aria-expanded", String(yes));
+    if (yes) { let data = emptyOfficeData(); try { data = readStoredOffice() || data; } catch { /* empty */ } renderInsiderComposer(data); showPreview(); form.elements.text.focus(); }
+  };
+  toggle.addEventListener("click", () => open(form.hidden));
+  document.querySelector("#insider-cancel").addEventListener("click", () => { form.reset(); pendingPhoto = ""; status.textContent = ""; open(false); });
+  document.querySelector("#insider-manage").addEventListener("click", () => { const list = document.querySelector("#insider-reporter-list"); list.hidden = !list.hidden; });
+  form.elements.reporter.addEventListener("change", () => { document.querySelector("#insider-new-reporter").hidden = form.elements.reporter.value !== "__new"; showPreview(); });
+  for (const name of ["rName", "rColor", "rPhotoUrl"]) form.elements[name].addEventListener("input", showPreview);
+  form.elements.rPhoto.addEventListener("change", async () => {
+    const file = form.elements.rPhoto.files[0];
+    if (!file) { pendingPhoto = ""; showPreview(); return; }
+    try { pendingPhoto = await insiderResizePhoto(file); status.textContent = ""; }
+    catch (error) { pendingPhoto = ""; status.textContent = `Profile picture not used: ${error.message}.`; }
+    showPreview();
+  });
+  const count = document.querySelector("#insider-count");
+  form.elements.text.addEventListener("input", () => { count.textContent = `${form.elements.text.value.length} / 600`; });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const text = form.elements.text.value.trim();
+    if (!text) { status.textContent = "Write the post first."; form.elements.text.focus(); return; }
+    let reporterId = form.elements.reporter.value;
+    let newReporter = null;
+    if (reporterId === "__new") {
+      const name = form.elements.rName.value.trim();
+      const handle = form.elements.rHandle.value.trim().replace(/^@+/, "").replace(/\s+/g, "");
+      if (!name || !handle) { status.textContent = "Give the new reporter a name and a handle."; (name ? form.elements.rHandle : form.elements.rName).focus(); return; }
+      const url = form.elements.rPhotoUrl.value.trim();
+      newReporter = { id: newRecordId("reporter"), name, handle: `@${handle}`.slice(0, 30), color: form.elements.rColor.value };
+      if (pendingPhoto) newReporter.photo = pendingPhoto; else if (url.startsWith("https://")) newReporter.photo = url;
+      reporterId = newReporter.id;
+    }
+    const teams = [...new Set([form.elements.team1.value, form.elements.team2.value].filter(Boolean))];
+    const ok = insiderSaveData((data) => {
+      if (newReporter) data.insiderReporters = [...(data.insiderReporters || []), newReporter];
+      data.insiderPosts = [...(data.insiderPosts || []), { id: newRecordId("post"), reporterId, text, teams, createdAt: new Date().toISOString(), date: localDateString() }].slice(-2000);
+    }, "Posted to the Insider Wire.");
+    if (ok) {
+      form.elements.text.value = "";
+      count.textContent = "0 / 600";
+      if (newReporter) { form.elements.reporter.value = newReporter.id; document.querySelector("#insider-new-reporter").hidden = true; for (const n of ["rName", "rHandle", "rPhotoUrl"]) form.elements[n].value = ""; form.elements.rPhoto.value = ""; pendingPhoto = ""; }
+    }
+  });
+  document.querySelector("#insider-reporter-list").addEventListener("click", async (event) => {
+    const id = event.target.closest("[data-delete-reporter]")?.dataset.deleteReporter;
+    if (!id) return;
+    if (!await confirmAction("Remove this reporter? Their posts stay, shown as a league reporter.", { confirmLabel: "Remove reporter", danger: true })) return;
+    insiderSaveData((data) => { data.insiderReporters = (data.insiderReporters || []).filter((r) => r.id !== id); }, "Reporter removed.");
+  });
+})();
+
+document.querySelector("#insider-list")?.addEventListener("click", async (event) => {
+  const id = event.target.closest("[data-delete-post]")?.dataset.deletePost;
+  if (!id) return;
+  if (!await confirmAction("Delete this post from the Insider Wire?", { confirmLabel: "Delete post", danger: true })) return;
+  insiderSaveData((data) => { data.insiderPosts = (data.insiderPosts || []).filter((p) => p.id !== id); }, "Post deleted.");
+});
 
 renderInsiderWire();
 window.addEventListener("storage", (event) => { if (event.key === officeStorageKey) renderInsiderWire(); });

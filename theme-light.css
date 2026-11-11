@@ -854,3 +854,5 @@ html[data-theme="light"] .mdp-switch input:focus-visible + .mdp-switch-track { o
 html[data-theme="light"] .mdp-player { color: #0b1f3a; }
 html[data-theme="light"] button.md-slate-tag { color: #0b1f3a; }
 html[data-theme="light"] .md-gotw-preview { color: #0b1f3a; }
+html[data-theme="light"] .insider-new-reporter { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
+html[data-theme="light"] .insider-count { color: #0b1f3a; }

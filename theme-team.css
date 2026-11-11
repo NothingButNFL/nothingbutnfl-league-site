@@ -392,3 +392,4 @@ html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-note { color: rgb(var(-
 html:is([data-theme^="team-"], [data-theme="neon"]) .mdp-stats { color: rgb(var(--tm-cfd8e6)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) button.md-slate-tag:hover, html:is([data-theme^="team-"], [data-theme="neon"]) button.md-slate-tag:focus-visible { color: rgb(var(--tm-07162b)); }
 html:is([data-theme^="team-"], [data-theme="neon"]) .md-gotw-preview:hover, html:is([data-theme^="team-"], [data-theme="neon"]) .md-gotw-preview:focus-visible { color: rgb(var(--tm-07162b)); }
+html:is([data-theme^="team-"], [data-theme="neon"]) .insider-new-reporter { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
