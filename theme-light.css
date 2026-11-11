@@ -857,3 +857,4 @@ html[data-theme="light"] .md-gotw-preview { color: #0b1f3a; }
 html[data-theme="light"] .insider-new-reporter { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; }
 html[data-theme="light"] .insider-count { color: #0b1f3a; }
 html[data-theme="light"] .md-gotw::after { background-image: linear-gradient(105deg, transparent 35%, rgba(11, 31, 58, 0.126) 48%, rgba(11, 31, 58, 0.196) 50%, rgba(11, 31, 58, 0.126) 52%, transparent 65%); }
+html[data-theme="light"] .md-gotw::before { background-image: url("assets/honeycomb.svg"), linear-gradient(rgba(15, 35, 70, 0.017), rgba(15, 35, 70, 0.122)); mask-image: radial-gradient(55% 75%, rgb(0, 0, 0) 0%, rgba(15, 35, 70, 0.193) 45%, rgba(15, 35, 70, 0.087) 100%); }

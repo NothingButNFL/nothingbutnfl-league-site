@@ -2645,3 +2645,18 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .md-ripple-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .md-gotw::before { inset: -3%; animation: none; transform: none; filter: url(#md-ripple); will-change: auto; }
 @media (prefers-reduced-motion: reduce) { .md-gotw::before { filter: none; } }
+/* Honeycomb instead of the ripple: a hexagon grid over the team colors, with a slow glow rolling through the cells.
+   The light sweep (::after) stays. */
+.md-gotw::before { inset: 0; filter: none; animation: md-honey-glow 10s ease-in-out infinite alternate;
+  background: url("assets/honeycomb.svg") center / 40px 69.28px repeat, linear-gradient(180deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .35));
+  opacity: .9;
+  -webkit-mask-image: radial-gradient(55% 75% at 50% 50%, #000 0%, rgba(0, 0, 0, .55) 45%, rgba(0, 0, 0, .25) 100%);
+  mask-image: radial-gradient(55% 75% at 50% 50%, #000 0%, rgba(0, 0, 0, .55) 45%, rgba(0, 0, 0, .25) 100%);
+  -webkit-mask-size: 220% 220%; mask-size: 220% 220%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.md-gotw::before { background-blend-mode: normal; }
+@keyframes md-honey-glow {
+  0% { -webkit-mask-position: 0% 30%; mask-position: 0% 30%; }
+  50% { -webkit-mask-position: 60% 70%; mask-position: 60% 70%; }
+  100% { -webkit-mask-position: 100% 40%; mask-position: 100% 40%; }
+}
+@media (prefers-reduced-motion: reduce) { .md-gotw::before { animation: none; } }

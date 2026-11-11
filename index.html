@@ -122,15 +122,6 @@
 
     <main id="main">
       <span class="anchor-top" id="overview" aria-hidden="true"></span>
-      <!-- Ripple for the Game of the Week artwork: animated turbulence bends the background like water. -->
-      <svg class="md-ripple-defs" width="0" height="0" aria-hidden="true" focusable="false">
-        <filter id="md-ripple" x="-5%" y="-5%" width="110%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.018" numOctaves="2" seed="4" result="noise">
-            <animate attributeName="baseFrequency" dur="12s" values="0.006 0.018;0.009 0.024;0.006 0.018" repeatCount="indefinite"/>
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-      </svg>
       <!-- Score ticker, Game of the Week and the week's best performances (matchday.js) -->
       <div class="md-ticker" id="md-ticker" role="region" aria-label="Latest scores" hidden></div>
       <section class="matchday" id="matchday" aria-label="This week" hidden>
