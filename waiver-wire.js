@@ -85,13 +85,13 @@ function wwCard(entry, order) {
   if (rows.length) {
     const table = wwEl("table", "ww-contract-table");
     const thead = table.createTHead().insertRow();
-    for (const label of ["SEASON", "BASE", "ROSTER BONUS", "CAP HIT", "GUARANTEED"]) thead.append(wwEl("th", "", label));
+    for (const label of ["SEASON", "BASE SALARY", "ROSTER BONUS", "CAP HIT FOR CLAIMER"]) thead.append(wwEl("th", "", label));
     const body = table.createTBody();
     for (const s of rows) {
       const tr = body.insertRow();
-      for (const v of [String(s.year), formatCurrency(s.baseSalary), formatCurrency(s.rosterBonus), formatCurrency(s.baseSalary + s.rosterBonus), formatCurrency(s.guaranteedSalary)]) tr.insertCell().textContent = v;
+      for (const v of [String(s.year), formatCurrency(s.baseSalary), formatCurrency(s.rosterBonus), formatCurrency(s.baseSalary + s.rosterBonus)]) tr.insertCell().textContent = v;
     }
-    contract.append(wwEl("p", "ww-contract-note", "A claiming team takes on this contract. His prorated signing bonus stays on the old team's books."), table);
+    contract.append(wwEl("p", "ww-contract-note", `A claiming team takes on only his base salary and roster bonuses for the seasons he has left. His dead cap (prorated bonus and guarantees) stays with ${teamName(entry.fromTeam)}.`), table);
   } else contract.append(wwEl("p", "ww-contract-note", "No salary left on his contract."));
 
   // Claims, in waiver order
@@ -205,7 +205,7 @@ wwOpen.addEventListener("click", async (event) => {
   } else if (action === "process") {
     const left = wwTimeLeft(entry);
     const leader = [...entry.claims].sort((a, b) => { const o = waiverPriority(officeData).map(({ id }) => id); return o.indexOf(a.teamId) - o.indexOf(b.teamId); })[0];
-    const what = leader ? `Award ${entry.playerName} to the ${teamName(leader.teamId)}? He goes on their salary sheet with his remaining contract.`
+    const what = leader ? `Award ${entry.playerName} to the ${teamName(leader.teamId)}? He goes on their salary sheet with his remaining base salary and roster bonuses; the dead cap stays with ${teamName(entry.fromTeam)}.`
       : entry.psTeam ? `No team claimed ${entry.playerName}. Sign him to the ${teamName(entry.psTeam)} practice squad?` : `No team claimed ${entry.playerName}. Clear him to free agency?`;
     if (!await confirmAction(`${what}${left ? ` His waiver period still has ${left} left.` : ""}`, { confirmLabel: leader ? `Award to ${leader.teamId}` : entry.psTeam ? "Sign to practice squad" : "Clear to free agency" })) return;
     wwSave(processWaiver(officeData, entry));

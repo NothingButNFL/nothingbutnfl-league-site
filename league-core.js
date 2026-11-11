@@ -2594,7 +2594,8 @@ function minimumProblem(data, player, contract, startYear) {
 // data.waivers = [{ id, playerName, position, fromTeam, experience, releasedAt, clearsAt (ISO), profile?, birthDate?,
 //   seasons: [{ year, baseSalary, rosterBonus, guaranteedSalary, proratedBonus }], claims: [{ teamId, at }],
 //   status: "open" | "claimed" | "cleared" | "removed", awardedTo?, processedAt? }]
-// A claiming team takes on his remaining base salaries and roster bonuses; prorated signing bonus stays with the old team.
+// A claiming team takes on only his remaining base salaries and roster bonuses (this season and later). Everything else
+// (prorated signing bonus, guarantees) stays with the old team as the dead cap recorded when he was released.
 const waiverPeriodHours = 24;
 const vestedVeteranSeasons = 4;
 const waiverStatuses = ["open", "claimed", "cleared", "practice-squad", "removed"];
@@ -2722,7 +2723,7 @@ function processWaiver(data, waiver) {
   const player = {
     id: newRecordId("player"), name: waiver.playerName, activeSeasons: years,
     seasons: Object.fromEntries(seasons.map((y) => [y, years.includes(y)
-      ? { ...emptySeasonData(waiver.position, "Active"), baseSalary: byYear[y]?.baseSalary || 0, rosterBonus: byYear[y]?.rosterBonus || 0, guaranteedSalary: byYear[y]?.guaranteedSalary || 0 }
+      ? { ...emptySeasonData(waiver.position, "Active"), baseSalary: byYear[y]?.baseSalary || 0, rosterBonus: byYear[y]?.rosterBonus || 0 }
       : emptySeasonData()]))
   };
   if (waiver.experience !== null && waiver.experience !== undefined) player.experience = waiver.experience;
@@ -2735,7 +2736,7 @@ function processWaiver(data, waiver) {
   const hit = first ? (first.baseSalary || 0) + (first.rosterBonus || 0) : 0;
   const others = claims.length > 1 ? ` Other claims: ${claims.slice(1).map((c) => c.teamId).join(", ")}.` : "";
   logTransaction(data, { type: "waiver", teams: [to, waiver.fromTeam], player: waiver.playerName, auto: true,
-    details: `${teamName(to)} claimed ${waiver.playerName}${pos} off waivers from ${teamName(waiver.fromTeam)}. ${years.length}-year contract, ${formatCurrency(hit)} cap hit in ${years[0]}.${others}` });
+    details: `${teamName(to)} claimed ${waiver.playerName}${pos} off waivers from ${teamName(waiver.fromTeam)}. Takes on his base salary and roster bonuses for ${years.length} season${years.length === 1 ? "" : "s"}: ${formatCurrency(hit)} cap hit in ${years[0]}. Dead cap stays with ${waiver.fromTeam}.${others}` });
   return `${teamName(to)} were awarded ${waiver.playerName} off waivers${claims.length > 1 ? ` (${claims.length} claims)` : ""}.`;
 }
 
