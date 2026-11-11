@@ -460,27 +460,45 @@ function renderWeeksBest(games) {
   if (!weeks.length) { box.hidden = true; return; }
   box.hidden = false;
   if (!weeks.includes(mdTopWeek)) mdTopWeek = weeks[weeks.length - 1];
-  const tabs = mdEl("div", "md-top-tabs");
-  tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", "Top players by week");
-  for (const w of weeks) {
-    const tab = mdEl("button", `md-top-tab${w === mdTopWeek ? " is-active" : ""}`, `TOP PLAYERS: ${mdWeekName(w)}`);
-    tab.type = "button";
-    tab.setAttribute("role", "tab");
-    tab.setAttribute("aria-selected", String(w === mdTopWeek));
-    tab.addEventListener("click", () => { mdTopWeek = w; renderWeeksBest(games); });
-    tabs.append(tab);
-  }
+  // Heading with PREV / NEXT, and one dot per week underneath the cards.
+  const at = weeks.indexOf(mdTopWeek);
+  const go = (w) => { mdTopWeek = w; renderWeeksBest(games); box.querySelector(`.md-top-dot[data-week="${w}"], .md-slate-nav:not(:disabled)`)?.focus({ preventScroll: true }); };
+  const head = mdEl("div", "md-slate-head md-top-head-row");
+  head.append(mdEl("h3", "md-best-title md-top-title", `Top Players: ${mdWeekName(mdTopWeek).replace(/\B\w+/g, (m) => m.toLowerCase())}`));
+  const prev = mdEl("button", "md-slate-nav", "PREV");
+  const next = mdEl("button", "md-slate-nav", "NEXT");
+  prev.type = next.type = "button";
+  prev.setAttribute("aria-label", "Previous week");
+  next.setAttribute("aria-label", "Next week");
+  prev.disabled = at <= 0;
+  next.disabled = at >= weeks.length - 1;
+  prev.addEventListener("click", () => go(weeks[at - 1]));
+  next.addEventListener("click", () => go(weeks[at + 1]));
+  const nav = mdEl("div", "md-slate-navs");
+  nav.append(prev, next);
+  nav.hidden = weeks.length === 1;
+  head.append(nav);
   const grid = mdEl("div", "md-top-grid");
-  grid.setAttribute("role", "tabpanel");
+  grid.setAttribute("aria-live", "polite");
   grid.append(...mdTopPlayers(games.filter((g) => g.week === mdTopWeek)).map(mdTopCard));
-  box.replaceChildren(tabs, grid);
+  const dots = mdEl("div", "md-top-dots");
+  dots.setAttribute("aria-label", "Weeks");
+  dots.hidden = weeks.length === 1;
+  for (const w of weeks) {
+    const dot = mdEl("button", `md-top-dot${w === mdTopWeek ? " is-active" : ""}`);
+    dot.type = "button";
+    dot.dataset.week = w;
+    dot.title = mdWeekName(w).replace(/\B\w+/g, (m) => m.toLowerCase());
+    dot.setAttribute("aria-label", dot.title);
+    if (w === mdTopWeek) dot.setAttribute("aria-current", "true");
+    dot.addEventListener("click", () => go(w));
+    dots.append(dot);
+  }
+  box.replaceChildren(head, grid, dots);
   mdFitTopNames();
   mdFitObserver?.disconnect();
   document.querySelectorAll(".md-gotw-name").forEach((el) => mdFitObserver?.observe(el));
   grid.querySelectorAll(".md-top-who").forEach((el) => mdFitObserver?.observe(el));
-  const active = tabs.querySelector(".is-active");
-  if (active) tabs.scrollLeft = active.offsetLeft - tabs.clientWidth / 2 + active.offsetWidth / 2;
 }
 
 function renderMatchday() {

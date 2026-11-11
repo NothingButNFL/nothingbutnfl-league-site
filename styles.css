@@ -2296,3 +2296,17 @@ a.md-top-name:hover { text-decoration: underline; }
 .md-gotw-name { width: 100%; min-width: 0; justify-items: center; }
 .md-gotw-pos { color: #fff; font: 700 14px var(--display); letter-spacing: .1em; opacity: .9; }
 .md-gotw-name .md-fit-name { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+/* Top Players: PREV / NEXT through the weeks, with a dot per week. */
+.md-top-title { margin: 0; color: #fff; font: 800 20px var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.md-top-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 4px; }
+.md-top-dots[hidden] { display: none; }
+.md-top-dot { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .35); cursor: pointer; transition: width .2s, background .2s; }
+.md-top-dot:hover { background: rgba(255, 255, 255, .7); }
+.md-top-dot.is-active { width: 26px; border-radius: 5px; background: #fff; }
+.md-top-dot:focus-visible { outline: 2px solid #c9a227; outline-offset: 2px; }
+@media (max-width: 560px) {
+  .md-top-title { font-size: 16px; }
+  .md-top-dots { gap: 5px; }
+  .md-top-dot { width: 8px; height: 8px; }
+  .md-top-dot.is-active { width: 18px; }
+}

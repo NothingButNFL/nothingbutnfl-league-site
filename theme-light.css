@@ -784,3 +784,7 @@ html[data-theme="light"] .md-top-name { color: #0b1f3a; }
 html[data-theme="light"] .md-top-team .leader-logo { color: #0b1f3a; }
 html[data-theme="light"] .md-top-stats { color: #0b1f3a; }
 html[data-theme="light"] .md-gotw-pos { color: #0b1f3a; }
+html[data-theme="light"] .md-top-title { color: #0b1f3a; }
+html[data-theme="light"] .md-top-dot { background-color: rgba(11, 31, 58, 0.490); }
+html[data-theme="light"] .md-top-dot:hover { background-color: rgba(11, 31, 58, 0.980); }
+html[data-theme="light"] .md-top-dot.is-active { background-color: #0c2b50; }
