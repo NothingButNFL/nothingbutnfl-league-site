@@ -2319,3 +2319,30 @@ a.md-top-name:hover { text-decoration: underline; }
   .md-top-pager .md-top-dot { flex: none; width: 6px; height: 6px; }
   .md-top-pager .md-top-dot.is-active { width: 14px; }
 }
+/* ===== Admin: Schedule Import ===== */
+.si-panel { display: grid; gap: 12px; }
+.si-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.si-controls label:first-child { display: grid; gap: 6px; width: 140px; }
+.si-file-button { cursor: pointer; }
+.si-paste-label { font: 700 13px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+#si-paste { width: 100%; min-height: 160px; font: 14px/1.5 var(--mono); resize: vertical; }
+.si-help { margin: 0; color: #fff; font-size: 14px; line-height: 1.5; }
+.si-replace { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.si-preview { display: grid; gap: 12px; margin-top: 18px; }
+.si-preview[hidden] { display: none; }
+.si-preview-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.si-preview-head h3 { margin: 0; font-size: 17px; }
+.si-preview-actions { display: flex; gap: 10px; }
+.si-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.si-table th, .si-table td { padding: 7px 10px; border-bottom: 1px solid #1d3a5f; white-space: nowrap; }
+.si-table td:last-child { white-space: normal; }
+.si-table tr.is-problem td { background: rgba(214, 69, 69, .14); }
+.si-table tr.is-problem td:last-child { color: #ff9b9b; font-weight: 700; }
+.si-preview .table-scroll { max-height: 460px; overflow: auto; }
+.si-current-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.si-current-actions [hidden] { display: none; }
+.si-weeks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.si-week { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid #31527a; border-left: 4px solid #4caf7a; border-radius: 4px; background: #0a2647; }
+.si-week.is-short { border-left-color: #f2b950; }
+.si-week b { font: 700 15px var(--display); }
+.si-week span { font-size: 13px; }
