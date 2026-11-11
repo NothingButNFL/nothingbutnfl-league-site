@@ -2194,3 +2194,47 @@ table td ul { padding-left: 0 !important; list-style-position: inside; }
 .md-best-item { margin-bottom: 6px; padding: 8px 10px; border: 0; border-left: 4px solid var(--md-accent, #8fd0ff); border-radius: 4px; background: linear-gradient(100deg, var(--md-team, #0c2b50) 0%, color-mix(in srgb, var(--md-team, #0c2b50) 70%, #000) 100%); }
 .md-best-item:last-child { margin-bottom: 0; }
 .md-best-meta { opacity: .92; }
+
+/* Stacked: Game of the Week, then the week's games carousel, then the Week's Best. */
+.matchday-grid { grid-template-columns: minmax(0, 1fr); }
+.md-slate { display: grid; gap: 12px; padding: 16px; border: 1px solid #31527a; border-radius: 6px; background: #0a2647; }
+.md-slate[hidden] { display: none; }
+.md-slate-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.md-slate-head .md-best-title { margin: 0; }
+.md-slate-navs { display: flex; gap: 8px; }
+.md-slate-navs[hidden] { display: none; }
+.md-slate-nav { min-width: 74px; padding: 7px 14px; border: 1px solid #c9a227; border-radius: 4px; background: rgba(5, 14, 30, .6); color: #fff; font: 800 13px var(--display); letter-spacing: .08em; cursor: pointer; }
+.md-slate-nav:hover:not(:disabled), .md-slate-nav:focus-visible { background: #c9a227; color: #07162b; }
+.md-slate-nav:disabled { opacity: .35; cursor: default; }
+.md-slate-viewport { --md-per: 3; overflow: hidden; }
+@media (max-width: 900px) { .md-slate-viewport { --md-per: 2; } }
+@media (max-width: 560px) { .md-slate-viewport { --md-per: 1; } }
+.md-slate-track { display: flex; gap: 14px; transition: transform .35s ease; }
+@media (prefers-reduced-motion: reduce) { .md-slate-track { transition: none; } }
+.md-slate-pane { position: relative; display: grid; flex: 0 0 calc((100% - (var(--md-per) - 1) * 14px) / var(--md-per)); align-content: start; gap: 10px; overflow: hidden; padding: 12px 14px 14px; border: 1px solid #31527a; border-radius: 6px;
+  background: linear-gradient(90deg, var(--md-away) 0 calc(50% - 1px), #c9a227 calc(50% - 1px) calc(50% + 1px), var(--md-home) calc(50% + 1px) 100%); color: #fff; }
+.md-slate-pane::before { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 14, 30, .55), rgba(5, 14, 30, .78)); content: ""; pointer-events: none; }
+.md-slate-pane > * { position: relative; }
+.md-slate-pane.is-featured { border-color: #c9a227; box-shadow: inset 0 0 0 1px #c9a227; }
+.md-slate-tag { justify-self: start; padding: 3px 9px; border: 1px solid rgba(255, 255, 255, .3); border-radius: 3px; font: 800 11px var(--display); letter-spacing: .1em; }
+.md-slate-pane.is-featured .md-slate-tag { border-color: #c9a227; background: #c9a227; color: #07162b; }
+.md-slate-rows { display: grid; gap: 6px; }
+.md-slate-team { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; background: rgba(5, 14, 30, .45); color: #fff; text-decoration: none; opacity: .85; }
+.md-slate-team.is-winner, .md-slate-pane:not(:has(.is-winner)) .md-slate-team { opacity: 1; }
+.md-slate-team:hover { background: rgba(5, 14, 30, .7); }
+.md-slate-team .leader-logo, .md-slate-team .leader-logo img { width: 34px; height: 34px; object-fit: contain; }
+.md-slate-name { display: grid; min-width: 0; text-align: left; }
+.md-slate-name b { overflow: hidden; font: 700 15px var(--display); text-overflow: ellipsis; white-space: nowrap; }
+.md-slate-name small { font: 600 12px var(--display); letter-spacing: .04em; opacity: .85; }
+.md-slate-score { font: 900 24px var(--display); }
+.md-slate-note { margin: 0; font: 600 13px var(--body); line-height: 1.35; }
+/* Week's Best spans the page now: performances side by side. */
+@media (min-width: 1000px) {
+  .md-best-list { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+  .md-best-item { flex-direction: column; justify-content: flex-start; margin: 0; padding: 14px 10px; border-left: 0; border-top: 4px solid var(--md-accent, #8fd0ff); text-align: center; }
+  .md-best-photo { width: 64px; height: 64px; }
+  .md-best-text { justify-items: center; }
+  .md-best-text .md-player-name { max-width: 100%; }
+  .md-best-meta { justify-content: center; }
+}
+.md-best-item, .md-best-item:last-child { border-bottom: 0; }

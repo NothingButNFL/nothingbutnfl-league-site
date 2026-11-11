@@ -272,3 +272,5 @@ html[data-theme="gray"] .md-gotw-photo.is-logo .leader-logo { color: #18191b; }
 html[data-theme="gray"] .md-best { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
 html[data-theme="gray"] .md-best-item { border-bottom-color: #303236; }
 html[data-theme="gray"] .md-best-photo.is-logo .leader-logo { color: #18191b; }
+html[data-theme="gray"] .md-slate { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .md-slate-pane { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }

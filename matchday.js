@@ -2,6 +2,7 @@
 // - a scrolling score ticker for the most recent week that has results,
 // - Game of the Week: next week's biggest matchup (best combined records), or, when nothing is scheduled after the
 //   last results, last week's best game with its final score,
+// - one preview pane per game that week (three at a time, PREV / NEXT),
 // - the Week's Best: the top individual performances from that most recent week.
 // Uses teams.js / league-core.js / overview.js globals (overviewLogo, teamThemePalettes, playerPortrait ...).
 
@@ -245,6 +246,94 @@ function renderGameOfWeek(pick, records) {
   box.style.setProperty("--md-home", (teamThemePalettes[pick.home] || ["#0c2b50"])[0]);
 }
 
+// ---------- This week's games: one preview pane per game, three at a time ----------
+// The same week as the Game of the Week: scheduled games (with the score once it's logged) or, with no schedule,
+// the logged results.
+function mdWeekSlate(data, pick, games) {
+  if (!pick) return [];
+  const season = data.standings?.season;
+  const results = games.filter((g) => g.week === pick.week);
+  const resultFor = (away, home) => results.find((g) => g.teams.some((t) => t.team === away) && g.teams.some((t) => t.team === home));
+  const sched = (data.schedule || []).filter((s) => s.week === pick.week && (!season || !s.season || s.season === season));
+  const slate = sched.length
+    ? sched.map((s) => ({ away: s.away, home: s.home, game: resultFor(s.away, s.home) || null }))
+    : results.map((g) => ({ away: g.teams[0].team, home: g.teams[1].team, game: g }));
+  for (const g of results) if (!slate.some((s) => s.game === g)) slate.push({ away: g.teams[0].team, home: g.teams[1].team, game: g });
+  const featured = (s) => s.away === pick.away && s.home === pick.home;
+  return [...slate.filter(featured), ...slate.filter((s) => !featured(s))].map((s) => ({ ...s, featured: featured(s) }));
+}
+
+function mdSlatePane(item, records) {
+  const pane = mdEl("article", `md-slate-pane${item.featured ? " is-featured" : ""}`);
+  pane.style.setProperty("--md-away", (teamThemePalettes[item.away] || ["#0c2b50"])[0]);
+  pane.style.setProperty("--md-home", (teamThemePalettes[item.home] || ["#0c2b50"])[0]);
+  const g = item.game;
+  const scoreOf = (id) => g ? g.teams.find((t) => t.team === id)?.score : null;
+  const top = g ? Math.max(...g.teams.map((t) => t.score)) : null;
+  const tied = g && g.teams[0].score === g.teams[1].score;
+  pane.append(mdEl("span", "md-slate-tag", item.featured ? "GAME OF THE WEEK" : g ? "FINAL" : "PREVIEW"));
+  const rows = mdEl("div", "md-slate-rows");
+  for (const [id, where] of [[item.away, "AWAY"], [item.home, "HOME"]]) {
+    const row = mdEl("a", `md-slate-team${g && !tied && scoreOf(id) === top ? " is-winner" : ""}`);
+    row.href = `team.html?team=${encodeURIComponent(id)}`;
+    const name = mdEl("span", "md-slate-name");
+    name.append(mdEl("b", "", teamName(id) || id), mdEl("small", "", `${where} · ${mdRecordText(records[id])}`));
+    row.append(overviewLogo(id), name, mdEl("strong", "md-slate-score", g ? String(scoreOf(id)) : ""));
+    rows.append(row);
+  }
+  pane.append(rows);
+  let note = "";
+  if (g) {
+    const best = mdGamePerformers(g).sort((a, b) => b.impact - a.impact)[0];
+    if (best) note = `${best.name}: ${mdLines(best.values)[0] || ""}`;
+  } else {
+    const stars = [item.away, item.home].map((id) => mdTeamStar(mdData, id)).filter(Boolean);
+    if (stars.length) note = `Players to watch: ${stars.map((p) => `${p.name} (${p.team})`).join(", ")}`;
+  }
+  if (note) pane.append(mdEl("p", "md-slate-note", note));
+  return pane;
+}
+
+function renderWeekSlate(slate, pick, records) {
+  const box = document.querySelector("#md-slate");
+  if (!slate.length) { box.hidden = true; return; }
+  box.hidden = false;
+  const head = mdEl("div", "md-slate-head");
+  head.append(mdEl("h3", "md-best-title", `${pick.week > 18 ? "Playoffs" : `Week ${pick.week}`} Games`));
+  const prev = mdEl("button", "md-slate-nav", "PREV");
+  const next = mdEl("button", "md-slate-nav", "NEXT");
+  prev.type = next.type = "button";
+  prev.setAttribute("aria-label", "Previous games");
+  next.setAttribute("aria-label", "Next games");
+  const nav = mdEl("div", "md-slate-navs");
+  nav.append(prev, next);
+  head.append(nav);
+  const viewport = mdEl("div", "md-slate-viewport");
+  const track = mdEl("div", "md-slate-track");
+  track.append(...slate.map((item) => mdSlatePane(item, records)));
+  viewport.append(track);
+  // Pages of whole panes (3 on desktop, fewer on narrow screens; set in CSS with --md-per).
+  let page = 0;
+  const perPage = () => Math.max(1, Number(getComputedStyle(viewport).getPropertyValue("--md-per")) || 3);
+  const update = () => {
+    const per = perPage();
+    const pages = Math.max(1, Math.ceil(slate.length / per));
+    page = Math.min(page, pages - 1);
+    const pane = track.children[page * per];
+    track.style.transform = pane ? `translateX(${-pane.offsetLeft}px)` : "";
+    prev.disabled = page === 0;
+    next.disabled = page >= pages - 1;
+    nav.hidden = pages === 1;
+  };
+  prev.addEventListener("click", () => { page -= 1; update(); });
+  next.addEventListener("click", () => { page += 1; update(); });
+  box.replaceChildren(head, viewport);
+  update();
+  box._mdResize?.disconnect();
+  box._mdResize = new ResizeObserver(update);
+  box._mdResize.observe(viewport);
+}
+
 // ---------- Week's Best ----------
 function renderWeeksBest(games, week) {
   const box = document.querySelector("#md-best");
@@ -287,7 +376,9 @@ function renderMatchday() {
   const records = mdRecords(data);
   section.hidden = false;
   renderTicker(lastWeek, week);
-  renderGameOfWeek(mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week), records);
+  const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
+  renderGameOfWeek(pick, records);
+  renderWeekSlate(mdWeekSlate(data, pick, games), pick, records);
   renderWeeksBest(lastWeek, week);
 }
 
