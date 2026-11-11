@@ -309,9 +309,6 @@ function renderWeekSlate(slate, pick, records) {
   prev.type = next.type = "button";
   prev.setAttribute("aria-label", "Previous games");
   next.setAttribute("aria-label", "Next games");
-  const nav = mdEl("div", "md-slate-navs");
-  nav.append(prev, next);
-  head.append(nav);
   const viewport = mdEl("div", "md-slate-viewport");
   const track = mdEl("div", "md-slate-track");
   track.append(...slate.map((item) => mdSlatePane(item, records)));
@@ -327,11 +324,30 @@ function renderWeekSlate(slate, pick, records) {
     track.style.transform = pane ? `translateX(${-pane.offsetLeft}px)` : "";
     prev.disabled = page === 0;
     next.disabled = page >= pages - 1;
-    nav.hidden = pages === 1;
+    pager.hidden = pages === 1;
+    // One dot per page; rebuilt when the page count changes with the screen width.
+    if (dots.children.length !== pages) {
+      dots.replaceChildren(...Array.from({ length: pages }, (_, i) => {
+        const dot = mdEl("button", "md-top-dot");
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Games page ${i + 1} of ${pages}`);
+        dot.addEventListener("click", () => { page = i; update(); });
+        return dot;
+      }));
+    }
+    [...dots.children].forEach((dot, i) => {
+      dot.classList.toggle("is-active", i === page);
+      if (i === page) dot.setAttribute("aria-current", "true"); else dot.removeAttribute("aria-current");
+    });
   };
+  // PREV · one dot per page · NEXT along the bottom, like Top Players.
+  const dots = mdEl("div", "md-top-dots");
+  dots.setAttribute("aria-label", "Pages");
+  const pager = mdEl("div", "md-top-pager");
+  pager.append(prev, dots, next);
   prev.addEventListener("click", () => { page -= 1; update(); });
   next.addEventListener("click", () => { page += 1; update(); });
-  box.replaceChildren(head, viewport);
+  box.replaceChildren(head, viewport, pager);
   update();
   box._mdResize?.disconnect();
   box._mdResize = new ResizeObserver(update);
