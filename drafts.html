@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=58816f72">
-    <link rel="stylesheet" href="theme-light.css?v=dad9e461">
+    <link rel="stylesheet" href="styles.css?v=f7296103">
+    <link rel="stylesheet" href="theme-light.css?v=a174a603">
     <link rel="stylesheet" href="theme-gray.css?v=26ef33ad">
     <link rel="stylesheet" href="theme-team.css?v=70f0aefd">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -43,7 +43,7 @@
     <script src="league-core.js?v=8c4e9195" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="nfl-drafts.js?v=23a1862c" defer></script>
-    <script src="drafts.js?v=11ec0469" defer></script>
+    <script src="drafts.js?v=6717d572" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -140,7 +140,7 @@
             <div>
               <p class="eyebrow"><span class="eyebrow-dot"></span> LEAGUE HISTORY</p>
               <h1>Previous Drafts</h1>
-              <p class="team-page-subtitle">Every draft class, pick by pick.</p>
+              <p class="team-page-subtitle">Every league draft since 2024, pick by pick.</p>
             </div>
           </div>
         </div>
@@ -168,23 +168,41 @@
           <div class="dr-firsts" id="dr-firsts"></div>
           <div class="management-table-wrap">
             <table class="management-table dr-table">
-              <thead><tr><th>RD</th><th>PICK</th><th>TEAM</th><th>PLAYER</th><th>POS</th><th>COLLEGE</th><th>NOW</th><th class="dr-col-edit" aria-label="Remove"></th></tr></thead>
+              <thead><tr><th>RD</th><th>PICK</th><th>TEAM</th><th>PLAYER</th><th>POS</th><th>SCHOOL</th><th>NOW</th><th class="dr-col-edit" aria-label="Edit or remove"></th></tr></thead>
               <tbody id="dr-rows"></tbody>
             </table>
           </div>
           <p class="empty-state" id="dr-empty" hidden>No picks match.</p>
 
+          <form class="management-panel dr-entry" id="dr-entry" autocomplete="off">
+            <div class="panel-heading"><div><span class="panel-index" id="dr-entry-kicker">ENTER A PICK</span><h3 id="dr-entry-title">Add a pick to the 2026 draft</h3></div></div>
+            <div class="dr-entry-fields">
+              <label class="dr-f-pick">Pick<input name="pick" type="number" min="1" max="400" required placeholder="1"></label>
+              <label class="dr-f-round">Round<input name="round" type="number" min="1" max="20" placeholder="auto"></label>
+              <label class="dr-f-team">Team<select name="team" required><option value="">Choose a team</option></select></label>
+              <label class="dr-f-player">Player name<input name="player" maxlength="70" required placeholder="e.g. Fernando Mendoza"></label>
+              <label class="dr-f-pos">Position<input name="position" maxlength="10" placeholder="QB" list="dr-positions"></label>
+              <label class="dr-f-school">Player school<input name="college" maxlength="80" placeholder="Indiana"></label>
+            </div>
+            <datalist id="dr-positions"><option value="QB"><option value="RB"><option value="WR"><option value="TE"><option value="OT"><option value="OG"><option value="C"><option value="EDGE"><option value="DT"><option value="LB"><option value="CB"><option value="S"><option value="K"><option value="P"><option value="LS"></datalist>
+            <div class="hs-actions">
+              <button class="button button-lime" type="submit" id="dr-add">Add pick</button>
+              <button class="workspace-button" type="button" id="dr-cancel" hidden>Cancel edit</button>
+              <span class="hs-help dr-entry-note">Round fills in from the pick number (32 picks a round); change it for compensatory picks.</span>
+            </div>
+          </form>
+
           <details class="management-panel dr-editor" id="dr-editor">
-            <summary><span class="panel-index">COMMISSIONER</span><strong>Record the league's draft</strong></summary>
-            <p class="hs-help">Paste one pick per line as <code>Round, Pick, Team, Player, Position, College</code> (Position and College are optional; Team is an abbreviation like BUF or a name). It replaces the league's picks for the year shown below. A year with no league picks shows the real NFL draft.</p>
+            <summary><span class="panel-index">FASTER</span><strong>Paste a whole draft</strong></summary>
+            <p class="hs-help">One pick per line: <code>Pick, Team, Player name, Position, Player school</code>. Team can be an abbreviation (BUF) or a name (Bills). Copying from a spreadsheet works too. Saving replaces every pick recorded for the year below.</p>
             <div class="dr-editor-row">
-              <label>Year<input id="dr-edit-year" type="number" min="1936" max="2100"></label>
+              <label>Year<select id="dr-edit-year"></select></label>
               <button class="workspace-button" type="button" id="dr-copy-nfl">Start from the real NFL draft</button>
             </div>
-            <textarea id="dr-paste" rows="8" placeholder="1, 1, LV, Fernando Mendoza, QB, Indiana"></textarea>
+            <textarea id="dr-paste" rows="8" placeholder="1, Raiders, Fernando Mendoza, QB, Indiana&#10;2, Jets, David Bailey, OLB, Texas Tech"></textarea>
             <div class="hs-actions">
               <button class="button button-lime" type="button" id="dr-save">Save draft</button>
-              <button class="workspace-button" type="button" id="dr-delete">Delete the league's picks for this year</button>
+              <button class="workspace-button" type="button" id="dr-delete">Delete every pick for this year</button>
             </div>
           </details>
         </div>

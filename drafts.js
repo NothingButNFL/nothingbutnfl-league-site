@@ -1,6 +1,8 @@
-// League History › Previous Drafts (drafts.html). Shows one draft year at a time: the league's own recorded picks
-// (data.draftHistory) when that year has any, otherwise the real NFL draft from nfl-drafts.js. Commissioners can paste
-// the league's picks for a year, start from the NFL draft and edit it, or remove single picks.
+// League History › Previous Drafts (drafts.html). One league draft at a time, from the league's first season (2024)
+// to this year: the picks recorded in data.draftHistory. Commissioners enter picks one at a time (pick, team, player,
+// position, school; round fills in from the pick), edit or remove them, or paste a whole draft. The real NFL draft
+// (nfl-drafts.js) is only offered as a starting point to paste from.
+const leagueFirstDraft = 2024;
 const drYear = document.querySelector("#dr-year");
 const drTeam = document.querySelector("#dr-team");
 const drSearch = document.querySelector("#dr-search");
@@ -13,14 +15,19 @@ try { drData = readStoredOffice() || emptyOfficeData(); } catch { drCanSave = fa
 
 const drNfl = typeof nflDraftHistory === "object" ? nflDraftHistory : {};
 const drLeague = () => (Array.isArray(drData.draftHistory) ? drData.draftHistory : []);
-const drYears = () => [...new Set([...Object.keys(drNfl).map(Number), ...drLeague().map((d) => d.year)])].sort((a, b) => b - a);
+const drYears = () => {
+  const last = Math.max(currentLeagueYear(), ...drLeague().map((d) => d.year));
+  const years = [];
+  for (let y = last; y >= leagueFirstDraft; y -= 1) years.push(y);
+  return years;
+};
+const drRoundFor = (pick) => Math.min(7, Math.ceil(pick / 32));
+let drEditing = null; // id of the pick being edited
 const ordinal = (n) => `${n}${["th", "st", "nd", "rd"][(n % 100 > 10 && n % 100 < 14) ? 0 : n % 10] || "th"}`;
 
 // The picks for a year: { source: "league" | "nfl", picks: [{ id?, round, pick, teamId, player, position, college }] }
 function drPicksFor(year) {
-  const league = drLeague().filter((d) => d.year === year);
-  if (league.length) return { source: "league", picks: [...league].sort((a, b) => a.pick - b.pick || a.round - b.round) };
-  return { source: "nfl", picks: (drNfl[year] || []).map(([round, pick, teamId, player, position, college]) => ({ round, pick, teamId, player, position, college })) };
+  return { source: "league", picks: drLeague().filter((d) => d.year === year).sort((a, b) => a.pick - b.pick || a.round - b.round) };
 }
 
 // Where each drafted player is in this league now (salary sheets and Player Contracts), by name.
@@ -50,9 +57,10 @@ function drRender() {
   const year = Number(drYear.value);
   const { source, picks } = drPicksFor(year);
   document.querySelector("#dr-year-title").textContent = String(year);
-  document.querySelector("#dr-source").textContent = source === "league"
-    ? `The league's ${year} draft, ${picks.length} picks.`
-    : `The real ${year} NFL Draft (${picks.length} picks, from nflverse's draft records). Record the league's own ${year} draft below to show it here instead.`;
+  document.querySelector("#dr-source").textContent = picks.length
+    ? `The league's ${year} draft: ${picks.length} pick${picks.length === 1 ? "" : "s"} recorded.`
+    : `No picks recorded for the ${year} draft yet. Enter them below, one at a time or pasted all at once.`;
+  if (!drEditing) document.querySelector("#dr-entry-title").textContent = `Add a pick to the ${year} draft`;
   // Round tabs
   const rounds = [...new Set(picks.map((p) => p.round))].sort((a, b) => a - b);
   if (drRound && !rounds.includes(drRound)) drRound = 0;
@@ -113,6 +121,13 @@ function drRender() {
     const edit = tr.insertCell();
     edit.className = "dr-col-edit";
     if (source === "league" && drCanSave) {
+      const e = document.createElement("button");
+      e.type = "button";
+      e.className = "workspace-button dr-edit";
+      e.textContent = "Edit";
+      e.setAttribute("aria-label", `Edit pick ${p.pick}, ${p.player}`);
+      e.addEventListener("click", () => drStartEdit(p));
+      edit.append(e);
       const x = document.createElement("button");
       x.type = "button";
       x.className = "row-delete";
@@ -121,13 +136,16 @@ function drRender() {
       x.addEventListener("click", async () => {
         if (!(await confirmAction(`Remove ${p.player} (pick ${p.pick}) from the league's ${year} draft?`, { confirmLabel: "Remove pick", danger: true }))) return;
         drSave((list) => list.filter((d) => d.id !== p.id), `${p.player} removed from the ${year} draft.`);
+        if (drEditing === p.id) drResetEntry();
       });
       edit.append(x);
     }
     return tr;
   }));
-  document.querySelector("#dr-empty").hidden = shown.length > 0;
-  document.querySelector("#dr-edit-year").value = year;
+  const empty = document.querySelector("#dr-empty");
+  empty.hidden = shown.length > 0;
+  empty.textContent = picks.length ? "No picks match." : `The ${year} draft is empty. Add the first pick below.`;
+  document.querySelector("#dr-edit-year").value = String(year);
 }
 
 function drSave(change, message) {
@@ -153,8 +171,11 @@ function drParse(text, year) {
   text.split(/\r?\n/).forEach((line, i) => {
     if (!line.trim()) return;
     const cells = line.split(line.includes("\t") ? "\t" : ",").map((c) => c.trim());
-    if (i === 0 && /round/i.test(cells[0])) return; // header row
-    const [round, pick, team, player, position, college] = cells;
+    if (i === 0 && /round|pick/i.test(cells[0])) return; // header row
+    // Pick, Team, Player, Position, School — or the same with Round first (six columns, starting with two numbers).
+    const withRound = cells.length >= 6 && /^\d+$/.test(cells[0]) && /^\d+$/.test(cells[1]);
+    const [pick, team, player, position, college] = withRound ? cells.slice(1) : cells;
+    const round = withRound ? cells[0] : String(drRoundFor(Number(pick)));
     const teamId = lookupTeamId(team || "") || (nflTeams.some(({ id }) => id === (team || "").toUpperCase()) ? team.toUpperCase() : null);
     if (!isIntegerInRange(Number(round), 1, 20) || !isIntegerInRange(Number(pick), 1, 400) || !teamId || !player) {
       errors.push(`Line ${i + 1}: ${line.trim().slice(0, 60)}`);
@@ -172,8 +193,8 @@ const drEditYear = () => Number(document.querySelector("#dr-edit-year").value);
 document.querySelector("#dr-copy-nfl").addEventListener("click", () => {
   const year = drEditYear();
   const rows = drNfl[year];
-  if (!rows) { drStatus.textContent = `There's no NFL draft on file for ${year || "that year"} (2010–2026 are).`; return; }
-  document.querySelector("#dr-paste").value = rows.map((r) => r.join(", ")).join("\n");
+  if (!rows) { drStatus.textContent = `There's no NFL draft on file for ${year || "that year"}.`; return; }
+  document.querySelector("#dr-paste").value = rows.map(([round, pick, team, player, position, college]) => [round, pick, team, player, position, college].join(", ")).join("\n");
   drStatus.textContent = `The ${year} NFL draft is in the box. Change any picks, then Save draft.`;
 });
 document.querySelector("#dr-save").addEventListener("click", async () => {
@@ -198,22 +219,89 @@ document.querySelector("#dr-delete").addEventListener("click", async () => {
 });
 
 function drFillYears() {
-  const keep = drYear.value;
-  const league = new Set(drLeague().map((d) => d.year));
-  drYear.replaceChildren(...drYears().map((y) => new Option(`${y}${league.has(y) ? " · League" : ""}`, String(y))));
-  if (keep && [...drYear.options].some((o) => o.value === keep)) drYear.value = keep;
+  const counts = new Map();
+  for (const d of drLeague()) counts.set(d.year, (counts.get(d.year) || 0) + 1);
+  const label = (y) => `${y}${counts.get(y) ? ` · ${counts.get(y)} picks` : " · not entered"}`;
+  for (const select of [drYear, document.querySelector("#dr-edit-year")]) {
+    const keep = select.value;
+    select.replaceChildren(...drYears().map((y) => new Option(select === drYear ? label(y) : String(y), String(y))));
+    if (keep && [...select.options].some((o) => o.value === keep)) select.value = keep;
+  }
 }
+
+// ---------- Enter one pick ----------
+const drForm = document.querySelector("#dr-entry");
+drForm.elements.team.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(name, id)));
+drForm.elements.pick.addEventListener("input", () => {
+  const pick = Number(drForm.elements.pick.value);
+  if (!drForm.elements.round.dataset.touched) drForm.elements.round.value = pick >= 1 ? drRoundFor(pick) : "";
+});
+drForm.elements.round.addEventListener("input", () => { drForm.elements.round.dataset.touched = "1"; });
+
+function drResetEntry() {
+  drEditing = null;
+  drForm.reset();
+  delete drForm.elements.round.dataset.touched;
+  document.querySelector("#dr-entry-kicker").textContent = "ENTER A PICK";
+  document.querySelector("#dr-entry-title").textContent = `Add a pick to the ${drYear.value} draft`;
+  document.querySelector("#dr-add").textContent = "Add pick";
+  document.querySelector("#dr-cancel").hidden = true;
+}
+
+function drStartEdit(p) {
+  drEditing = p.id;
+  const f = drForm.elements;
+  f.pick.value = p.pick;
+  f.round.value = p.round;
+  f.round.dataset.touched = "1";
+  f.team.value = p.teamId;
+  f.player.value = p.player;
+  f.position.value = p.position || "";
+  f.college.value = p.college || "";
+  document.querySelector("#dr-entry-kicker").textContent = "EDIT PICK";
+  document.querySelector("#dr-entry-title").textContent = `Edit pick ${p.pick} of the ${drYear.value} draft`;
+  document.querySelector("#dr-add").textContent = "Save pick";
+  document.querySelector("#dr-cancel").hidden = false;
+  drForm.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  f.player.focus({ preventScroll: true });
+}
+document.querySelector("#dr-cancel").addEventListener("click", drResetEntry);
+
+drForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!drForm.reportValidity()) return;
+  const f = drForm.elements;
+  const year = Number(drYear.value);
+  const pick = Number(f.pick.value);
+  const round = Number(f.round.value) || drRoundFor(pick);
+  const entry = { id: drEditing || newRecordId("draft"), year, round, pick, teamId: f.team.value, player: f.player.value.trim().slice(0, 70) };
+  if (f.position.value.trim()) entry.position = f.position.value.trim().toUpperCase().slice(0, 10);
+  if (f.college.value.trim()) entry.college = f.college.value.trim().slice(0, 80);
+  const clash = drLeague().find((d) => d.year === year && d.pick === pick && d.id !== entry.id);
+  if (clash && !(await confirmAction(`Pick ${pick} in ${year} is already ${clash.player}. Replace him with ${entry.player}?`, { confirmLabel: "Replace pick" }))) return;
+  const editing = drEditing;
+  const ok = drSave((list) => [...list.filter((d) => d.id !== entry.id && d !== clash), entry],
+    editing ? `Pick ${pick} updated: ${entry.player}.` : `Pick ${pick} added: ${entry.player} to the ${teamName(entry.teamId)}.`);
+  if (!ok) return;
+  if (editing) { drResetEntry(); return; }
+  // Ready for the next pick.
+  drResetEntry();
+  f.pick.value = pick + 1;
+  f.round.value = drRoundFor(pick + 1);
+  f.team.focus();
+});
 
 drTeam.append(...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id)));
 drFillYears();
 const drAsked = Number(new URLSearchParams(location.search).get("year"));
 if (drAsked && [...drYear.options].some((o) => o.value === String(drAsked))) drYear.value = String(drAsked);
+else { const firstWithPicks = drYears().find((y) => drLeague().some((d) => d.year === y)); if (firstWithPicks) drYear.value = String(firstWithPicks); }
 for (const control of [drYear, drTeam]) control.addEventListener("change", () => {
-  if (control === drYear) history.replaceState(null, "", `?year=${drYear.value}`);
+  if (control === drYear) { history.replaceState(null, "", `?year=${drYear.value}`); drResetEntry(); drStatus.textContent = ""; }
   drRender();
 });
 drSearch.addEventListener("input", drRender);
-if (!drCanSave) document.querySelector("#dr-editor").hidden = true;
+if (!drCanSave) { document.querySelector("#dr-editor").hidden = true; drForm.hidden = true; }
 window.addEventListener("storage", (event) => {
   if (event.key !== officeStorageKey) return;
   try { drData = readStoredOffice() || emptyOfficeData(); drFillYears(); drRender(); } catch { /* keep the current view */ }

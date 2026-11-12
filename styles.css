@@ -2728,3 +2728,12 @@ a.dr-team:hover { text-decoration: underline; }
 .dr-editor-row label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
 .dr-editor textarea { width: 100%; font: 13px var(--mono); }
 .dr-editor[hidden], #dr-empty[hidden] { display: none; }
+.dr-entry { margin-top: 24px; }
+.dr-entry-fields { display: grid; grid-template-columns: 90px 90px minmax(170px, 1.2fr) minmax(180px, 1.5fr) 100px minmax(160px, 1.2fr); gap: 12px; margin-top: 12px; }
+.dr-entry-fields label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
+.dr-entry-fields :is(input, select) { width: 100%; min-width: 0; }
+@media (max-width: 900px) { .dr-entry-fields { grid-template-columns: 1fr 1fr; } .dr-f-team, .dr-f-player, .dr-f-school { grid-column: 1 / -1; } }
+.dr-entry-note { margin: 0; }
+.dr-entry [hidden] { display: none; }
+.dr-col-edit { width: 110px; white-space: nowrap; }
+.dr-edit { min-height: 0; margin-right: 6px; padding: 4px 10px; font-size: 12px; }
