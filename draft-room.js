@@ -56,7 +56,10 @@ function dkMakePick(player) {
   if (player.poolId) entry.poolId = player.poolId;
   entry.roundManual = true; // the round comes from the draft order
   entry.madeAt = new Date().toISOString(); // for Undo last pick, since a skipped team's pick comes later than its number
-  const ok = dkSave((data) => { data.draftHistory = [...(data.draftHistory || []).filter((d) => !(d.year === dkYear && d.pick === slot.pick)), entry]; },
+  const ok = dkSave((data) => {
+    data.draftHistory = [...(data.draftHistory || []).filter((d) => !(d.year === dkYear && d.pick === slot.pick)), entry];
+    data.draftLive = dkYear; // the first pick puts the draft ticker on every page
+  },
     `${late ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
   if (!ok) return;
   dkFlashId = entry.id;
@@ -332,7 +335,17 @@ function dkRenderLast() {
   }
 }
 
+function dkRenderLive() {
+  const live = dkData.draftLive === dkYear;
+  const button = document.querySelector("#dk-live");
+  button.textContent = live ? "End draft (hide ticker)" : "Start draft (show ticker)";
+  button.classList.toggle("is-live", live);
+  button.disabled = !dkCanSave || (!live && !dkOrder().length);
+  if (typeof renderDraftTicker === "function") renderDraftTicker();
+}
+
 function dkRender() {
+  dkRenderLive();
   dkRenderLast();
   document.querySelector("#dk-title").textContent = `${dkYear} Draft`;
   document.title = `${dkYear} Draft — Nothing But NFL`;
@@ -347,7 +360,12 @@ document.querySelector("#dk-pool-pos").addEventListener("change", dkRenderPool);
 let dkTimerLeft = 300, dkTimerHandle = null;
 const dkTimerEl = document.querySelector("#dk-timer");
 const dkTimerLength = () => Number(document.querySelector("#dk-timer-length").value);
+// Mirror the pick clock for the draft ticker on other pages and tabs.
+function dkClockShare() {
+  try { localStorage.setItem("nbf-draft-clock", JSON.stringify({ year: dkYear, pick: dkOnClock()?.pick ?? null, left: dkTimerLeft, running: dkTimerHandle !== null, at: Date.now() })); } catch { /* fine */ }
+}
 function dkTimerShow() {
+  dkClockShare();
   const m = Math.floor(Math.max(0, dkTimerLeft) / 60), s = Math.max(0, dkTimerLeft) % 60;
   dkTimerEl.textContent = `${m}:${String(s).padStart(2, "0")}`;
   document.querySelector("#dk-clock").classList.toggle("is-late", dkTimerLeft <= 30 && dkTimerHandle !== null);
@@ -808,3 +826,10 @@ document.querySelector("#dk-pick-sound").addEventListener("change", () => {
 });
 try { if (localStorage.getItem(`${dkSoundKey}-pick`) === "off") document.querySelector("#dk-pick-sound").checked = false; } catch { /* default on */ }
 dkLoadPickSound();
+
+document.querySelector("#dk-live").addEventListener("click", async () => {
+  const live = dkData.draftLive === dkYear;
+  if (live && !(await confirmAction("End the draft? The draft ticker comes off every page. Picks, the order and the pool stay.", { confirmLabel: "End draft" }))) return;
+  dkSave((data) => { if (live) delete data.draftLive; else data.draftLive = dkYear; },
+    live ? "Draft ended. The ticker is off." : `The ${dkYear} draft is live: the draft ticker now shows at the top of every page until the last pick is in.`);
+});
