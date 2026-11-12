@@ -408,3 +408,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-own { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-slot { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-history-link { color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-skipped-row { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }

@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=c1cbe8cc">
-    <link rel="stylesheet" href="theme-light.css?v=37cf3aa4">
-    <link rel="stylesheet" href="theme-gray.css?v=e8ba8993">
-    <link rel="stylesheet" href="theme-team.css?v=9f7d7955">
+    <link rel="stylesheet" href="styles.css?v=d6b9a87a">
+    <link rel="stylesheet" href="theme-light.css?v=627bb7d8">
+    <link rel="stylesheet" href="theme-gray.css?v=cd6bac6f">
+    <link rel="stylesheet" href="theme-team.css?v=495d665c">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -40,10 +40,10 @@
       })();
     </script>
     <script src="teams.js?v=63cc3c02" defer></script>
-    <script src="league-core.js?v=fe1259c3" defer></script>
+    <script src="league-core.js?v=f8902b5a" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=47c5cc6b" defer></script>
+    <script src="draft-room.js?v=21da167e" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -159,13 +159,21 @@
             </div>
             <div class="dk-timer">
               <strong id="dk-timer" aria-live="off">5:00</strong>
+              <small class="dk-timer-for" id="dk-timer-for"></small>
               <div class="dk-timer-buttons">
                 <button class="workspace-button" type="button" id="dk-timer-toggle">Start clock</button>
                 <button class="workspace-button" type="button" id="dk-timer-reset">Reset</button>
+                <button class="workspace-button" type="button" id="dk-skip" title="Skip the team on the clock; it can still pick later">Skip team</button>
                 <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
               </div>
             </div>
             <div class="dk-next" id="dk-next"></div>
+          </div>
+
+          <div class="management-panel dk-skipped" id="dk-skipped" hidden>
+            <div class="panel-heading"><div><span class="panel-index">SKIPPED</span><h3>Ran out the clock</h3></div>
+              <p>These teams can make their pick at any time, choosing from the players still in the pool.</p></div>
+            <div class="dk-skipped-list"></div>
           </div>
 
           <div class="dk-layout">

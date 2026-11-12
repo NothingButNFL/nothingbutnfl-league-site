@@ -2941,13 +2941,14 @@ function validDraftHistory(list) {
 }
 
 // Season Information › Draft: the order of picks for a draft and the pool of prospects to pick from.
-// draftOrder = [{ year, pick, round, teamId, fromTeam?, compensatory? }]; draftPool = [{ id, year, name, position?, college?, rank? }]
+// draftOrder = [{ year, pick, round, teamId, fromTeam?, compensatory?, skipped? }] (skipped: ran out the pick clock); draftPool = [{ id, year, name, position?, college?, rank? }]
 function validDraftOrder(list) {
   if (list === undefined) return true;
   const team = (id) => nflTeams.some((t) => t.id === id);
   return Array.isArray(list) && list.length <= 2000 && list.every((d) => d && isIntegerInRange(d.year, 1936, 2100) &&
     isIntegerInRange(d.pick, 1, 400) && isIntegerInRange(d.round, 1, 20) && team(d.teamId) &&
-    (d.fromTeam === undefined || team(d.fromTeam)) && (d.compensatory === undefined || typeof d.compensatory === "boolean"));
+    (d.fromTeam === undefined || team(d.fromTeam)) && (d.compensatory === undefined || typeof d.compensatory === "boolean") &&
+    (d.skipped === undefined || typeof d.skipped === "boolean"));
 }
 function validDraftPool(list) {
   if (list === undefined) return true;

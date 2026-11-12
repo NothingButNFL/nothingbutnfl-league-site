@@ -2809,3 +2809,17 @@ a.dr-team:hover { text-decoration: underline; }
 .dk-setup[hidden], #dk-pool-empty[hidden] { display: none; }
 .dk-pool-table :is(th, td):first-child { width: 40px; color: #ffd37a; font: 700 12px var(--mono); text-align: center; }
 .dk-pool-table { min-width: 0; }
+.dk-skipped { margin: -6px 0 22px; border-color: #ff9299; }
+.dk-skipped .panel-heading p { margin: 4px 0 0; color: #fff; font-size: 13px; opacity: .85; }
+.dk-skipped-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.dk-skipped-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #31527a; border-radius: 8px; background: #0a2647; }
+.dk-skipped-row.is-active { border-color: #ffd37a; background: #2b2a1a; }
+.dk-unskip { min-height: 0; padding: 5px 10px; font-size: 12px; }
+.dk-skipped[hidden] { display: none; }
+.dk-clock.is-late-pick { border-color: #ff9299; }
+.dk-clock.is-late-pick .dk-clock-label { color: #ff9299; }
+.dk-late-cancel { min-height: 0; margin-left: 8px; padding: 4px 10px; font-size: 12px; }
+.dk-slot.is-skipped { border-color: #ff9299; }
+.dk-slot.is-skipped .dk-slot-player { color: #ff9299; font-weight: 700; }
+.dk-slot-player em { color: #ff9299; font-size: 11px; font-style: normal; }
+.dk-timer-for { min-height: 1em; color: #fff; font: 11px var(--mono); opacity: .8; }

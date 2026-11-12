@@ -1,5 +1,6 @@
 // Season Information › Draft (draft.html): the live draft room for this year's draft, run by the commissioner on one
-// screen. Shows the team on the clock (with the pick clock and who's up next), the Draft Pool to pick from, a form for
+// screen. Shows the team on the clock (with the pick clock and who's up next; running out the clock skips the team),
+// the skipped teams that can still make a late pick, the Draft Pool to pick from, a form for
 // a player who isn't in the pool, and the board of picks made. Every pick is saved to data.draftHistory, so the draft
 // also appears in League History › Previous Drafts. The order (data.draftOrder) and pool (data.draftPool) are set up
 // under Draft setup. Uses league-core.js and draft-core.js.
@@ -14,7 +15,12 @@ const dkOrder = () => (dkData.draftOrder || []).filter((d) => d.year === dkYear)
 const dkPicks = () => (dkData.draftHistory || []).filter((d) => d.year === dkYear);
 const dkPool = () => (dkData.draftPool || []).filter((p) => p.year === dkYear);
 const dkMadeAt = (pick) => dkPicks().find((d) => d.pick === pick);
-const dkOnClock = () => dkOrder().find((slot) => !dkMadeAt(slot.pick)) || null;
+// League rule: a team that runs out the whole pick clock is skipped and the next team picks. A skipped team can make
+// its pick at any time afterwards, but only from the players still in the pool then. Skipped picks keep their number.
+const dkOnClock = () => dkOrder().find((slot) => !dkMadeAt(slot.pick) && !slot.skipped) || null;
+const dkSkippedSlots = () => dkOrder().filter((slot) => slot.skipped && !dkMadeAt(slot.pick));
+let dkLate = null; // pick number of a skipped team making its late pick now
+const dkActive = () => (dkLate && dkSkippedSlots().find((s) => s.pick === dkLate)) || dkOnClock();
 const dkDrafted = () => {
   const ids = new Set(), names = new Set();
   for (const d of dkPicks()) { if (d.poolId) ids.add(d.poolId); names.add(normalizePlayerName(d.player)); }
@@ -39,7 +45,8 @@ function dkSave(change, message) {
 
 // ---------- Making a pick ----------
 function dkMakePick(player) {
-  const slot = dkOnClock();
+  const slot = dkActive();
+  const late = Boolean(slot?.skipped);
   if (!slot) { dkStatus.textContent = dkOrder().length ? "Every pick has been made." : "Set the draft order under Draft setup first."; return; }
   const entry = { id: newRecordId("draft"), year: dkYear, round: slot.round, pick: slot.pick, teamId: slot.teamId, player: player.name.trim().slice(0, 70) };
   if (slot.compensatory) entry.compensatory = true;
@@ -48,27 +55,52 @@ function dkMakePick(player) {
   if (player.college) entry.college = player.college.trim().slice(0, 80);
   if (player.poolId) entry.poolId = player.poolId;
   entry.roundManual = true; // the round comes from the draft order
+  entry.madeAt = new Date().toISOString(); // for Undo last pick, since a skipped team's pick comes later than its number
   const ok = dkSave((data) => { data.draftHistory = [...(data.draftHistory || []).filter((d) => !(d.year === dkYear && d.pick === slot.pick)), entry]; },
-    `Pick ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
-  if (ok) dkTimerRestart();
+    `${late ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
+  if (!ok) return;
+  if (late) { dkLate = null; dkRender(); } // the team on the clock keeps its time
+  else dkTimerRestart();
+}
+
+// Skip the team on the clock (also happens on its own when the pick clock runs out).
+function dkSkip(auto) {
+  const slot = dkOnClock();
+  if (!slot) return;
+  const ok = dkSave((data) => {
+    const target = (data.draftOrder || []).find((d) => d.year === dkYear && d.pick === slot.pick);
+    if (target) target.skipped = true;
+  }, `${auto ? "Time's up: the" : "The"} ${teamName(slot.teamId)} ${auto ? "were" : "are"} skipped at pick ${slot.pick}. They can still pick at any time, from the players left.`);
+  if (ok) dkTimerRestart(auto);
+}
+// Undo a skip: the team goes back to waiting for its turn at its own pick number.
+function dkUnskip(slot) {
+  dkSave((data) => {
+    const target = (data.draftOrder || []).find((d) => d.year === dkYear && d.pick === slot.pick);
+    if (target) delete target.skipped;
+  }, `The ${teamName(slot.teamId)} are no longer skipped at pick ${slot.pick}.`);
+  if (dkLate === slot.pick) dkLate = null;
+  dkTimerRestart();
 }
 
 document.querySelector("#dk-own").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const f = form.elements;
-  const slot = dkOnClock();
+  const slot = dkActive();
   if (!slot) { dkMakePick({ name: "" }); return; }
-  if (!(await confirmAction(`Pick ${slot.pick}: the ${teamName(slot.teamId)} select ${f.name.value.trim()}?`, { confirmLabel: "Make the pick" }))) return;
+  if (!(await confirmAction(`${slot.skipped ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${f.name.value.trim()}?`, { confirmLabel: "Make the pick" }))) return;
   dkMakePick({ name: f.name.value, position: f.position.value, college: f.college.value });
   form.reset();
 });
 
 document.querySelector("#dk-undo").addEventListener("click", async () => {
-  const made = dkPicks().sort((a, b) => b.pick - a.pick)[0];
+  const made = dkPicks().sort((a, b) => String(b.madeAt || "").localeCompare(String(a.madeAt || "")) || b.pick - a.pick)[0];
   if (!made) { dkStatus.textContent = "No picks to undo."; return; }
   if (!(await confirmAction(`Undo pick ${made.pick}, ${made.player} to the ${teamName(made.teamId)}? He goes back into the pool.`, { confirmLabel: "Undo pick", danger: true }))) return;
-  dkSave((data) => { data.draftHistory = data.draftHistory.filter((d) => d.id !== made.id); }, `Pick ${made.pick} undone. The ${teamName(made.teamId)} are back on the clock.`);
+  const wasSkipped = dkOrder().find((s) => s.pick === made.pick)?.skipped;
+  dkSave((data) => { data.draftHistory = data.draftHistory.filter((d) => d.id !== made.id); },
+    `Pick ${made.pick} undone. The ${teamName(made.teamId)} are ${wasSkipped ? "back on the skipped list" : "back on the clock"}.`);
 });
 
 // ---------- On the clock ----------
@@ -94,7 +126,8 @@ function dkTeamBlock(slot, big) {
 }
 
 function dkRenderClock() {
-  const slot = dkOnClock();
+  const slot = dkActive();
+  const late = Boolean(slot?.skipped);
   const order = dkOrder();
   const clock = document.querySelector("#dk-clock");
   const label = document.querySelector("#dk-clock-label");
@@ -109,27 +142,69 @@ function dkRenderClock() {
     clock.style.removeProperty("--dk-team");
     return;
   }
+  dkRenderSkipped();
   if (!slot) {
-    label.textContent = "DRAFT COMPLETE";
-    teamBox.replaceChildren(Object.assign(document.createElement("p"), { className: "dk-clock-note", textContent: `All ${order.length} picks are in.` }));
+    const waiting = dkSkippedSlots().length;
+    label.textContent = waiting ? "WAITING ON SKIPPED TEAMS" : "DRAFT COMPLETE";
+    teamBox.replaceChildren(Object.assign(document.createElement("p"), { className: "dk-clock-note",
+      textContent: waiting ? `Every other pick is in. ${waiting} skipped team${waiting === 1 ? " still has" : "s still have"} a pick to make (below).` : `All ${order.length} picks are in.` }));
     pickText.textContent = "";
     document.querySelector("#dk-next").replaceChildren();
     clock.style.removeProperty("--dk-team");
     dkTimerStop();
     return;
   }
-  label.textContent = "ON THE CLOCK";
+  label.textContent = late ? "LATE PICK · SKIPPED TEAM" : "ON THE CLOCK";
+  document.querySelector("#dk-timer-for").textContent = late && dkOnClock() ? `${dkOnClock().teamId}'s clock keeps running` : "";
+  clock.classList.toggle("is-late-pick", late);
   teamBox.replaceChildren(dkTeamBlock(slot, true));
-  pickText.textContent = `Round ${slot.round} · Pick ${slot.pick}${slot.compensatory ? " (compensatory)" : ""}`;
+  pickText.textContent = `Round ${slot.round} · Pick ${slot.pick}${slot.compensatory ? " (compensatory)" : ""}${late && dkOnClock() ? ` · then back to the ${teamName(dkOnClock().teamId)}` : ""}`;
+  if (late) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "workspace-button dk-late-cancel";
+    back.textContent = "Cancel late pick";
+    back.addEventListener("click", () => { dkLate = null; dkRender(); });
+    pickText.append(" ", back);
+  }
   const palette = typeof teamThemePalettes === "object" ? teamThemePalettes[slot.teamId] : null;
   if (palette) clock.style.setProperty("--dk-team", palette[0]); else clock.style.removeProperty("--dk-team");
-  const upcoming = order.filter((s) => s.pick > slot.pick && !dkMadeAt(s.pick)).slice(0, 4);
+  const current = dkOnClock() || slot;
+  const upcoming = order.filter((s) => s.pick > current.pick && !dkMadeAt(s.pick) && !s.skipped).slice(0, 4);
   const next = document.querySelector("#dk-next");
   const title = Object.assign(document.createElement("span"), { className: "dk-next-title", textContent: "UP NEXT" });
   next.replaceChildren(title, ...upcoming.map((s) => {
     const row = document.createElement("div");
     row.className = "dk-next-row";
     row.append(Object.assign(document.createElement("span"), { className: "dk-next-pick", textContent: `${s.pick}${s.compensatory ? "*" : ""}` }), dkTeamBlock(s, false));
+    return row;
+  }));
+}
+
+// Skipped teams that can still pick, under the clock.
+function dkRenderSkipped() {
+  const box = document.querySelector("#dk-skipped");
+  const list = dkSkippedSlots();
+  box.hidden = !list.length;
+  box.querySelector(".dk-skipped-list").replaceChildren(...list.map((s) => {
+    const row = document.createElement("div");
+    row.className = `dk-skipped-row${dkLate === s.pick ? " is-active" : ""}`;
+    row.append(Object.assign(document.createElement("span"), { className: "dk-next-pick", textContent: `${s.pick}${s.compensatory ? "*" : ""}` }), dkTeamBlock(s, false));
+    const go = document.createElement("button");
+    go.type = "button";
+    go.className = "button button-lime dk-draft-btn";
+    go.textContent = dkLate === s.pick ? "Picking now" : "Make pick";
+    go.disabled = dkLate === s.pick || !dkCanSave;
+    go.addEventListener("click", () => { dkLate = s.pick; dkRender(); dkStatus.textContent = `The ${teamName(s.teamId)} are making their late pick ${s.pick}. Choose from the players left in the pool.`; });
+    const undo = document.createElement("button");
+    undo.type = "button";
+    undo.className = "workspace-button dk-unskip";
+    undo.textContent = "Undo skip";
+    undo.title = "Put this team back in the order at its own pick";
+    undo.addEventListener("click", async () => {
+      if (await confirmAction(`Undo the skip for the ${teamName(s.teamId)} at pick ${s.pick}?`, { confirmLabel: "Undo skip" })) dkUnskip(s);
+    });
+    row.append(go, undo);
     return row;
   }));
 }
@@ -150,7 +225,7 @@ function dkRenderPool() {
     (!query || `${p.name} ${p.college || ""}`.toLowerCase().includes(query)))
     .sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name));
   document.querySelector("#dk-pool-count").textContent = String(available.length);
-  const slot = dkOnClock();
+  const slot = dkActive();
   document.querySelector("#dk-pool-rows").replaceChildren(...shown.slice(0, 400).map((p) => {
     const tr = document.createElement("tr");
     tr.insertCell().textContent = p.rank ?? "";
@@ -167,9 +242,9 @@ function dkRenderPool() {
     b.disabled = !slot || !dkCanSave;
     b.title = slot ? `Draft ${p.name} for the ${teamName(slot.teamId)}` : "No team on the clock";
     b.addEventListener("click", async () => {
-      const now = dkOnClock();
+      const now = dkActive();
       if (!now) return;
-      if (!(await confirmAction(`Pick ${now.pick}: the ${teamName(now.teamId)} select ${p.name}${p.position ? `, ${p.position}` : ""}${p.college ? `, ${p.college}` : ""}?`, { confirmLabel: "Make the pick" }))) return;
+      if (!(await confirmAction(`${now.skipped ? "Late pick" : "Pick"} ${now.pick}: the ${teamName(now.teamId)} select ${p.name}${p.position ? `, ${p.position}` : ""}${p.college ? `, ${p.college}` : ""}?`, { confirmLabel: "Make the pick" }))) return;
       dkMakePick({ name: p.name, position: p.position, college: p.college, poolId: p.id });
     });
     cell.append(b);
@@ -204,13 +279,14 @@ function dkRenderBoard() {
   document.querySelector("#dk-board").replaceChildren(...order.filter((s) => s.round === showing).map((s) => {
     const li = document.createElement("li");
     const pick = dkMadeAt(s.pick);
-    li.className = `dk-slot${pick ? " is-made" : ""}${slot && s.pick === slot.pick ? " is-now" : ""}`;
+    li.className = `dk-slot${pick ? " is-made" : ""}${slot && s.pick === slot.pick ? " is-now" : ""}${s.skipped && !pick ? " is-skipped" : ""}`;
     li.append(Object.assign(document.createElement("span"), { className: "dk-slot-pick", textContent: `${s.pick}${s.compensatory ? "*" : ""}` }), dkTeamBlock(s, false));
     const who = document.createElement("span");
     who.className = "dk-slot-player";
     if (pick) {
       who.append(Object.assign(document.createElement("strong"), { textContent: pick.player }), [pick.position, pick.college].filter(Boolean).join(" · "));
-    } else who.textContent = slot && s.pick === slot.pick ? "On the clock" : "";
+      if (s.skipped) who.append(Object.assign(document.createElement("em"), { textContent: "Late pick (was skipped)" }));
+    } else who.textContent = s.skipped ? "Skipped · can still pick" : slot && s.pick === slot.pick ? "On the clock" : "";
     li.append(who);
     return li;
   }));
@@ -240,11 +316,20 @@ function dkTimerShow() {
 function dkTimerStop() { clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); }
 function dkTimerStart() {
   if (dkTimerHandle || !dkOnClock()) return;
-  dkTimerHandle = setInterval(() => { dkTimerLeft -= 1; if (dkTimerLeft <= 0) { dkTimerLeft = 0; clearInterval(dkTimerHandle); dkTimerHandle = null; } dkTimerShow(); }, 1000);
+  dkTimerHandle = setInterval(() => {
+    dkTimerLeft -= 1;
+    if (dkTimerLeft <= 0) { dkTimerLeft = 0; clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); dkSkip(true); return; }
+    dkTimerShow();
+  }, 1000);
   dkTimerShow();
 }
-function dkTimerRestart() { const running = dkTimerHandle !== null; dkTimerStop(); dkTimerLeft = dkTimerLength(); if (running) dkTimerStart(); dkTimerShow(); }
+function dkTimerRestart(keepRunning = false) { const running = keepRunning || dkTimerHandle !== null; dkTimerStop(); dkTimerLeft = dkTimerLength(); if (running) dkTimerStart(); dkTimerShow(); }
 document.querySelector("#dk-timer-toggle").addEventListener("click", () => (dkTimerHandle ? dkTimerStop() : dkTimerStart()));
+document.querySelector("#dk-skip").addEventListener("click", async () => {
+  const slot = dkOnClock();
+  if (!slot) return;
+  if (await confirmAction(`Skip the ${teamName(slot.teamId)} at pick ${slot.pick}? They can still pick later from the players left.`, { confirmLabel: "Skip team" })) dkSkip(false);
+});
 document.querySelector("#dk-timer-reset").addEventListener("click", () => { dkTimerStop(); dkTimerLeft = dkTimerLength(); dkTimerShow(); });
 document.querySelector("#dk-timer-length").addEventListener("change", () => { dkTimerLeft = dkTimerLength(); dkTimerShow(); });
 

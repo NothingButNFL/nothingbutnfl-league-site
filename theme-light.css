@@ -920,3 +920,13 @@ html[data-theme="light"] .dk-setup summary { color: #0b1f3a; }
 html[data-theme="light"] .dk-setup h4 { color: #0b1f3a; }
 html[data-theme="light"] .dk-danger { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #c0283a; }
 html[data-theme="light"] .dk-pool-table :is(th, html[data-theme="light"] td):first-child { color: #946100; }
+html[data-theme="light"] .dk-skipped { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; }
+html[data-theme="light"] .dk-skipped .panel-heading p { color: #0b1f3a; }
+html[data-theme="light"] .dk-skipped-row { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #f5f8fc; }
+html[data-theme="light"] .dk-skipped-row.is-active { border-top-color: #c98a12; border-right-color: #c98a12; border-bottom-color: #c98a12; border-left-color: #c98a12; background-color: #fff4dc; }
+html[data-theme="light"] .dk-clock.is-late-pick { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; }
+html[data-theme="light"] .dk-clock.is-late-pick .dk-clock-label { color: #c0283a; }
+html[data-theme="light"] .dk-slot.is-skipped { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; }
+html[data-theme="light"] .dk-slot.is-skipped .dk-slot-player { color: #c0283a; }
+html[data-theme="light"] .dk-slot-player em { color: #c0283a; }
+html[data-theme="light"] .dk-timer-for { color: #0b1f3a; }
