@@ -161,6 +161,12 @@ function wwRender() {
   // Waiver order
   const claimsFor = new Map();
   for (const w of open) for (const c of w.claims) claimsFor.set(c.teamId, (claimsFor.get(c.teamId) || 0) + 1);
+  const basis = waiverBasis(officeData);
+  document.querySelector("#ww-order-basis").textContent = basis.kind === "draft"
+    ? `Weeks 1–${waiverDraftWeeks}: the ${basis.year} draft order (the team that picked first claims first). From week ${waiverDraftWeeks + 1}, worst record first. It's week ${basis.week}.`
+    : basis.missingDraft
+      ? `Weeks 1–${waiverDraftWeeks} use the ${basis.year} draft order, but it isn't set yet (Season Information › Draft), so this is worst record first for now.`
+      : `From week ${waiverDraftWeeks + 1}: worst record first in the current standings. (Weeks 1–${waiverDraftWeeks} follow the ${basis.year} draft order.)`;
   document.querySelector("#ww-order").replaceChildren(...waiverPriority(officeData).map(({ id, record }, i) => {
     const li = wwEl("li");
     li.append(wwEl("b", "ww-order-rank", String(i + 1)), wwLogo(id), wwEl("span", "ww-order-team", teamName(id)), wwEl("span", "ww-order-record", `${record.w}-${record.l}${record.t ? `-${record.t}` : ""}`));

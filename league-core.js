@@ -2783,8 +2783,11 @@ function addFreeAgent(data, { playerName, position, experience, profile, birthDa
   return fa;
 }
 
-// Waiver order: worst record first (win %, then fewer wins), from the standings or the logged box scores.
-function waiverPriority(data) {
+// Waiver order. Weeks 1–3 of the regular season: the order of this league year's draft (the team that picked first is
+// first; traded picks don't change it, it's the original order). From week 4: worst record first in this season's
+// standings (win %, then fewer wins), from the standings or the logged box scores. waiverBasis(data) says which.
+const waiverDraftWeeks = 3;
+function waiverRecords(data) {
   const rec = Object.fromEntries(nflTeams.map(({ id }) => [id, { w: 0, l: 0, t: 0 }]));
   const saved = data.standings?.teams;
   if (saved && Object.values(saved).some((r) => (Number(r.w) || 0) + (Number(r.l) || 0) + (Number(r.t) || 0) > 0)) {
@@ -2798,9 +2801,38 @@ function waiverPriority(data) {
       else { rec[a.score > b.score ? a.team : b.team].w += 1; rec[a.score > b.score ? b.team : a.team].l += 1; }
     }
   }
+  return rec;
+}
+// The original first-round order of a draft ([teamId], pick 1 first): from its draft order, else its recorded picks.
+function draftFirstRoundOrder(data, year) {
+  const fromOrder = (data.draftOrder || []).filter((s) => s.year === year && s.round === 1 && !s.compensatory);
+  const fromHistory = (data.draftHistory || []).filter((d) => d.year === year && d.round === 1 && !d.compensatory);
+  const slots = fromOrder.length >= fromHistory.length ? fromOrder : fromHistory;
+  const order = [];
+  for (const s of [...slots].sort((a, b) => a.pick - b.pick)) {
+    const team = s.fromTeam || s.teamId;
+    if (nflTeams.some(({ id }) => id === team) && !order.includes(team)) order.push(team);
+  }
+  return order;
+}
+function waiverBasis(data) {
+  const week = leagueCurrentWeek(data).week;
+  const year = currentLeagueYear();
+  const draft = draftFirstRoundOrder(data, year);
+  if (week <= waiverDraftWeeks && draft.length) return { kind: "draft", week, year, draft };
+  return { kind: "standings", week, year, missingDraft: week <= waiverDraftWeeks };
+}
+function waiverPriority(data) {
+  const rec = waiverRecords(data);
   const pct = (r) => { const n = r.w + r.l + r.t; return n ? (r.w + r.t / 2) / n : 0; };
-  return nflTeams.map(({ id }) => ({ id, record: rec[id], pct: pct(rec[id]) }))
-    .sort((x, y) => x.pct - y.pct || x.record.w - y.record.w || teamName(x.id).localeCompare(teamName(y.id)));
+  const rows = nflTeams.map(({ id }) => ({ id, record: rec[id], pct: pct(rec[id]) }));
+  const basis = waiverBasis(data);
+  if (basis.kind === "draft") {
+    // Teams missing from the draft's first round (it shouldn't happen) go last, worst record first.
+    const at = (id) => { const i = basis.draft.indexOf(id); return i === -1 ? 999 : i; };
+    return rows.sort((x, y) => at(x.id) - at(y.id) || x.pct - y.pct || x.record.w - y.record.w || teamName(x.id).localeCompare(teamName(y.id)));
+  }
+  return rows.sort((x, y) => x.pct - y.pct || x.record.w - y.record.w || teamName(x.id).localeCompare(teamName(y.id)));
 }
 
 // Awards an open waiver to the highest-priority claimant, or clears him to free agency. Returns a status message.
