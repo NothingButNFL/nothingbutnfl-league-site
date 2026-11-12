@@ -2928,14 +2928,15 @@ const validReporterFields = (r) => r && typeof r.name === "string" && r.name.tri
   (r.photo === undefined || (typeof r.photo === "string" && r.photo.length <= 200000 && /^(data:image\/(png|jpeg|webp);base64,|https:\/\/)/.test(r.photo)));
 
 // League History › Previous Drafts: the league's own draft results, by year (a year without any falls back to the real
-// NFL draft in nfl-drafts.js). [{ id, year, round, pick, teamId, player, position?, college? }]
+// NFL draft in nfl-drafts.js). [{ id, year, round, pick, teamId, player, position?, college?, compensatory?, roundManual? }]
 function validDraftHistory(list) {
   if (list === undefined) return true;
   return Array.isArray(list) && list.length <= 6000 && list.every((d) => d && typeof d.id === "string" && d.id &&
     isIntegerInRange(d.year, 1936, 2100) && isIntegerInRange(d.round, 1, 20) && isIntegerInRange(d.pick, 1, 400) &&
     nflTeams.some(({ id }) => id === d.teamId) && typeof d.player === "string" && d.player.trim() && d.player.length <= 70 &&
     (d.position === undefined || (typeof d.position === "string" && d.position.length <= 10)) &&
-    (d.college === undefined || (typeof d.college === "string" && d.college.length <= 80)));
+    (d.college === undefined || (typeof d.college === "string" && d.college.length <= 80)) &&
+    (d.compensatory === undefined || typeof d.compensatory === "boolean") && (d.roundManual === undefined || typeof d.roundManual === "boolean"));
 }
 
 function validInsiderCustom(data) {

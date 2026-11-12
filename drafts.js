@@ -22,6 +22,24 @@ const drYears = () => {
   return years;
 };
 const drRoundFor = (pick) => Math.min(7, Math.ceil(pick / 32));
+// A "*" after a pick number marks a compensatory pick: it comes at the end of its round, after the 32 regular picks.
+// Rounds are worked out from that: regular picks fill rounds 32 at a time (comp picks don't count toward the 32),
+// and a comp pick belongs to the round of the regular pick before it. Picks whose round was typed by hand keep it.
+function drRoundFrom(pick, compensatory, compsBefore) {
+  const regularBefore = pick - 1 - compsBefore; // regular picks ahead of this one
+  return Math.max(1, Math.min(7, compensatory ? Math.ceil(regularBefore / 32) : Math.floor(regularBefore / 32) + 1));
+}
+function drReround(list, year) {
+  const yearPicks = list.filter((d) => d.year === year).sort((a, b) => a.pick - b.pick);
+  let comps = 0;
+  for (const d of yearPicks) {
+    if (!d.roundManual) d.round = drRoundFrom(d.pick, d.compensatory, comps);
+    if (d.compensatory) comps += 1;
+  }
+  return list;
+}
+const drPickText = (p) => `${ordinal(p.pick)}${p.compensatory ? "*" : ""}`;
+const drParsePick = (text) => { const m = String(text || "").trim().match(/^(\d{1,3})\s*(\*?)$/); return m ? { pick: Number(m[1]), compensatory: Boolean(m[2]) } : null; };
 let drEditing = null; // id of the pick being edited
 const ordinal = (n) => `${n}${["th", "st", "nd", "rd"][(n % 100 > 10 && n % 100 < 14) ? 0 : n % 10] || "th"}`;
 
@@ -82,7 +100,7 @@ function drRender() {
     card.className = "dr-first";
     const n = document.createElement("span");
     n.className = "dr-first-pick";
-    n.textContent = `No. ${p.pick}`;
+    n.textContent = `No. ${p.pick}${p.compensatory ? "*" : ""}`;
     const name = document.createElement("strong");
     name.textContent = p.player;
     const meta = document.createElement("span");
@@ -100,7 +118,9 @@ function drRender() {
   document.querySelector("#dr-rows").replaceChildren(...shown.map((p) => {
     const tr = document.createElement("tr");
     tr.insertCell().textContent = p.round;
-    tr.insertCell().textContent = ordinal(p.pick);
+    const pickCell = tr.insertCell();
+    pickCell.textContent = drPickText(p);
+    if (p.compensatory) { pickCell.title = `Compensatory pick, round ${p.round}`; pickCell.className = "dr-comp"; }
     tr.insertCell().append(drTeamTag(p.teamId));
     const nameCell = tr.insertCell();
     const here = now.get(normalizePlayerName(p.player));
@@ -142,6 +162,7 @@ function drRender() {
     }
     return tr;
   }));
+  document.querySelector("#dr-legend").hidden = !picks.some((p) => p.compensatory);
   const empty = document.querySelector("#dr-empty");
   empty.hidden = shown.length > 0;
   empty.textContent = picks.length ? "No picks match." : `The ${year} draft is empty. Add the first pick below.`;
@@ -151,6 +172,7 @@ function drRender() {
 function drSave(change, message) {
   if (!drCanSave) { drStatus.textContent = "Saved league data couldn't be read, so nothing can be saved here."; return false; }
   const next = change(drLeague());
+  for (const year of new Set(next.map((d) => d.year))) drReround(next, year);
   drData.draftHistory = next;
   try {
     writeStoredOffice(drData);
@@ -173,19 +195,24 @@ function drParse(text, year) {
     const cells = line.split(line.includes("\t") ? "\t" : ",").map((c) => c.trim());
     if (i === 0 && /round|pick/i.test(cells[0])) return; // header row
     // Pick, Team, Player, Position, School — or the same with Round first (six columns, starting with two numbers).
-    const withRound = cells.length >= 6 && /^\d+$/.test(cells[0]) && /^\d+$/.test(cells[1]);
-    const [pick, team, player, position, college] = withRound ? cells.slice(1) : cells;
-    const round = withRound ? cells[0] : String(drRoundFor(Number(pick)));
+    const withRound = cells.length >= 6 && /^\d+$/.test(cells[0]) && drParsePick(cells[1]);
+    const [pickText, team, player, position, college] = withRound ? cells.slice(1) : cells;
+    const parsed = drParsePick(pickText);
+    const pick = parsed ? parsed.pick : NaN;
+    const round = withRound ? cells[0] : "1"; // worked out below from the * marks
     const teamId = lookupTeamId(team || "") || (nflTeams.some(({ id }) => id === (team || "").toUpperCase()) ? team.toUpperCase() : null);
     if (!isIntegerInRange(Number(round), 1, 20) || !isIntegerInRange(Number(pick), 1, 400) || !teamId || !player) {
       errors.push(`Line ${i + 1}: ${line.trim().slice(0, 60)}`);
       return;
     }
-    const entry = { id: newRecordId("draft"), year, round: Number(round), pick: Number(pick), teamId, player: player.slice(0, 70) };
+    const entry = { id: newRecordId("draft"), year, round: Number(round), pick, teamId, player: player.slice(0, 70) };
+    if (parsed.compensatory) entry.compensatory = true;
+    if (withRound) entry.roundManual = true;
     if (position) entry.position = position.slice(0, 10);
     if (college) entry.college = college.slice(0, 80);
     picks.push(entry);
   });
+  drReround(picks, year);
   return { picks, errors };
 }
 
@@ -232,10 +259,15 @@ function drFillYears() {
 // ---------- Enter one pick ----------
 const drForm = document.querySelector("#dr-entry");
 drForm.elements.team.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(name, id)));
-drForm.elements.pick.addEventListener("input", () => {
-  const pick = Number(drForm.elements.pick.value);
-  if (!drForm.elements.round.dataset.touched) drForm.elements.round.value = pick >= 1 ? drRoundFor(pick) : "";
-});
+function drAutoRound() {
+  const parsed = drParsePick(drForm.elements.pick.value);
+  if (drForm.elements.round.dataset.touched) return;
+  if (!parsed) { drForm.elements.round.value = ""; return; }
+  const year = Number(drYear.value);
+  const comps = drLeague().filter((d) => d.year === year && d.compensatory && d.pick < parsed.pick && d.id !== drEditing).length;
+  drForm.elements.round.value = drRoundFrom(parsed.pick, parsed.compensatory, comps);
+}
+drForm.elements.pick.addEventListener("input", drAutoRound);
 drForm.elements.round.addEventListener("input", () => { drForm.elements.round.dataset.touched = "1"; });
 
 function drResetEntry() {
@@ -251,9 +283,9 @@ function drResetEntry() {
 function drStartEdit(p) {
   drEditing = p.id;
   const f = drForm.elements;
-  f.pick.value = p.pick;
+  f.pick.value = `${p.pick}${p.compensatory ? "*" : ""}`;
   f.round.value = p.round;
-  f.round.dataset.touched = "1";
+  if (p.roundManual) f.round.dataset.touched = "1"; else delete f.round.dataset.touched;
   f.team.value = p.teamId;
   f.player.value = p.player;
   f.position.value = p.position || "";
@@ -272,9 +304,13 @@ drForm.addEventListener("submit", async (event) => {
   if (!drForm.reportValidity()) return;
   const f = drForm.elements;
   const year = Number(drYear.value);
-  const pick = Number(f.pick.value);
-  const round = Number(f.round.value) || drRoundFor(pick);
-  const entry = { id: drEditing || newRecordId("draft"), year, round, pick, teamId: f.team.value, player: f.player.value.trim().slice(0, 70) };
+  const parsed = drParsePick(f.pick.value);
+  if (!parsed || !isIntegerInRange(parsed.pick, 1, 400)) { drStatus.textContent = "Enter the pick number, with a * after it for a compensatory pick (e.g. 97*)."; f.pick.focus(); return; }
+  const { pick, compensatory } = parsed;
+  const manual = Boolean(f.round.dataset.touched && Number(f.round.value));
+  const entry = { id: drEditing || newRecordId("draft"), year, round: Number(f.round.value) || 1, pick, teamId: f.team.value, player: f.player.value.trim().slice(0, 70) };
+  if (compensatory) entry.compensatory = true;
+  if (manual) entry.roundManual = true;
   if (f.position.value.trim()) entry.position = f.position.value.trim().toUpperCase().slice(0, 10);
   if (f.college.value.trim()) entry.college = f.college.value.trim().slice(0, 80);
   const clash = drLeague().find((d) => d.year === year && d.pick === pick && d.id !== entry.id);
@@ -287,7 +323,7 @@ drForm.addEventListener("submit", async (event) => {
   // Ready for the next pick.
   drResetEntry();
   f.pick.value = pick + 1;
-  f.round.value = drRoundFor(pick + 1);
+  drAutoRound();
   f.team.focus();
 });
 

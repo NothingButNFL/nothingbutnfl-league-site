@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=f7296103">
-    <link rel="stylesheet" href="theme-light.css?v=a174a603">
+    <link rel="stylesheet" href="styles.css?v=d5d94d7f">
+    <link rel="stylesheet" href="theme-light.css?v=0684777a">
     <link rel="stylesheet" href="theme-gray.css?v=26ef33ad">
     <link rel="stylesheet" href="theme-team.css?v=70f0aefd">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -40,10 +40,10 @@
       })();
     </script>
     <script src="teams.js?v=63cc3c02" defer></script>
-    <script src="league-core.js?v=8c4e9195" defer></script>
+    <script src="league-core.js?v=95bb70b5" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="nfl-drafts.js?v=23a1862c" defer></script>
-    <script src="drafts.js?v=6717d572" defer></script>
+    <script src="drafts.js?v=51e38ed4" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -173,11 +173,12 @@
             </table>
           </div>
           <p class="empty-state" id="dr-empty" hidden>No picks match.</p>
+          <p class="hs-help dr-legend" id="dr-legend" hidden><strong>*</strong> Compensatory pick, at the end of its round.</p>
 
           <form class="management-panel dr-entry" id="dr-entry" autocomplete="off">
             <div class="panel-heading"><div><span class="panel-index" id="dr-entry-kicker">ENTER A PICK</span><h3 id="dr-entry-title">Add a pick to the 2026 draft</h3></div></div>
             <div class="dr-entry-fields">
-              <label class="dr-f-pick">Pick<input name="pick" type="number" min="1" max="400" required placeholder="1"></label>
+              <label class="dr-f-pick">Pick<input name="pick" inputmode="numeric" pattern="\s*\d{1,3}\s*\*?\s*" required placeholder="97*" title="Pick number; add * for a compensatory pick"></label>
               <label class="dr-f-round">Round<input name="round" type="number" min="1" max="20" placeholder="auto"></label>
               <label class="dr-f-team">Team<select name="team" required><option value="">Choose a team</option></select></label>
               <label class="dr-f-player">Player name<input name="player" maxlength="70" required placeholder="e.g. Fernando Mendoza"></label>
@@ -188,13 +189,13 @@
             <div class="hs-actions">
               <button class="button button-lime" type="submit" id="dr-add">Add pick</button>
               <button class="workspace-button" type="button" id="dr-cancel" hidden>Cancel edit</button>
-              <span class="hs-help dr-entry-note">Round fills in from the pick number (32 picks a round); change it for compensatory picks.</span>
+              <span class="hs-help dr-entry-note">Put a <strong>*</strong> after the pick number for a compensatory pick (e.g. 97*). Round fills in on its own: 32 regular picks a round, with compensatory picks at the end of theirs.</span>
             </div>
           </form>
 
           <details class="management-panel dr-editor" id="dr-editor">
             <summary><span class="panel-index">FASTER</span><strong>Paste a whole draft</strong></summary>
-            <p class="hs-help">One pick per line: <code>Pick, Team, Player name, Position, Player school</code>. Team can be an abbreviation (BUF) or a name (Bills). Copying from a spreadsheet works too. Saving replaces every pick recorded for the year below.</p>
+            <p class="hs-help">One pick per line: <code>Pick, Team, Player name, Position, Player school</code>, with a * after the pick number for a compensatory pick (<code>97*, Ravens, …</code>). Team can be an abbreviation (BUF) or a name (Bills). Copying from a spreadsheet works too. Saving replaces every pick recorded for the year below.</p>
             <div class="dr-editor-row">
               <label>Year<select id="dr-edit-year"></select></label>
               <button class="workspace-button" type="button" id="dr-copy-nfl">Start from the real NFL draft</button>
