@@ -187,6 +187,7 @@ bioForm.addEventListener("change", (event) => {
     case "photoUrl":
       if (value && !/^https?:\/\//i.test(value)) return fail("Enter a full image link starting with https://");
       profile.photoUrl = value;
+      delete profile.photoSource; // set by hand: Admin › Player Headshots won't replace it unless asked
       break;
     case "retired":
       profile.retired = Boolean(value);
