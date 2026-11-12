@@ -3314,3 +3314,24 @@ main .bet-lb-table td:nth-child(n+3) { text-align: right; }
 .pk-week-list li > * { display: inline-block; }
 .pk-week-list li b { float: right; }
 .pk-week-list li.is-me { color: #8fd0ff; }
+
+/* Home: Transaction Log as a vertical card on the right */
+.home-split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; align-items: start; }
+.home-split .section-wrap { max-width: none; padding-right: 0; padding-left: 0; }
+.home-main { min-width: 0; }
+.recent-side { position: sticky; top: 16px; padding-top: 14px; }
+@media (min-width: 1181px) { .recent-side { top: 62px; } .recent-side-card { max-height: calc(100vh - 92px) !important; } }
+@media (min-width: 1101px) and (max-width: 1799px) { .home-split .leaders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.recent-side-card { display: flex; flex-direction: column; max-height: calc(100vh - 48px); padding: 16px 16px 6px; }
+.recent-side-card .recent-head { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #1d3a5f; }
+.recent-side-card .recent-list { overflow-y: auto; margin-right: -8px; padding-right: 8px; }
+.recent-side-card .recent-item { grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; padding: 12px 0; }
+.recent-side-card .recent-meta { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; align-items: center; gap: 10px; }
+.recent-side-card .recent-meta time { font-size: 12px; }
+.recent-side-card .recent-teams { flex-direction: column; flex-wrap: nowrap; }
+.recent-side-card .recent-body p { -webkit-line-clamp: 3; }
+@media (max-width: 1100px) {
+  .home-split { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .recent-side { position: static; }
+  .recent-side-card { max-height: none; }
+}

@@ -1019,3 +1019,4 @@ html[data-theme="espn"] .pk-select { border-top-color: #c8cacd; border-right-col
 html[data-theme="espn"] .pk-lock { color: #d00; }
 html[data-theme="espn"] .pk-week-list li { border-bottom-color: #eceef0; }
 html[data-theme="espn"] .pk-week-list li.is-me { color: #0068d1; }
+html[data-theme="espn"] .recent-side-card .recent-head { border-bottom-color: #eceef0; }
