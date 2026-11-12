@@ -2907,12 +2907,21 @@ html.draft-live .md-ticker { display: none; }
   .dt-clock { padding-right: 12px; }
 }
 .dk-live.is-live { border-color: #ff9299; color: #ff9299; }
-.dt-clock.is-pick-in .dt-pick-in { color: #ffd37a; animation: dt-pick-in .5s steps(2, start) 10; }
-.dt-clock.is-pick-in { box-shadow: inset 0 0 0 2px #ffd37a; }
-.dt-pick-in-time { color: #ffd37a !important; animation: dt-pick-in .5s steps(2, start) 10; }
-@keyframes dt-pick-in { to { opacity: .25; } }
-@media (prefers-reduced-motion: reduce) { .dt-pick-in, .dt-pick-in-time { animation: none; } }
-@media (max-width: 640px) { .dt-clock.is-pick-in .dt-clock-words { display: grid; } }
+/* "The pick is in" (5 seconds after each pick): team name over a gold bar, and "[TEAM] SELECTION" across the middle */
+.dt-clock.is-pick-in { gap: 0; padding: 0 16px 0 0; }
+.dt-pickin-stack { display: grid; align-self: stretch; align-content: center; justify-items: center; gap: 4px; min-width: 150px; padding: 6px 12px; }
+.dt-pickin-team { color: #fff; font: 800 italic 24px/1 var(--display, var(--body)); letter-spacing: -.01em; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); white-space: nowrap; }
+.dt-pickin-bar { width: 100%; padding: 3px 8px; background: #ffd37a; color: #0c1424; font: 800 15px/1.1 var(--display, var(--body)); letter-spacing: .03em; text-align: center; white-space: nowrap; }
+.dt-selection { --dt-team: #0c2b50; display: flex; align-items: center; justify-content: center; gap: 28px; min-width: 0; padding: 0 22px; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dt-team) 85%, #fff 15%) 0%, var(--dt-team) 45%, color-mix(in srgb, var(--dt-team) 70%, #000) 100%);
+  border-left: 1px solid rgba(255, 255, 255, .2); animation: dt-selection-in .45s ease-out; }
+.dt-selection strong { overflow: hidden; color: #fff; font: 700 30px/1 var(--display, var(--body)); letter-spacing: .18em; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
+.dt-selection-logo { display: grid; flex: none; place-items: center; width: 46px; height: 46px; color: #fff; font: 800 14px var(--mono); }
+.dt-selection-logo img { width: 46px; height: 46px; object-fit: contain; }
+@keyframes dt-selection-in { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { .dt-selection { animation: none; } }
+@media (max-width: 1000px) { .dt-selection strong { font-size: 20px; letter-spacing: .1em; } .dt-selection { gap: 12px; } }
+@media (max-width: 640px) { .dt-selection { display: none; } .dt-pickin-stack { min-width: 0; } }
 .dt-crawl-round { padding: 0 18px; background: #ffd37a; color: #0c2b50; font: 800 12px var(--mono); letter-spacing: .1em; }
 .dt-crawl-round::after { display: none; }
 .dt-crawl-item.is-open { color: #c5d5e8; }

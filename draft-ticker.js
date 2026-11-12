@@ -64,20 +64,16 @@
     brand.append(logo, Object.assign(el("span"), { innerHTML: "NBNFL<b>DRAFT</b>" }));
     // On the clock
     const clock = el("div", "dt-clock");
+    const nickname = (id) => teamName(id).split(" ").pop().toUpperCase();
     if (s.pending) {
+      // "The pick is in" (like a broadcast): the team's name over a gold PICK IS IN bar.
       clock.classList.add("is-pick-in");
       clock.style.setProperty("--dt-team", teamColor(s.pending.teamId));
-      const tl = el("img");
-      tl.src = logoUrl(s.pending.teamId);
-      tl.alt = "";
-      tl.addEventListener("error", () => tl.remove(), { once: true });
-      const words = el("div", "dt-clock-words dt-pick-in");
-      words.append(el("span", "dt-clock-label", "THE PICK"), el("span", "dt-clock-label", "IS IN"));
+      const stack = el("div", "dt-pickin-stack");
+      stack.append(el("strong", "dt-pickin-team", nickname(s.pending.teamId)), el("span", "dt-pickin-bar", "PICK IS IN"));
       const who = el("div", "dt-clock-who");
       who.append(el("strong", "", s.pending.teamId), el("span", "", `RD${s.pending.round} PK${s.pending.pick}${s.pending.compensatory ? "*" : ""}`));
-      const logoBox = el("div", "dt-clock-logo");
-      logoBox.append(tl, el("b", "", s.pending.teamId));
-      clock.append(logoBox, words, who);
+      clock.append(stack, who);
     } else if (s.onClock) {
       clock.style.setProperty("--dt-team", teamColor(s.onClock.teamId));
       const tl = el("img");
@@ -94,7 +90,13 @@
     } else {
       clock.append(el("div", "dt-clock-words", "WAITING ON SKIPPED TEAMS"));
     }
-    // Title
+    // Title (while a pick is in: "[TEAM] SELECTION" across the whole middle, up to the pick clock)
+    const selection = s.pending ? el("div", "dt-selection") : null;
+    if (selection) {
+      selection.style.setProperty("--dt-team", teamColor(s.pending.teamId));
+      const mark = () => { const box = el("span", "dt-selection-logo"); const img = el("img"); img.src = logoUrl(s.pending.teamId); img.alt = ""; img.addEventListener("error", () => { img.remove(); box.textContent = s.pending.teamId; }, { once: true }); box.append(img); return box; };
+      selection.append(mark(), el("strong", "", `${nickname(s.pending.teamId)} SELECTION`), mark());
+    }
     const title = el("div", "dt-title");
     const main = el("div", "dt-title-main");
     main.append(el("strong", "", `${y} NBNFL DRAFT`), el("span", "", s.pending ? `ROUND ${s.pending.round}` : s.onClock ? `ROUND ${s.onClock.round}` : "LATE PICKS"));
@@ -105,8 +107,7 @@
     // Clock / status
     const right = el("div", "dt-right");
     const c = clockText();
-    if (s.pending) right.append(el("strong", "dt-time dt-pick-in-time", "PICK"), el("span", "", "IS IN"));
-    else right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
+    right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
     // Next
     const next = el("div", "dt-next");
     next.append(el("span", "dt-next-label", "NEXT ▸"), ...s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`)));
@@ -136,12 +137,12 @@
     track.append(run);
     crawl.append(label, track);
     const top = el("div", "dt-top");
-    top.append(brand, clock, title, right);
+    top.append(brand, clock, selection || title, right);
     bar.replaceChildren(top, next, crawl);
     clearTimeout(revealTimer);
     if (s.pending) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
     if (!tickTimer) tickTimer = setInterval(() => {
-      const t = bar.querySelector(".dt-time:not(.dt-pick-in-time)");
+      const t = bar.querySelector(".dt-time");
       const now = clockText();
       if (t && now) {
         t.textContent = now.text;
