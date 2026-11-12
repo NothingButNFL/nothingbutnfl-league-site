@@ -124,7 +124,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -2926,6 +2926,17 @@ function processExpiredPsOffers(data, now = Date.now()) {
 const validReporterFields = (r) => r && typeof r.name === "string" && r.name.trim() && r.name.length <= 40 &&
   typeof r.handle === "string" && r.handle.length <= 30 && typeof r.color === "string" && /^#[0-9a-f]{6}$/i.test(r.color) &&
   (r.photo === undefined || (typeof r.photo === "string" && r.photo.length <= 200000 && /^(data:image\/(png|jpeg|webp);base64,|https:\/\/)/.test(r.photo)));
+
+// League History › Previous Drafts: the league's own draft results, by year (a year without any falls back to the real
+// NFL draft in nfl-drafts.js). [{ id, year, round, pick, teamId, player, position?, college? }]
+function validDraftHistory(list) {
+  if (list === undefined) return true;
+  return Array.isArray(list) && list.length <= 6000 && list.every((d) => d && typeof d.id === "string" && d.id &&
+    isIntegerInRange(d.year, 1936, 2100) && isIntegerInRange(d.round, 1, 20) && isIntegerInRange(d.pick, 1, 400) &&
+    nflTeams.some(({ id }) => id === d.teamId) && typeof d.player === "string" && d.player.trim() && d.player.length <= 70 &&
+    (d.position === undefined || (typeof d.position === "string" && d.position.length <= 10)) &&
+    (d.college === undefined || (typeof d.college === "string" && d.college.length <= 80)));
+}
 
 function validInsiderCustom(data) {
   const reporters = data.insiderReporters, posts = data.insiderPosts;

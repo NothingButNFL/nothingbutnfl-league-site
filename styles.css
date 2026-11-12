@@ -2703,3 +2703,28 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .primary-nav > a.sample-nav.is-loaded { color: #ffd37a; }
 .sample-toast { position: fixed; right: 20px; bottom: 20px; z-index: 10000; display: flex; gap: 12px; align-items: flex-start; max-width: min(460px, calc(100vw - 40px)); padding: 14px 16px; border: 1px solid #54749b; border-radius: 8px; background: #0c2b50; color: #ffffff; font-size: 14px; line-height: 1.45; box-shadow: 0 12px 32px rgba(0, 0, 0, .45); }
 .sample-toast-close { flex: none; border: 0; background: transparent; color: #ffffff; font-size: 20px; line-height: 1; cursor: pointer; }
+/* League History › Previous Drafts */
+.dr-year-pick { display: grid; gap: 6px; color: #fff; font: 12px var(--mono); }
+.dr-year-pick select { min-width: 160px; }
+.dr-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.dr-rounds { flex: 1 1 520px; margin-bottom: 0; }
+.dr-filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.dr-filters label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
+.dr-firsts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 18px 0; }
+.dr-first { display: grid; gap: 6px; justify-items: start; padding: 14px 16px; border: 1px solid #31527a; border-radius: 8px; background: #0c2b50; }
+.dr-first-pick { color: #ffd37a; font: 700 12px var(--mono); letter-spacing: .08em; }
+.dr-first strong { color: #fff; font: 700 20px var(--display, var(--body)); line-height: 1.15; }
+.dr-first-meta { color: #fff; font-size: 13px; opacity: .8; }
+.dr-team { display: inline-flex; align-items: center; gap: 6px; color: #fff; font: 12px var(--mono); text-decoration: none; }
+.dr-team img { width: 22px; height: 22px; object-fit: contain; }
+a.dr-team:hover { text-decoration: underline; }
+.dr-table td { vertical-align: middle; }
+.dr-player { font-weight: 700; }
+.dr-player a { color: #8fd0ff; }
+.dr-col-edit { width: 40px; text-align: right; }
+.dr-editor { margin-top: 24px; }
+.dr-editor summary { display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; }
+.dr-editor-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 12px 0; }
+.dr-editor-row label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
+.dr-editor textarea { width: 100%; font: 13px var(--mono); }
+.dr-editor[hidden], #dr-empty[hidden] { display: none; }
