@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=0bab9ae9">
+    <link rel="stylesheet" href="styles.css?v=6d652819">
     <link rel="stylesheet" href="theme-light.css?v=59e75cca">
     <link rel="stylesheet" href="theme-gray.css?v=dab0d12c">
     <link rel="stylesheet" href="theme-team.css?v=ae1227a1">
@@ -161,7 +161,6 @@
           <div class="cs-toolbar rb-toolbar">
             <div class="tab-list" role="tablist" aria-label="Season" id="rb-seasons"></div>
             <label>Team<select id="rb-team"></select></label>
-            <label>Show<select id="rb-measure"><option value="cap">Cap dollars</option><option value="share">Share of payroll</option><option value="count">Player count</option></select></label>
           </div>
           <div class="rb-team" id="rb-team-detail"></div>
           <div class="management-panel">
@@ -180,6 +179,7 @@
             <div class="panel-heading">
               <div><span class="panel-index">LEAGUE</span><h3>Cap by position group</h3></div>
               <p>Darker cells spend more. Click a team to see its detail.</p>
+              <label class="rb-measure-label">Show<select id="rb-measure"><option value="cap">Cap dollars</option><option value="share">Share of payroll</option><option value="count">Player count</option></select></label>
             </div>
             <div class="management-table-wrap">
               <table class="management-table rb-table">

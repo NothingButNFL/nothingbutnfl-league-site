@@ -3171,3 +3171,4 @@ main .rb-count-table :is(th, td).rbc-team { text-align: left !important; white-s
 .cel-mark { border-color: #f2d250; color: #f2d250; cursor: default; }
 main .rb-count-table :is(th, td):first-child { padding-left: 14px !important; }
 main .rb-count-table :is(th, td):last-child { padding-right: 14px !important; }
+.rb-measure-label { display: grid; gap: 4px; font: 700 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
