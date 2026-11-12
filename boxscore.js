@@ -136,17 +136,18 @@
     if (!rows.length) {
       box.replaceChildren(el("p", "empty-state", "Only the final score was entered for this game, so there are no team stats."));
     } else {
+      // Away team's number on the left, the stat in the middle, the home team's on the right.
       const table = el("table", "bx-table bx-team-table");
       const hr = table.createTHead().insertRow();
-      const teamHead = (t) => { const th = el("th", ""); const w = el("span", "bx-th-team"); w.append(logo(t.team), el("span", "", t.team)); th.append(w); return th; };
-      hr.append(el("th", "bx-name-col", "MATCHUP"), teamHead(away), teamHead(home));
+      const teamHead = (t, cls) => { const th = el("th", cls); const w = el("span", "bx-th-team"); w.append(logo(t.team), el("span", "", teamName(t.team))); th.append(w); return th; };
+      hr.append(teamHead(away, "bx-ts-away"), el("th", "bx-ts-label", ""), teamHead(home, "bx-ts-home"));
       const tb = table.createTBody();
       for (const [label, get] of rows) {
         const tr = tb.insertRow();
-        const name = tr.insertCell();
-        name.className = "bx-name";
-        name.textContent = label;
-        for (const t of [away, home]) tr.insertCell().textContent = num(get(ts[t.team] || {}));
+        const values = [away, home].map((t) => get(ts[t.team] || {}));
+        const a = tr.insertCell(); a.className = "bx-ts-away"; a.textContent = num(values[0]);
+        const l = tr.insertCell(); l.className = "bx-ts-label"; l.textContent = label;
+        const h = tr.insertCell(); h.className = "bx-ts-home"; h.textContent = num(values[1]);
       }
       box.replaceChildren(table);
     }

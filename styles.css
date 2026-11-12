@@ -3130,8 +3130,16 @@ main .bx-table .bx-none { color: #9fb4cf; text-align: left; font-style: italic; 
 .bx-player { color: #8fd0ff; text-decoration: none; }
 .bx-player:hover, .bx-player:focus-visible { text-decoration: underline; }
 .bx-th-team { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
-main .bx-team-table :is(th, td):not(.bx-name):not(.bx-name-col) { width: 110px; }
 main .bx-team-table tbody tr:nth-child(even) td { background: rgba(255, 255, 255, .025); }
 main .bx-table :is(.bx-name, .bx-name-col) { text-align: left !important; }
 main .bx-table :is(th, td):not(.bx-name):not(.bx-name-col) { text-align: right !important; }
 .boxscore-page .front-office-section { padding-top: 24px; }
+/* Box score › Team Stats: away | stat | home, centered and compact */
+main .bx-team-table { max-width: 640px; margin: 0 auto; }
+main .bx-table.bx-team-table :is(th, td).bx-ts-away { width: 35% !important; text-align: left !important; }
+main .bx-table.bx-team-table :is(th, td).bx-ts-home { width: 35% !important; text-align: right !important; }
+main .bx-table.bx-team-table :is(th, td).bx-ts-label { width: 30% !important; color: #9fb4cf; text-align: center !important; white-space: nowrap; }
+main .bx-team-table td:is(.bx-ts-away, .bx-ts-home) { font-weight: 700; }
+main .bx-team-table .bx-ts-home .bx-th-team { flex-direction: row-reverse; }
+main .bx-team-table .bx-ts-away .bx-th-team { justify-content: flex-start; }
+main .bx-team-table th .bx-th-team span:last-child { color: #fff; }
