@@ -3105,7 +3105,8 @@ function tradeDraftOrderPick(data, year, pickNumber, toTeam, gets = null) {
 
 // Home › Latest Stream: the league's YouTube channel. data.youtubeChannel = { id: "UC…" (24 characters) }
 function validYoutubeChannel(channel) {
-  return channel === undefined || channel === null || (typeof channel === "object" && typeof channel.id === "string" && /^UC[\w-]{22}$/.test(channel.id));
+  return channel === undefined || channel === null || (typeof channel === "object" && typeof channel.id === "string" && /^UC[\w-]{22}$/.test(channel.id) &&
+    (channel.apiKey === undefined || (typeof channel.apiKey === "string" && /^[\w-]{20,60}$/.test(channel.apiKey))));
 }
 
 // Combine results pasted under Draft setup: [{ year, name, ht?, wt?, forty?, bench?, vert?, broad?, cone?, shuttle?, arm?, hand? }]

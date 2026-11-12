@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=7aed6d9e">
-    <link rel="stylesheet" href="theme-light.css?v=479fdadf">
-    <link rel="stylesheet" href="theme-gray.css?v=2c817806">
-    <link rel="stylesheet" href="theme-team.css?v=238839ba">
+    <link rel="stylesheet" href="styles.css?v=573828ff">
+    <link rel="stylesheet" href="theme-light.css?v=ab194d39">
+    <link rel="stylesheet" href="theme-gray.css?v=99008db8">
+    <link rel="stylesheet" href="theme-team.css?v=d44d127d">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -41,13 +41,13 @@
     </script>
     <script src="teams.js?v=63b57a1f" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=7101d64a" defer></script>
+    <script src="league-core.js?v=e89b8104" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
     <script src="stat-totals.js?v=232daaef" defer></script>
     <script src="overview.js?v=110165db" defer></script>
     <script src="insider.js?v=1c99afdd" defer></script>
-    <script src="stream-card.js?v=b863ecd3" defer></script>
+    <script src="stream-card.js?v=de7c11ab" defer></script>
     <script src="matchday.js?v=3dc39940" defer></script>
   </head>
   <body>
@@ -169,9 +169,10 @@
             </div>
             <form class="stream-editor" id="stream-editor" hidden>
               <label>YouTube channel ID or channel link<input id="stream-channel" maxlength="200" placeholder="UCxxxxxxxxxxxxxxxxxxxxxx or https://www.youtube.com/channel/UC…" autocomplete="off"></label>
+              <label>YouTube API key (optional)<input id="stream-key" maxlength="60" placeholder="AIza…" autocomplete="off" spellcheck="false"></label>
               <button class="button button-lime" type="submit">Save</button>
               <button class="workspace-button" type="button" id="stream-clear">Remove channel</button>
-              <p class="hs-help">Use the channel ID, which starts with UC (a link like youtube.com/@name won't work here). Find it on YouTube under your channel's About › Share channel › Copy channel ID, or in YouTube Studio › Settings › Channel › Advanced settings.</p>
+              <p class="hs-help">Use the channel ID, which starts with UC (a link like youtube.com/@name won't work here). Find it on YouTube under your channel's About › Share channel › Copy channel ID, or in YouTube Studio › Settings › Channel › Advanced settings. The API key is only needed to show the stream's date and a LIVE NOW tag: create a free key in Google Cloud Console (APIs &amp; Services › Credentials) with the YouTube Data API v3 turned on, and restrict it to your site's address, since anyone visiting the site can see it.</p>
             </form>
             <p class="key-dates-status" id="stream-status" role="status" aria-live="polite"></p>
             <div class="stream-frame" id="stream-frame"></div>

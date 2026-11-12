@@ -3074,3 +3074,6 @@ html.draft-live .sample-toast { bottom: 140px; }
 .stream-card.is-beside .stream-actions { justify-content: flex-start; }
 .stream-card.is-beside .stream-editor label { flex-basis: 100%; }
 .stream-card.is-beside .stream-player { max-width: none; border-radius: 6px; }
+.stream-card .help-head h2 { white-space: nowrap; }
+.stream-date { color: #c5d5e8; font: 600 11px var(--mono); letter-spacing: .04em; opacity: .7; white-space: nowrap; }
+.stream-date.is-live { color: #ff6b7a; font-weight: 800; opacity: 1; }
