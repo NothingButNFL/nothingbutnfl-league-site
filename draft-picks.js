@@ -148,6 +148,8 @@ picksRows.addEventListener("change", (event) => {
   const pick = tr && officeData.picks.find(({ id }) => id === tr.dataset.pickId);
   if (!pick || !canSave) return;
   if (input.dataset.field === "currentOwner") {
+    const slot = typeof draftSlotForPick === "function" ? draftSlotForPick(officeData, pick) : null;
+    if (slot && !pickUsedInDraft(officeData, pick)) tradeDraftOrderPick(officeData, slot.year, slot.pick, input.value); // shows TRADE on the draft ticker
     pick.currentOwner = input.value;
     tr.classList.toggle("is-traded", pick.currentOwner !== pick.originalTeam);
     save(`${pickLabel(pick)} now belongs to ${teamName(pick.currentOwner)}.`);

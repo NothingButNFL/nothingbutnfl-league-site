@@ -485,8 +485,9 @@ function tradeAssetLabel(data, assetKey, teamId, year) {
   }
   if (kind === "pick") {
     const pick = data.picks.find((item) => item.id === id);
-    if (!pick || pick.currentOwner !== teamId) return null;
-    return `Pick · ${pick.year} Round ${pickRoundLabel(pick)} · ${pick.originalTeam}${pick.note ? ` (${pick.note})` : ""}`;
+    if (!pick || pick.currentOwner !== teamId || pickUsedInDraft(data, pick)) return null;
+    const slot = draftSlotForPick(data, pick);
+    return `Pick · ${pick.year} Round ${pickRoundLabel(pick)}${slot ? ` (No. ${slot.pick})` : ""} · ${pick.originalTeam}${pick.note ? ` (${pick.note})` : ""}`;
   }
   return null;
 }
@@ -554,6 +555,7 @@ function validateTradeAssets(data, lines, participants, year = currentLeagueYear
     } else if (kind === "pick") {
       const pick = data.picks.find((item) => item.id === id && item.currentOwner === line.fromTeamId);
       if (!pick) return { error: `A draft pick sent by ${teamName(line.fromTeamId)} is no longer owned by that team.` };
+      if (pickUsedInDraft(data, pick)) return { error: `${teamName(line.fromTeamId)} already used that ${pick.year} pick in the draft.` };
       assets.push({ ...line, kind, id, pick });
     } else {
       return { error: "A selected trade asset is invalid." };
@@ -581,7 +583,8 @@ function applyTradeAssets(data, assets, year = currentLeagueYear()) {
     const destinationTeam = data.teams[asset.destinationId];
     if (asset.kind === "pick") {
       // If this pick is in a draft order that's been set (e.g. a trade during the draft), move it there too.
-      const slot = (data.draftOrder || []).find((d) => d.year === asset.pick.year && d.round === asset.pick.round &&
+      const slot = (data.draftOrder || []).find((d) => d.pickId === asset.pick.id) ||
+        (data.draftOrder || []).find((d) => !d.pickId && d.year === asset.pick.year && d.round === asset.pick.round &&
         (d.fromTeam || d.teamId) === asset.pick.originalTeam && Boolean(d.compensatory) === Boolean(asset.pick.compensatory));
       if (slot && slot.teamId !== asset.destinationId) tradeDraftOrderPick(data, slot.year, slot.pick, asset.destinationId);
       asset.pick.currentOwner = asset.destinationId;
@@ -2954,7 +2957,7 @@ function validDraftOrder(list) {
   return Array.isArray(list) && list.length <= 2000 && list.every((d) => d && isIntegerInRange(d.year, 1936, 2100) &&
     isIntegerInRange(d.pick, 1, 400) && isIntegerInRange(d.round, 1, 20) && team(d.teamId) &&
     (d.fromTeam === undefined || team(d.fromTeam)) && (d.compensatory === undefined || typeof d.compensatory === "boolean") &&
-    (d.skipped === undefined || typeof d.skipped === "boolean"));
+    (d.skipped === undefined || typeof d.skipped === "boolean") && (d.pickId === undefined || typeof d.pickId === "string"));
 }
 // Draft-day trades of picks in a draft's order: [{ id, year, pick, round, fromTeam, toTeam, at }] (fromTeam = the team
 // that gave the pick up). The draft ticker shows each one as a TRADE header for a few seconds.
@@ -2965,16 +2968,63 @@ function validDraftTrades(list) {
     isIntegerInRange(t.pick, 1, 400) && isIntegerInRange(t.round, 1, 20) && team(t.fromTeam) && team(t.toTeam) && typeof t.at === "string");
 }
 
+// A draft's order, with each open pick's team taken from Draft Pick Manager (the linked pick's current owner), so trades
+// made anywhere — a team's trade builder, Pending Trades, Draft Pick Manager or the draft room — show up in the draft.
+// Picks already made keep the team that made them.
+function draftOrderFor(data, year) {
+  const made = new Set((data.draftHistory || []).filter((d) => d.year === year).map((d) => d.pick));
+  return (data.draftOrder || []).filter((d) => d.year === year).sort((a, b) => a.pick - b.pick).map((slot) => {
+    const asset = slot.pickId && !made.has(slot.pick) ? (data.picks || []).find((p) => p.id === slot.pickId) : null;
+    if (!asset) return { ...slot };
+    const out = { ...slot, teamId: asset.currentOwner };
+    if (asset.currentOwner !== asset.originalTeam) out.fromTeam = asset.originalTeam; else delete out.fromTeam;
+    return out;
+  });
+}
+
+// Ties every pick in a draft's order to its Draft Pick Manager pick (data.picks), creating any that don't exist yet,
+// and makes each pick's owner match the order. Run after the order is set.
+function linkDraftOrderToPicks(data, year) {
+  data.picks = data.picks || [];
+  const used = new Set();
+  for (const slot of (data.draftOrder || []).filter((d) => d.year === year).sort((a, b) => a.pick - b.pick)) {
+    const original = slot.fromTeam || slot.teamId;
+    let asset = slot.pickId && data.picks.find((p) => p.id === slot.pickId && p.year === year);
+    if (!asset) asset = data.picks.find((p) => !used.has(p.id) && p.year === year && p.round === slot.round && p.originalTeam === original && Boolean(p.compensatory) === Boolean(slot.compensatory));
+    if (!asset) {
+      asset = { id: newRecordId("pick"), year, round: slot.round, originalTeam: original, currentOwner: slot.teamId };
+      if (slot.compensatory) asset.compensatory = true;
+      data.picks.push(asset);
+    }
+    used.add(asset.id);
+    slot.pickId = asset.id;
+    asset.currentOwner = slot.teamId;
+  }
+}
+
+// True once a Draft Pick Manager pick has been used to make a selection in the draft (it can't be traded after that).
+function pickUsedInDraft(data, pick) {
+  const slot = (data.draftOrder || []).find((d) => d.pickId === pick.id);
+  return Boolean(slot && (data.draftHistory || []).some((d) => d.year === slot.year && d.pick === slot.pick));
+}
+// The overall pick number of a Draft Pick Manager pick, once it has a place in a draft order.
+function draftSlotForPick(data, pick) {
+  return (data.draftOrder || []).find((d) => d.pickId === pick.id) || null;
+}
+
 // Moves a not-yet-made pick in a draft's order to another team and logs it as a draft-day trade. Also keeps the
 // matching Draft Pick Manager pick (data.picks) in step. Returns the trade, or null if there's no such open pick.
 function tradeDraftOrderPick(data, year, pickNumber, toTeam) {
   const slot = (data.draftOrder || []).find((d) => d.year === year && d.pick === pickNumber);
+  const linked = slot?.pickId && (data.picks || []).find((p) => p.id === slot.pickId);
+  if (slot && linked) { slot.teamId = linked.currentOwner; if (linked.currentOwner !== linked.originalTeam) slot.fromTeam = linked.originalTeam; else delete slot.fromTeam; }
   if (!slot || slot.teamId === toTeam || (data.draftHistory || []).some((d) => d.year === year && d.pick === pickNumber)) return null;
   const original = slot.fromTeam || slot.teamId;
   const trade = { id: newRecordId("draft-trade"), year, pick: slot.pick, round: slot.round, fromTeam: slot.teamId, toTeam, at: new Date().toISOString() };
   slot.teamId = toTeam;
   if (toTeam === original) delete slot.fromTeam; else slot.fromTeam = original;
-  const asset = (data.picks || []).find((p) => p.year === year && p.round === slot.round && p.originalTeam === original && Boolean(p.compensatory) === Boolean(slot.compensatory));
+  const asset = (slot.pickId && (data.picks || []).find((p) => p.id === slot.pickId)) ||
+    (data.picks || []).find((p) => p.year === year && p.round === slot.round && p.originalTeam === original && Boolean(p.compensatory) === Boolean(slot.compensatory));
   if (asset) asset.currentOwner = toTeam;
   data.draftTrades = [...(data.draftTrades || []), trade].slice(-2000);
   return trade;

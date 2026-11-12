@@ -11,7 +11,7 @@ let dkCanSave = true;
 try { dkData = readStoredOffice() || emptyOfficeData(); } catch { dkCanSave = false; }
 let dkRound = 0; // board tab: 0 = the round on the clock
 
-const dkOrder = () => (dkData.draftOrder || []).filter((d) => d.year === dkYear).sort((a, b) => a.pick - b.pick);
+const dkOrder = () => draftOrderFor(dkData, dkYear); // open picks' teams come from Draft Pick Manager
 const dkPicks = () => (dkData.draftHistory || []).filter((d) => d.year === dkYear);
 const dkPool = () => (dkData.draftPool || []).filter((p) => p.year === dkYear);
 const dkMadeAt = (pick) => dkPicks().find((d) => d.pick === pick);
@@ -434,21 +434,24 @@ function dkParseOrder(text) {
   return { slots, errors };
 }
 
-// 32 first-round teams → seven rounds, swapping in each traded pick's owner from Draft Pick Manager (data.picks).
-function dkExpandOrder(firstRound) {
+// Teams in first-round order → every round, with each pick's owner from Draft Pick Manager (data.picks). With
+// fromManager, round 1 owners come from the manager too (the pasted list is just the order of the original teams).
+function dkExpandOrder(firstRound, fromManager = false) {
   const picks = (dkData.picks || []).filter((p) => p.year === dkYear);
+  const rounds = Math.max(7, ...picks.map((p) => p.round));
   const out = [];
   let number = 0;
-  for (let round = 1; round <= 7; round += 1) {
+  for (let round = 1; round <= rounds; round += 1) {
     for (const s of firstRound) {
       const original = s.fromTeam || s.teamId; // whose pick it originally was
       const asset = picks.find((p) => p.round === round && p.originalTeam === original && !p.compensatory);
-      const owner = round === 1 ? s.teamId : asset?.currentOwner || original;
-      out.push({ year: dkYear, pick: ++number, round, teamId: owner, ...(owner !== original ? { fromTeam: original } : {}) });
+      if (fromManager && picks.length && !asset) continue; // a pick that's no longer in the manager (forfeited)
+      const owner = round === 1 && !fromManager ? s.teamId : asset?.currentOwner || original;
+      out.push({ year: dkYear, pick: ++number, round, teamId: owner, ...(owner !== original ? { fromTeam: original } : {}), ...(asset ? { pickId: asset.id } : {}) });
     }
     // Compensatory picks for this round go at the end of it.
     for (const c of picks.filter((p) => p.round === round && p.compensatory)) {
-      out.push({ year: dkYear, pick: ++number, round, teamId: c.currentOwner, compensatory: true, ...(c.currentOwner !== c.originalTeam ? { fromTeam: c.originalTeam } : {}) });
+      out.push({ year: dkYear, pick: ++number, round, teamId: c.currentOwner, compensatory: true, pickId: c.id, ...(c.currentOwner !== c.originalTeam ? { fromTeam: c.originalTeam } : {}) });
     }
   }
   return out;
@@ -478,8 +481,26 @@ document.querySelector("#dk-order-save").addEventListener("click", async () => {
     for (const s of order) delete s.roundManual;
   }
   if (dkPicks().length && !(await confirmAction(`${dkPicks().length} picks are already made. Replace the order anyway? Picks keep their pick numbers.`, { confirmLabel: "Replace order" }))) return;
-  dkSave((data) => { data.draftOrder = [...(data.draftOrder || []).filter((d) => d.year !== dkYear), ...order]; },
+  dkSave((data) => { data.draftOrder = [...(data.draftOrder || []).filter((d) => d.year !== dkYear), ...order]; linkDraftOrderToPicks(data, dkYear); },
     `Draft order saved: ${order.length} picks over ${new Set(order.map((s) => s.round)).size} rounds.${errors.length ? ` ${errors.length} line${errors.length === 1 ? "" : "s"} skipped (listed under the box).` : ""}`);
+});
+
+// Build the order from Draft Pick Manager: the box holds the 32 teams in first-round order (whose pick comes first);
+// each round's picks, their owners after trades, and compensatory picks come from the manager's picks for this year.
+document.querySelector("#dk-order-manager").addEventListener("click", async () => {
+  const { slots, errors } = dkParseOrder(document.querySelector("#dk-order-text").value);
+  dkSkipped(errors);
+  const firstRound = slots.filter((s) => !s.round).sort((a, b) => a.pick - b.pick).map((s) => ({ teamId: s.fromTeam || s.teamId }));
+  if (firstRound.length !== 32 || new Set(firstRound.map((s) => s.teamId)).size !== 32) {
+    dkStatus.textContent = "Put all 32 teams in the box in first-round order (Fill in reverse standings gives you a start), then Build from Draft Pick Manager.";
+    return;
+  }
+  const have = (dkData.picks || []).filter((p) => p.year === dkYear);
+  if (!have.length && !(await confirmAction(`Draft Pick Manager has no ${dkYear} picks yet. Create them (seven rounds, every team its own pick) and build the order?`, { confirmLabel: "Create picks" }))) return;
+  if (dkPicks().length && !(await confirmAction(`${dkPicks().length} picks are already made. Rebuild the order anyway? Picks keep their pick numbers.`, { confirmLabel: "Rebuild order" }))) return;
+  const order = dkExpandOrder(firstRound, true);
+  dkSave((data) => { data.draftOrder = [...(data.draftOrder || []).filter((d) => d.year !== dkYear), ...order]; linkDraftOrderToPicks(data, dkYear); },
+    `Draft order built from Draft Pick Manager: ${order.length} picks over ${new Set(order.map((s) => s.round)).size} rounds, ${order.filter((s) => s.fromTeam).length} of them traded. Trades of these picks now show up here automatically.`);
 });
 
 document.querySelector("#dk-order-standings").addEventListener("click", () => {
@@ -488,7 +509,7 @@ document.querySelector("#dk-order-standings").addEventListener("click", () => {
   const order = nflTeams.map(({ id }) => id).sort((a, b) => pct(teams[a]) - pct(teams[b]) ||
     ((teams[a]?.pf || 0) - (teams[a]?.pa || 0)) - ((teams[b]?.pf || 0) - (teams[b]?.pa || 0)));
   document.querySelector("#dk-order-text").value = order.map((id, i) => `${i + 1}, ${teamName(id)}`).join("\n");
-  dkStatus.textContent = `Filled in worst record first from the ${dkData.standings?.season || ""} standings. Adjust it (and add "(from team)" for traded first-round picks), then Save draft order.`;
+  dkStatus.textContent = `Filled in worst record first from the ${dkData.standings?.season || ""} standings. Adjust the order if needed, then Build from Draft Pick Manager.`;
 });
 document.querySelector("#dk-order-current").addEventListener("click", () => {
   const order = dkOrder();

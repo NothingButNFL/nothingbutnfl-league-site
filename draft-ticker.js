@@ -18,7 +18,7 @@
 
   function state() {
     if (!data || data.draftLive !== year()) return null;
-    const order = (data.draftOrder || []).filter((d) => d.year === year()).sort((a, b) => a.pick - b.pick);
+    const order = draftOrderFor(data, year()); // open picks' teams come from Draft Pick Manager
     if (!order.length) return null;
     const picks = (data.draftHistory || []).filter((d) => d.year === year());
     const made = new Map(picks.map((d) => [d.pick, d]));
