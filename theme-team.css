@@ -496,3 +496,6 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-week-list li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-week-list li.is-me { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .recent-side-card .recent-head { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+@media (min-width: 1251px) {
+  html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .home-stats .leader-card ol:not(:has(li:not([hidden]))) ~ *, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .home-stats .leader-card:has(ol li:not([hidden])) .leader-top { border-bottom-color: rgb(var(--tm-31527a)); }
+}

@@ -492,3 +492,29 @@ function fitRecentTransactions() {
   window.addEventListener("resize", fit);
   fit();
 }
+
+// Beside Conference Leaders the League Leaders column is exactly as tall: drop the lowest-ranked rows
+// (5th place first, across every category) until all five categories fit.
+function fitLeaders() {
+  const grid = document.querySelector(".home-stats #leaders-grid");
+  if (!grid) return;
+  const rows = [...grid.querySelectorAll(".leader-card li")];
+  rows.forEach((row) => { row.hidden = false; });
+  if (getComputedStyle(grid).overflow !== "hidden") return;
+  const fits = () => grid.scrollHeight <= grid.clientHeight + 1;
+  for (let rank = 5; rank >= 2 && !fits(); rank -= 1) {
+    for (const card of grid.querySelectorAll(".leader-card")) {
+      const row = card.querySelectorAll("li")[rank - 2];
+      if (row) row.hidden = true;
+    }
+  }
+}
+{
+  const fit = () => requestAnimationFrame(fitLeaders);
+  const conf = document.querySelector("#top-teams");
+  if (conf && "ResizeObserver" in window) new ResizeObserver(fit).observe(conf);
+  const grid = document.querySelector("#leaders-grid");
+  if (grid && "MutationObserver" in window) new MutationObserver(fit).observe(grid, { childList: true });
+  window.addEventListener("resize", fit);
+  fit();
+}

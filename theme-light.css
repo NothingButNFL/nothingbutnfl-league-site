@@ -1018,3 +1018,6 @@ html[data-theme="light"] .pk-lock { color: #946100; }
 html[data-theme="light"] .pk-week-list li { border-bottom-color: #eceef0; }
 html[data-theme="light"] .pk-week-list li.is-me { color: #1a5fc1; }
 html[data-theme="light"] .recent-side-card .recent-head { border-bottom-color: #eceef0; }
+@media (min-width: 1251px) {
+  html[data-theme="light"] .home-stats .leader-card ol:not(:has(li:not([hidden]))) ~ *, html[data-theme="light"] .home-stats .leader-card:has(ol li:not([hidden])) .leader-top { border-bottom-color: #dcdddf; }
+}

@@ -1020,3 +1020,6 @@ html[data-theme="espn"] .pk-lock { color: #d00; }
 html[data-theme="espn"] .pk-week-list li { border-bottom-color: #eceef0; }
 html[data-theme="espn"] .pk-week-list li.is-me { color: #0068d1; }
 html[data-theme="espn"] .recent-side-card .recent-head { border-bottom-color: #eceef0; }
+@media (min-width: 1251px) {
+  html[data-theme="espn"] .home-stats .leader-card ol:not(:has(li:not([hidden]))) ~ *, html[data-theme="espn"] .home-stats .leader-card:has(ol li:not([hidden])) .leader-top { border-bottom-color: #dcdddf; }
+}
