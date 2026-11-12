@@ -5,7 +5,8 @@
 // (nbf-draft-clock), so it counts down on every page and tab. Uses league-core.js and teams.js.
 (function draftTicker() {
   const clockKey = "nbf-draft-clock";
-  const revealMs = 5000;
+  const revealMs = 5000; // "the pick is in"
+  const tradeMs = 10000; // TRADE header
   let revealTimer = null;
   let data = null;
   let tickTimer = null;
@@ -33,7 +34,7 @@
     const shown = pending ? byTime.slice(0, -1) : byTime;
     // A draft-day trade shows the same way, as a TRADE header, unless a pick came in after it.
     const lastTrade = (data.draftTrades || []).filter((t) => t.year === year()).sort((a, b) => a.at.localeCompare(b.at)).pop();
-    const tradeUntil = lastTrade ? Date.parse(lastTrade.at) + revealMs : 0;
+    const tradeUntil = lastTrade ? Date.parse(lastTrade.at) + tradeMs : 0;
     const trade = tradeUntil > Date.now() && !(pending && Date.parse(pending.madeAt) > Date.parse(lastTrade.at)) ? lastTrade : null;
     return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: shown[shown.length - 1] };
   }
@@ -180,6 +181,78 @@
       }
     }, 1000);
   }
+
+  // Trade sound: plays on whichever page shows the TRADE header first (approving a trade on Pending Trades, a trade in
+  // the draft room or Draft Pick Manager), once per trade across open tabs, and only while the draft is live. Uses the
+  // draft room's sound settings: on/off and volume (localStorage) and a custom file if one was chosen (IndexedDB).
+  const tradeSoundKey = "nbf-draft-trade-sound-played";
+  let audioCtx = null;
+  function beep(freq, length, type, volume) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    audioCtx = audioCtx || new C();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const t = audioCtx.currentTime, osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.5 * volume), t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + length + 0.05);
+  }
+  function customTradeSound() {
+    return new Promise((resolve) => {
+      try {
+        const req = indexedDB.open("nbf-draft-sound", 1);
+        req.onupgradeneeded = () => req.result.createObjectStore("files");
+        req.onerror = () => resolve(null);
+        req.onsuccess = () => {
+          try {
+            const get = req.result.transaction("files", "readonly").objectStore("files").get("trade");
+            get.onsuccess = () => resolve(get.result || null);
+            get.onerror = () => resolve(null);
+          } catch { resolve(null); }
+        };
+      } catch { resolve(null); }
+    });
+  }
+  async function playTradeSound(trade) {
+    try {
+      if (localStorage.getItem("nbf-draft-sound-trade") === "off") return;
+      // Only one open tab plays it: each tab claims the trade, waits a moment, and plays only if its claim is the one left.
+      if (String(localStorage.getItem(tradeSoundKey) || "").startsWith(`${trade.id}:`)) return;
+      const token = `${trade.id}:${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(tradeSoundKey, token);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (localStorage.getItem(tradeSoundKey) !== token) return;
+    } catch { /* play anyway */ }
+    let volume = 0.8;
+    try { const saved = JSON.parse(localStorage.getItem("nbf-draft-sound") || "null"); if (Number.isFinite(saved?.volume)) volume = saved.volume; } catch { /* default */ }
+    const file = await customTradeSound();
+    if (file) {
+      const url = URL.createObjectURL(file);
+      const audio = new Audio(url);
+      audio.volume = volume;
+      audio.addEventListener("ended", () => URL.revokeObjectURL(url), { once: true });
+      audio.play().catch(() => {});
+      return;
+    }
+    beep(392, 0.18, "square", volume);
+    setTimeout(() => beep(587.33, 0.18, "square", volume), 160);
+    setTimeout(() => { beep(783.99, 0.9, "triangle", volume); beep(1174.66, 0.6, "sine", volume); }, 330);
+  }
+  let lastAnnounced = null;
+  const baseRender = render;
+  render = function renderWithSound() {
+    baseRender();
+    const s = state();
+    if (s?.trade && s.trade.id !== lastAnnounced && Date.now() - Date.parse(s.trade.at) < 3000) {
+      lastAnnounced = s.trade.id;
+      playTradeSound(s.trade);
+    }
+  };
 
   window.renderDraftTicker = render;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render); else render();

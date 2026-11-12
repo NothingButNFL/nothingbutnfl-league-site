@@ -916,8 +916,7 @@ document.querySelector("#dk-trade-form").addEventListener("submit", async (event
   if (!(await confirmAction(`Trade pick ${pick} (round ${slot.round}) from the ${teamName(slot.teamId)} to the ${teamName(to)}?`, { confirmLabel: "Record trade" }))) return;
   let trade = null;
   if (dkSave((data) => { trade = tradeDraftOrderPick(data, dkYear, pick, to); }, `Trade: pick ${pick} goes from the ${teamName(slot.teamId)} to the ${teamName(to)}.`) && trade) {
-    dkSeenTrades.add(trade.id);
-    dkPlayTradeSound();
+    dkSeenTrades.add(trade.id); // the draft ticker plays the trade sound
     event.currentTarget?.reset?.();
   }
 });
@@ -972,8 +971,7 @@ window.addEventListener("storage", (event) => {
   if (event.key !== officeStorageKey) return;
   const fresh = (dkData.draftTrades || []).filter((t) => t.year === dkYear && !dkSeenTrades.has(t.id));
   for (const t of fresh) dkSeenTrades.add(t.id);
-  if (fresh.some((t) => Date.now() - Date.parse(t.at) < 15000)) {
-    dkPlayTradeSound();
+  if (fresh.some((t) => Date.now() - Date.parse(t.at) < 15000)) { // the draft ticker plays the trade sound
     const t = fresh[fresh.length - 1];
     dkStatus.textContent = `Trade: pick ${t.pick} goes from the ${teamName(t.fromTeam)} to the ${teamName(t.toTeam)}.`;
   }
