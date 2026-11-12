@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3205,6 +3205,100 @@ function seasonRecordFor(data, teamId, season) {
     }
   } catch { r = null; }
   return r;
+}
+
+// ---- Betting (sidebar › Betting): odds board, play-money bets and pick'em ----
+// Odds are worked out from this season's box scores: each team's points for/against per game, with 1.5 points for home
+// field. data.bets = [{ id, season, week, game: "AWAY@HOME", member, type: "spread"|"ml"|"total", side: teamId|"over"|"under",
+// line?, odds, stake, placedAt }] (the line and price at the time of the bet); data.pickem = [{ season, week, game, member,
+// pick: teamId }]; data.bettingSettings = { startingBalance }. Bets and picks settle from the box score of that game.
+const bettingDefaultBalance = 1000;
+const bettingHomeEdge = 1.5;
+const bettingSpreadSd = 13.5; // points: how much NFL results vary around the spread
+function validBetting(data) {
+  const team = (id) => nflTeams.some((t) => t.id === id);
+  const gameKey = (g) => typeof g === "string" && /^[A-Z]{2,3}@[A-Z]{2,3}$/.test(g);
+  if (data.bets !== undefined && !(Array.isArray(data.bets) && data.bets.length <= 20000 && data.bets.every((b) => b && typeof b.id === "string" &&
+      isIntegerInRange(b.season, 2000, 2100) && isIntegerInRange(b.week, 1, 22) && gameKey(b.game) && typeof b.member === "string" &&
+      ["spread", "ml", "total"].includes(b.type) && (team(b.side) || b.side === "over" || b.side === "under") &&
+      (b.line === undefined || (typeof b.line === "number" && Math.abs(b.line) <= 200)) && Number.isInteger(b.odds) && Math.abs(b.odds) >= 100 && Math.abs(b.odds) <= 100000 &&
+      isIntegerInRange(b.stake, 1, 100000000)))) return false;
+  if (data.pickem !== undefined && !(Array.isArray(data.pickem) && data.pickem.length <= 50000 && data.pickem.every((p) => p &&
+      isIntegerInRange(p.season, 2000, 2100) && isIntegerInRange(p.week, 1, 22) && gameKey(p.game) && typeof p.member === "string" && team(p.pick)))) return false;
+  if (data.bettingSettings !== undefined && !(data.bettingSettings && typeof data.bettingSettings === "object" &&
+      (data.bettingSettings.startingBalance === undefined || isIntegerInRange(data.bettingSettings.startingBalance, 0, 100000000)))) return false;
+  return true;
+}
+const bettingGameKey = (away, home) => `${away}@${home}`;
+// Points for/against per game for each team this season, from games before the given week.
+function bettingRatings(data, season, beforeWeek) {
+  const r = Object.fromEntries(nflTeams.map(({ id }) => [id, { pf: 0, pa: 0, g: 0 }]));
+  for (const g of archivedGames(data)) {
+    if (g.season !== season || !g.week || g.week >= beforeWeek || g.week > 18) continue;
+    if (r[g.away]) { r[g.away].pf += g.awayScore; r[g.away].pa += g.homeScore; r[g.away].g += 1; }
+    if (r[g.home]) { r[g.home].pf += g.homeScore; r[g.home].pa += g.awayScore; r[g.home].g += 1; }
+  }
+  return r;
+}
+const bettingNormal = (z) => { // standard normal CDF
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+};
+const bettingAmerican = (p) => { // a fair price with a little house edge, rounded to 5
+  const q = Math.min(0.97, Math.max(0.03, p * 1.025));
+  const odds = q >= 0.5 ? -(100 * q) / (1 - q) : (100 * (1 - q)) / q;
+  const r = Math.round(odds / 5) * 5;
+  return Math.abs(r) < 105 ? (r < 0 ? -105 : 105) : r;
+};
+// { spread (home's line, negative = home favored), total, mlAway, mlHome, pHome } for one matchup.
+function bettingOdds(data, season, week, away, home) {
+  const r = bettingRatings(data, season, week);
+  const per = (t, k, fallback) => (r[t].g ? r[t][k] / r[t].g : fallback);
+  const net = (t) => per(t, "pf", 22) - per(t, "pa", 22);
+  const margin = (net(home) - net(away)) / 2 + bettingHomeEdge; // expected home margin
+  const spread = -Math.round(margin * 2) / 2 || -0.5;
+  const total = Math.max(30, Math.round(((per(home, "pf", 22) + per(away, "pa", 22)) / 2 + (per(away, "pf", 22) + per(home, "pa", 22)) / 2) * 2) / 2);
+  const pHome = bettingNormal(margin / bettingSpreadSd);
+  return { spread, total, mlHome: bettingAmerican(pHome), mlAway: bettingAmerican(1 - pHome), pHome };
+}
+// The final score of a matchup ({ away, home, awayScore, homeScore }), or null if it hasn't been logged.
+function bettingResult(data, season, week, away, home) {
+  const g = archivedGames(data).find((x) => x.season === season && x.week === week &&
+    ((x.away === away && x.home === home) || (x.away === home && x.home === away)));
+  if (!g) return null;
+  return g.away === away ? { awayScore: g.awayScore, homeScore: g.homeScore } : { awayScore: g.homeScore, homeScore: g.awayScore };
+}
+const bettingProfit = (stake, odds) => Math.floor(odds > 0 ? (stake * odds) / 100 : (stake * 100) / -odds);
+// "won" | "lost" | "push" | "open" for a bet, with its profit (negative when lost).
+function bettingSettle(data, bet) {
+  const [away, home] = bet.game.split("@");
+  const res = bettingResult(data, bet.season, bet.week, away, home);
+  if (!res) return { status: "open", profit: 0 };
+  const score = { [away]: res.awayScore, [home]: res.homeScore };
+  let outcome;
+  if (bet.type === "total") {
+    const sum = res.awayScore + res.homeScore;
+    outcome = sum === bet.line ? "push" : (sum > bet.line) === (bet.side === "over") ? "won" : "lost";
+  } else {
+    const opp = bet.side === away ? home : away;
+    const diff = score[bet.side] + (bet.type === "spread" ? bet.line : 0) - score[opp];
+    outcome = diff === 0 ? "push" : diff > 0 ? "won" : "lost";
+  }
+  return { status: outcome, profit: outcome === "won" ? bettingProfit(bet.stake, bet.odds) : outcome === "lost" ? -bet.stake : 0 };
+}
+// A member's play-money balance for a season: the starting balance + settled results − stakes still riding.
+function bettingBalance(data, member, season) {
+  const start = data.bettingSettings?.startingBalance ?? bettingDefaultBalance;
+  let balance = start, open = 0, won = 0, lost = 0, pushes = 0;
+  for (const b of (data.bets || []).filter((x) => x.member === member && x.season === season)) {
+    const s = bettingSettle(data, b);
+    if (s.status === "open") { open += b.stake; continue; }
+    balance += s.profit;
+    if (s.status === "won") won += 1; else if (s.status === "lost") lost += 1; else pushes += 1;
+  }
+  return { start, balance: balance - open, settled: balance, open, won, lost, pushes };
 }
 
 // ---- Minimum Spending Floor (Article 8) ----
