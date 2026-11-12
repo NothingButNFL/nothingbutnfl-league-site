@@ -510,7 +510,7 @@ html[data-theme="light"] .rb-group li a { color: #121213; }
 html[data-theme="light"] .rb-group li small { color: #121213; }
 html[data-theme="light"] .rb-group li span { color: #2b2c2d; }
 html[data-theme="light"] .rb-group li.rb-none { color: #121213; }
-html[data-theme="light"] .rb-table td.rb-heat { color: #121213; }
+html[data-theme="light"] .rb-table td.rb-heat, html[data-theme="light"] .rb-count-table td.rb-heat { color: #121213; }
 html[data-theme="light"] .rb-table td.rb-total { color: #121213; }
 html[data-theme="light"] .rb-table tr.is-selected td { box-shadow: #1a5fc1 0px 1px 0px inset, #1a5fc1 0px -1px 0px inset; }
 html[data-theme="light"] .rb-team-button { color: #121213; }

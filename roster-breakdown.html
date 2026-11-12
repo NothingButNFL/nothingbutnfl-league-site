@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=6d652819">
-    <link rel="stylesheet" href="theme-light.css?v=59e75cca">
+    <link rel="stylesheet" href="styles.css?v=34159e63">
+    <link rel="stylesheet" href="theme-light.css?v=312bf308">
     <link rel="stylesheet" href="theme-gray.css?v=dab0d12c">
     <link rel="stylesheet" href="theme-team.css?v=ae1227a1">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -44,7 +44,7 @@
     <script src="league-core.js?v=2a631bc9" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
-    <script src="roster-breakdown.js?v=8e36bc39" defer></script>
+    <script src="roster-breakdown.js?v=f1698397" defer></script>
   </head>
   <body class="admin-page roster-breakdown-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -166,7 +166,8 @@
           <div class="management-panel">
             <div class="panel-heading">
               <div><span class="panel-index">MAIN ROSTER</span><h3>Active Roster Breakdown</h3></div>
-              <p>Players on each team's main roster by position (practice squad and Commissioner's Exempt List players aren't counted). The Requirements row is the minimum at each position; red means a team is short, Main turns green at exactly 53, orange over it and red under it, and CEL turns yellow when all 5 spots are used.</p>
+              <p>Players on each team's main roster by position (practice squad and Commissioner's Exempt List players aren't counted). The Requirements row is the minimum at each position; red means a team is short, Main turns green at exactly 53, orange over it and red under it, and CEL turns yellow when all 5 spots are used. Switch Show to Cap dollars or Share of payroll to see what each team spends at each position instead (darker cells spend more).</p>
+              <label class="rb-measure-label">Show<select id="rb-measure"><option value="count">Player count</option><option value="cap">Cap dollars</option><option value="share">Share of payroll</option></select></label>
             </div>
             <div class="management-table-wrap">
               <table class="management-table rb-count-table">
@@ -175,18 +176,6 @@
               </table>
             </div>
           </div>
-          <div class="management-panel">
-            <div class="panel-heading">
-              <div><span class="panel-index">LEAGUE</span><h3>Cap by position group</h3></div>
-              <p>Darker cells spend more. Click a team to see its detail.</p>
-              <label class="rb-measure-label">Show<select id="rb-measure"><option value="cap">Cap dollars</option><option value="share">Share of payroll</option><option value="count">Player count</option></select></label>
-            </div>
-            <div class="management-table-wrap">
-              <table class="management-table rb-table">
-                <thead><tr id="rb-head"></tr></thead>
-                <tbody id="rb-rows"></tbody>
-              </table>
-            </div>
           </div>
         </div>
       </section>

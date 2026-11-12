@@ -1507,7 +1507,7 @@ body > .site-header .season-menu.is-current .season-trigger { color: #fff; box-s
 .rb-group li span { color: #dbe7f5; font-variant-numeric: tabular-nums; }
 .rb-group li.rb-none { display: block; color: #ffffff; }
 .rb-table { min-width: 980px; font-variant-numeric: tabular-nums; }
-.rb-table td.rb-heat { background: rgba(143, 208, 255, calc(var(--heat, 0) * .42)) !important; color: #fff; text-align: center; }
+.rb-table td.rb-heat, .rb-count-table td.rb-heat { background: rgba(143, 208, 255, calc(var(--heat, 0) * .42)) !important; color: #fff; text-align: center; }
 .rb-table th:not(:first-child) { text-align: center; }
 .rb-table td.rb-total { color: #fff; font-weight: 700; text-align: center; }
 .rb-table tr.is-selected td { box-shadow: inset 0 1px 0 #8fd0ff, inset 0 -1px 0 #8fd0ff; }

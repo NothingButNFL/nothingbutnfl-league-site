@@ -125,46 +125,6 @@ function renderTeamDetail() {
   wrap.replaceChildren(title, bar, cards);
 }
 
-function renderLeague() {
-  const measure = rbMeasure.value;
-  const data = nflTeams.map(({ id }) => ({ id, ...breakdown(id) }));
-  const shownKeys = groupKeys.filter((k) => k !== "OTHER" || data.some((d) => d.groups.OTHER.count));
-  const max = Object.fromEntries(shownKeys.map((k) => [k, Math.max(1, ...data.map((d) => measure === "count" ? d.groups[k].count : measure === "share" ? (d.total ? d.groups[k].cap / d.total : 0) : d.groups[k].cap))]));
-  document.querySelector("#rb-head").replaceChildren(...["TEAM", ...shownKeys, "TOTAL"].map((label) => {
-    const th = document.createElement("th");
-    th.scope = "col";
-    th.textContent = label === "OTHER" ? "OTHER" : label;
-    if (label !== "TEAM" && label !== "TOTAL") th.title = groupLabel(label);
-    return th;
-  }));
-  document.querySelector("#rb-rows").replaceChildren(...data.map((d) => {
-    const tr = document.createElement("tr");
-    tr.className = d.id === rbTeamSelect.value ? "is-selected" : "";
-    const teamCell = tr.insertCell();
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "rb-team-button";
-    button.dataset.team = d.id;
-    const code = document.createElement("b");
-    code.textContent = d.id;
-    button.append(code, teamName(d.id));
-    teamCell.append(button);
-    for (const key of shownKeys) {
-      const g = d.groups[key];
-      const td = tr.insertCell();
-      const value = measure === "count" ? g.count : measure === "share" ? (d.total ? g.cap / d.total : 0) : g.cap;
-      td.textContent = cellText(g, d.total, measure);
-      td.style.setProperty("--heat", String(Math.min(1, value / max[key])));
-      td.className = "rb-heat";
-      td.title = `${teamName(d.id)} ${groupLabel(key)}: ${g.count} players, ${formatCurrency(g.cap)}`;
-    }
-    const total = tr.insertCell();
-    total.className = "rb-total";
-    total.textContent = measure === "count" ? String(groupKeys.reduce((t, k) => t + d.groups[k].count, 0)) : measure === "share" ? "100%" : short(d.total);
-    return tr;
-  }));
-}
-
 // ---- Active Roster Breakdown: main-roster head count by position, against the league's requirements ----
 const rbcColumns = [
   ["QB", ["QB"], 2], ["RB", ["RB", "HB"], 3], ["FB", ["FB"], 0], ["TE", ["TE"], 3], ["WR", ["WR"], 5],
@@ -178,30 +138,45 @@ const rbcMain = 53; // main roster size
 const rbcPs = "16+1"; // practice squad: 16, plus 1 international exemption
 function rosterCountsByColumn(teamId) {
   const counts = Object.fromEntries(rbcColumns.map(([label]) => [label, 0]));
-  let main = 0, ps = 0, other = 0, cel = 0;
+  const caps = Object.fromEntries(rbcColumns.map(([label]) => [label, 0]));
+  let main = 0, ps = 0, other = 0, cel = 0, mainCap = 0, psCap = 0, celCap = 0;
   for (const player of officeData.teams[teamId].roster) {
     if (!isPlayerOnSeason(player, rbSeason)) continue;
     const entry = seasonEntry(player, rbSeason);
-    if (isPracticeSquad(entry)) { ps += 1; continue; }
-    if (isOnCel(entry)) { cel += 1; continue; } // on the Commissioner's Exempt List: not on the main roster
+    const cap = capHitFor(entry);
+    if (isPracticeSquad(entry)) { ps += 1; psCap += cap; continue; }
+    if (isOnCel(entry)) { cel += 1; celCap += cap; continue; } // on the Commissioner's Exempt List: not on the main roster
     main += 1;
+    mainCap += cap;
     const first = String(entry.position || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
     const col = rbcColumns.find(([, list]) => list.includes(first));
-    if (col) counts[col[0]] += 1; else other += 1;
+    if (col) { counts[col[0]] += 1; caps[col[0]] += cap; } else other += 1;
   }
-  return { counts, main, ps, other, cel };
+  return { counts, caps, main, ps, other, cel, mainCap, psCap, celCap, totalCap: mainCap + psCap + celCap };
 }
+// Show: Player count (default, checked against the requirements), Cap dollars, or Share of payroll (of the team's
+// total cap hits, practice squad and CEL included). Cap views shade each column darker where a team spends more.
 function renderCounts() {
+  const measure = rbMeasure.value;
+  const isCount = measure === "count";
   const th = (text, cls = "") => { const e = document.createElement("th"); e.scope = "col"; e.textContent = text; if (cls) e.className = cls; return e; };
   document.querySelector("#rbc-head").replaceChildren(th("TEAM", "rbc-team"), th("ABV"), ...rbcColumns.map(([label]) => th(label)), th("MAIN", "rbc-main-h"), th("PS"), th("CEL"));
+  const cell = (tr, text, cls = "") => { const td = tr.insertCell(); td.textContent = text; if (cls) td.className = cls; return td; };
+  const data = nflTeams.map(({ id }) => ({ id, ...rosterCountsByColumn(id) }));
+  const value = (d, cap) => (measure === "share" ? (d.totalCap ? cap / d.totalCap : 0) : cap);
+  const show = (d, cap) => (measure === "share" ? (d.totalCap ? `${((cap / d.totalCap) * 100).toFixed(1)}%` : "—") : cap ? short(cap) : "—");
+  const keys = [...rbcColumns.map(([label]) => label), "MAIN", "PS", "CEL"];
+  const capOf = (d, key) => (key === "MAIN" ? d.mainCap : key === "PS" ? d.psCap : key === "CEL" ? d.celCap : d.caps[key]);
+  const max = Object.fromEntries(keys.map((k) => [k, Math.max(1e-9, ...data.map((d) => value(d, capOf(d, k))))]));
   const req = document.createElement("tr");
   req.className = "rbc-req";
-  const cell = (tr, text, cls = "") => { const td = tr.insertCell(); td.textContent = text; if (cls) td.className = cls; return td; };
-  cell(req, "Requirements", "rbc-team"); cell(req, "");
-  rbcColumns.forEach(([, , min]) => cell(req, String(min)));
-  cell(req, String(rbcMain)); cell(req, rbcPs); cell(req, String(celLimit));
-  const rows = nflTeams.map(({ id }) => {
-    const { counts, main, ps, other, cel } = rosterCountsByColumn(id);
+  cell(req, isCount ? "Requirements" : measure === "share" ? "Share of payroll" : "Cap dollars", "rbc-team"); cell(req, "");
+  if (isCount) {
+    rbcColumns.forEach(([, , min]) => cell(req, String(min)));
+    cell(req, String(rbcMain)); cell(req, rbcPs); cell(req, String(celLimit));
+  } else keys.forEach(() => cell(req, ""));
+  const rows = data.map((d) => {
+    const { id, counts, main, ps, other, cel } = d;
     const tr = document.createElement("tr");
     if (id === rbTeamSelect.value) tr.className = "is-selected";
     const name = tr.insertCell();
@@ -213,6 +188,16 @@ function renderCounts() {
     button.textContent = teamName(id);
     name.append(button);
     cell(tr, id, "rbc-abv");
+    if (!isCount) {
+      for (const key of keys) {
+        const cap = capOf(d, key);
+        const n = key === "MAIN" ? main : key === "PS" ? ps : key === "CEL" ? cel : counts[key];
+        const td = cell(tr, show(d, cap), `rb-heat${key === "MAIN" ? " rbc-main-cap" : ""}`);
+        td.style.setProperty("--heat", String(Math.min(1, value(d, cap) / max[key])));
+        td.title = `${teamName(id)} ${key}: ${n} player${n === 1 ? "" : "s"}, ${formatCurrency(cap)}${d.totalCap ? ` (${((cap / d.totalCap) * 100).toFixed(1)}% of payroll)` : ""}`;
+      }
+      return tr;
+    }
     for (const [label, , min] of rbcColumns) {
       const td = cell(tr, String(counts[label]), counts[label] < min ? "rbc-short" : "");
       td.title = counts[label] < min ? `${teamName(id)}: ${counts[label]} ${label}, needs ${min}` : `${teamName(id)}: ${counts[label]} ${label}`;
@@ -224,7 +209,7 @@ function renderCounts() {
     c.title = `${cel} of ${celLimit} Commissioner's Exempt List spots used`;
     return tr;
   });
-  document.querySelector("#rbc-rows").replaceChildren(req, ...rows);
+  document.querySelector("#rbc-rows").replaceChildren(...(isCount ? [req] : []), ...rows); // the Requirements row is for counts only
 }
 document.querySelector("#rbc-rows").addEventListener("click", (event) => {
   const button = event.target.closest("[data-team]");
@@ -238,24 +223,16 @@ function renderAll() {
   renderSeasonTabs();
   renderTeamDetail();
   renderCounts();
-  renderLeague();
 }
 
 rbTeamSelect.append(new Option("Choose a team", ""), ...nflTeams.map(({ id, name }) => new Option(`${name} (${id})`, id)));
 rbTeamSelect.addEventListener("change", renderAll);
-rbMeasure.addEventListener("change", renderLeague);
+rbMeasure.addEventListener("change", renderCounts);
 document.querySelector("#rb-seasons").addEventListener("click", (event) => {
   const tab = event.target.closest("[data-year]");
   if (!tab) return;
   rbSeason = Number(tab.dataset.year);
   renderAll();
-});
-document.querySelector("#rb-rows").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-team]");
-  if (!button) return;
-  rbTeamSelect.value = button.dataset.team;
-  renderAll();
-  document.querySelector("#rb-team-detail").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 window.addEventListener("storage", (event) => {
   if (event.key !== officeStorageKey) return;
