@@ -111,8 +111,16 @@
       selection.style.setProperty("--dt-team", teamColor(s.trade.toTeam));
       selection.style.setProperty("--dt-from", teamColor(s.trade.fromTeam));
       const mark = (id) => { const box = el("span", "dt-selection-logo"); const img = el("img"); img.src = logoUrl(id); img.alt = ""; img.addEventListener("error", () => { img.remove(); box.textContent = id; }, { once: true }); box.append(img); return box; };
-      const side = (id) => { const wrap = el("span", "dt-trade-side"); wrap.append(mark(id), el("small", "", nickname(id))); return wrap; };
-      selection.append(side(s.trade.fromTeam), el("strong", "", "TRADE"), side(s.trade.toTeam));
+      // Each side: logo, team, and what that team gets in the trade.
+      const side = (id, align) => {
+        const wrap = el("span", `dt-trade-side is-${align}`);
+        const text = el("span", "dt-trade-text");
+        const got = (s.trade.gets && s.trade.gets[id]) || [];
+        text.append(el("small", "", nickname(id)), el("em", "", got.length ? `GETS ${got.join(" · ")}` : `SENDS PICK ${s.trade.pick}`));
+        wrap.append(mark(id), text);
+        return wrap;
+      };
+      selection.append(side(s.trade.fromTeam, "left"), el("strong", "", "TRADE"), side(s.trade.toTeam, "right"));
     } else if (selection) {
       selection.style.setProperty("--dt-team", teamColor(s.pending.teamId));
       const mark = () => { const box = el("span", "dt-selection-logo"); const img = el("img"); img.src = logoUrl(s.pending.teamId); img.alt = ""; img.addEventListener("error", () => { img.remove(); box.textContent = s.pending.teamId; }, { once: true }); box.append(img); return box; };
@@ -161,7 +169,7 @@
     top.append(brand, clock, selection || title, right);
     bar.replaceChildren(top, next, crawl);
     clearTimeout(revealTimer);
-    if (s.pending) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
+    if (s.pending || s.trade) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
     if (!tickTimer) tickTimer = setInterval(() => {
       const t = bar.querySelector(".dt-time");
       const now = clockText();

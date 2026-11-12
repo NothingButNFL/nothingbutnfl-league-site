@@ -578,6 +578,19 @@ function validateTradeAssets(data, lines, participants, year = currentLeagueYear
 // Jun 1–Feb 28: this year's portion now, future portions on next year's ledger).
 function applyTradeAssets(data, assets, year = currentLeagueYear()) {
   const date = new Date().toISOString();
+  // What each team gets in this trade, for the draft ticker's TRADE header (worked out before anything moves).
+  const gets = {};
+  for (const asset of assets) {
+    let label;
+    if (asset.kind === "pick") {
+      const slot = draftSlotForPick(data, asset.pick);
+      label = `${asset.pick.year} Rd ${pickRoundLabel(asset.pick)}${slot ? ` · No. ${slot.pick}` : ""}${asset.pick.originalTeam !== asset.fromTeamId ? ` (${asset.pick.originalTeam})` : ""}`;
+    } else {
+      const position = seasonEntry(asset.player, year)?.position;
+      label = `${asset.player.name}${position ? `, ${position}` : ""}`;
+    }
+    (gets[asset.destinationId] = gets[asset.destinationId] || []).push(label.slice(0, 60));
+  }
   for (const asset of assets) {
     const sourceTeam = data.teams[asset.fromTeamId];
     const destinationTeam = data.teams[asset.destinationId];
@@ -586,7 +599,7 @@ function applyTradeAssets(data, assets, year = currentLeagueYear()) {
       const slot = (data.draftOrder || []).find((d) => d.pickId === asset.pick.id) ||
         (data.draftOrder || []).find((d) => !d.pickId && d.year === asset.pick.year && d.round === asset.pick.round &&
         (d.fromTeam || d.teamId) === asset.pick.originalTeam && Boolean(d.compensatory) === Boolean(asset.pick.compensatory));
-      if (slot && slot.teamId !== asset.destinationId) tradeDraftOrderPick(data, slot.year, slot.pick, asset.destinationId);
+      if (slot && slot.teamId !== asset.destinationId) tradeDraftOrderPick(data, slot.year, slot.pick, asset.destinationId, gets);
       asset.pick.currentOwner = asset.destinationId;
       asset.pick.note = withTradeNote(asset.pick.note, asset.fromTeamId);
       continue;
@@ -2965,7 +2978,8 @@ function validDraftTrades(list) {
   if (list === undefined) return true;
   const team = (id) => nflTeams.some((t) => t.id === id);
   return Array.isArray(list) && list.length <= 2000 && list.every((t) => t && typeof t.id === "string" && isIntegerInRange(t.year, 1936, 2100) &&
-    isIntegerInRange(t.pick, 1, 400) && isIntegerInRange(t.round, 1, 20) && team(t.fromTeam) && team(t.toTeam) && typeof t.at === "string");
+    isIntegerInRange(t.pick, 1, 400) && isIntegerInRange(t.round, 1, 20) && team(t.fromTeam) && team(t.toTeam) && typeof t.at === "string" &&
+    (t.gets === undefined || (t.gets && typeof t.gets === "object" && Object.entries(t.gets).every(([id, list]) => team(id) && Array.isArray(list) && list.length <= 6 && list.every((x) => typeof x === "string" && x.length <= 60)))));
 }
 
 // A draft's order, with each open pick's team taken from Draft Pick Manager (the linked pick's current owner), so trades
@@ -3014,13 +3028,16 @@ function draftSlotForPick(data, pick) {
 
 // Moves a not-yet-made pick in a draft's order to another team and logs it as a draft-day trade. Also keeps the
 // matching Draft Pick Manager pick (data.picks) in step. Returns the trade, or null if there's no such open pick.
-function tradeDraftOrderPick(data, year, pickNumber, toTeam) {
+function tradeDraftOrderPick(data, year, pickNumber, toTeam, gets = null) {
   const slot = (data.draftOrder || []).find((d) => d.year === year && d.pick === pickNumber);
   const linked = slot?.pickId && (data.picks || []).find((p) => p.id === slot.pickId);
   if (slot && linked) { slot.teamId = linked.currentOwner; if (linked.currentOwner !== linked.originalTeam) slot.fromTeam = linked.originalTeam; else delete slot.fromTeam; }
   if (!slot || slot.teamId === toTeam || (data.draftHistory || []).some((d) => d.year === year && d.pick === pickNumber)) return null;
   const original = slot.fromTeam || slot.teamId;
   const trade = { id: newRecordId("draft-trade"), year, pick: slot.pick, round: slot.round, fromTeam: slot.teamId, toTeam, at: new Date().toISOString() };
+  // What each side gets: the whole trade when it came through Pending Trades, otherwise just this pick.
+  trade.gets = gets ? Object.fromEntries(Object.entries(gets).map(([team, list]) => [team, list.slice(0, 6)])) :
+    { [toTeam]: [`${year} Rd ${slot.round}${slot.compensatory ? "*" : ""} · No. ${slot.pick}`] };
   slot.teamId = toTeam;
   if (toTeam === original) delete slot.fromTeam; else slot.fromTeam = original;
   const asset = (slot.pickId && (data.picks || []).find((p) => p.id === slot.pickId)) ||
