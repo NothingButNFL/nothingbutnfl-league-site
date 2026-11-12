@@ -9,32 +9,39 @@ const site = path.join(__dirname, "..");
 const themes = {
   light: {
     title: "Light theme",
+    // ESPN-style light mode: a pale gray page, white cards, neutral gray hairlines, near-black text, gray secondary
+    // text and one clear link blue, so tables and stats read cleanly.
     // Backgrounds, borders, shadows, outlines
     surface: {
-      "#071a33": "#eef2f8", "#0c2b50": "#ffffff", "#0a2647": "#f5f8fc", "#10335d": "#e6eef8", "#103261": "#e6eef8",
-      "#174477": "#dbe7f6", "#1d3a5f": "#e2e9f2", "#264a75": "#cfdbea", "#31527a": "#c6d4e5", "#123f73": "#e2ebf7",
-      "#2b2a1a": "#fff4dc", "#5b3650": "#f6e3ea", "#334149": "#d5dde6", "#101a22": "#eef2f6", "#405057": "#c9d3dc",
-      "#54749b": "#9fb2cb", "#6d8197": "#c3d0df", "#c5d5e8": "#9fb2cb", "#c9d8ea": "#9fb2cb",
-      "#8fd0ff": "#1f6fc5", "#6fc8ff": "#1677c9", "#ffd37a": "#c98a12", "#f2b950": "#d6981f", "#f2a950": "#d68a1f",
-      "#ffb36b": "#d2701a", "#75e28b": "#2f9e52", "#ff9299": "#d23a46", "#ff6b7a": "#d23a46", "#ffb3a5": "#e0705f",
-      "#dbe7f5": "#9fb2cb", "#a7bdd7": "#9fb2cb", "#d7e8ff": "#c6d4e5", "#ffffff": "#0c2b50", "#3a2c0c": "#fff3d6"
+      "#071a33": "#f1f2f4", "#0c2b50": "#ffffff", "#0a2647": "#ffffff", "#10335d": "#f7f8f9", "#103261": "#f7f8f9",
+      "#174477": "#ebedf0", "#1d3a5f": "#eceef0", "#264a75": "#dcdddf", "#31527a": "#dcdddf", "#123f73": "#ebedf0",
+      "#2b2a1a": "#fff4dc", "#5b3650": "#f6e3ea", "#334149": "#dcdddf", "#101a22": "#f1f2f4", "#405057": "#d0d2d5",
+      "#54749b": "#c8cacd", "#6d8197": "#d0d2d5", "#c5d5e8": "#c8cacd", "#c9d8ea": "#c8cacd",
+      "#8fd0ff": "#1a5fc1", "#6fc8ff": "#1a5fc1", "#ffd37a": "#c98a12", "#f2b950": "#d6981f", "#f2a950": "#d68a1f",
+      "#ffb36b": "#d2701a", "#75e28b": "#2f9e52", "#ff9299": "#d0021b", "#ff6b7a": "#d0021b", "#ffb3a5": "#e0705f",
+      "#dbe7f5": "#c8cacd", "#a7bdd7": "#c8cacd", "#d7e8ff": "#dcdddf", "#ffffff": "#121213", "#3a2c0c": "#fff3d6",
+      "#9fb4cf": "#c8cacd", "#29363e": "#eceef0", "#cdd2c8": "#dcdddf", "#e1e3dc": "#eceef0"
     },
     // Text colors
     text: {
-      "#ffffff": "#0b1f3a", "#dbe7f5": "#22385a", "#c5d5e8": "#33496b", "#c9d8ea": "#33496b", "#d7e8ff": "#22385a",
-      "#e6eef9": "#22385a", "#a7bdd7": "#4f6584", "#8ca5c5": "#556b8a", "#b3c6de": "#4f6584", "#b8c4cc": "#4f6584", "#c2ccd3": "#4f6584", "#9aa6ad": "#5d7391", "#c3d3e6": "#4f6584", "#54749b": "#5d7391", "#6d8197": "#5d7391",
-      "#8fd0ff": "#1561b0", "#6fc8ff": "#1468b8", "#ffd37a": "#946100", "#f2b950": "#9a6600", "#f2a950": "#9a5a00",
-      "#ffb36b": "#b45c0c", "#ffcf8a": "#9a6600", "#75e28b": "#1e7f3a", "#ff9299": "#c0283a", "#ff6b7a": "#c0283a",
-      "#ff8a95": "#c0283a", "#ff9a9a": "#c0283a", "#ffb3a5": "#b8432f", "#ff4d5e": "#c0283a", "#ff5a5e": "#c0283a",
-      "#c79bff": "#6d35c4", "#f2d250": "#8a6d00", "#f6e7c1": "#5a4100", "#071a33": "#0b1f3a", "#0c2b50": "#0b1f3a",
-      "#174477": "#1c3f6e", "#31527a": "#4a6488"
+      "#ffffff": "#121213", "#dbe7f5": "#2b2c2d", "#c5d5e8": "#48494a", "#c9d8ea": "#48494a", "#d7e8ff": "#2b2c2d",
+      "#e6eef9": "#2b2c2d", "#a7bdd7": "#6c6d6f", "#8ca5c5": "#6c6d6f", "#b3c6de": "#6c6d6f", "#b8c4cc": "#6c6d6f", "#c2ccd3": "#6c6d6f", "#9aa6ad": "#6c6d6f", "#c3d3e6": "#6c6d6f", "#54749b": "#6c6d6f", "#6d8197": "#6c6d6f",
+      "#9fb4cf": "#6c6d6f", "#8fa6c4": "#6c6d6f",
+      "#8fd0ff": "#1a5fc1", "#6fc8ff": "#1a5fc1", "#ffd37a": "#946100", "#f2b950": "#9a6600", "#f2a950": "#9a5a00",
+      "#ffb36b": "#b45c0c", "#ffcf8a": "#9a6600", "#75e28b": "#1e7f3a", "#ff9299": "#d0021b", "#ff6b7a": "#d0021b",
+      "#ff8a95": "#d0021b", "#ff9a9a": "#d0021b", "#ffb3a5": "#b8432f", "#ff4d5e": "#d0021b", "#ff5a5e": "#d0021b",
+      "#c79bff": "#6d35c4", "#f2d250": "#8a6d00", "#f6e7c1": "#5a4100", "#071a33": "#121213", "#0c2b50": "#121213",
+      "#174477": "#2b2c2d", "#31527a": "#48494a"
     },
-    vars: { "--ink": "#ffffff", "--ink-soft": "#33496b", "--paper": "#eef2f8", "--paper-deep": "#e2ebf7", "--muted": "#44597a", "--line": "#c6d4e5", "--lime": "#0c2b50", "--orange": "#1f6fc5" },
+    vars: { "--ink": "#ffffff", "--ink-soft": "#48494a", "--paper": "#f1f2f4", "--paper-deep": "#ebedf0", "--muted": "#6c6d6f", "--line": "#dcdddf", "--lime": "#121213", "--orange": "#1a5fc1" },
     colorScheme: "light",
     invertWhiteButtons: true,
+    // Broadcast-style panels with their own dark artwork keep their dark-theme colors (white text on the art):
+    // Game of the Week, the week's game cards, Top Players, the draft ticker and Last Player Selected.
+    keepDark: "\\.(md-gotw|md-slate-(pane|tag|rows|team|name|score|note)|md-best(?!-title)|md-top-(?!dot)|draft-ticker|dt-|dk-last)",
     rgba: [
-      ["255, 255, 255", "11, 31, 58", 1.4], ["0, 0, 0", "15, 35, 70", 0.35], ["7, 26, 51", "255, 255, 255", 1],
-      ["3, 12, 26", "15, 30, 60", 0.6], ["143, 208, 255", "31, 111, 197", 1], ["49, 82, 122", "198, 212, 229", 1]
+      ["255, 255, 255", "18, 18, 19", 1.4], ["0, 0, 0", "0, 0, 0", 0.25], ["7, 26, 51", "255, 255, 255", 1],
+      ["3, 12, 26", "0, 0, 0", 0.4], ["143, 208, 255", "26, 95, 193", 1], ["49, 82, 122", "220, 221, 223", 1]
     ]
   },
   gray: {
@@ -91,6 +98,7 @@ const themes = {
             continue;
           }
           if (rule.type !== CSSRule.STYLE_RULE) continue;
+          if (theme.keepDark && rule.selectorText.split(",").every((sel) => new RegExp(theme.keepDark).test(sel))) continue;
           const st = rule.style; const decls = [];
           const bg = named(st.getPropertyValue("background-color")).replace(/rgb\((\d+), (\d+), (\d+)\)/, "$1, $2, $3");
           const whiteBg = theme.invertWhiteButtons && bg === "255, 255, 255";

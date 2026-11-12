@@ -3143,3 +3143,12 @@ main .bx-team-table td:is(.bx-ts-away, .bx-ts-home) { font-weight: 700; }
 main .bx-team-table .bx-ts-home .bx-th-team { flex-direction: row-reverse; }
 main .bx-team-table .bx-ts-away .bx-th-team { justify-content: flex-start; }
 main .bx-team-table th .bx-th-team span:last-child { color: #fff; }
+/* Top Players keeps its dark artwork in the light theme (tools/build-themes.js keepDark), so its shared pieces keep
+   their dark-theme colors here too. */
+#md-best.md-best .md-best-title { color: #f2b950; }
+#md-best.md-best .leader-logo { color: #fff; }
+#md-best.md-best .md-top-dot { background: rgba(255, 255, 255, .35); }
+#md-best.md-best .md-top-dot.is-active { background: #fff; }
+/* Standings rows: tighter, like the rest of the site's tables */
+.standings-table th { padding-top: 10px; padding-bottom: 10px; }
+.standings-table td { padding-top: 9px; padding-bottom: 9px; }
