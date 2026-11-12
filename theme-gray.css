@@ -339,3 +339,4 @@ html[data-theme="gray"] .bx-pair + .bx-pair { border-top-color: #303236; }
 html[data-theme="gray"] main .bx-table th { border-bottom-color: #47494f; }
 html[data-theme="gray"] main .bx-table td { border-bottom-color: #303236; }
 html[data-theme="gray"] main .bx-table .bx-total td { border-top-color: #47494f; }
+html[data-theme="gray"] .rb-count-table td.rbc-abv { color: #b6b9be; }

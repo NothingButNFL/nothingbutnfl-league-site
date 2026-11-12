@@ -935,3 +935,7 @@ html[data-theme="light"] .bx-player { color: #1a5fc1; }
 html[data-theme="light"] main .bx-team-table tbody tr:nth-child(2n) td { background-color: rgba(18, 18, 19, 0.034); }
 html[data-theme="light"] main .bx-table.bx-team-table :is(th, html[data-theme="light"] td).bx-ts-label { color: #6c6d6f; }
 html[data-theme="light"] main .bx-team-table th .bx-th-team span:last-child { color: #121213; }
+html[data-theme="light"] .rb-count-table td.rbc-abv { color: #6c6d6f; }
+html[data-theme="light"] .rb-count-table td.rbc-short { color: #121213; }
+html[data-theme="light"] .rb-count-table td.rbc-main.is-under { color: #121213; }
+html[data-theme="light"] .rb-count-table tr.is-selected td { box-shadow: #1a5fc1 0px 1px 0px inset, #1a5fc1 0px -1px 0px inset; }

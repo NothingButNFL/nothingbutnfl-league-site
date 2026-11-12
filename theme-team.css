@@ -452,3 +452,5 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) mai
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .bx-table .bx-none { color: rgb(var(--tm-9fb4cf)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-player { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .bx-table.bx-team-table :is(th, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) td).bx-ts-label { color: rgb(var(--tm-9fb4cf)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rb-count-table td.rbc-abv { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rb-count-table tr.is-selected td { box-shadow: rgb(var(--tm-8fd0ff)) 0px 1px 0px inset, rgb(var(--tm-8fd0ff)) 0px -1px 0px inset; }

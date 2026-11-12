@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=272241c0">
-    <link rel="stylesheet" href="theme-light.css?v=ab55c538">
-    <link rel="stylesheet" href="theme-gray.css?v=80556eac">
-    <link rel="stylesheet" href="theme-team.css?v=cee910ca">
+    <link rel="stylesheet" href="styles.css?v=0b706137">
+    <link rel="stylesheet" href="theme-light.css?v=1ea7a145">
+    <link rel="stylesheet" href="theme-gray.css?v=dab0d12c">
+    <link rel="stylesheet" href="theme-team.css?v=ae1227a1">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -39,12 +39,12 @@
         });
       })();
     </script>
-    <script src="teams.js?v=63b57a1f" defer></script>
+    <script src="teams.js?v=2b6ecb45" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
     <script src="league-core.js?v=e89b8104" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
-    <script src="roster-breakdown.js?v=efe82fa2" defer></script>
+    <script src="roster-breakdown.js?v=9879cf1b" defer></script>
   </head>
   <body class="admin-page roster-breakdown-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -166,7 +166,19 @@
           <div class="rb-team" id="rb-team-detail"></div>
           <div class="management-panel">
             <div class="panel-heading">
-              <div><span class="panel-index">LEAGUE</span><h3>Every team by position group</h3></div>
+              <div><span class="panel-index">MAIN ROSTER</span><h3>Active Roster Breakdown</h3></div>
+              <p>Players on each team's main roster (practice squad not counted) by position. The Requirements row is the minimum at each position; red means a team is short, and Main turns green at exactly 53, orange over it and red under it.</p>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table rb-count-table">
+                <thead><tr id="rbc-head"></tr></thead>
+                <tbody id="rbc-rows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="management-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">LEAGUE</span><h3>Cap by position group</h3></div>
               <p>Darker cells spend more. Click a team to see its detail.</p>
             </div>
             <div class="management-table-wrap">

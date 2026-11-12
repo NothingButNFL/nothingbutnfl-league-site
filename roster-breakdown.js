@@ -165,9 +165,76 @@ function renderLeague() {
   }));
 }
 
+// ---- Active Roster Breakdown: main-roster head count by position, against the league's requirements ----
+const rbcColumns = [
+  ["QB", ["QB"], 2], ["RB", ["RB", "HB"], 3], ["FB", ["FB"], 0], ["TE", ["TE"], 3], ["WR", ["WR"], 5],
+  ["OT/IOL", ["OL", "OT", "T", "LT", "RT", "OG", "G", "LG", "RG", "C", "IOL"], 9],
+  ["DL/EDGE", ["DL", "DE", "DT", "NT", "EDGE", "ED", "IDL", "LE", "RE", "LEDG", "REDG", "OLB"], 8], // OLBs are edge rushers here
+  ["LB", ["LB", "ILB", "MLB", "WLB", "SLB", "MIKE", "WILL", "SAM"], 4],
+  ["CB/S", ["DB", "CB", "S", "FS", "SS", "NB", "SAF"], 8],
+  ["LS", ["LS"], 1], ["K", ["K", "PK"], 1], ["P", ["P"], 1],
+];
+const rbcMain = 53; // main roster size
+const rbcPs = "16+1"; // practice squad: 16, plus 1 international exemption
+function rosterCountsByColumn(teamId) {
+  const counts = Object.fromEntries(rbcColumns.map(([label]) => [label, 0]));
+  let main = 0, ps = 0, other = 0;
+  for (const player of officeData.teams[teamId].roster) {
+    if (!isPlayerOnSeason(player, rbSeason)) continue;
+    const entry = seasonEntry(player, rbSeason);
+    if (isPracticeSquad(entry)) { ps += 1; continue; }
+    main += 1;
+    const first = String(entry.position || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
+    const col = rbcColumns.find(([, list]) => list.includes(first));
+    if (col) counts[col[0]] += 1; else other += 1;
+  }
+  return { counts, main, ps, other };
+}
+function renderCounts() {
+  const th = (text, cls = "") => { const e = document.createElement("th"); e.scope = "col"; e.textContent = text; if (cls) e.className = cls; return e; };
+  document.querySelector("#rbc-head").replaceChildren(th("TEAM", "rbc-team"), th("ABV"), ...rbcColumns.map(([label]) => th(label)), th("MAIN", "rbc-main-h"), th("PS"));
+  const req = document.createElement("tr");
+  req.className = "rbc-req";
+  const cell = (tr, text, cls = "") => { const td = tr.insertCell(); td.textContent = text; if (cls) td.className = cls; return td; };
+  cell(req, "Requirements", "rbc-team"); cell(req, "");
+  rbcColumns.forEach(([, , min]) => cell(req, String(min)));
+  cell(req, String(rbcMain)); cell(req, rbcPs);
+  const rows = nflTeams.map(({ id }) => {
+    const { counts, main, ps, other } = rosterCountsByColumn(id);
+    const tr = document.createElement("tr");
+    if (id === rbTeamSelect.value) tr.className = "is-selected";
+    const name = tr.insertCell();
+    name.className = "rbc-team";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "rb-team-button";
+    button.dataset.team = id;
+    button.textContent = teamName(id);
+    name.append(button);
+    cell(tr, id, "rbc-abv");
+    for (const [label, , min] of rbcColumns) {
+      const td = cell(tr, String(counts[label]), counts[label] < min ? "rbc-short" : "");
+      td.title = counts[label] < min ? `${teamName(id)}: ${counts[label]} ${label}, needs ${min}` : `${teamName(id)}: ${counts[label]} ${label}`;
+    }
+    const m = cell(tr, String(main), `rbc-main ${main === rbcMain ? "is-ok" : main > rbcMain ? "is-over" : "is-under"}`);
+    m.title = `${main} on the main roster${other ? ` (${other} with no position or one not in these columns)` : ""}`;
+    cell(tr, String(ps), `rbc-ps ${ps <= 17 ? "is-ok" : "is-over"}`);
+    return tr;
+  });
+  document.querySelector("#rbc-rows").replaceChildren(req, ...rows);
+}
+document.querySelector("#rbc-rows").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-team]");
+  if (!button) return;
+  rbTeamSelect.value = button.dataset.team;
+  renderAll();
+  document.querySelector("#rb-team-detail").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
 function renderAll() {
   renderSeasonTabs();
   renderTeamDetail();
+  renderCounts();
   renderLeague();
 }
 
