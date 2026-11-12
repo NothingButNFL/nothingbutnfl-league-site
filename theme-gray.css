@@ -344,3 +344,6 @@ html[data-theme="gray"] .msf-team-tag { background-color: #3a3c41; }
 html[data-theme="gray"] .msf-table tfoot :is(th, html[data-theme="gray"] td) { border-top-color: #47494f; }
 html[data-theme="gray"] .msf-tiers li { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
 html[data-theme="gray"] .msf-live.is-later { color: #b6b9be; }
+html[data-theme="gray"] .msf-input { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #18191b; }
+html[data-theme="gray"] main .msf-table input.msf-input { border-top-color: #6c6f76 !important; border-right-color: #6c6f76 !important; border-bottom-color: #6c6f76 !important; border-left-color: #6c6f76 !important; background-color: #18191b !important; }
+html[data-theme="gray"] main .msf-table input.msf-input::placeholder { color: #8f9298; }

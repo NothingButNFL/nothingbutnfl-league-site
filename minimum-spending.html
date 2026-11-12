@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=bea3e81c">
-    <link rel="stylesheet" href="theme-light.css?v=068a5e95">
-    <link rel="stylesheet" href="theme-gray.css?v=aee3c4ad">
-    <link rel="stylesheet" href="theme-espn.css?v=6daaec52">
-    <link rel="stylesheet" href="theme-team.css?v=ada0e7fb">
+    <link rel="stylesheet" href="styles.css?v=4b78dbfd">
+    <link rel="stylesheet" href="theme-light.css?v=9217e1af">
+    <link rel="stylesheet" href="theme-gray.css?v=720b4ced">
+    <link rel="stylesheet" href="theme-espn.css?v=814c9509">
+    <link rel="stylesheet" href="theme-team.css?v=bcc7b644">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -45,7 +45,7 @@
     <script src="league-core.js?v=83038052" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
-    <script src="minimum-spending.js?v=47a19b3e" defer></script>
+    <script src="minimum-spending.js?v=19ef1534" defer></script>
   </head>
   <body class="admin-page cap-summary-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -151,6 +151,7 @@
             <div class="management-panel msf-panel">
               <div class="panel-heading">
                 <div><span class="panel-index" id="msf-window-label">CURRENT WINDOW</span><h3>Minimum Spending Floor</h3></div>
+                <div class="msf-edit-wrap"><button class="workspace-button" type="button" id="msf-edit" aria-pressed="false">Edit past seasons</button><span class="msf-edit-status" id="msf-edit-status" role="status" aria-live="polite"></span></div>
               </div>
               <div class="tab-list msf-windows" role="tablist" aria-label="Compliance window" id="msf-windows" hidden></div>
               <div class="management-table-wrap">
@@ -185,7 +186,7 @@
             </div>
           </div>
           <details class="management-panel msf-setup">
-            <summary><span class="panel-index">COMMISSIONER</span><strong>Past league years</strong></summary>
+            <summary><span class="panel-index">COMMISSIONER</span><strong>Paste past league years</strong></summary>
             <p class="hs-help">League years before the site's salary sheets (or any year you want to set by hand): paste each team's final spending percentage. Put a header row first with the league years, like <code>Team, 2024-25, 2025-26</code> (or <code>Team, 2024, 2025</code>), then one team per line: <code>ARI, 99.75%, 100.39%</code>. Team names or abbreviations both work. Pasting again replaces those years for those teams.</p>
             <textarea id="msf-paste" rows="8" placeholder="Team, 2024-25, 2025-26&#10;ARI, 99.75%, 100.39%&#10;ATL, 81.07%, 77.04%"></textarea>
             <div class="hs-actions">

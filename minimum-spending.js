@@ -32,7 +32,11 @@ function msfTeamCell(id) {
   return td;
 }
 
+let msfEditing = false;
 function msfRender() {
+  const editBtn = document.querySelector("#msf-edit");
+  editBtn.textContent = msfEditing ? "Done" : "Edit past seasons";
+  editBtn.setAttribute("aria-pressed", String(msfEditing));
   const now = currentLeagueYear();
   const windows = msfWindows();
   if (!windows.includes(msfWindow)) msfWindow = windows[windows.length - 1];
@@ -63,6 +67,21 @@ function msfRender() {
     for (const y of years) {
       const s = spendingFor(officeData, id, y);
       const td = tr.insertCell();
+      // Editing: past league years become boxes to type the final percentage into (blank = not entered / from the sheets).
+      if (msfEditing && y < now) {
+        const input = msfEl("input", "msf-input");
+        input.type = "text";
+        input.inputMode = "decimal";
+        input.value = officeData.spendingHistory?.[y]?.[id] ?? "";
+        input.placeholder = s?.source === "sheets" ? s.pct.toFixed(2) : "—";
+        input.dataset.team = id;
+        input.dataset.year = String(y);
+        input.setAttribute("aria-label", `${teamName(id)} ${msfYearLabel(y)} spending %`);
+        td.className = "msf-edit-cell";
+        td.append(input, msfEl("span", "msf-pct-sign", "%"));
+        if (s) { values.push(s.pct); sums[y].push(s.pct); }
+        continue;
+      }
       if (!s || y > now) { td.textContent = "—"; td.className = "msf-none"; td.title = y > now ? "This league year hasn't started." : seasons.includes(y) ? `Set the ${y} base cap in Admin to work this out.` : "Not entered (Commissioner › Past league years)"; continue; }
       values.push(s.pct); sums[y].push(s.pct);
       const short = s.pct < spendingFloorPct;
@@ -165,3 +184,41 @@ window.addEventListener("storage", (event) => {
   try { officeData = readStoredOffice() || emptyOfficeData(); msfRender(); } catch { /* keep the last view */ }
 });
 msfRender();
+
+// Edit past seasons in the table: each box saves when you leave it (blank clears it).
+document.querySelector("#msf-edit").addEventListener("click", () => {
+  if (!msfCanSave) { document.querySelector("#msf-status").textContent = "Saved league data couldn't be read, so nothing can be saved here."; return; }
+  msfEditing = !msfEditing;
+  msfRender();
+  if (msfEditing) document.querySelector(".msf-input")?.focus();
+});
+document.querySelector("#msf-rows").addEventListener("change", (event) => {
+  const input = event.target.closest(".msf-input");
+  if (!input) return;
+  const { team, year } = input.dataset;
+  const raw = input.value.trim().replace(/[%\s]/g, "");
+  const value = raw === "" ? null : Number(raw);
+  if (value !== null && (!Number.isFinite(value) || value < 0 || value > 500)) {
+    input.setCustomValidity("Enter a percentage like 81.07, or leave it blank.");
+    input.reportValidity();
+    input.setCustomValidity("");
+    return;
+  }
+  const history = JSON.parse(JSON.stringify(officeData.spendingHistory || {}));
+  if (value === null) { if (history[year]) { delete history[year][team]; if (!Object.keys(history[year]).length) delete history[year]; } }
+  else (history[year] ||= {})[team] = Math.round(value * 100) / 100;
+  officeData.spendingHistory = history;
+  if (!Object.keys(history).length) delete officeData.spendingHistory;
+  try { writeStoredOffice(officeData); } catch (error) { document.querySelector("#msf-status").textContent = `Could not save: ${error.message}.`; return; }
+  const status = document.querySelector("#msf-edit-status");
+  status.textContent = value === null ? `${team} ${msfYearLabel(Number(year))} cleared.` : `${team} ${msfYearLabel(Number(year))} saved: ${value.toFixed(2)}%.`;
+  // Re-render, keeping the cursor in the next box down.
+  const boxes = [...document.querySelectorAll(".msf-input")];
+  const next = boxes[boxes.indexOf(input) + 1];
+  const nextKey = next ? `${next.dataset.team}|${next.dataset.year}` : null;
+  msfRender();
+  if (nextKey && document.activeElement === document.body) {
+    const [t, y] = nextKey.split("|");
+    document.querySelector(`.msf-input[data-team="${t}"][data-year="${y}"]`)?.focus();
+  }
+});

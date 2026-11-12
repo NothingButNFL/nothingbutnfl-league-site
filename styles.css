@@ -3212,3 +3212,12 @@ main .msf-dead-table td:not(:first-child) { text-align: right !important; }
 .msf-setup summary { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
 .msf-live.is-later { color: #a7bdd7; }
 .msf-windows { margin: 0 0 10px; }
+.msf-edit-wrap { display: grid; justify-items: end; gap: 4px; }
+.msf-edit-status { font-size: 11px; opacity: .8; }
+.msf-edit-cell { white-space: nowrap; }
+.msf-input { width: 64px; min-height: 26px; padding: 2px 6px; border: 1px solid #54749b; border-radius: 3px; background: #071a33; color: #fff; font: inherit; text-align: right; }
+.msf-input:focus { outline: 2px solid #8fd0ff; outline-offset: 1px; }
+.msf-pct-sign { margin-left: 3px; opacity: .7; }
+.msf-windows[hidden] { display: none !important; }
+main .msf-table input.msf-input { width: 66px !important; min-width: 0; min-height: 26px; padding: 2px 6px; border: 1px solid #54749b !important; border-radius: 3px; background: #071a33 !important; color: #fff; text-align: right; }
+main .msf-table input.msf-input::placeholder { color: #6d8197; }

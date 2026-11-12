@@ -953,3 +953,7 @@ html[data-theme="light"] .msf-tiers li { border-top-color: #dcdddf; border-right
 html[data-theme="light"] .msf-tiers li span { color: #d0021b; }
 html[data-theme="light"] .msf-tiers li.is-repeat { border-top-color: #d0021b; border-right-color: #d0021b; border-bottom-color: #d0021b; border-left-color: #d0021b; }
 html[data-theme="light"] .msf-live.is-later { color: #6c6d6f; }
+html[data-theme="light"] .msf-input { border-top-color: #c8cacd; border-right-color: #c8cacd; border-bottom-color: #c8cacd; border-left-color: #c8cacd; background-color: #f1f2f4; color: #121213; }
+html[data-theme="light"] .msf-input:focus { outline-color: #1a5fc1; }
+html[data-theme="light"] main .msf-table input.msf-input { color: #121213; border-top-color: #c8cacd !important; border-right-color: #c8cacd !important; border-bottom-color: #c8cacd !important; border-left-color: #c8cacd !important; background-color: #f1f2f4 !important; }
+html[data-theme="light"] main .msf-table input.msf-input::placeholder { color: #6c6d6f; }
