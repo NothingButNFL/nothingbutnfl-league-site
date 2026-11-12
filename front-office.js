@@ -1911,7 +1911,8 @@ function openPlayerMenu(cog, player) {
   } else if (entry) {
     const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
     add("ps-move", `${releaseVerb(player)} To Practice Squad`, noSave || notCurrent || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
-    add("cel", isOnCel(entry) ? "On Commissioner's Exempt List ✓" : "Place On Commissioner's Exempt List", noSave || celProblem(officeData, activeTeamId, player, activeSeason));
+    if (isOnCel(entry)) add("cel-remove", "Remove From CEL (Commissioner)", noSave, true);
+    else add("cel", "Place On Commissioner's Exempt List", noSave || celProblem(officeData, activeTeamId, player, activeSeason));
   }
   menu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-menu-action]");
@@ -1979,8 +1980,23 @@ async function placePlayerOnCel(player) {
   saveOfficeData(`${player.name} is on the Commissioner's Exempt List for ${year} (${result.cel} of ${celLimit} spots used). He no longer counts toward the active roster.`);
 }
 
+// Commissioner only (teams can't undo a CEL placement): the confirm says so.
+async function removePlayerFromCel(player) {
+  const year = activeSeason;
+  const ok = await confirmAction(`Commissioner only: remove ${player.name} from the Commissioner's Exempt List for ${year}? Teams can't take players off the CEL. He'll count toward the active roster again.`,
+    { confirmLabel: "Remove from CEL", danger: true });
+  if (!ok) return;
+  const result = removeFromCel(officeData, activeTeamId, player, year);
+  if (result.error) { workspaceStatus.textContent = result.error; return; }
+  renderSalaryRows();
+  updateCapOverview();
+  if (typeof renderDepthChart === "function") renderDepthChart();
+  saveOfficeData(`${player.name} was removed from the Commissioner's Exempt List and counts toward the active roster again.`);
+}
+
 function runPlayerMenuAction(action, player) {
   if (action === "cel") { placePlayerOnCel(player); return; }
+  if (action === "cel-remove") { removePlayerFromCel(player); return; }
   if (action === "release") { recordRosterTransaction(player, "release"); return; }
   if (action === "ps-move") { recordRosterTransaction(player, "release", { toPracticeSquad: true }); return; }
   if (action === "ps-promote") { promoteFromPracticeSquad(player); return; }

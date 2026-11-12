@@ -410,3 +410,57 @@ renderPsSalaries(officeData);
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderPsSalaries(officeData);
 });
+
+// ---- Commissioner's Exempt List: every CEL player, with Remove (commissioner only) ----
+function renderCelAdmin() {
+  const body = document.querySelector("#admin-cel-rows");
+  if (!body) return;
+  const year = currentLeagueYear();
+  let data;
+  try { data = readStoredOffice() || emptyOfficeData(); } catch { data = emptyOfficeData(); }
+  const list = celPlayers(data, year);
+  if (!list.length) {
+    const tr = body.insertRow();
+    body.replaceChildren(tr);
+    const td = tr.insertCell();
+    td.colSpan = 5;
+    td.className = "empty-state";
+    td.textContent = `No players are on the ${year} CEL.`;
+    return;
+  }
+  body.replaceChildren(...list.map(({ teamId, player, entry }) => {
+    const tr = document.createElement("tr");
+    const team = tr.insertCell();
+    const link = Object.assign(document.createElement("a"), { href: `team.html?team=${encodeURIComponent(teamId)}`, textContent: teamName(teamId) });
+    team.append(link);
+    const name = tr.insertCell();
+    name.append(Object.assign(document.createElement("a"), { href: profileUrl(player.id), textContent: player.name }));
+    tr.insertCell().textContent = entry.position || "—";
+    tr.insertCell().textContent = formatCurrency(capHitFor(entry));
+    const act = tr.insertCell();
+    const btn = Object.assign(document.createElement("button"), { type: "button", className: "workspace-button dk-danger", textContent: "Remove from CEL" });
+    btn.dataset.team = teamId;
+    btn.dataset.player = player.id;
+    act.append(btn);
+    return tr;
+  }));
+}
+document.querySelector("#admin-cel-rows")?.addEventListener("click", async (event) => {
+  const btn = event.target.closest("button[data-player]");
+  if (!btn) return;
+  const status = document.querySelector("#admin-cel-status");
+  let data;
+  try { data = readStoredOffice() || emptyOfficeData(); } catch { status.textContent = "Saved league data couldn't be read."; return; }
+  const year = currentLeagueYear();
+  const player = data.teams[btn.dataset.team]?.roster.find((p) => p.id === btn.dataset.player);
+  if (!player) return;
+  if (!(await confirmAction(`Remove ${player.name} from the ${teamName(btn.dataset.team)} Commissioner's Exempt List for ${year}? He'll count toward their active roster again.`, { confirmLabel: "Remove from CEL", danger: true }))) return;
+  const result = removeFromCel(data, btn.dataset.team, player, year);
+  if (result.error) { status.textContent = result.error; return; }
+  try { writeStoredOffice(data); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
+  officeData = data; // keep this page's copy current, so the cap and salary boxes above don't save over it
+  status.textContent = `${player.name} is off the CEL and back on the ${teamName(btn.dataset.team)} active roster count.`;
+  renderCelAdmin();
+});
+window.addEventListener("storage", (event) => { if (event.key === officeStorageKey) renderCelAdmin(); });
+renderCelAdmin();

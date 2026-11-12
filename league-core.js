@@ -407,6 +407,22 @@ function placeOnCel(data, teamId, player, year) {
   return { ok: true, cel };
 }
 
+// Commissioner only: takes a player off the CEL (teams can't). He counts toward the active roster again.
+function removeFromCel(data, teamId, player, year) {
+  if (!isPlayerOnSeason(player, year) || !isOnCel(seasonEntry(player, year))) return { error: `${player.name} isn't on the ${year} CEL.` };
+  const entry = seasonEntry(player, year);
+  delete entry.cel;
+  logTransaction(data, { type: "other", teams: [teamId], player: player.name, auto: true,
+    details: `${player.name}${entry.position ? ` (${entry.position})` : ""} removed from the Commissioner's Exempt List by the commissioner for ${year}. He counts toward the active roster again.` });
+  return { ok: true };
+}
+// Every CEL player for a season: [{ teamId, player, entry }].
+function celPlayers(data, year) {
+  return nflTeams.flatMap(({ id }) => (data.teams[id]?.roster || [])
+    .filter((p) => isPlayerOnSeason(p, year) && isOnCel(seasonEntry(p, year)))
+    .map((player) => ({ teamId: id, player, entry: seasonEntry(player, year) })));
+}
+
 // { active, practiceSquad, elevated, cel } for one team and season. CEL players aren't in "active".
 function rosterCounts(teamId, year, data = officeData) {
   const counts = { active: 0, practiceSquad: 0, elevated: 0, cel: 0 };

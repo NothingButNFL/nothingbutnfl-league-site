@@ -42,10 +42,10 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=42f41767" defer></script>
+    <script src="league-core.js?v=d410e81f" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
-    <script src="admin.js?v=700bba3e" defer></script>
+    <script src="admin.js?v=7b05ee0d" defer></script>
   </head>
   <body class="admin-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -224,6 +224,20 @@
               </table>
             </div>
             <p class="workspace-footnote">Leave it blank for no limit. 2026 starts at $187,500.</p>
+          </div>
+
+          <div class="management-panel admin-cel-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">COMMISSIONER'S EXEMPT LIST</span><h3>CEL players</h3></div>
+              <p>Every player on a team's Commissioner's Exempt List this league year. Teams can't take a player off the CEL; only the commissioner can, here. A removed player counts toward his team's active roster again.</p>
+            </div>
+            <div class="management-table-wrap">
+              <table class="management-table admin-cel-table">
+                <thead><tr><th>TEAM</th><th>PLAYER</th><th>POSITION</th><th>CAP HIT</th><th></th></tr></thead>
+                <tbody id="admin-cel-rows"></tbody>
+              </table>
+            </div>
+            <p class="workspace-status" id="admin-cel-status" role="status" aria-live="polite"></p>
           </div>
 
         </div>
