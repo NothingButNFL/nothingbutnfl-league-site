@@ -930,3 +930,7 @@ html[data-theme="light"] .dk-slot.is-skipped { border-top-color: #d23a46; border
 html[data-theme="light"] .dk-slot.is-skipped .dk-slot-player { color: #c0283a; }
 html[data-theme="light"] .dk-slot-player em { color: #c0283a; }
 html[data-theme="light"] .dk-timer-for { color: #0b1f3a; }
+html[data-theme="light"] .dk-sound-toggle { color: #0b1f3a; }
+html[data-theme="light"] .dk-sound-panel summary { color: #0b1f3a; }
+html[data-theme="light"] .dk-sound-now { color: #946100; }
+html[data-theme="light"] .dk-volume { color: #0b1f3a; }

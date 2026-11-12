@@ -2823,3 +2823,9 @@ a.dr-team:hover { text-decoration: underline; }
 .dk-slot.is-skipped .dk-slot-player { color: #ff9299; font-weight: 700; }
 .dk-slot-player em { color: #ff9299; font-size: 11px; font-style: normal; }
 .dk-timer-for { min-height: 1em; color: #fff; font: 11px var(--mono); opacity: .8; }
+.dk-sound-toggle { display: flex; align-items: center; gap: 6px; color: #fff; font: 12px var(--mono); }
+.dk-sound-panel { margin: -6px 0 22px; }
+.dk-sound-panel summary { display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; }
+.dk-sound-now { color: #ffd37a; font: 12px var(--mono); }
+.dk-volume { display: flex; align-items: center; gap: 8px; color: #fff; font: 12px var(--mono); }
+.dk-sound-panel [hidden] { display: none; }

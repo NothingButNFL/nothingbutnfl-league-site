@@ -313,11 +313,12 @@ function dkTimerShow() {
   document.querySelector("#dk-clock").classList.toggle("is-expired", dkTimerLeft <= 0);
   document.querySelector("#dk-timer-toggle").textContent = dkTimerHandle ? "Pause clock" : "Start clock";
 }
-function dkTimerStop() { clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); }
+function dkTimerStop() { clearInterval(dkTimerHandle); dkTimerHandle = null; dkSoundStop(); dkTimerShow(); }
 function dkTimerStart() {
   if (dkTimerHandle || !dkOnClock()) return;
   dkTimerHandle = setInterval(() => {
     dkTimerLeft -= 1;
+    dkSoundTick(dkTimerLeft);
     if (dkTimerLeft <= 0) { dkTimerLeft = 0; clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); dkSkip(true); return; }
     dkTimerShow();
   }, 1000);
@@ -501,3 +502,115 @@ window.addEventListener("storage", (event) => {
 dkTimerLeft = dkTimerLength();
 dkTimerShow();
 dkRender();
+
+// ---------- Countdown sound ----------
+// With 10 seconds left: built-in beeps (Web Audio, a beep a second, higher for the last 3, a horn at 0:00), or the
+// commissioner's own sound file, played once from 10 seconds left. The file is kept in this browser's IndexedDB and
+// the on/off and volume choices in localStorage. Starting the clock counts as the click browsers need before sound.
+const dkSoundKey = "nbf-draft-sound";
+let dkAudioCtx = null, dkCustomUrl = null, dkCustomAudio = null;
+const dkSoundOn = () => document.querySelector("#dk-sound").checked;
+const dkVolume = () => Number(document.querySelector("#dk-volume").value);
+function dkCtx() {
+  if (!dkAudioCtx) { const C = window.AudioContext || window.webkitAudioContext; if (C) dkAudioCtx = new C(); }
+  if (dkAudioCtx?.state === "suspended") dkAudioCtx.resume();
+  return dkAudioCtx;
+}
+function dkBeep(freq, length, type = "sine") {
+  const ctx = dkCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime, osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.5 * dkVolume()), t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + length + 0.05);
+}
+function dkHorn() { dkBeep(220, 1.1, "sawtooth"); dkBeep(277, 1.1, "sawtooth"); dkBeep(330, 1.1, "square"); }
+function dkSoundTick(left) {
+  if (!dkSoundOn() || left > 10 || left < 0) return;
+  if (dkCustomUrl) {
+    if (left === 10) { dkSoundStop(); dkCustomAudio = new Audio(dkCustomUrl); dkCustomAudio.volume = dkVolume(); dkCustomAudio.play().catch(() => {}); }
+    return;
+  }
+  if (left === 0) dkHorn();
+  else dkBeep(left <= 3 ? 1320 : 880, left <= 3 ? 0.25 : 0.12);
+}
+function dkSoundStop() { if (dkCustomAudio) { dkCustomAudio.pause(); dkCustomAudio = null; } }
+
+// IndexedDB store for the custom sound file.
+function dkSoundDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("nbf-draft-sound", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("files");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function dkSoundFile(action, blob) {
+  const db = await dkSoundDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("files", action === "get" ? "readonly" : "readwrite");
+    const store = tx.objectStore("files");
+    const req = action === "get" ? store.get("countdown") : action === "put" ? store.put(blob, "countdown") : store.delete("countdown");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function dkSoundLabel(name) {
+  document.querySelector("#dk-sound-now").textContent = name ? `Your file: ${name}` : "Built-in beeps";
+  document.querySelector("#dk-sound-clear").hidden = !name;
+}
+async function dkLoadCustomSound() {
+  try {
+    const file = await dkSoundFile("get");
+    if (dkCustomUrl) URL.revokeObjectURL(dkCustomUrl);
+    dkCustomUrl = file ? URL.createObjectURL(file) : null;
+    dkSoundLabel(file ? file.name || "custom sound" : "");
+  } catch { dkSoundLabel(""); }
+}
+document.querySelector("#dk-sound-file").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("audio/")) { dkStatus.textContent = "That isn't a sound file. Choose an MP3, WAV or OGG."; return; }
+  if (file.size > 5 * 1024 * 1024) { dkStatus.textContent = "That file is over 5 MB. Use a shorter clip (about 10 seconds)."; return; }
+  try {
+    await dkSoundFile("put", new File([file], file.name, { type: file.type }));
+    await dkLoadCustomSound();
+    dkStatus.textContent = `Countdown sound set to ${file.name}. It plays from 10 seconds left.`;
+  } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
+});
+document.querySelector("#dk-sound-clear").addEventListener("click", async () => {
+  try { await dkSoundFile("delete"); } catch { /* nothing stored */ }
+  await dkLoadCustomSound();
+  dkStatus.textContent = "Back to the built-in countdown beeps.";
+});
+document.querySelector("#dk-sound-test").addEventListener("click", () => {
+  dkSoundStop();
+  if (dkCustomUrl) { dkCustomAudio = new Audio(dkCustomUrl); dkCustomAudio.volume = dkVolume(); dkCustomAudio.play().catch(() => {}); return; }
+  let n = 10;
+  dkBeep(880, 0.12);
+  const demo = setInterval(() => { n -= 1; if (n <= 0) { clearInterval(demo); dkHorn(); return; } dkBeep(n <= 3 ? 1320 : 880, n <= 3 ? 0.25 : 0.12); }, 1000);
+});
+document.querySelector("#dk-timer-toggle").addEventListener("click", () => { if (dkSoundOn()) dkCtx(); }); // unlock audio
+for (const id of ["#dk-sound", "#dk-volume", "#dk-timer-length"]) {
+  document.querySelector(id).addEventListener("change", () => {
+    try { localStorage.setItem(dkSoundKey, JSON.stringify({ on: dkSoundOn(), volume: dkVolume(), seconds: dkTimerLength() })); } catch { /* fine */ }
+    if (dkCustomAudio) dkCustomAudio.volume = dkVolume();
+    if (!dkSoundOn()) dkSoundStop();
+  });
+}
+try {
+  const saved = JSON.parse(localStorage.getItem(dkSoundKey) || "null");
+  if (saved) {
+    document.querySelector("#dk-sound").checked = saved.on !== false;
+    if (Number.isFinite(saved.volume)) document.querySelector("#dk-volume").value = saved.volume;
+    const length = document.querySelector("#dk-timer-length");
+    if ([...length.options].some((o) => Number(o.value) === saved.seconds)) { length.value = String(saved.seconds); if (!dkTimerHandle) { dkTimerLeft = saved.seconds; dkTimerShow(); } }
+  }
+} catch { /* defaults */ }
+dkLoadCustomSound();
