@@ -1,4 +1,4 @@
-// The draft ticker: a broadcast-style band across the top of every page while this year's draft is live (started from
+// The draft ticker: a broadcast-style band fixed to the bottom of the screen on every page while this year's draft is live (started from
 // Season Information › Draft, or by its first pick) and until every pick is in. Top row: the league's draft mark, the
 // team on the clock with its round and pick, the draft title with the last pick, and the pick clock. Then the next
 // teams up, and a crawl of the picks made so far. The pick clock is mirrored from the draft room through localStorage

@@ -2854,9 +2854,11 @@ a.dr-team:hover { text-decoration: underline; }
 @media (max-width: 800px) { .dk-last { grid-template-columns: 56px minmax(0, 1fr); } .dk-last-logo, .dk-last-logo img { width: 56px; height: 56px; } .dk-last-pick { grid-column: 1 / -1; justify-items: start; text-align: left; } .dk-last-name { font-size: 28px; white-space: normal; } }
 .dk-sound-head { margin: 14px 0 0; color: #fff; }
 /* Draft ticker (every page while the draft is live) */
-.draft-ticker { position: sticky; top: 0; z-index: 40; display: block; color: #fff; text-decoration: none; font-family: var(--body); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
-@media (max-width: 1180px) { .draft-ticker { top: 62px; } }
-html.draft-live .md-ticker { display: none; }
+.draft-ticker { position: fixed; right: 0; bottom: 0; left: 0; z-index: 45; display: block; color: #fff; text-decoration: none; font-family: var(--body); box-shadow: 0 -6px 18px rgba(0, 0, 0, .35); }
+@media (min-width: 1181px) { .draft-ticker { left: 240px; transition: left .18s ease; } html.nav-collapsed .draft-ticker { left: 68px; } }
+/* Leave room under the page so the ticker never covers the end of it. */
+html.draft-live body { padding-bottom: 122px; }
+html.draft-live .sample-toast { bottom: 140px; }
 .dt-top { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; min-height: 64px; background: #071a33; }
 .dt-brand { display: flex; align-items: center; gap: 10px; padding: 0 18px; background: linear-gradient(180deg, #1f6fc5, #0c2b50); }
 .dt-brand img { width: 34px; height: 34px; }
