@@ -3175,3 +3175,7 @@ main .rb-count-table :is(th, td).rbc-team { text-align: left !important; white-s
 main .rb-count-table :is(th, td):first-child { padding-left: 14px !important; }
 main .rb-count-table :is(th, td):last-child { padding-right: 14px !important; }
 .rb-measure-label { display: grid; gap: 4px; font: 700 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+/* Team sheet › add a player: labels and fields one size up */
+#add-player-form label { font-size: 11px; }
+#add-player-form :is(input, select) { font-size: 12px; }
+#add-player-form button { font-size: 11px; }
