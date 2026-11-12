@@ -36,6 +36,7 @@ let msfEditing = false;
 function msfRender() {
   const editBtn = document.querySelector("#msf-edit");
   editBtn.textContent = msfEditing ? "Done" : "Edit past seasons";
+  if (msfEditing && !document.querySelector("#msf-edit-status").textContent) document.querySelector("#msf-edit-status").textContent = "Type in a box, or paste cells copied from your spreadsheet.";
   editBtn.setAttribute("aria-pressed", String(msfEditing));
   const now = currentLeagueYear();
   const windows = msfWindows();
@@ -221,4 +222,53 @@ document.querySelector("#msf-rows").addEventListener("change", (event) => {
     const [t, y] = nextKey.split("|");
     document.querySelector(`.msf-input[data-team="${t}"][data-year="${y}"]`)?.focus();
   }
+});
+
+// Paste a block from the spreadsheet into the edit boxes. Rows are teams, columns are seasons:
+// - with team names/abbreviations in the first column, each row goes to that team (any order, header rows and
+//   Average/Minimum rows are skipped); a header row of seasons (2024-25…) picks the columns;
+// - without them, the block fills from the box you pasted into, down the teams and across the seasons, like a
+//   spreadsheet.
+document.querySelector("#msf-rows").addEventListener("paste", (event) => {
+  const input = event.target.closest(".msf-input");
+  if (!input) return;
+  const text = event.clipboardData?.getData("text/plain") || "";
+  if (!/[\t\n]/.test(text.trim())) return; // one value: a normal paste
+  event.preventDefault();
+  const rows = text.replace(/\r/g, "").split("\n").filter((l) => l.trim()).map((l) => l.split("\t").map((c) => c.trim()));
+  const boxes = [...document.querySelectorAll(".msf-input")];
+  const teamOrder = [...new Set(boxes.map((b) => b.dataset.team))];
+  const editYears = [...new Set(boxes.map((b) => Number(b.dataset.year)))].sort((a, b) => a - b);
+  const num = (c) => { const v = Number(String(c ?? "").replace(/[%\s,]/g, "")); return c !== undefined && c !== "" && Number.isFinite(v) && v >= 0 && v <= 500 ? Math.round(v * 100) / 100 : null; };
+  const writes = []; // [team, year, value]
+  const byTeam = rows.some((r) => msfTeamFrom(r[0]));
+  if (byTeam) {
+    // Columns: a header row with years, else the box's season onward.
+    const header = rows.find((r) => !msfTeamFrom(r[0]) && r.slice(1).some((c) => /(19|20)\d{2}/.test(c)));
+    const startYear = Number(input.dataset.year);
+    const colYears = header
+      ? header.slice(1).map((c) => Number((c.match(/(19|20)\d{2}/) || [])[0]) || null)
+      : editYears.filter((y) => y >= startYear);
+    for (const r of rows) {
+      const id = msfTeamFrom(r[0]);
+      if (!id) continue;
+      r.slice(1).forEach((c, i) => { const y = colYears[i]; const v = num(c); if (y && editYears.includes(y) && v !== null) writes.push([id, y, v]); });
+    }
+  } else {
+    const t0 = teamOrder.indexOf(input.dataset.team);
+    const y0 = editYears.indexOf(Number(input.dataset.year));
+    rows.forEach((r, i) => r.forEach((c, j) => {
+      const id = teamOrder[t0 + i], y = editYears[y0 + j], v = num(c);
+      if (id && y !== undefined && v !== null) writes.push([id, y, v]);
+    }));
+  }
+  const status = document.querySelector("#msf-edit-status");
+  if (!writes.length) { status.textContent = "Nothing in that paste matched a team and a past season."; return; }
+  const history = JSON.parse(JSON.stringify(officeData.spendingHistory || {}));
+  for (const [id, y, v] of writes) (history[y] ||= {})[id] = v;
+  officeData.spendingHistory = history;
+  try { writeStoredOffice(officeData); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
+  const teams = new Set(writes.map((w) => w[0])).size;
+  status.textContent = `Pasted ${writes.length} value${writes.length === 1 ? "" : "s"} for ${teams} team${teams === 1 ? "" : "s"}.`;
+  msfRender();
 });
