@@ -3024,6 +3024,3 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-last-stats-list span { color: #fff; font: 700 10px var(--mono); letter-spacing: .08em; opacity: .75; white-space: nowrap; }
 .dk-last-stats-src { color: #fff; font: 10px var(--mono); opacity: .55; white-space: nowrap; }
 @media (max-width: 800px) { .dk-last-stats { grid-template-columns: 1fr; gap: 8px; } }
-.dk-cfbd-row { display: flex; gap: 8px; margin-top: 8px; }
-.dk-cfbd-row input { flex: 1 1 auto; min-width: 0; }
-.dk-cfbd-status.is-bad { color: #ff9b9b; }
