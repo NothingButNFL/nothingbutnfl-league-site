@@ -13,12 +13,13 @@
     <link rel="stylesheet" href="styles.css?v=98a802dd">
     <link rel="stylesheet" href="theme-light.css?v=312bf308">
     <link rel="stylesheet" href="theme-gray.css?v=dab0d12c">
+    <link rel="stylesheet" href="theme-espn.css?v=e5abe697">
     <link rel="stylesheet" href="theme-team.css?v=ae1227a1">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
-      // Applies the saved theme (NBNFL / Dark / Light / Neon / a seasonal theme / an NFL team) before the page paints.
-      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; else if (/^(team-[A-Z]{2,3}|season-[a-z]+|neon)$/.test(savedTheme)) { var themeVars = localStorage.getItem("nbf-theme-vars"); if (themeVars) { document.documentElement.dataset.theme = savedTheme; themeVars.split(";").forEach(function (pair) { var i = pair.indexOf(":"); document.documentElement.style.setProperty(pair.slice(0, i), pair.slice(i + 1)); }); } } } catch (e) {}
+      // Applies the saved theme (NBNFL / Dark / Light / ESPN / Neon / a seasonal theme / an NFL team) before the page paints.
+      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark" || savedTheme === "espn") document.documentElement.dataset.theme = savedTheme; else if (/^(team-[A-Z]{2,3}|season-[a-z]+|neon)$/.test(savedTheme)) { var themeVars = localStorage.getItem("nbf-theme-vars"); if (themeVars) { document.documentElement.dataset.theme = savedTheme; themeVars.split(";").forEach(function (pair) { var i = pair.indexOf(":"); document.documentElement.style.setProperty(pair.slice(0, i), pair.slice(i + 1)); }); } } } catch (e) {}
     </script>
     <script>
       // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
@@ -39,7 +40,7 @@
         });
       })();
     </script>
-    <script src="teams.js?v=2b6ecb45" defer></script>
+    <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
     <script src="league-core.js?v=2a631bc9" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>

@@ -228,6 +228,8 @@ const themeModes = [
   { id: "dark", label: "NBNFL", color: "#071a33", swatch: ["#071a33", "#8fd0ff"] },
   { id: "gray", label: "Dark", color: "#18191b", swatch: ["#18191b", "#d5d7db"] },
   { id: "light", label: "Light", color: "#ffffff", swatch: ["#ffffff", "#0c2b50"] },
+  // ESPN: ESPN.com's look (gray page, white cards, near-black text, red accents, dark sidebar); theme-espn.css.
+  { id: "espn", label: "ESPN", color: "#121213", swatch: ["#ffffff", "#dd0000"] },
   // Neon: violet-black surfaces, hot pink accents, cyan secondary text; theme-neon.css adds the glow and haze.
   { id: "neon", label: "Neon", color: "#0b0318", swatch: ["#ff2bd6", "#00e5ff"],
     palette: { base: "#2a0a5e", accent: "#ff3fd8", textHue: 186, textSat: 1.5, surfaceLight: 0.72 } }
