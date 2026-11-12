@@ -139,7 +139,7 @@ function renderTicker(games, week, upcoming = null, records = null) {
   label.append(mdEl("b", "", week > 18 ? "PLAYOFFS" : `WEEK ${week}`), " SCORES");
   const items = games.map((g) => {
     const a = mdEl("a", "md-tick");
-    a.href = "stats.html";
+    a.href = `boxscore.html?id=${encodeURIComponent(g.id)}`; // the game's box score
     a.title = `${teamName(g.teams[0].team)} ${g.teams[0].score}, ${teamName(g.teams[1].team)} ${g.teams[1].score}`;
     const top = Math.max(g.teams[0].score, g.teams[1].score);
     g.teams.forEach((t, i) => {
