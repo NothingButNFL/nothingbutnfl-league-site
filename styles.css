@@ -3077,3 +3077,12 @@ html.draft-live .sample-toast { bottom: 140px; }
 .stream-card .help-head h2 { white-space: nowrap; }
 .stream-date { color: #c5d5e8; font: 600 11px var(--mono); letter-spacing: .04em; opacity: .7; white-space: nowrap; }
 .stream-date.is-live { color: #ff6b7a; font-weight: 800; opacity: 1; }
+
+/* ===== League type scale (site-wide standard) =====
+   Table information 10px · table headers 12px bold · card headers 15px. Kept last so it wins over the
+   per-table and per-card sizes above. */
+main table td, main table td :is(input, select, textarea, button, a, strong, b, em, span, small, div, label) { font-size: 10px !important; }
+main table th, main table th :is(a, span, button, strong, small) { font-size: 12px !important; font-weight: 700 !important; }
+main :is(.panel-heading h3, .recent-head h2, .stats-leader-card h3, .leader-card h3, .conference-card h3, .rb-team-head h3, .depth-head h3,
+  .insider-title, .md-best-title, .md-board-title, .md-top-title, .mdp-card h3, .mdp-starters-head h3, .si-preview-head h3, .trade-team-heading h4,
+  .team-fa-pending-title, .stream-card .recent-head h2) { font-size: 15px !important; }
