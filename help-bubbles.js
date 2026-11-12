@@ -1,4 +1,4 @@
-// Section descriptions (p.section-subtitle) live behind a "?" bubble next to their heading: click it to open the
+// Section descriptions (p.section-subtitle) and panel descriptions (.panel-heading > p) live behind a "?" bubble next to their heading: click it to open the
 // description in a small pop-out, click again, click elsewhere or press Escape to close it. The paragraph element is
 // moved, not copied, so page scripts that update its text (by id) keep working.
 (function helpBubbles() {
@@ -11,7 +11,14 @@
   };
   function wire(sub, index) {
     const parent = sub.parentElement;
-    const heading = parent && [...parent.children].slice(0, [...parent.children].indexOf(sub)).reverse().find((el) => /^H[1-4]$/.test(el.tagName));
+    // The heading just before the description: a sibling heading, or the last heading inside a sibling (panel headings
+    // put the h3 in a div next to the description).
+    let heading = null;
+    for (const el of parent ? [...parent.children].slice(0, [...parent.children].indexOf(sub)).reverse() : []) {
+      if (/^H[1-4]$/.test(el.tagName)) { heading = el; break; }
+      const inner = [...el.querySelectorAll("h1, h2, h3, h4")].pop();
+      if (inner) { heading = inner; break; }
+    }
     if (!heading || heading.closest(".help-head")) return;
     const head = document.createElement("div");
     head.className = "help-head";
@@ -46,7 +53,9 @@
     pop.addEventListener("click", (event) => event.stopPropagation());
   }
   let count = 0;
-  function run() { document.querySelectorAll("main p.section-subtitle").forEach((p) => wire(p, count++)); }
+  // Section descriptions, and the descriptions in panel headings (plain paragraphs, not status lines).
+  const selector = "main p.section-subtitle, main .panel-heading > p:not([class]):not(#hs-list-info)";
+  function run() { document.querySelectorAll(selector).forEach((p) => wire(p, count++)); }
   // For descriptions a page adds later (e.g. the Overview's Top Players before any box scores).
   globalThis.addHelpBubble = (p) => wire(p, count++);
   document.addEventListener("click", close);

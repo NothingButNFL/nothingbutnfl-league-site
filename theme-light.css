@@ -999,3 +999,4 @@ html[data-theme="light"] .help-bubble:focus-visible { outline-color: #c98a12; }
 html[data-theme="light"] .help-pop { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; box-shadow: rgba(15, 35, 70, 0.158) 0px 14px 34px; }
 html[data-theme="light"] .help-pop .section-subtitle, html[data-theme="light"] .front-office-heading .help-pop .section-subtitle { color: #0b1f3a; }
 html[data-theme="light"] .empty-state { color: #0b1f3a; }
+html[data-theme="light"] .help-pop > p, html[data-theme="light"] .panel-heading .help-pop > p { color: #0b1f3a; }

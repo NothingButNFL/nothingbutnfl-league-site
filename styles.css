@@ -3011,3 +3011,5 @@ html.draft-live .sample-toast { bottom: 140px; }
 .md-top-head-row .help-pop { text-transform: none; letter-spacing: 0; }
 /* "Nothing here yet" notes: white and one size larger */
 .empty-state { color: #ffffff; font-size: 12px; }
+.help-pop > p, .panel-heading .help-pop > p { max-width: none; margin: 0; color: #ffffff; font-size: 14px; line-height: 1.55; }
+.panel-heading .help-head > h3 { margin: 0; }
