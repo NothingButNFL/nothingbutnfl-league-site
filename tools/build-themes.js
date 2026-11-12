@@ -1,6 +1,6 @@
 // Builds theme-light.css, theme-gray.css and theme-team.css (NFL team themes) from styles.css. Every rule that uses one of the dark theme's
 // colors is repeated under html[data-theme="light"] (or "gray") with that theme's color. Uses Chromium's own
-// CSS parser through Playwright. Run after changing styles.css:   node tools/build-themes.js
+// CSS parser through Playwright, then refreshes the pages' ?v= asset stamps (stamp-assets.js). Run after changing styles.css:   node tools/build-themes.js
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
@@ -190,4 +190,5 @@ const themes = {
   if (!marker.test(teamsJs)) throw new Error("teams.js is missing the teamThemeColors line");
   fs.writeFileSync(teamsPath, teamsJs.replace(marker, line));
   await browser.close();
+  require("./stamp-assets.js"); // the theme files changed, so refresh the ?v= stamps in every page
 })();

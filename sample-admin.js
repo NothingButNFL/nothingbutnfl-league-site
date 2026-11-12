@@ -41,8 +41,8 @@ function sampleLoadFiles() {
     script.onerror = () => reject(new Error(`${src} couldn't be loaded`));
     document.head.append(script);
   });
-  return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js"))
-    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js")));
+  return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js?v=5f19e253"))
+    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=8f27eb8e")));
 }
 
 // The page was drawn from the old data, so reload it (keeping the message for the toast).
