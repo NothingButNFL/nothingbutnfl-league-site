@@ -44,6 +44,7 @@ sampleLoadButton.addEventListener("click", async () => {
   try {
     const copy = JSON.parse(JSON.stringify(sampleLeague));
     const built = buildMidseasonSample(copy, data); // sample-midseason.js: 8 weeks played, every feature filled in
+    data.sampleVersion = sampleVersion;
     data.sampleLeague = true;
     localStorage.removeItem(officeStorageKey); // make room: the copy is safe in the backup store
     writeStoredOffice(data);
@@ -94,3 +95,22 @@ window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey) renderSamplePanel();
 });
 renderSamplePanel();
+
+// A sample loaded before the 8-week version (the full 18-week season) is rebuilt in place. Your own data stays safe in
+// the backup store, so Remove sample league still puts it back exactly.
+(function upgradeOldSample() {
+  if (!sampleIsLoaded() || typeof sampleLeague === "undefined") return;
+  let data;
+  try { data = readStoredOffice(); } catch { return; }
+  if (!data?.sampleLeague || data.sampleVersion === sampleVersion) return;
+  try {
+    buildMidseasonSample(JSON.parse(JSON.stringify(sampleLeague)), data);
+    data.sampleVersion = sampleVersion;
+    localStorage.removeItem(officeStorageKey);
+    writeStoredOffice(data);
+    try { sessionStorage.setItem("nbf-sample-status", `The sample league was updated to the 8-week version: games through Week ${sampleWeeksPlayed}, with Week ${sampleWeeksPlayed + 1} up next.`); } catch { /* fine */ }
+    location.reload();
+  } catch (error) {
+    sampleStatus.textContent = `The sample league couldn't be updated to the 8-week version (${error.message}). Remove it and load it again.`;
+  }
+})();

@@ -4,6 +4,7 @@
 // Wire posts, depth-chart stream updates, last season's awards and Super Bowl, minimum and practice-squad salaries.
 // Uses league-core.js helpers (signToPracticeSquad, releaseToWaiversOrFreeAgency, makePsOffer, …).
 const sampleWeeksPlayed = 8;
+const sampleVersion = 2; // 1 = the full 18-week season (before this file existed)
 
 function buildMidseasonSample(copy, data) {
   // Seeded random numbers, so the sample comes out the same every time.
