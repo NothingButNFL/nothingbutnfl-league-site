@@ -216,6 +216,21 @@ function dkRenderSkipped() {
 }
 
 // ---------- Draft Pool ----------
+// A prospect's name, linked to his profile (player.html) when he's in the Draft Pool.
+function dkProfileName(text, poolId, tag = "span") {
+  const el = document.createElement(tag);
+  const prospect = poolId ? (dkData.draftPool || []).find((p) => p.id === poolId) : null;
+  if (!prospect) { el.textContent = text; return el; }
+  const a = Object.assign(document.createElement("a"), { className: "dk-profile-link", href: profileUrl(prospect.id), textContent: text, title: `${text}: player profile` });
+  el.append(a);
+  return el;
+}
+function dkPoolIdFor(pick) {
+  if (pick.poolId) return pick.poolId;
+  const key = normalizePlayerName(pick.player);
+  return (dkData.draftPool || []).find((p) => p.year === pick.year && normalizePlayerName(p.name) === key)?.id || null;
+}
+
 function dkRenderPool() {
   const drafted = dkDrafted();
   const query = document.querySelector("#dk-pool-search").value.trim().toLowerCase();
@@ -237,7 +252,7 @@ function dkRenderPool() {
     tr.insertCell().textContent = p.rank ?? "";
     const name = tr.insertCell();
     name.className = "dk-pool-name";
-    name.textContent = p.name;
+    name.append(Object.assign(document.createElement("a"), { className: "dk-profile-link", href: profileUrl(p.id), textContent: p.name, title: `${p.name}: player profile` }));
     tr.insertCell().textContent = p.position || "";
     tr.insertCell().textContent = p.college || "";
     const cell = tr.insertCell();
@@ -290,7 +305,7 @@ function dkRenderBoard() {
     const who = document.createElement("span");
     who.className = "dk-slot-player";
     if (pick) {
-      who.append(Object.assign(document.createElement("strong"), { textContent: pick.player }), [pick.position, pick.college].filter(Boolean).join(" · "));
+      who.append(dkProfileName(pick.player, dkPoolIdFor(pick), "strong"), [pick.position, pick.college].filter(Boolean).join(" · "));
       if (s.skipped) who.append(Object.assign(document.createElement("em"), { textContent: "Late pick (was skipped)" }));
     } else who.textContent = s.skipped ? "Skipped · can still pick" : slot && s.pick === slot.pick ? "On the clock" : "";
     li.append(who);
@@ -582,7 +597,8 @@ function dkRenderLast() {
   const text = document.createElement("div");
   text.className = "dk-last-text";
   const label = Object.assign(document.createElement("span"), { className: "dk-last-label", textContent: "LAST PLAYER SELECTED" });
-  const name = Object.assign(document.createElement("strong"), { className: "dk-last-name", textContent: last.player });
+  const name = dkProfileName(last.player, dkPoolIdFor(last), "strong");
+  name.className = "dk-last-name";
   const meta = Object.assign(document.createElement("span"), { className: "dk-last-meta",
     textContent: [last.position, last.college].filter(Boolean).join(" · ") });
   text.append(label, name, meta);
@@ -795,7 +811,6 @@ const dkCombineCols = [
   ["cone", /^(3cone|3conedrill|cone|threecone)$/], ["shuttle", /^(shuttle|20yardshuttle|20yshuttle|ss|shortshuttle)$/], ["arm", /^(arm|arms|armlength)$/], ["hand", /^(hand|hands|handsize)$/],
 ];
 const dkCombineDefault = ["name", "ht", "wt", "forty", "bench", "vert", "broad", "cone", "shuttle"];
-const dkCombineLabels = { ht: "HT", wt: "WT", forty: "40 YD", bench: "BENCH", vert: "VERT", broad: "BROAD", cone: "3-CONE", shuttle: "SHUTTLE", arm: "ARM", hand: "HAND" };
 function dkParseCombine(text) {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const split = (l) => (l.includes("\t") ? l.split("\t") : l.split(/,(?!\d{3}\b)/)).map((c) => c.trim());
@@ -815,21 +830,8 @@ function dkParseCombine(text) {
   });
   return out;
 }
-// Pasted results first, then the built-in results for the year (combine-data.js, from Pro Football Reference).
-const dkInchesToFeet = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? `${Math.floor(n / 12)}'${String(n % 12).replace(/\.0$/, "")}"` : v; };
-function dkCombineFor(player, year = dkYear) {
-  const key = dkNameKey(player);
-  const pasted = (dkData.draftCombine || []).find((c) => c.year === year && dkNameKey(c.name) === key);
-  if (pasted) return pasted;
-  const rows = typeof nflCombineData === "object" ? nflCombineData[year] : null;
-  const row = rows?.find((r) => dkNameKey(r[0]) === key);
-  if (!row) return null;
-  const [name, ht, wt, forty, vert, bench, broad, cone, shuttle] = row;
-  const c = { year, name, source: "Pro Football Reference" };
-  if (ht) c.ht = ht.replace(/^(\d+)-(\d+)$/, "$1'$2\""); if (wt) c.wt = wt; if (forty) c.forty = forty; if (bench) c.bench = bench;
-  if (vert) c.vert = `${vert}"`; if (broad) c.broad = dkInchesToFeet(broad); if (cone) c.cone = cone; if (shuttle) c.shuttle = shuttle;
-  return c;
-}
+function dkCombineFor(player, year = dkYear) { return combineResultsFor(dkData, player, year); }
+const dkCombineLabels = combineShortLabels;
 function dkRenderCombineCount() {
   const n = (dkData.draftCombine || []).filter((c) => c.year === dkYear).length;
   const el = document.querySelector("#dk-combine-count");

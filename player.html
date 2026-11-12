@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=539317ba">
-    <link rel="stylesheet" href="theme-light.css?v=46f4a594">
+    <link rel="stylesheet" href="styles.css?v=51078678">
+    <link rel="stylesheet" href="theme-light.css?v=bcb4aff5">
     <link rel="stylesheet" href="theme-gray.css?v=825f70dc">
     <link rel="stylesheet" href="theme-team.css?v=70e85a60">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -41,12 +41,13 @@
     </script>
     <script src="teams.js?v=63b57a1f" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=431c5e59" defer></script>
+    <script src="league-core.js?v=bc7070c8" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
     <script src="nfl-experience.js?v=9b87d7f4" defer></script>
     <script src="stat-totals.js?v=232daaef" defer></script>
-    <script src="player.js?v=24373836" defer></script>
+    <script src="combine-data.js?v=a605b3cf" defer></script>
+    <script src="player.js?v=37486f28" defer></script>
   </head>
   <body class="admin-page player-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -172,7 +173,15 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">02 / CONTRACT</span><h3>Contract</h3></div>
+                <div><span class="panel-index">02 / COMBINE</span><h3>Combine results</h3></div>
+                <p id="player-combine-note">From the NFL Scouting Combine.</p>
+              </div>
+              <div id="player-combine"></div>
+            </div>
+
+            <div class="management-panel">
+              <div class="panel-heading">
+                <div><span class="panel-index">03 / CONTRACT</span><h3>Contract</h3></div>
                 <p>Edit contract terms on <a href="contracts.html">Player Contracts</a> and salaries on the team sheet.</p>
               </div>
               <div id="player-contract"></div>
@@ -180,7 +189,7 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">03 / STATS</span><h3>Season stats</h3></div>
+                <div><span class="panel-index">04 / STATS</span><h3>Season stats</h3></div>
                 <p>From the <a href="stats.html">Season Stats page</a>.</p>
               </div>
               <div id="player-stats"></div>
@@ -188,7 +197,7 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">04 / GAMES</span><h3>Game log</h3></div>
+                <div><span class="panel-index">05 / GAMES</span><h3>Game log</h3></div>
                 <p>Box scores added on the Season Stats page that include this player.</p>
               </div>
               <div id="player-games"></div>
@@ -196,7 +205,7 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">05 / HISTORY</span><h3>Transactions</h3></div>
+                <div><span class="panel-index">06 / HISTORY</span><h3>Transactions</h3></div>
                 <p>From the <a href="transactions.html">Transaction Log</a>.</p>
               </div>
               <div id="player-transactions"></div>

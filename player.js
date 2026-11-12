@@ -40,6 +40,24 @@ const firstLast = (text) => {
 };
 const initials = (name) => String(name).split(/\s+/).filter(Boolean).map((word) => word[0]).slice(0, 2).join("").toUpperCase();
 
+// Draft prospects: the pool's college, the combine's height and weight, and the pick that took them fill any
+// blanks in the profile (what's typed into the bio form wins).
+function combineFor(entry) {
+  return combineResultsFor(officeData, entry.player.name, entry.source === "prospect" ? entry.player.year : (playerProfile(entry.player).draftYear || null));
+}
+function shownProfile(entry) {
+  const profile = playerProfile(entry.player);
+  if (entry.source !== "prospect") return profile;
+  const c = combineFor(entry);
+  const shown = { ...profile };
+  if (!shown.positions && entry.player.position) shown.positions = entry.player.position;
+  if (!shown.college && entry.player.college) shown.college = entry.player.college;
+  if (!shown.height && c?.ht) shown.height = c.ht;
+  if (!shown.weight && c?.wt && isIntegerInRange(Number(c.wt), 100, 500)) shown.weight = Number(c.wt);
+  if (!shown.draftYear && entry.pick) { shown.draftYear = entry.pick.year; shown.draftRound = entry.pick.round; shown.draftPick = entry.pick.pick; }
+  return shown;
+}
+
 function currentPosition(entry) {
   if (entry.source === "sheet") return playerDisplayPosition(entry.player);
   return entry.player.position || "";
@@ -60,7 +78,7 @@ function teamLabel(teamId) {
 function renderHero(entry) {
   heroEl.replaceChildren();
   const { player, teamId } = entry;
-  const profile = playerProfile(player);
+  const profile = shownProfile(entry);
   const avatar = document.createElement("div");
   avatar.className = "player-avatar";
   const fallback = () => {
@@ -82,7 +100,7 @@ function renderHero(entry) {
   const eyebrow = document.createElement("p");
   eyebrow.className = "eyebrow";
   eyebrow.innerHTML = '<span class="eyebrow-dot"></span> ';
-  eyebrow.append(`PLAYER PROFILE${profile.retired ? " · RETIRED" : ""}`);
+  eyebrow.append(entry.source === "prospect" ? (entry.pick ? "DRAFT PROSPECT · DRAFTED" : "DRAFT PROSPECT") : `PLAYER PROFILE${profile.retired ? " · RETIRED" : ""}`);
   const name = document.createElement("h1");
   name.textContent = player.name;
   const facts = document.createElement("p");
@@ -106,7 +124,11 @@ function renderHero(entry) {
   } else {
     team.textContent = teamLabel(teamId);
   }
-  if (profile.draftYear) {
+  if (entry.source === "prospect" && !entry.pick) {
+    team.textContent = `${player.year} draft prospect${player.rank ? ` · Ranked No. ${player.rank} in the Draft Pool` : ""}`;
+  } else if (entry.source === "prospect") {
+    team.append(` · Drafted ${entry.pick.year}, round ${entry.pick.round}, pick ${entry.pick.pick}${entry.pick.compensatory ? "*" : ""}`);
+  } else if (profile.draftYear) {
     team.append(` · Drafted ${profile.draftYear}${profile.draftRound ? `, round ${profile.draftRound}` : ""}${profile.draftPick ? `, pick ${profile.draftPick}` : ""}`);
   } else if (profile.college || bits.length > 2) {
     // nothing to add
@@ -129,11 +151,11 @@ function renderHero(entry) {
 // ---------- bio form ----------
 function fillBioForm(entry) {
   const { player } = entry;
-  const profile = playerProfile(player);
+  const profile = shownProfile(entry);
   const f = bioForm.elements;
   f.name.value = lastFirst(player.name);
   f.positions.value = profile.positions;
-  f.positions.placeholder = currentPosition(entry) ? `${currentPosition(entry)} (from ${entry.source === "sheet" ? "the salary sheet" : "Player Contracts"})` : "e.g. QB or CB / S";
+  f.positions.placeholder = currentPosition(entry) ? `${currentPosition(entry)} (from ${entry.source === "sheet" ? "the salary sheet" : entry.source === "prospect" ? "the Draft Pool" : "Player Contracts"})` : "e.g. QB or CB / S";
   f.birthDate.value = player.birthDate || "";
   f.college.value = profile.college;
   f.draftYear.value = profile.draftYear ?? "";
@@ -194,6 +216,7 @@ bioForm.addEventListener("change", (event) => {
       break;
     case "positions": case "college": case "notes":
       profile[input.name] = value.slice(0, profileTextLimits[input.name]);
+      if (entry.source === "prospect" && input.name === "college") { if (value) player.college = value.slice(0, 80); else delete player.college; }
       break;
     default:
       return;
@@ -223,7 +246,7 @@ document.querySelector("#player-fill").addEventListener("click", () => {
     statusEl.textContent = "NFL roster data could not be loaded.";
     return;
   }
-  const record = nflRecordFor(entry);
+  const record = entry.source === "prospect" ? null : nflRecordFor(entry);
   if (!record) {
     statusEl.textContent = `No NFL roster match for ${entry.player.name}, so nothing was filled. Enter the bio by hand.`;
     return;
@@ -272,6 +295,15 @@ function renderContract(entry) {
     item.append(dt, dd);
     summary.append(item);
   }
+  if (entry.source === "prospect") {
+    const note = document.createElement("p");
+    note.className = "empty-state";
+    note.textContent = entry.pick
+      ? `Drafted by the ${teamName(entry.pick.teamId)}. His contract shows here once he's added to their salary sheet or Player Contracts.`
+      : "A draft prospect: no contract yet.";
+    box.append(note);
+    return;
+  }
   box.append(summary);
   if (entry.source !== "sheet") {
     const note = document.createElement("p");
@@ -297,6 +329,38 @@ function renderContract(entry) {
   caption.textContent = "Cap hits";
   wrap.append(table);
   box.append(caption, wrap);
+}
+
+// ---------- combine ----------
+function renderCombine(entry) {
+  const box = document.querySelector("#player-combine");
+  box.replaceChildren();
+  const c = combineFor(entry);
+  const note = document.querySelector("#player-combine-note");
+  if (!c) {
+    note.textContent = "From the NFL Scouting Combine.";
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = entry.source === "prospect"
+      ? "No combine results on file for this prospect. Add them under Season Information › Draft › Draft setup › Combine results."
+      : "No combine results on file for this player.";
+    box.append(empty);
+    return;
+  }
+  note.textContent = `${c.year} NFL Scouting Combine · ${c.source || "entered under Draft setup"}`;
+  const grid = document.createElement("dl");
+  grid.className = "player-combine-grid";
+  for (const key of Object.keys(combineLabels)) {
+    const item = document.createElement("div");
+    if (!c[key]) item.className = "is-empty";
+    const dt = document.createElement("dt");
+    dt.textContent = combineLabels[key];
+    const dd = document.createElement("dd");
+    dd.textContent = c[key] ? `${c[key]}${key === "wt" && /^\d+$/.test(c[key]) ? " lbs" : key === "bench" && /^\d+$/.test(c[key]) ? " reps" : /^(forty|cone|shuttle)$/.test(key) && /^\d+(\.\d+)?$/.test(c[key]) ? " s" : ""}` : "—";
+    item.append(dt, dd);
+    if (c[key] || !["arm", "hand"].includes(key)) grid.append(item);
+  }
+  box.append(grid);
 }
 
 // ---------- stats ----------
@@ -445,14 +509,18 @@ function render() {
     title.textContent = "Player not found";
     const note = document.createElement("p");
     note.className = "team-page-subtitle";
-    note.textContent = "This player isn't on a salary sheet or Player Contracts in this browser. Open a profile from Player Contracts or the Season Stats page.";
+    note.textContent = "This player isn't on a salary sheet, Player Contracts or the Draft Pool in this browser. Open a profile from Player Contracts, the Season Stats page or the Draft.";
     heroEl.append(title, note);
     document.querySelector("#player-body").hidden = true;
     return;
   }
   renderHero(entry);
   fillBioForm(entry);
+  renderCombine(entry);
   renderContract(entry);
+  document.querySelector("#player-fill").hidden = entry.source === "prospect"; // NFL roster data has no prospects
+  const back = document.querySelector(".team-back-link");
+  if (entry.source === "prospect") { back.href = "draft.html"; back.lastChild.textContent = " DRAFT"; }
   renderStatsPanel(entry);
   renderGames(entry);
   renderTransactions(entry);

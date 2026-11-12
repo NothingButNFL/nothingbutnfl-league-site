@@ -1324,7 +1324,44 @@ function findPlayerById(data, id) {
     if (player) return { player, source: "sheet", teamId };
   }
   const player = (data.contractPlayers || []).find((item) => item.id === id);
-  return player ? { player, source: "directory", teamId: player.team } : null;
+  if (player) return { player, source: "directory", teamId: player.team };
+  // Draft Pool prospects (Season Information › Draft) have profiles too; once drafted, teamId is the team that took them.
+  const prospect = (data.draftPool || []).find((item) => item.id === id);
+  if (!prospect) return null;
+  const pick = draftPickForProspect(data, prospect);
+  return { player: prospect, source: "prospect", teamId: pick?.teamId || null, pick };
+}
+
+// The draft pick that took a Draft Pool prospect, if any (linked by poolId, else the same name in that draft).
+function draftPickForProspect(data, prospect) {
+  const key = normalizePlayerName(prospect.name);
+  const picks = (data.draftHistory || []).filter((d) => d.year === prospect.year);
+  return picks.find((d) => d.poolId === prospect.id) || picks.find((d) => !d.poolId && normalizePlayerName(d.player) === key) || null;
+}
+
+// ---- Combine results ----
+// Pasted under Draft setup (data.draftCombine) first, then the built-in results (combine-data.js, nflCombineData, from
+// Pro Football Reference) when that file is loaded. year = the draft year; without it, the most recent year found.
+const combineNameKey = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, "").replace(/[^a-z]/g, "");
+const combineInchesToFeet = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? `${Math.floor(n / 12)}'${String(n % 12).replace(/\.0$/, "")}"` : v; };
+const combineLabels = { ht: "Height", wt: "Weight", forty: "40-yard dash", bench: "Bench press", vert: "Vertical jump", broad: "Broad jump", cone: "3-cone drill", shuttle: "20-yard shuttle", arm: "Arm length", hand: "Hand size" };
+const combineShortLabels = { ht: "HT", wt: "WT", forty: "40 YD", bench: "BENCH", vert: "VERT", broad: "BROAD", cone: "3-CONE", shuttle: "SHUTTLE", arm: "ARM", hand: "HAND" };
+function combineResultsFor(data, name, year = null) {
+  const key = combineNameKey(name);
+  if (!key) return null;
+  const pasted = (data.draftCombine || []).filter((c) => (!year || c.year === year) && combineNameKey(c.name) === key).sort((a, b) => b.year - a.year)[0];
+  if (pasted) return pasted;
+  const built = typeof nflCombineData === "object" ? nflCombineData : {};
+  for (const y of Object.keys(built).map(Number).filter((y) => !year || y === year).sort((a, b) => b - a)) {
+    const row = built[y].find((r) => combineNameKey(r[0]) === key);
+    if (!row) continue;
+    const [rowName, ht, wt, forty, vert, bench, broad, cone, shuttle] = row;
+    const c = { year: y, name: rowName, source: "Pro Football Reference" };
+    if (ht) c.ht = ht.replace(/^(\d+)-(\d+)$/, "$1'$2\""); if (wt) c.wt = wt; if (forty) c.forty = forty; if (bench) c.bench = bench;
+    if (vert) c.vert = `${vert}"`; if (broad) c.broad = combineInchesToFeet(broad); if (cone) c.cone = cone; if (shuttle) c.shuttle = shuttle;
+    return c;
+  }
+  return null;
 }
 
 // Find a player by name (and team when given), for linking stat rows to profiles.

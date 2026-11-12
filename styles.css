@@ -3038,3 +3038,12 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-last-stats-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .dk-last-stats-form input { flex: 1 1 260px; min-width: 0; }
 @media (max-width: 800px) { .dk-last-stats { grid-template-columns: 1fr; gap: 8px; } }
+
+/* Player profile › Combine results */
+.player-combine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 0; }
+.player-combine-grid div { padding: 12px 14px; border: 1px solid var(--line, rgba(255, 255, 255, .14)); border-radius: 10px; background: rgba(255, 255, 255, .04); }
+.player-combine-grid dt { font: 700 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.player-combine-grid dd { margin: 4px 0 0; font: 800 22px var(--display, var(--body)); }
+.player-combine-grid div.is-empty dd { opacity: .4; }
+.dk-profile-link { color: inherit; text-decoration: none; }
+.dk-profile-link:hover, .dk-profile-link:focus-visible { text-decoration: underline; }
