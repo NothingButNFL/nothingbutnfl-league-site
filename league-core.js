@@ -124,7 +124,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -2937,7 +2937,25 @@ function validDraftHistory(list) {
     (d.position === undefined || (typeof d.position === "string" && d.position.length <= 10)) &&
     (d.college === undefined || (typeof d.college === "string" && d.college.length <= 80)) &&
     (d.compensatory === undefined || typeof d.compensatory === "boolean") && (d.roundManual === undefined || typeof d.roundManual === "boolean") &&
-    (d.fromTeam === undefined || nflTeams.some(({ id }) => id === d.fromTeam)));
+    (d.fromTeam === undefined || nflTeams.some(({ id }) => id === d.fromTeam)) && (d.poolId === undefined || typeof d.poolId === "string"));
+}
+
+// Season Information › Draft: the order of picks for a draft and the pool of prospects to pick from.
+// draftOrder = [{ year, pick, round, teamId, fromTeam?, compensatory? }]; draftPool = [{ id, year, name, position?, college?, rank? }]
+function validDraftOrder(list) {
+  if (list === undefined) return true;
+  const team = (id) => nflTeams.some((t) => t.id === id);
+  return Array.isArray(list) && list.length <= 2000 && list.every((d) => d && isIntegerInRange(d.year, 1936, 2100) &&
+    isIntegerInRange(d.pick, 1, 400) && isIntegerInRange(d.round, 1, 20) && team(d.teamId) &&
+    (d.fromTeam === undefined || team(d.fromTeam)) && (d.compensatory === undefined || typeof d.compensatory === "boolean"));
+}
+function validDraftPool(list) {
+  if (list === undefined) return true;
+  return Array.isArray(list) && list.length <= 4000 && list.every((p) => p && typeof p.id === "string" && p.id &&
+    isIntegerInRange(p.year, 1936, 2100) && typeof p.name === "string" && p.name.trim() && p.name.length <= 70 &&
+    (p.position === undefined || (typeof p.position === "string" && p.position.length <= 10)) &&
+    (p.college === undefined || (typeof p.college === "string" && p.college.length <= 80)) &&
+    (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)));
 }
 
 function validInsiderCustom(data) {
