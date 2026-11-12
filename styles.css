@@ -3007,3 +3007,5 @@ html.draft-live .sample-toast { bottom: 140px; }
 .help-pop { position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; width: min(460px, calc(100vw - 48px)); padding: 14px 16px; border: 1px solid #54749b; border-radius: 10px; background: #0c2b50; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); }
 .help-pop[hidden] { display: none; }
 .help-pop .section-subtitle, .front-office-heading .help-pop .section-subtitle { max-width: none; margin: 0; color: #ffffff; font-size: 14px; line-height: 1.55; }
+.md-top-head-row .help-head .md-best-title { margin: 0; }
+.md-top-head-row .help-pop { text-transform: none; letter-spacing: 0; }

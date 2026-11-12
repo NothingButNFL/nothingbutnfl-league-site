@@ -587,7 +587,11 @@ function renderWeeksBest(games, emptyWeek = 1) {
     head.append(mdEl("h3", "md-best-title md-top-title", `Top Players: ${mdWeekName(emptyWeek).replace(/\B\w+/g, (m) => m.toLowerCase())}`));
     const grid = mdEl("div", "md-top-grid");
     grid.append(...mdTopPlayers([]).map(mdTopCard));
-    box.replaceChildren(head, grid, mdEl("p", "md-empty-note", "The week's top offensive and defensive players show here once box scores are logged."));
+    // The description goes behind a ? bubble next to the heading (help-bubbles.js).
+    const note = mdEl("p", "section-subtitle", "The week's top offensive and defensive players show here once box scores are logged.");
+    head.append(note);
+    box.replaceChildren(head, grid);
+    globalThis.addHelpBubble?.(note);
     return;
   }
   box.hidden = false;

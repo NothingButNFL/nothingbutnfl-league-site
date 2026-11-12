@@ -45,7 +45,10 @@
     });
     pop.addEventListener("click", (event) => event.stopPropagation());
   }
-  function run() { document.querySelectorAll("main p.section-subtitle").forEach(wire); }
+  let count = 0;
+  function run() { document.querySelectorAll("main p.section-subtitle").forEach((p) => wire(p, count++)); }
+  // For descriptions a page adds later (e.g. the Overview's Top Players before any box scores).
+  globalThis.addHelpBubble = (p) => wire(p, count++);
   document.addEventListener("click", close);
   document.addEventListener("keydown", (event) => { if (event.key === "Escape") close(); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
