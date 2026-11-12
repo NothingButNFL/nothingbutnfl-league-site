@@ -3210,3 +3210,5 @@ main .msf-dead-table td:not(:first-child) { text-align: right !important; }
 .msf-setup { margin-top: 18px; }
 .msf-setup textarea { width: 100%; margin-top: 8px; }
 .msf-setup summary { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
+.msf-live.is-later { color: #a7bdd7; }
+.msf-windows { margin: 0 0 10px; }

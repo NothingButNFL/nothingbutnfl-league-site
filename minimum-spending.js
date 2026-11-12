@@ -10,12 +10,16 @@ const msfEl = (tag, cls, text) => { const e = document.createElement(tag); if (c
 const msfYearLabel = (y) => `${y}-${String((y + 1) % 100).padStart(2, "0")}`;
 const msfPct = (v) => `${v.toFixed(2)}%`;
 
-// League years shown: every entered year, plus the site's seasons through the current league year.
-function msfYears() {
+// The compliance window on screen (its first league year): the current one unless another is picked.
+let msfWindow = spendingWindowFor(currentLeagueYear());
+const msfWindowYears = (start) => Array.from({ length: spendingWindowYears }, (_, i) => start + i);
+const msfWindowLabel = (start) => `${msfYearLabel(start)} to ${msfYearLabel(start + spendingWindowYears - 1)}`;
+// Windows with any data: entered years, plus the site's seasons through the current league year.
+function msfWindows() {
   const now = currentLeagueYear();
-  const set = new Set(Object.keys(officeData.spendingHistory || {}).map(Number));
-  for (const y of seasons) if (y <= now) set.add(y);
-  return [...set].filter((y) => y <= now).sort((a, b) => a - b);
+  const set = new Set([spendingWindowFor(now)]);
+  for (const y of Object.keys(officeData.spendingHistory || {}).map(Number)) if (y >= spendingWindowStart) set.add(spendingWindowFor(y));
+  return [...set].filter((w) => w <= now).sort((a, b) => a - b);
 }
 function msfTeamCell(id) {
   const td = msfEl("td", "msf-team");
@@ -29,28 +33,39 @@ function msfTeamCell(id) {
 }
 
 function msfRender() {
-  const years = msfYears();
   const now = currentLeagueYear();
+  const windows = msfWindows();
+  if (!windows.includes(msfWindow)) msfWindow = windows[windows.length - 1];
+  const years = msfWindowYears(msfWindow);
+  const windowDone = msfWindow + spendingWindowYears - 1 < now;
+  document.querySelector("#msf-window-label").textContent = `${windowDone ? "WINDOW" : "CURRENT WINDOW"} · ${msfWindowLabel(msfWindow)}`;
+  const tabs = document.querySelector("#msf-windows");
+  tabs.hidden = windows.length < 2;
+  tabs.replaceChildren(...windows.map((w) => {
+    const b = msfEl("button", `tab-button${w === msfWindow ? " is-active" : ""}`, msfWindowLabel(w));
+    b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(w === msfWindow));
+    b.addEventListener("click", () => { msfWindow = w; msfRender(); });
+    return b;
+  }));
   const head = document.querySelector("#msf-head");
   head.replaceChildren(msfEl("th", "", "TEAM"), ...years.map((y) => {
     const th = msfEl("th", "", msfYearLabel(y));
     if (y === now) { th.append(msfEl("small", "msf-live", "LIVE")); th.title = "Current league year: live from the salary sheets"; }
+    else if (y > now) { th.append(msfEl("small", "msf-live is-later", "TO COME")); }
     return th;
-  }), msfEl("th", "", "AVERAGE"), msfEl("th", "msf-status-h", "STATUS"));
+  }), msfEl("th", "", "WINDOW AVG"), msfEl("th", "msf-status-h", "STATUS"));
   const sums = Object.fromEntries(years.map((y) => [y, []]));
   const all = [];
   const rows = nflTeams.map(({ id }) => {
     const tr = document.createElement("tr");
     tr.append(msfTeamCell(id));
     const values = [];
-    let shortYears = [];
     for (const y of years) {
       const s = spendingFor(officeData, id, y);
       const td = tr.insertCell();
-      if (!s) { td.textContent = "—"; td.className = "msf-none"; td.title = seasons.includes(y) ? `Set the ${y} base cap in Admin to work this out.` : "Not entered"; continue; }
+      if (!s || y > now) { td.textContent = "—"; td.className = "msf-none"; td.title = y > now ? "This league year hasn't started." : seasons.includes(y) ? `Set the ${y} base cap in Admin to work this out.` : "Not entered (Commissioner › Past league years)"; continue; }
       values.push(s.pct); sums[y].push(s.pct);
       const short = s.pct < spendingFloorPct;
-      if (short) shortYears.push(y);
       td.textContent = msfPct(s.pct);
       td.className = `msf-cell ${short ? "is-short" : "is-ok"}${y === now ? " is-live" : ""}`;
       td.title = s.source === "sheets"
@@ -62,18 +77,19 @@ function msfRender() {
     const a = tr.insertCell();
     a.textContent = avg === null ? "—" : msfPct(avg);
     a.className = `msf-avg${avg !== null && avg < spendingFloorPct ? " is-short" : ""}`;
-    // Status: the most recent year, with its penalty; repeat when the year before was short too.
+    // Status: the window average against the floor (the window is judged as a whole); a repeat when the team also
+    // missed the previous window.
     const st = tr.insertCell();
     st.className = "msf-status";
-    const last = [...years].reverse().find((y) => spendingFor(officeData, id, y));
-    if (last !== undefined) {
-      const pct = spendingFor(officeData, id, last).pct;
-      const shortfall = spendingFloorPct - pct;
-      const prevShort = shortYears.includes(last - 1);
+    if (avg !== null) {
+      const shortfall = spendingFloorPct - avg;
+      const prev = msfWindow - spendingWindowYears;
+      const prevVals = msfWindowYears(prev).map((y) => spendingFor(officeData, id, y)).filter(Boolean).map((v) => v.pct);
+      const prevShort = prevVals.length && prevVals.reduce((a, b) => a + b, 0) / prevVals.length < spendingFloorPct;
       if (shortfall > 0) {
         const pick = prevShort ? "1st-round pick + next year's 3rd (repeat)" : spendingPenalty(shortfall);
-        st.append(msfEl("b", "msf-flag is-short", last === now ? "ON PACE TO MISS" : "MISSED"), ` ${shortfall.toFixed(2)}% short · ${pick}`);
-      } else st.append(msfEl("b", "msf-flag is-ok", last === now ? "ON PACE" : "MET"), ` ${(pct - spendingFloorPct).toFixed(2)}% above`);
+        st.append(msfEl("b", "msf-flag is-short", windowDone ? "MISSED" : "ON PACE TO MISS"), ` ${shortfall.toFixed(2)}% short · ${pick}`);
+      } else st.append(msfEl("b", "msf-flag is-ok", windowDone ? "MET" : "ON PACE"), ` ${(avg - spendingFloorPct).toFixed(2)}% above`);
     }
     return tr;
   });

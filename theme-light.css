@@ -952,3 +952,4 @@ html[data-theme="light"] .msf-table tfoot tr.msf-min :is(th, html[data-theme="li
 html[data-theme="light"] .msf-tiers li { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; }
 html[data-theme="light"] .msf-tiers li span { color: #d0021b; }
 html[data-theme="light"] .msf-tiers li.is-repeat { border-top-color: #d0021b; border-right-color: #d0021b; border-bottom-color: #d0021b; border-left-color: #d0021b; }
+html[data-theme="light"] .msf-live.is-later { color: #6c6d6f; }

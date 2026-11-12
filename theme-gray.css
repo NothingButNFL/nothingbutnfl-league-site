@@ -343,3 +343,4 @@ html[data-theme="gray"] .rb-count-table td.rbc-abv { color: #b6b9be; }
 html[data-theme="gray"] .msf-team-tag { background-color: #3a3c41; }
 html[data-theme="gray"] .msf-table tfoot :is(th, html[data-theme="gray"] td) { border-top-color: #47494f; }
 html[data-theme="gray"] .msf-tiers li { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
+html[data-theme="gray"] .msf-live.is-later { color: #b6b9be; }

@@ -459,3 +459,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ms
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-live { color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-table tfoot :is(th, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) td) { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-tiers li { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-live.is-later { color: rgb(var(--tm-a7bdd7)); }

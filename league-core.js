@@ -3203,6 +3203,10 @@ function spendingFor(data, teamId, year) {
   if (!f.totalCap) return null;
   return { pct: (f.payroll / f.totalCap) * 100, spent: f.payroll, cap: f.totalCap, source: "sheets" };
 }
+// Compliance windows: 3 league years each, starting with 2024-25 (2024–2026, 2027–2029, …). A team is measured on its
+// average across the window's league years.
+const spendingWindowStart = 2024, spendingWindowYears = 3;
+const spendingWindowFor = (year) => spendingWindowStart + Math.floor((year - spendingWindowStart) / spendingWindowYears) * spendingWindowYears;
 // The forfeited pick for a shortfall (percentage points below the floor), per Section 4.
 function spendingPenalty(shortfall) {
   if (!(shortfall > 0)) return null;

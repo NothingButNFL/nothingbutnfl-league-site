@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=188ed170">
-    <link rel="stylesheet" href="theme-light.css?v=ccbb118b">
-    <link rel="stylesheet" href="theme-gray.css?v=34d5ab6c">
-    <link rel="stylesheet" href="theme-espn.css?v=be2e1e4e">
-    <link rel="stylesheet" href="theme-team.css?v=65694582">
+    <link rel="stylesheet" href="styles.css?v=bea3e81c">
+    <link rel="stylesheet" href="theme-light.css?v=068a5e95">
+    <link rel="stylesheet" href="theme-gray.css?v=aee3c4ad">
+    <link rel="stylesheet" href="theme-espn.css?v=6daaec52">
+    <link rel="stylesheet" href="theme-team.css?v=ada0e7fb">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -42,10 +42,10 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=82c3136d" defer></script>
+    <script src="league-core.js?v=83038052" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
-    <script src="minimum-spending.js?v=65f3a96f" defer></script>
+    <script src="minimum-spending.js?v=47a19b3e" defer></script>
   </head>
   <body class="admin-page cap-summary-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -143,15 +143,16 @@
             <div>
               <div class="section-kicker"><span>01</span> ARTICLE 8</div>
               <h2>Minimum Spending <span>Window</span></h2>
-              <p class="section-subtitle">Each team must spend at least 76.5% of its salary cap space every league year (Article 8, Minimum Spending Floor). Only rostered player cap hits count: active roster, Commissioner's Exempt List, practice squad and injured reserve. Dead cap doesn't count. Cap space is the team's total cap for the year (base cap + rollover + adjustments). The current league year is live from the salary sheets and is final at the end of the league year.</p>
+              <p class="section-subtitle">Each team must spend at least 76.5% of its salary cap space (Article 8, Minimum Spending Floor), measured over a 3-season compliance window: 2024-25 to 2026-27, then 2027-28 to 2029-30, and so on. A team's average across the window is what counts; each season is shown so you can see where it stands. Only rostered player cap hits count: active roster, Commissioner's Exempt List, practice squad and injured reserve. Dead cap doesn't count. Cap space is the team's total cap for the year (base cap + rollover + adjustments). The current league year is live from the salary sheets and is final at the end of the league year.</p>
             </div>
             <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
           </div>
           <div class="msf-layout">
             <div class="management-panel msf-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">FLOOR 76.5%</span><h3>Minimum Spending Floor</h3></div>
+                <div><span class="panel-index" id="msf-window-label">CURRENT WINDOW</span><h3>Minimum Spending Floor</h3></div>
               </div>
+              <div class="tab-list msf-windows" role="tablist" aria-label="Compliance window" id="msf-windows" hidden></div>
               <div class="management-table-wrap">
                 <table class="management-table msf-table">
                   <thead><tr id="msf-head"></tr></thead>
@@ -168,9 +169,9 @@
                   <li><b>Short by 2.01%–5%</b><span>3rd-round pick</span></li>
                   <li><b>Short by 5.01%–10%</b><span>2nd-round pick</span></li>
                   <li><b>Short by more than 10%</b><span>1st-round pick</span></li>
-                  <li class="is-repeat"><b>Short in consecutive windows</b><span>1st-round pick, plus a 3rd-round pick the next year</span></li>
+                  <li class="is-repeat"><b>Short in back-to-back windows</b><span>1st-round pick, plus a 3rd-round pick the next year</span></li>
                 </ul>
-                <p class="workspace-footnote">The shortfall is how far below 76.5% a team finished (75.0% is 1.5% short). With more than one pick in a round, the highest goes; with none, it escalates to the next-highest pick owned, or carries over to the next draft. Teams under review can't trade picks that could be at risk.</p>
+                <p class="workspace-footnote">The shortfall is how far a team's window average is below 76.5% (75.0% is 1.5% short). With more than one pick in a round, the highest goes; with none, it escalates to the next-highest pick owned, or carries over to the next draft. Teams under review can't trade picks that could be at risk.</p>
               </div>
               <div class="management-panel msf-dead">
                 <div class="panel-heading"><div><span class="panel-index">NOT COUNTED</span><h3>Team Dead Cap</h3></div></div>
