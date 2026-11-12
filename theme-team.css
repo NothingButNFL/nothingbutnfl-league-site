@@ -437,3 +437,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-sound-dialog::backdrop { background-color: rgb(var(--tm-030c1a) / 0.7); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .help-bubble { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .help-pop { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .stream-editor { border-top-color: rgb(var(--tm-1d3a5f)); }

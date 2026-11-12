@@ -330,3 +330,4 @@ html[data-theme="gray"] .dk-sound-dialog { border-top-color: #47494f; border-rig
 html[data-theme="gray"] .dk-sound-dialog::backdrop { background-color: rgba(10, 10, 12, 0.700); }
 html[data-theme="gray"] .help-bubble { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
 html[data-theme="gray"] .help-pop { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
+html[data-theme="gray"] .stream-editor { border-top-color: #303236; }
