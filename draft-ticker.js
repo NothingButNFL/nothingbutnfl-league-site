@@ -5,6 +5,8 @@
 // (nbf-draft-clock), so it counts down on every page and tab. Uses league-core.js and teams.js.
 (function draftTicker() {
   const clockKey = "nbf-draft-clock";
+  const revealMs = 5000;
+  let revealTimer = null;
   let data = null;
   let tickTimer = null;
 
@@ -21,10 +23,15 @@
     const picks = (data.draftHistory || []).filter((d) => d.year === year());
     const made = new Map(picks.map((d) => [d.pick, d]));
     const left = order.filter((s) => !made.has(s.pick));
-    if (!left.length) return null; // the draft is over
+    if (!left.length && !picks.some((d) => d.madeAt && Date.parse(d.madeAt) + revealMs > Date.now())) return null; // the draft is over
     const onClock = left.find((s) => !s.skipped) || null;
     const byTime = [...picks].sort((a, b) => String(a.madeAt || "").localeCompare(String(b.madeAt || "")) || a.pick - b.pick);
-    return { order, picks: byTime, onClock, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: byTime[byTime.length - 1] };
+    // "The pick is in": for 5 seconds after a pick, the ticker announces it before showing who was taken.
+    const newest = byTime[byTime.length - 1];
+    const revealAt = newest?.madeAt ? Date.parse(newest.madeAt) + revealMs : 0;
+    const pending = revealAt > Date.now() ? newest : null;
+    const shown = pending ? byTime.slice(0, -1) : byTime;
+    return { order, picks: shown, onClock, pending, revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: shown[shown.length - 1] };
   }
 
   function clockText() {
@@ -41,7 +48,7 @@
     const s = state();
     let bar = document.querySelector(".draft-ticker");
     document.documentElement.classList.toggle("draft-live", Boolean(s));
-    if (!s) { bar?.remove(); clearInterval(tickTimer); tickTimer = null; return; }
+    if (!s) { bar?.remove(); clearInterval(tickTimer); tickTimer = null; clearTimeout(revealTimer); return; }
     if (!bar) {
       bar = el("a", "draft-ticker");
       bar.href = "draft.html";
@@ -57,7 +64,21 @@
     brand.append(logo, Object.assign(el("span"), { innerHTML: "NBNFL<b>DRAFT</b>" }));
     // On the clock
     const clock = el("div", "dt-clock");
-    if (s.onClock) {
+    if (s.pending) {
+      clock.classList.add("is-pick-in");
+      clock.style.setProperty("--dt-team", teamColor(s.pending.teamId));
+      const tl = el("img");
+      tl.src = logoUrl(s.pending.teamId);
+      tl.alt = "";
+      tl.addEventListener("error", () => tl.remove(), { once: true });
+      const words = el("div", "dt-clock-words dt-pick-in");
+      words.append(el("span", "dt-clock-label", "THE PICK"), el("span", "dt-clock-label", "IS IN"));
+      const who = el("div", "dt-clock-who");
+      who.append(el("strong", "", s.pending.teamId), el("span", "", `RD${s.pending.round} PK${s.pending.pick}${s.pending.compensatory ? "*" : ""}`));
+      const logoBox = el("div", "dt-clock-logo");
+      logoBox.append(tl, el("b", "", s.pending.teamId));
+      clock.append(logoBox, words, who);
+    } else if (s.onClock) {
       clock.style.setProperty("--dt-team", teamColor(s.onClock.teamId));
       const tl = el("img");
       tl.src = logoUrl(s.onClock.teamId);
@@ -76,15 +97,16 @@
     // Title
     const title = el("div", "dt-title");
     const main = el("div", "dt-title-main");
-    main.append(el("strong", "", `${y} NBNFL DRAFT`), el("span", "", s.onClock ? `ROUND ${s.onClock.round}` : "LATE PICKS"));
-    const sub = el("div", "dt-title-sub", s.last
+    main.append(el("strong", "", `${y} NBNFL DRAFT`), el("span", "", s.pending ? `ROUND ${s.pending.round}` : s.onClock ? `ROUND ${s.onClock.round}` : "LATE PICKS"));
+    const sub = el("div", "dt-title-sub", s.pending ? `THE ${teamName(s.pending.teamId).toUpperCase()} HAVE MADE THEIR SELECTION AT PICK ${s.pending.pick}…` : s.last
       ? `LAST PICK · #${s.last.pick} ${s.last.teamId} · ${s.last.player}${s.last.position ? `, ${s.last.position}` : ""}${s.last.college ? ` · ${s.last.college}` : ""}`
       : "THE DRAFT IS UNDERWAY");
     title.append(main, sub);
     // Clock / status
     const right = el("div", "dt-right");
     const c = clockText();
-    right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
+    if (s.pending) right.append(el("strong", "dt-time dt-pick-in-time", "PICK"), el("span", "", "IS IN"));
+    else right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
     // Next
     const next = el("div", "dt-next");
     next.append(el("span", "dt-next-label", "NEXT ▸"), ...s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`)));
@@ -107,8 +129,10 @@
     const top = el("div", "dt-top");
     top.append(brand, clock, title, right);
     bar.replaceChildren(top, next, crawl);
+    clearTimeout(revealTimer);
+    if (s.pending) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
     if (!tickTimer) tickTimer = setInterval(() => {
-      const t = bar.querySelector(".dt-time");
+      const t = bar.querySelector(".dt-time:not(.dt-pick-in-time)");
       const now = clockText();
       if (t && now) {
         t.textContent = now.text;

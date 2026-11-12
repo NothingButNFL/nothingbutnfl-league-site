@@ -2907,3 +2907,9 @@ html.draft-live .md-ticker { display: none; }
   .dt-clock { padding-right: 12px; }
 }
 .dk-live.is-live { border-color: #ff9299; color: #ff9299; }
+.dt-clock.is-pick-in .dt-pick-in { color: #ffd37a; animation: dt-pick-in .5s steps(2, start) 10; }
+.dt-clock.is-pick-in { box-shadow: inset 0 0 0 2px #ffd37a; }
+.dt-pick-in-time { color: #ffd37a !important; animation: dt-pick-in .5s steps(2, start) 10; }
+@keyframes dt-pick-in { to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .dt-pick-in, .dt-pick-in-time { animation: none; } }
+@media (max-width: 640px) { .dt-clock.is-pick-in .dt-clock-words { display: grid; } }

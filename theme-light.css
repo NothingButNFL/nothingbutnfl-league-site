@@ -962,3 +962,6 @@ html[data-theme="light"] .dt-next-team { color: #0b1f3a; }
 html[data-theme="light"] .dt-crawl-item b { color: #946100; }
 html[data-theme="light"] .dt-crawl-item::after { color: #5d7391; }
 html[data-theme="light"] .dk-live.is-live { border-top-color: #d23a46; border-right-color: #d23a46; border-bottom-color: #d23a46; border-left-color: #d23a46; color: #c0283a; }
+html[data-theme="light"] .dt-clock.is-pick-in .dt-pick-in { color: #946100; }
+html[data-theme="light"] .dt-clock.is-pick-in { box-shadow: #c98a12 0px 0px 0px 2px inset; }
+html[data-theme="light"] .dt-pick-in-time { color: #946100 !important; }
