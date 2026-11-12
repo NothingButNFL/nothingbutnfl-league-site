@@ -38,93 +38,118 @@
     const [away, home] = game.teams;
     const top = Math.max(away.score, home.score);
     document.title = `${away.team} ${away.score}, ${home.team} ${home.score} — Box Score — Nothing But NFL`;
-    // ---- score header ----
-    const eyebrow = el("p", "eyebrow");
-    eyebrow.innerHTML = '<span class="eyebrow-dot"></span> ';
-    eyebrow.append(`FINAL · ${game.week ? (game.week > 18 ? "PLAYOFFS" : `WEEK ${game.week}`) : "NO WEEK SET"}${game.date ? ` · ${game.date}` : ""}`);
-    const score = el("div", "bx-score");
-    [away, home].forEach((side, i) => {
-      if (i) score.append(el("span", "bx-at", "@"));
-      const t = el("a", `bx-team${side.score === top && away.score !== home.score ? " is-winner" : ""}${i ? " is-home" : ""}`);
-      t.href = `team.html?team=${encodeURIComponent(side.team)}`;
-      const name = el("span", "bx-team-name");
-      name.append(el("strong", "", teamName(side.team)), el("small", "", i ? "HOME" : "AWAY"));
-      t.append(logo(side.team), name, el("b", "bx-points", String(side.score)));
-      score.append(t);
-    });
-    hero.replaceChildren(eyebrow, score);
+    // ---- game strip (ESPN-style): away logo/name/score · FINAL · home score/name/logo ----
+    const strip = el("div", "bx-strip");
+    const side = (t, i) => {
+      const box = el("a", `bx-strip-team${i ? " is-home" : ""}${t.score === top && away.score !== home.score ? " is-winner" : ""}`);
+      box.href = `team.html?team=${encodeURIComponent(t.team)}`;
+      const name = el("span", "bx-strip-name");
+      name.append(el("strong", "", teamName(t.team)), el("small", "", i ? "Home" : "Away"));
+      const pts = el("b", "bx-strip-score", String(t.score));
+      if (i) box.append(pts, name, logo(t.team)); else box.append(logo(t.team), name, pts);
+      return box;
+    };
+    const mid = el("div", "bx-strip-mid");
+    mid.append(el("strong", "", "FINAL"), el("small", "", [game.week ? (game.week > 18 ? "Playoffs" : `Week ${game.week}`) : "", game.date ? new Date(`${game.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""].filter(Boolean).join(" · ")));
+    strip.append(side(away, 0), mid, side(home, 1));
+    hero.replaceChildren(strip, el("p", "bx-title", `${teamName(away.team)} @ ${teamName(home.team)}`));
 
-    // ---- team stats ----
+    // ---- player stats: one section per category, the two teams side by side, each with a TEAM row ----
+    const sum = (lines, k) => lines.reduce((t, l) => t + (Number(l[k]) || 0), 0);
+    const maxOf = (lines, k) => (lines.some((l) => l[k] != null) ? Math.max(...lines.map((l) => Number(l[k]) || 0)) : undefined);
+    const avg = (a, b) => (b ? (a / b).toFixed(1) : "0.0");
+    const rating = (l) => { // NFL passer rating
+      const att = Number(l.att) || 0; if (!att) return undefined;
+      const c = (v) => Math.max(0, Math.min(2.375, v));
+      const r = (c((l.cmp / att - 0.3) * 5) + c((l.yds / att - 3) * 0.25) + c((l.td / att) * 20) + c(2.375 - (l.int / att) * 25)) / 6 * 100;
+      return r.toFixed(1);
+    };
+    const cats = [
+      ["passing", "Passing", [["C/ATT", (l) => `${num(l.cmp)}/${num(l.att)}`], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["INT", (l) => l.int], ["LONG", (l) => l.long], ["RTG", rating]],
+        (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long") })],
+      ["rushing", "Rushing", [["CAR", (l) => l.att], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
+        (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
+      ["receiving", "Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
+        (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
+      ["defense", "Defense", [["TOT", (l) => l.tackles], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
+        (ls) => ({ tackles: sum(ls, "tackles"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
+      ["kicking", "Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["PCT", (l) => (l.fga ? ((l.fgm / l.fga) * 100).toFixed(1) : "0.0")], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`], ["PTS", (l) => (Number(l.fgm) || 0) * 3 + (Number(l.xpm) || 0)]],
+        (ls) => ({ fgm: sum(ls, "fgm"), fga: sum(ls, "fga"), xpm: sum(ls, "xpm"), xpa: sum(ls, "xpa"), long: maxOf(ls, "long") })],
+    ];
+    const players = document.querySelector("#bx-players");
+    const parts = [];
+    const place = (id) => teamName(id).replace(/\s+\S+$/, ""); // "Las Vegas Raiders" → "Las Vegas"
+    for (const [key, title, cols, total] of cats) {
+      const lines = game.players?.[key] || [];
+      if (!lines.length) continue;
+      const pair = el("div", "bx-pair");
+      for (const t of [away, home]) {
+        const mine = lines.filter((l) => l.team === t.team);
+        const block = el("div", "bx-block");
+        const head = el("div", "bx-block-head");
+        head.append(logo(t.team), el("span", "", `${place(t.team)} ${title}`));
+        block.append(head);
+        const table = el("table", "bx-table");
+        const hr = table.createTHead().insertRow();
+        hr.append(el("th", "bx-name-col", ""), ...cols.map(([h]) => el("th", "", h)));
+        const tb = table.createTBody();
+        if (!mine.length) {
+          const tr = tb.insertRow();
+          const td = tr.insertCell();
+          td.colSpan = cols.length + 1;
+          td.className = "bx-none";
+          td.textContent = `No ${place(t.team)} ${title}`;
+        } else {
+          for (const line of mine) {
+            const tr = tb.insertRow();
+            const name = tr.insertCell();
+            name.className = "bx-name";
+            name.append(playerLink(line.player, t.team));
+            for (const [, get] of cols) tr.insertCell().textContent = num(get(line));
+          }
+          const totals = total(mine);
+          const tr = tb.insertRow();
+          tr.className = "bx-total";
+          const name = tr.insertCell();
+          name.className = "bx-name";
+          name.textContent = "TEAM";
+          for (const [h, get] of cols) tr.insertCell().textContent = h === "RTG" ? "" : num(get(totals));
+        }
+        block.append(table);
+        pair.append(block);
+      }
+      parts.push(pair);
+    }
+    players.replaceChildren(...(parts.length ? parts : [el("p", "empty-state", "Only the final score was entered for this game, so there are no player stats.")]));
+
+    // ---- team stats: label, then each team's number (like ESPN's Team Stats) ----
     const ts = game.teamStats || {};
     const box = document.querySelector("#bx-team-stats");
     const rows = [
-      ["First downs", (s) => s.firstDowns], ["Total yards", (s) => s.totalOffense], ["Total plays", (s) => s.totalPlays],
-      ["Passing", (s) => (s.cmp != null || s.att != null ? `${num(s.cmp)}/${num(s.att)}, ${num(s.passYds)} yds` : s.passYds)], ["Passing TD", (s) => s.passTd],
-      ["Rushing", (s) => (s.rushAtt != null ? `${num(s.rushAtt)} for ${num(s.rushYds)} yds` : s.rushYds)], ["Rushing TD", (s) => s.rushTd],
-      ["Third downs", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)} of ${num(s.thirdAtt)}` : undefined)],
-      ["Turnovers", (s) => s.turnovers], ["Interceptions thrown", (s) => s.interceptions], ["Fumbles lost", (s) => s.fumblesLost],
-      ["Penalties", (s) => s.penalties], ["Time of possession", (s) => s.possession],
-    ].filter(([, get]) => [away, home].some((side) => get(ts[side.team] || {}) !== undefined));
+      ["1st Downs", (s) => s.firstDowns], ["3rd down efficiency", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined)],
+      ["Total Plays", (s) => s.totalPlays], ["Total Yards", (s) => s.totalOffense],
+      ["Passing", (s) => s.passYds], ["Comp/Att", (s) => (s.att != null ? `${num(s.cmp)}/${num(s.att)}` : undefined)], ["Passing TDs", (s) => s.passTd],
+      ["Rushing", (s) => s.rushYds], ["Rushing Attempts", (s) => s.rushAtt], ["Rushing TDs", (s) => s.rushTd],
+      ["Penalties", (s) => s.penalties], ["Turnovers", (s) => s.turnovers], ["Fumbles lost", (s) => s.fumblesLost], ["Interceptions thrown", (s) => s.interceptions],
+      ["Possession", (s) => s.possession],
+    ].filter(([, get]) => [away, home].some((t) => get(ts[t.team] || {}) !== undefined));
     if (!rows.length) {
       box.replaceChildren(el("p", "empty-state", "Only the final score was entered for this game, so there are no team stats."));
     } else {
-      const table = el("table", "management-table bx-team-table");
-      const head = table.createTHead().insertRow();
-      head.append(el("th", "", "STAT"), el("th", "", away.team), el("th", "", home.team));
+      const table = el("table", "bx-table bx-team-table");
+      const hr = table.createTHead().insertRow();
+      const teamHead = (t) => { const th = el("th", ""); const w = el("span", "bx-th-team"); w.append(logo(t.team), el("span", "", t.team)); th.append(w); return th; };
+      hr.append(el("th", "bx-name-col", "MATCHUP"), teamHead(away), teamHead(home));
       const tb = table.createTBody();
       for (const [label, get] of rows) {
         const tr = tb.insertRow();
-        tr.append(el("th", "", label));
-        for (const side of [away, home]) tr.insertCell().textContent = num(get(ts[side.team] || {}));
+        const name = tr.insertCell();
+        name.className = "bx-name";
+        name.textContent = label;
+        for (const t of [away, home]) tr.insertCell().textContent = num(get(ts[t.team] || {}));
       }
-      const wrap = el("div", "management-table-wrap");
-      wrap.append(table);
-      box.replaceChildren(wrap);
+      box.replaceChildren(table);
     }
-
-    // ---- player stats ----
-    const cats = {
-      passing: ["Passing", [["C/ATT", (l) => `${num(l.cmp)}/${num(l.att)}`], ["YDS", (l) => l.yds], ["TD", (l) => l.td], ["INT", (l) => l.int], ["LONG", (l) => l.long]]],
-      rushing: ["Rushing", [["CAR", (l) => l.att], ["YDS", (l) => l.yds], ["AVG", (l) => (l.att ? (l.yds / l.att).toFixed(1) : undefined)], ["TD", (l) => l.td], ["LONG", (l) => l.long]]],
-      receiving: ["Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => (l.rec ? (l.yds / l.rec).toFixed(1) : undefined)], ["TD", (l) => l.td], ["LONG", (l) => l.long]]],
-      defense: ["Defense", [["TKL", (l) => l.tackles], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]]],
-      kicking: ["Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`]]],
-    };
-    const players = document.querySelector("#bx-players");
-    const parts = [];
-    for (const [key, [title, cols]] of Object.entries(cats)) {
-      const lines = game.players?.[key] || [];
-      if (!lines.length) continue;
-      const section = el("div", "bx-cat");
-      section.append(el("h4", "player-subhead", title));
-      const pair = el("div", "bx-pair");
-      for (const side of [away, home]) {
-        const mine = lines.filter((l) => l.team === side.team);
-        const col = el("div", "bx-side");
-        const label = el("div", "bx-side-head");
-        label.append(logo(side.team), el("span", "", teamName(side.team)));
-        col.append(label);
-        if (!mine.length) { col.append(el("p", "empty-state", "None")); pair.append(col); continue; }
-        const table = el("table", "management-table bx-player-table");
-        const head = table.createTHead().insertRow();
-        head.append(el("th", "", "PLAYER"), ...cols.map(([h]) => el("th", "", h)));
-        const tb = table.createTBody();
-        for (const line of mine) {
-          const tr = tb.insertRow();
-          const name = tr.insertCell();
-          name.className = "bx-name";
-          name.append(playerLink(line.player, side.team));
-          for (const [, get] of cols) tr.insertCell().textContent = num(get(line));
-        }
-        const wrap = el("div", "management-table-wrap");
-        wrap.append(table);
-        col.append(wrap);
-        pair.append(col);
-      }
-      section.append(pair);
-      parts.push(section);
-    }
-    players.replaceChildren(...(parts.length ? parts : [el("p", "empty-state", "Only the final score was entered for this game, so there are no player stats.")]));
   }
 
   window.addEventListener("storage", (event) => {
