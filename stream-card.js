@@ -46,10 +46,7 @@
     iframe.referrerPolicy = "strict-origin-when-cross-origin";
     iframe.allowFullscreen = true;
     box.append(iframe);
-    const note = document.createElement("p");
-    note.className = "stream-note";
-    note.textContent = "Shows the stream that's live right now, or the most recent one. Nothing showing? The channel may not have any past live streams yet.";
-    frame.replaceChildren(box, note);
+    frame.replaceChildren(box);
   }
 
   function save(change, message) {
@@ -102,6 +99,13 @@
     watcher.observe(matchday, { attributes: true, attributeFilter: ["hidden"] });
     watcher.observe(slate, { attributes: true, attributeFilter: ["hidden"] });
   }
+  // The card's description sits behind a "?" next to its title (help-bubbles.js).
+  const about = document.createElement("p");
+  about.className = "section-subtitle";
+  about.textContent = "Shows the stream that's live right now, or the most recent one. Nothing showing? The channel may not have any past live streams yet.";
+  section.querySelector(".stream-card .recent-head").after(about);
+  if (typeof addHelpBubble === "function") addHelpBubble(about);
+
   window.addEventListener("storage", (event) => { if (event.key === officeStorageKey) render(); });
   render();
   place();
