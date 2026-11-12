@@ -1972,7 +1972,7 @@ function showSampleBanner() {
   banner.className = "sample-banner";
   banner.setAttribute("role", "note");
   const text = document.createElement("span");
-  text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up full season with made-up rosters and contracts. ";
+  text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up league 8 weeks into its season, with made-up contracts and moves. ";
   const link = document.createElement("a");
   link.href = "index.html#sample-league";
   link.textContent = "Remove it on the Overview";
