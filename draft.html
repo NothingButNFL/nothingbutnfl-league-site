@@ -45,7 +45,8 @@
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=e464657d" defer></script>
+    <script src="combine-data.js?v=a605b3cf" defer></script>
+    <script src="draft-room.js?v=af6d650c" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -260,7 +261,7 @@
               </div>
               <div>
                 <h4>3. Combine results</h4>
-                <p class="hs-help">Paste the combine results (copy the table from NFL.com's combine tracker, or a spreadsheet) and they show on Last Player Selected when the player is picked. Put a header row first so the columns are matched, like <code>Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle</code> (Arm and Hand work too). Without a header, that's the order used. Adding again updates players already in the list.</p>
+                <p class="hs-help">The 2026 combine results from Pro Football Reference are built in and show on Last Player Selected when the player is picked. To add or correct anyone, paste results here (from NFL.com's combine tracker or a spreadsheet); pasted results take the place of the built-in ones for that player. Put a header row first so the columns are matched, like <code>Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle</code> (Arm and Hand work too). Without a header, that's the order used. Adding again updates players already in the list.</p>
                 <textarea id="dk-combine-text" rows="6" placeholder="Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle&#10;Fernando Mendoza, 6'5&quot;, 236, 4.82, , 30.5, 9'6&quot;, , "></textarea>
                 <div class="hs-actions"><button class="button button-lime" type="button" id="dk-combine-add">Add combine results</button><button class="workspace-button" type="button" id="dk-combine-clear">Clear combine results</button></div>
                 <p class="hs-help" id="dk-combine-count"></p>

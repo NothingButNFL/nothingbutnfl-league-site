@@ -545,7 +545,7 @@ function dkRenderStats(box, last) {
 
 // The player's combine results (pasted under Draft setup), under his college stats.
 function dkRenderCombine(box, last) {
-  const c = dkCombineFor(last.player);
+  const c = dkCombineFor(last.player, last.year);
   if (!c) return;
   const items = Object.keys(dkCombineLabels).filter((k) => c[k]).map((k) => ({ label: dkCombineLabels[k], value: c[k] }));
   if (!items.length) return;
@@ -557,7 +557,9 @@ function dkRenderCombine(box, last) {
     cell.append(dkStatsEl("strong", "", value), dkStatsEl("span", "", label));
     return cell;
   }));
-  row.append(list, dkStatsEl("div", "dk-last-stats-side"));
+  const side = dkStatsEl("div", "dk-last-stats-side");
+  side.append(dkStatsEl("small", "dk-last-stats-src", c.source || "Entered by hand"));
+  row.append(list, side);
   box.append(row);
 }
 
@@ -813,14 +815,26 @@ function dkParseCombine(text) {
   });
   return out;
 }
-function dkCombineFor(player) {
+// Pasted results first, then the built-in results for the year (combine-data.js, from Pro Football Reference).
+const dkInchesToFeet = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? `${Math.floor(n / 12)}'${String(n % 12).replace(/\.0$/, "")}"` : v; };
+function dkCombineFor(player, year = dkYear) {
   const key = dkNameKey(player);
-  return (dkData.draftCombine || []).find((c) => c.year === dkYear && dkNameKey(c.name) === key) || null;
+  const pasted = (dkData.draftCombine || []).find((c) => c.year === year && dkNameKey(c.name) === key);
+  if (pasted) return pasted;
+  const rows = typeof nflCombineData === "object" ? nflCombineData[year] : null;
+  const row = rows?.find((r) => dkNameKey(r[0]) === key);
+  if (!row) return null;
+  const [name, ht, wt, forty, vert, bench, broad, cone, shuttle] = row;
+  const c = { year, name, source: "Pro Football Reference" };
+  if (ht) c.ht = ht.replace(/^(\d+)-(\d+)$/, "$1'$2\""); if (wt) c.wt = wt; if (forty) c.forty = forty; if (bench) c.bench = bench;
+  if (vert) c.vert = `${vert}"`; if (broad) c.broad = dkInchesToFeet(broad); if (cone) c.cone = cone; if (shuttle) c.shuttle = shuttle;
+  return c;
 }
 function dkRenderCombineCount() {
   const n = (dkData.draftCombine || []).filter((c) => c.year === dkYear).length;
   const el = document.querySelector("#dk-combine-count");
-  if (el) el.textContent = n ? `${n} player${n === 1 ? "" : "s"} with ${dkYear} combine results.` : "No combine results yet.";
+  const built = typeof nflCombineData === "object" && nflCombineData[dkYear] ? nflCombineData[dkYear].length : 0;
+  if (el) el.textContent = `${built ? `${built} players' ${dkYear} results built in (Pro Football Reference). ` : ""}${n ? `${n} pasted.` : built ? "" : "No combine results yet."}`;
 }
 document.querySelector("#dk-combine-add").addEventListener("click", () => {
   const add = dkParseCombine(document.querySelector("#dk-combine-text").value);
