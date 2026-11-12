@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=c6ac5526">
-    <link rel="stylesheet" href="theme-light.css?v=2f18e1d7">
-    <link rel="stylesheet" href="theme-gray.css?v=92eda8a0">
-    <link rel="stylesheet" href="theme-team.css?v=85c30cff">
+    <link rel="stylesheet" href="styles.css?v=48b1faf9">
+    <link rel="stylesheet" href="theme-light.css?v=8f107baa">
+    <link rel="stylesheet" href="theme-gray.css?v=621ffddb">
+    <link rel="stylesheet" href="theme-team.css?v=c9642c37">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -44,7 +44,7 @@
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=3b15b6bd" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=fd1c7af2" defer></script>
+    <script src="draft-room.js?v=fe57ca57" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -163,18 +163,20 @@
             <div class="dk-timer">
               <strong id="dk-timer" aria-live="off">5:00</strong>
               <small class="dk-timer-for" id="dk-timer-for"></small>
-              <div class="dk-timer-buttons">
-                <button class="workspace-button" type="button" id="dk-timer-toggle">Start clock</button>
-                <button class="workspace-button" type="button" id="dk-timer-reset">Reset</button>
-                <button class="workspace-button dk-live" type="button" id="dk-live">Start draft (show ticker)</button>
-                <button class="workspace-button" type="button" id="dk-skip" title="Skip the team on the clock; it can still pick later">Skip team</button>
-                <label class="dk-sound-toggle"><input type="checkbox" id="dk-sound" checked> Countdown sound</label>
-                <label class="dk-sound-toggle"><input type="checkbox" id="dk-pick-sound" checked> Pick sound</label>
-                <label class="dk-sound-toggle"><input type="checkbox" id="dk-trade-sound" checked> Trade sound</label>
-                <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
-              </div>
             </div>
             <div class="dk-next" id="dk-next"></div>
+          </div>
+          <div class="dk-controls" aria-label="Draft controls">
+            <button class="workspace-button" type="button" id="dk-timer-toggle">Start clock</button>
+            <button class="workspace-button" type="button" id="dk-timer-reset">Reset</button>
+            <span class="dk-controls-sep" aria-hidden="true"></span>
+            <button class="workspace-button dk-live" type="button" id="dk-live">Start draft (show ticker)</button>
+            <button class="workspace-button" type="button" id="dk-skip" title="Skip the team on the clock; it can still pick later">Skip team</button>
+            <span class="dk-controls-sep" aria-hidden="true"></span>
+            <label class="dk-sound-toggle"><input type="checkbox" id="dk-sound" checked> Countdown sound</label>
+            <label class="dk-sound-toggle"><input type="checkbox" id="dk-pick-sound" checked> Pick sound</label>
+            <label class="dk-sound-toggle"><input type="checkbox" id="dk-trade-sound" checked> Trade sound</label>
+            <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
           </div>
 
           <details class="management-panel dk-sound-panel" id="dk-sound-panel">

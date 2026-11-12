@@ -2942,3 +2942,14 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-trade-fields select { width: 100%; min-width: 0; }
 .dk-trade .hs-help { margin: 0; }
 @media (max-width: 700px) { .dk-trade-fields { grid-template-columns: 1fr; } }
+/* Draft room: clock controls on their own row under the banner (they used to sit inside it and overlap) */
+.dk-clock { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.dk-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 22px; padding: 10px 16px; border: 1px solid #31527a; border-top: 0; border-radius: 0 0 12px 12px; background: #0a2647; }
+.dk-controls .workspace-button { min-height: 34px; }
+.dk-controls label { display: flex; align-items: center; gap: 6px; color: #fff; font: 12px var(--mono); }
+.dk-controls-sep { width: 1px; height: 22px; background: #31527a; }
+.dk-timer { justify-items: center; }
+.dk-clock-main { min-width: 0; }
+.dk-team-big strong { overflow-wrap: anywhere; }
+@media (max-width: 1100px) { .dk-clock { grid-template-columns: minmax(0, 1fr) auto; } .dk-next { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; } }
+@media (max-width: 640px) { .dk-clock { grid-template-columns: 1fr; } .dk-timer { justify-items: start; } .dk-controls-sep { display: none; } }

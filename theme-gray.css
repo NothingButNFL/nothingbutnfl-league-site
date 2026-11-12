@@ -320,3 +320,5 @@ html[data-theme="gray"] .dt-crawl-item::after { color: #8a8d94; }
 html[data-theme="gray"] .dt-crawl-round { color: #18191b; }
 html[data-theme="gray"] .dt-crawl-item.is-open { color: #d5d7db; }
 html[data-theme="gray"] .dk-trade { border-top-color: #47494f; }
+html[data-theme="gray"] .dk-controls { border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .dk-controls-sep { background-color: #47494f; }

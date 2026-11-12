@@ -853,7 +853,7 @@ document.querySelector("#dk-live").addEventListener("click", async () => {
   const live = dkData.draftLive === dkYear;
   if (live && !(await confirmAction("End the draft? The draft ticker comes off every page. Picks, the order and the pool stay.", { confirmLabel: "End draft" }))) return;
   dkSave((data) => { if (live) delete data.draftLive; else data.draftLive = dkYear; },
-    live ? "Draft ended. The ticker is off." : `The ${dkYear} draft is live: the draft ticker now shows at the top of every page until the last pick is in.`);
+    live ? "Draft ended. The ticker is off." : `The ${dkYear} draft is live: the draft ticker now shows at the bottom of every page until the last pick is in.`);
 });
 
 // ---------- Draft-day trades ----------
