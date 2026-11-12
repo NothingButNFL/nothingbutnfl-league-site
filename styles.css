@@ -2998,3 +2998,12 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-sound-dialog .dk-sound-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
 .dk-sound-dialog [hidden] { display: none; }
 .dk-controls .dk-sounds-btn { margin-left: 2px; }
+/* "?" bubbles: section descriptions open in a pop-out next to the heading */
+.help-head { position: relative; display: flex; align-items: center; gap: 10px; }
+.help-head > :is(h1, h2, h3, h4) { margin-bottom: 0; }
+.help-bubble { display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; padding: 0; border: 1px solid #54749b; border-radius: 50%; background: transparent; color: #fff; font: 700 13px/1 var(--mono); cursor: pointer; }
+.help-bubble:hover, .help-bubble[aria-expanded="true"] { border-color: #ffd37a; color: #ffd37a; }
+.help-bubble:focus-visible { outline: 2px solid #ffd37a; outline-offset: 2px; }
+.help-pop { position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; width: min(460px, calc(100vw - 48px)); padding: 14px 16px; border: 1px solid #54749b; border-radius: 10px; background: #0c2b50; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); }
+.help-pop[hidden] { display: none; }
+.help-pop .section-subtitle, .front-office-heading .help-pop .section-subtitle { max-width: none; margin: 0; color: #ffffff; font-size: 14px; line-height: 1.55; }
