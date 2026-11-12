@@ -2675,3 +2675,9 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .insider-all:hover, .insider-all:focus-visible { text-decoration: underline; }
 .media-select-all { margin-left: 10px; min-height: 0; padding: 4px 10px; font-size: 12px; vertical-align: middle; }
 .media-select-all[hidden] { display: none; }
+/* Overview matchday: empty-league placeholders */
+.md-empty-note { margin: 0; padding: 6px 2px; color: #fff; font-size: 14px; opacity: .8; }
+.md-empty-link { color: #8fd0ff; font-weight: 700; }
+.md-ticker-empty { display: flex; align-items: center; gap: 6px; padding: 0 16px; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.md-gotw-side.is-tbd .md-gotw-photo { border-color: #54749b; background: rgba(255, 255, 255, .12); }
+.md-gotw-side.is-tbd .leader-logo { color: #fff; font-size: 48px; }

@@ -299,3 +299,4 @@ html[data-theme="gray"] .mdp-switch-track { background-color: #47494f; }
 html[data-theme="gray"] .insider-new-reporter { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
 html[data-theme="gray"] .rep-item { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
 html[data-theme="gray"] .rep-preview-card { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
+html[data-theme="gray"] .md-gotw-side.is-tbd .md-gotw-photo { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }

@@ -337,8 +337,13 @@ let mdCurrentWeek = null;
 function renderWeekSlate(slate, pick, records) {
   mdCurrentWeek = pick?.week ?? null;
   const box = document.querySelector("#md-slate");
-  if (!slate.length) { box.hidden = true; return; }
   box.hidden = false;
+  if (!slate.length) {
+    const head = mdEl("div", "md-slate-head");
+    head.append(mdEl("h3", "md-best-title", `${(pick?.week ?? 1) > 18 ? "Playoffs" : `Week ${pick?.week ?? 1}`} Games`));
+    box.replaceChildren(head, mdEl("p", "md-empty-note", pick ? "No other games this week." : "No games scheduled yet. Each game gets a preview card here once the schedule is imported."));
+    return;
+  }
   const head = mdEl("div", "md-slate-head");
   head.append(mdEl("h3", "md-best-title", `${pick.week > 18 ? "Playoffs" : `Week ${pick.week}`} Games`));
   const prev = mdEl("button", "md-slate-nav", "PREV");
@@ -573,10 +578,18 @@ const mdFitObserver = typeof ResizeObserver === "function" ? new ResizeObserver(
 document.fonts?.ready.then(mdFitTopNames);
 
 let mdTopWeek = null;
-function renderWeeksBest(games) {
+function renderWeeksBest(games, emptyWeek = 1) {
   const box = document.querySelector("#md-best");
   const weeks = [...new Set(games.map((g) => g.week))].sort((a, b) => a - b);
-  if (!weeks.length) { box.hidden = true; return; }
+  if (!weeks.length) { // no box scores yet: the four award cards, each "No stats logged"
+    box.hidden = false;
+    const head = mdEl("div", "md-slate-head md-top-head-row");
+    head.append(mdEl("h3", "md-best-title md-top-title", `Top Players: ${mdWeekName(emptyWeek).replace(/\B\w+/g, (m) => m.toLowerCase())}`));
+    const grid = mdEl("div", "md-top-grid");
+    grid.append(...mdTopPlayers([]).map(mdTopCard));
+    box.replaceChildren(head, grid, mdEl("p", "md-empty-note", "The week's top offensive and defensive players show here once box scores are logged."));
+    return;
+  }
   box.hidden = false;
   if (!weeks.includes(mdTopWeek)) mdTopWeek = weeks[weeks.length - 1];
   // Heading, then the cards, then PREV / one dot per week / NEXT.
@@ -633,12 +646,71 @@ function renderMatchday() {
   const week = games.length ? Math.max(...games.map((g) => g.week)) : (scheduledWeeks.length ? Math.min(...scheduledWeeks) - 1 : 0);
   const lastWeek = games.filter((g) => g.week === week).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
   const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
-  if (!pick) { section.hidden = true; document.querySelector("#md-ticker").hidden = true; return; }
+  if (!pick) { renderMatchdayEmpty(games); return; }
   section.hidden = false;
   renderTicker(lastWeek, week, pick.kind === "upcoming" ? { week: pick.week, slate: mdWeekSlate(data, pick, games) } : null, records);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games).filter((item) => !item.featured), pick, records); // the Game of the Week has its own panel
   renderScoreboard(data, pick, games, records);
+  renderWeeksBest(games);
+}
+
+// Nothing scheduled or played yet: the same panels, with placeholders that say what fills them.
+function renderMatchdayEmpty(games) {
+  document.querySelector("#matchday").hidden = false;
+  const link = (href, text) => { const a = mdEl("a", "md-empty-link", text); a.href = href; return a; };
+  // Ticker
+  const ticker = document.querySelector("#md-ticker");
+  ticker.hidden = false;
+  const label = mdEl("span", "md-ticker-label");
+  label.append(mdEl("b", "", "WEEK 1"), " MATCHUPS");
+  const msg = mdEl("div", "md-ticker-viewport md-ticker-empty");
+  msg.append("The schedule hasn't been set yet. ", link("admin-schedule.html", "Import it in Admin › Schedule Import"));
+  ticker.replaceChildren(label, msg);
+  // Game of the Week
+  const gotw = document.querySelector("#md-gotw");
+  gotw.hidden = false;
+  gotw.style.removeProperty("--md-away");
+  gotw.style.removeProperty("--md-home");
+  const head = mdEl("div", "md-gotw-head");
+  const title = mdEl("strong", "md-gotw-title");
+  title.append(mdEl("span", "md-gotw-week", "WEEK 1"), mdEl("span", "md-gotw-divider", "|"), mdEl("span", "", "GAME OF THE WEEK"));
+  head.append(title, mdEl("span", "md-gotw-date", "TO BE ANNOUNCED"));
+  const tbd = (side) => {
+    const panel = mdEl("div", `md-gotw-side is-${side} is-tbd`);
+    const photo = mdEl("span", "md-gotw-photo is-logo");
+    photo.append(mdEl("span", "leader-logo", "?"));
+    const team = mdEl("span", "md-gotw-team");
+    team.append(mdEl("b", "", "TBD"), mdEl("span", "", "0-0"));
+    panel.append(photo, mdEl("div", "md-gotw-name"), team);
+    return panel;
+  };
+  const center = mdEl("div", "md-gotw-vs");
+  center.append(mdEl("strong", "md-gotw-vs-text", "VS"), mdEl("span", "", "TBD @ TBD"));
+  const stage = mdEl("div", "md-gotw-stage");
+  stage.append(tbd("away"), center, tbd("home"));
+  const strip = mdEl("div", "md-gotw-notes");
+  strip.append(mdEl("span", "", "PICKED FROM THE SCHEDULE ONCE IT'S IMPORTED"));
+  gotw.replaceChildren(head, stage, strip);
+  // Scoreboard
+  const board = document.querySelector("#md-board");
+  if (board) {
+    board.hidden = false;
+    const bhead = mdEl("div", "md-board-head");
+    bhead.append(mdEl("h3", "md-board-title", "Scoreboard"));
+    const toggle = mdEl("div", "md-board-toggle");
+    const tab = mdEl("button", "md-board-tab is-active", "Week 1");
+    tab.type = "button";
+    tab.disabled = true;
+    toggle.append(tab);
+    bhead.append(toggle);
+    const list = mdEl("ol", "md-board-list");
+    const empty = mdEl("li", "md-board-empty", "No games scheduled yet. ");
+    empty.append(link("admin-schedule.html", "Import the schedule"));
+    list.append(empty);
+    board.replaceChildren(bhead, list);
+  }
+  renderWeekSlate([], null, {});
   renderWeeksBest(games);
 }
 
