@@ -972,3 +972,6 @@ html[data-theme="light"] .dt-crawl-item.is-open { color: #33496b; }
 html[data-theme="light"] .dt-crawl-tag { color: #1561b0; }
 html[data-theme="light"] .dt-crawl-tag.is-in { color: #946100; }
 html[data-theme="light"] .dt-crawl-tag.is-skipped { color: #c0283a; }
+html[data-theme="light"] .dt-selection.is-trade strong { color: #946100; }
+html[data-theme="light"] .dt-trade-side small { color: #0b1f3a; }
+html[data-theme="light"] .dk-trade { border-top-color: #c6d4e5; color: #0b1f3a; }

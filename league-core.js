@@ -124,7 +124,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -580,6 +580,10 @@ function applyTradeAssets(data, assets, year = currentLeagueYear()) {
     const sourceTeam = data.teams[asset.fromTeamId];
     const destinationTeam = data.teams[asset.destinationId];
     if (asset.kind === "pick") {
+      // If this pick is in a draft order that's been set (e.g. a trade during the draft), move it there too.
+      const slot = (data.draftOrder || []).find((d) => d.year === asset.pick.year && d.round === asset.pick.round &&
+        (d.fromTeam || d.teamId) === asset.pick.originalTeam && Boolean(d.compensatory) === Boolean(asset.pick.compensatory));
+      if (slot && slot.teamId !== asset.destinationId) tradeDraftOrderPick(data, slot.year, slot.pick, asset.destinationId);
       asset.pick.currentOwner = asset.destinationId;
       asset.pick.note = withTradeNote(asset.pick.note, asset.fromTeamId);
       continue;
@@ -626,6 +630,7 @@ function readStoredOffice() {
 function writeStoredOffice(data) {
   localStorage.setItem(officeStorageKey, JSON.stringify(data));
   globalThis.refreshNavNotifications?.();
+  globalThis.renderDraftTicker?.(); // a save on this page (e.g. approving a trade with a pick in the draft) updates the ticker
 }
 
 const tradeStatusLabels = {
@@ -2951,6 +2956,30 @@ function validDraftOrder(list) {
     (d.fromTeam === undefined || team(d.fromTeam)) && (d.compensatory === undefined || typeof d.compensatory === "boolean") &&
     (d.skipped === undefined || typeof d.skipped === "boolean"));
 }
+// Draft-day trades of picks in a draft's order: [{ id, year, pick, round, fromTeam, toTeam, at }] (fromTeam = the team
+// that gave the pick up). The draft ticker shows each one as a TRADE header for a few seconds.
+function validDraftTrades(list) {
+  if (list === undefined) return true;
+  const team = (id) => nflTeams.some((t) => t.id === id);
+  return Array.isArray(list) && list.length <= 2000 && list.every((t) => t && typeof t.id === "string" && isIntegerInRange(t.year, 1936, 2100) &&
+    isIntegerInRange(t.pick, 1, 400) && isIntegerInRange(t.round, 1, 20) && team(t.fromTeam) && team(t.toTeam) && typeof t.at === "string");
+}
+
+// Moves a not-yet-made pick in a draft's order to another team and logs it as a draft-day trade. Also keeps the
+// matching Draft Pick Manager pick (data.picks) in step. Returns the trade, or null if there's no such open pick.
+function tradeDraftOrderPick(data, year, pickNumber, toTeam) {
+  const slot = (data.draftOrder || []).find((d) => d.year === year && d.pick === pickNumber);
+  if (!slot || slot.teamId === toTeam || (data.draftHistory || []).some((d) => d.year === year && d.pick === pickNumber)) return null;
+  const original = slot.fromTeam || slot.teamId;
+  const trade = { id: newRecordId("draft-trade"), year, pick: slot.pick, round: slot.round, fromTeam: slot.teamId, toTeam, at: new Date().toISOString() };
+  slot.teamId = toTeam;
+  if (toTeam === original) delete slot.fromTeam; else slot.fromTeam = original;
+  const asset = (data.picks || []).find((p) => p.year === year && p.round === slot.round && p.originalTeam === original && Boolean(p.compensatory) === Boolean(slot.compensatory));
+  if (asset) asset.currentOwner = toTeam;
+  data.draftTrades = [...(data.draftTrades || []), trade].slice(-2000);
+  return trade;
+}
+
 function validDraftPool(list) {
   if (list === undefined) return true;
   return Array.isArray(list) && list.length <= 4000 && list.every((p) => p && typeof p.id === "string" && p.id &&

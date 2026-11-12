@@ -31,7 +31,11 @@
     const revealAt = newest?.madeAt ? Date.parse(newest.madeAt) + revealMs : 0;
     const pending = revealAt > Date.now() ? newest : null;
     const shown = pending ? byTime.slice(0, -1) : byTime;
-    return { order, picks: shown, onClock, pending, revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: shown[shown.length - 1] };
+    // A draft-day trade shows the same way, as a TRADE header, unless a pick came in after it.
+    const lastTrade = (data.draftTrades || []).filter((t) => t.year === year()).sort((a, b) => a.at.localeCompare(b.at)).pop();
+    const tradeUntil = lastTrade ? Date.parse(lastTrade.at) + revealMs : 0;
+    const trade = tradeUntil > Date.now() && !(pending && Date.parse(pending.madeAt) > Date.parse(lastTrade.at)) ? lastTrade : null;
+    return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: shown[shown.length - 1] };
   }
 
   function clockText() {
@@ -65,7 +69,16 @@
     // On the clock
     const clock = el("div", "dt-clock");
     const nickname = (id) => teamName(id).split(" ").pop().toUpperCase();
-    if (s.pending) {
+    if (s.trade) {
+      // A pick changing hands: the pick number over a gold TRADE bar.
+      clock.classList.add("is-pick-in");
+      clock.style.setProperty("--dt-team", teamColor(s.trade.toTeam));
+      const stack = el("div", "dt-pickin-stack");
+      stack.append(el("strong", "dt-pickin-team", `PICK ${s.trade.pick}`), el("span", "dt-pickin-bar", "TRADE"));
+      const who = el("div", "dt-clock-who");
+      who.append(el("strong", "", `${s.trade.fromTeam} ▸ ${s.trade.toTeam}`), el("span", "", `ROUND ${s.trade.round}`));
+      clock.append(stack, who);
+    } else if (s.pending) {
       // "The pick is in" (like a broadcast): the team's name over a gold PICK IS IN bar.
       clock.classList.add("is-pick-in");
       clock.style.setProperty("--dt-team", teamColor(s.pending.teamId));
@@ -91,8 +104,16 @@
       clock.append(el("div", "dt-clock-words", "WAITING ON SKIPPED TEAMS"));
     }
     // Title (while a pick is in: "[TEAM] SELECTION" across the whole middle, up to the pick clock)
-    const selection = s.pending ? el("div", "dt-selection") : null;
-    if (selection) {
+    const selection = s.pending || s.trade ? el("div", "dt-selection") : null;
+    if (selection && s.trade) {
+      // [team giving the pick up]  TRADE  [team getting it]
+      selection.classList.add("is-trade");
+      selection.style.setProperty("--dt-team", teamColor(s.trade.toTeam));
+      selection.style.setProperty("--dt-from", teamColor(s.trade.fromTeam));
+      const mark = (id) => { const box = el("span", "dt-selection-logo"); const img = el("img"); img.src = logoUrl(id); img.alt = ""; img.addEventListener("error", () => { img.remove(); box.textContent = id; }, { once: true }); box.append(img); return box; };
+      const side = (id) => { const wrap = el("span", "dt-trade-side"); wrap.append(mark(id), el("small", "", nickname(id))); return wrap; };
+      selection.append(side(s.trade.fromTeam), el("strong", "", "TRADE"), side(s.trade.toTeam));
+    } else if (selection) {
       selection.style.setProperty("--dt-team", teamColor(s.pending.teamId));
       const mark = () => { const box = el("span", "dt-selection-logo"); const img = el("img"); img.src = logoUrl(s.pending.teamId); img.alt = ""; img.addEventListener("error", () => { img.remove(); box.textContent = s.pending.teamId; }, { once: true }); box.append(img); return box; };
       selection.append(mark(), el("strong", "", `${nickname(s.pending.teamId)} SELECTION`), mark());

@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=b5b2969e">
-    <link rel="stylesheet" href="theme-light.css?v=6bb312ca">
-    <link rel="stylesheet" href="theme-gray.css?v=6d99c69f">
-    <link rel="stylesheet" href="theme-team.css?v=8ffc0cb2">
+    <link rel="stylesheet" href="styles.css?v=4ac1d7b0">
+    <link rel="stylesheet" href="theme-light.css?v=14e3cf46">
+    <link rel="stylesheet" href="theme-gray.css?v=92eda8a0">
+    <link rel="stylesheet" href="theme-team.css?v=85c30cff">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -40,11 +40,11 @@
       })();
     </script>
     <script src="teams.js?v=63b57a1f" defer></script>
-    <script src="league-core.js?v=b20a1389" defer></script>
+    <script src="league-core.js?v=048f930b" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
-    <script src="draft-ticker.js?v=3e87ac65" defer></script>
+    <script src="draft-ticker.js?v=bbf019ad" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=c6ecd2e0" defer></script>
+    <script src="draft-room.js?v=ee74f819" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -170,6 +170,7 @@
                 <button class="workspace-button" type="button" id="dk-skip" title="Skip the team on the clock; it can still pick later">Skip team</button>
                 <label class="dk-sound-toggle"><input type="checkbox" id="dk-sound" checked> Countdown sound</label>
                 <label class="dk-sound-toggle"><input type="checkbox" id="dk-pick-sound" checked> Pick sound</label>
+                <label class="dk-sound-toggle"><input type="checkbox" id="dk-trade-sound" checked> Trade sound</label>
                 <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
               </div>
             </div>
@@ -192,6 +193,13 @@
               <label class="workspace-button hs-file">Choose a sound file<input id="dk-pick-file" type="file" accept="audio/*" hidden></label>
               <button class="workspace-button" type="button" id="dk-pick-test">Play it</button>
               <button class="workspace-button" type="button" id="dk-pick-clear" hidden>Use the built-in chime</button>
+            </div>
+            <h4 class="dk-sound-head">When a pick is traded <span class="dk-sound-now" id="dk-trade-now">Built-in trade sound</span></h4>
+            <p class="hs-help">Plays only while the draft is live, whether the trade is recorded here or approved under Admin › Pending Trades.</p>
+            <div class="hs-actions">
+              <label class="workspace-button hs-file">Choose a sound file<input id="dk-trade-file" type="file" accept="audio/*" hidden></label>
+              <button class="workspace-button" type="button" id="dk-trade-test">Play it</button>
+              <button class="workspace-button" type="button" id="dk-trade-clear" hidden>Use the built-in trade sound</button>
             </div>
           </details>
 
@@ -233,6 +241,15 @@
                 <button class="workspace-button" type="button" id="dk-undo">Undo last pick</button></div>
               <div class="season-tabs dk-rounds" id="dk-rounds" role="tablist" aria-label="Round"></div>
               <ol class="dk-board" id="dk-board"></ol>
+              <form class="dk-trade" id="dk-trade-form">
+                <strong>Draft-day trade</strong>
+                <div class="dk-trade-fields">
+                  <label>Pick<select id="dk-trade-pick" required></select></label>
+                  <label>Goes to<select id="dk-trade-to" required><option value="">Choose a team</option></select></label>
+                  <button class="button button-lime" type="submit">Record trade</button>
+                </div>
+                <p class="hs-help">Moves the pick to the new team and shows TRADE on the draft ticker. Trades approved under Admin › Pending Trades that include a pick in this draft move it here as well.</p>
+              </form>
               <a class="dk-history-link" href="drafts.html">See every draft in League History › Previous Drafts →</a>
             </div>
           </div>

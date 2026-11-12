@@ -2928,3 +2928,15 @@ html.draft-live .md-ticker { display: none; }
 .dt-crawl-tag { margin-left: 8px; color: #8fd0ff; font: 700 11px var(--mono); font-style: normal; letter-spacing: .06em; }
 .dt-crawl-tag.is-in { color: #ffd37a; }
 .dt-crawl-tag.is-skipped { color: #ff9299; }
+/* Draft ticker: TRADE header */
+.dt-selection.is-trade { --dt-from: #0c2b50; background: linear-gradient(90deg, color-mix(in srgb, var(--dt-from) 85%, #000) 0%, #0a1424 50%, color-mix(in srgb, var(--dt-team) 85%, #000) 100%); justify-content: space-between; }
+.dt-selection.is-trade strong { color: #ffd37a; letter-spacing: .3em; }
+.dt-trade-side { display: flex; align-items: center; gap: 10px; }
+.dt-trade-side small { color: #fff; font: 700 13px var(--mono); letter-spacing: .1em; }
+/* Draft room: draft-day trade form */
+.dk-trade { display: grid; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #31527a; color: #fff; }
+.dk-trade-fields { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.dk-trade-fields label { display: grid; gap: 4px; font: 12px var(--mono); }
+.dk-trade-fields select { width: 100%; min-width: 0; }
+.dk-trade .hs-help { margin: 0; }
+@media (max-width: 700px) { .dk-trade-fields { grid-template-columns: 1fr; } }

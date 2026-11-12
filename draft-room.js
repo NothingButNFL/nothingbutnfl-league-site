@@ -345,6 +345,7 @@ function dkRenderLive() {
 }
 
 function dkRender() {
+  if (typeof dkFillTradeForm === "function" && document.querySelector("#dk-trade-to")) dkFillTradeForm();
   dkRenderLive();
   dkRenderLast();
   document.querySelector("#dk-title").textContent = `${dkYear} Draft`;
@@ -833,3 +834,91 @@ document.querySelector("#dk-live").addEventListener("click", async () => {
   dkSave((data) => { if (live) delete data.draftLive; else data.draftLive = dkYear; },
     live ? "Draft ended. The ticker is off." : `The ${dkYear} draft is live: the draft ticker now shows at the top of every page until the last pick is in.`);
 });
+
+// ---------- Draft-day trades ----------
+// "Trade a pick" moves an open pick to another team (tradeDraftOrderPick in league-core.js); trades approved under
+// Admin › Pending Trades that include a pick in this draft do the same. Each shows on the draft ticker as a TRADE
+// header, and plays the trade sound here while the draft is live.
+function dkFillTradeForm() {
+  const pickSelect = document.querySelector("#dk-trade-pick");
+  const keep = pickSelect.value;
+  const open = dkOrder().filter((s) => !dkMadeAt(s.pick));
+  pickSelect.replaceChildren(new Option("Choose a pick", ""), ...open.map((s) => new Option(`Rd ${s.round} · Pick ${s.pick}${s.compensatory ? "*" : ""} · ${teamName(s.teamId)}`, String(s.pick))));
+  if ([...pickSelect.options].some((o) => o.value === keep)) pickSelect.value = keep;
+  const to = document.querySelector("#dk-trade-to");
+  if (to.options.length <= 1) to.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(name, id)));
+}
+document.querySelector("#dk-trade-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const pick = Number(document.querySelector("#dk-trade-pick").value);
+  const to = document.querySelector("#dk-trade-to").value;
+  const slot = dkOrder().find((s) => s.pick === pick);
+  if (!slot || !to) { dkStatus.textContent = "Choose the pick and the team getting it."; return; }
+  if (slot.teamId === to) { dkStatus.textContent = `The ${teamName(to)} already have pick ${pick}.`; return; }
+  if (!(await confirmAction(`Trade pick ${pick} (round ${slot.round}) from the ${teamName(slot.teamId)} to the ${teamName(to)}?`, { confirmLabel: "Record trade" }))) return;
+  let trade = null;
+  if (dkSave((data) => { trade = tradeDraftOrderPick(data, dkYear, pick, to); }, `Trade: pick ${pick} goes from the ${teamName(slot.teamId)} to the ${teamName(to)}.`) && trade) {
+    dkSeenTrades.add(trade.id);
+    dkPlayTradeSound();
+    event.currentTarget?.reset?.();
+  }
+});
+
+// Trade sound: built-in (a quick two-note "whoosh" and bell) or the commissioner's own file ("trade" in IndexedDB).
+let dkTradeUrl = null;
+const dkSeenTrades = new Set((dkData.draftTrades || []).map((t) => t.id));
+function dkPlayTradeSound() {
+  if (dkData.draftLive !== dkYear || !document.querySelector("#dk-trade-sound").checked) return; // only while the draft is live
+  if (dkTradeUrl) { const a = new Audio(dkTradeUrl); a.volume = dkVolume(); a.play().catch(() => {}); return; }
+  dkBeep(392, 0.18, "square");
+  setTimeout(() => dkBeep(587.33, 0.18, "square"), 160);
+  setTimeout(() => { dkBeep(783.99, 0.9, "triangle"); dkBeep(1174.66, 0.6, "sine"); }, 330);
+}
+async function dkLoadTradeSound() {
+  try {
+    const file = await dkSoundFile("get", null, "trade");
+    if (dkTradeUrl) URL.revokeObjectURL(dkTradeUrl);
+    dkTradeUrl = file ? URL.createObjectURL(file) : null;
+    document.querySelector("#dk-trade-now").textContent = file ? `Your file: ${file.name || "custom sound"}` : "Built-in trade sound";
+    document.querySelector("#dk-trade-clear").hidden = !file;
+  } catch { /* built-in */ }
+}
+document.querySelector("#dk-trade-file").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("audio/")) { dkStatus.textContent = "That isn't a sound file. Choose an MP3, WAV or OGG."; return; }
+  if (file.size > 5 * 1024 * 1024) { dkStatus.textContent = "That file is over 5 MB. Use a shorter clip."; return; }
+  try {
+    await dkSoundFile("put", new File([file], file.name, { type: file.type }), "trade");
+    await dkLoadTradeSound();
+    dkStatus.textContent = `Trade sound set to ${file.name}.`;
+  } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
+});
+document.querySelector("#dk-trade-clear").addEventListener("click", async () => {
+  try { await dkSoundFile("delete", null, "trade"); } catch { /* nothing stored */ }
+  await dkLoadTradeSound();
+  dkStatus.textContent = "Back to the built-in trade sound.";
+});
+document.querySelector("#dk-trade-test").addEventListener("click", () => {
+  if (dkTradeUrl) { const a = new Audio(dkTradeUrl); a.volume = dkVolume(); a.play().catch(() => {}); return; }
+  dkBeep(392, 0.18, "square"); setTimeout(() => dkBeep(587.33, 0.18, "square"), 160);
+  setTimeout(() => { dkBeep(783.99, 0.9, "triangle"); dkBeep(1174.66, 0.6, "sine"); }, 330);
+});
+document.querySelector("#dk-trade-sound").addEventListener("change", () => {
+  try { localStorage.setItem(`${dkSoundKey}-trade`, document.querySelector("#dk-trade-sound").checked ? "on" : "off"); } catch { /* fine */ }
+});
+try { if (localStorage.getItem(`${dkSoundKey}-trade`) === "off") document.querySelector("#dk-trade-sound").checked = false; } catch { /* default on */ }
+// A trade approved on another page or tab (Admin › Pending Trades) plays the sound here too.
+window.addEventListener("storage", (event) => {
+  if (event.key !== officeStorageKey) return;
+  const fresh = (dkData.draftTrades || []).filter((t) => t.year === dkYear && !dkSeenTrades.has(t.id));
+  for (const t of fresh) dkSeenTrades.add(t.id);
+  if (fresh.some((t) => Date.now() - Date.parse(t.at) < 15000)) {
+    dkPlayTradeSound();
+    const t = fresh[fresh.length - 1];
+    dkStatus.textContent = `Trade: pick ${t.pick} goes from the ${teamName(t.fromTeam)} to the ${teamName(t.toTeam)}.`;
+  }
+});
+dkLoadTradeSound();
+dkFillTradeForm();
