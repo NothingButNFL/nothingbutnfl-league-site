@@ -59,8 +59,11 @@ function dkMakePick(player) {
   const ok = dkSave((data) => { data.draftHistory = [...(data.draftHistory || []).filter((d) => !(d.year === dkYear && d.pick === slot.pick)), entry]; },
     `${late ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
   if (!ok) return;
-  if (late) { dkLate = null; dkRender(); } // the team on the clock keeps its time
+  dkFlashId = entry.id;
+  dkPlayPickSound();
+  if (late) dkLate = null; // the team on the clock keeps its time
   else dkTimerRestart();
+  dkRender();
 }
 
 // Skip the team on the clock (also happens on its own when the pick clock runs out).
@@ -292,7 +295,45 @@ function dkRenderBoard() {
   }));
 }
 
+// "Last Player Selected": the most recent pick, across the top; it flashes when a pick is made on this screen.
+let dkFlashId = null;
+function dkRenderLast() {
+  const box = document.querySelector("#dk-last");
+  const last = dkPicks().sort((a, b) => String(b.madeAt || "").localeCompare(String(a.madeAt || "")) || b.pick - a.pick)[0];
+  box.hidden = !last;
+  if (!last) return;
+  const team = nflTeams.find(({ id }) => id === last.teamId);
+  box.style.setProperty("--dk-team", typeof teamThemePalettes === "object" && teamThemePalettes[last.teamId] ? teamThemePalettes[last.teamId][0] : "#0c2b50");
+  const logo = document.createElement("div"); // keeps its column even if the logo can't load
+  logo.className = "dk-last-logo";
+  const img = document.createElement("img");
+  img.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${team.logo}.png`;
+  img.alt = "";
+  img.addEventListener("error", () => { img.remove(); logo.textContent = team.id; }, { once: true });
+  logo.append(img);
+  const text = document.createElement("div");
+  text.className = "dk-last-text";
+  const label = Object.assign(document.createElement("span"), { className: "dk-last-label", textContent: "LAST PLAYER SELECTED" });
+  const name = Object.assign(document.createElement("strong"), { className: "dk-last-name", textContent: last.player });
+  const meta = Object.assign(document.createElement("span"), { className: "dk-last-meta",
+    textContent: [last.position, last.college].filter(Boolean).join(" · ") });
+  text.append(label, name, meta);
+  const pick = document.createElement("div");
+  pick.className = "dk-last-pick";
+  pick.append(Object.assign(document.createElement("span"), { textContent: `RD ${last.round} · PICK ${last.pick}${last.compensatory ? "*" : ""}` }),
+    Object.assign(document.createElement("strong"), { textContent: team.name }),
+    Object.assign(document.createElement("small"), { textContent: last.fromTeam ? `Pick from the ${teamName(last.fromTeam)}` : "" }));
+  box.replaceChildren(logo, text, pick);
+  if (dkFlashId === last.id) {
+    dkFlashId = null;
+    box.classList.remove("is-flash");
+    void box.offsetWidth; // restart the animation
+    box.classList.add("is-flash");
+  }
+}
+
 function dkRender() {
+  dkRenderLast();
   document.querySelector("#dk-title").textContent = `${dkYear} Draft`;
   document.title = `${dkYear} Draft — Nothing But NFL`;
   dkRenderClock();
@@ -550,12 +591,12 @@ function dkSoundDb() {
     req.onerror = () => reject(req.error);
   });
 }
-async function dkSoundFile(action, blob) {
+async function dkSoundFile(action, blob, key = "countdown") {
   const db = await dkSoundDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction("files", action === "get" ? "readonly" : "readwrite");
     const store = tx.objectStore("files");
-    const req = action === "get" ? store.get("countdown") : action === "put" ? store.put(blob, "countdown") : store.delete("countdown");
+    const req = action === "get" ? store.get(key) : action === "put" ? store.put(blob, key) : store.delete(key);
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
@@ -581,12 +622,114 @@ document.querySelector("#dk-sound-file").addEventListener("change", async (event
   try {
     await dkSoundFile("put", new File([file], file.name, { type: file.type }));
     await dkLoadCustomSound();
+
+// ---------- Pick sound ----------
+// Plays when a pick is made: a built-in chime (a rising bell arpeggio) or the commissioner's own file ("pick" in the
+// same IndexedDB store).
+let dkPickUrl = null;
+function dkChime() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => { dkBeep(f, 0.9, "triangle"); dkBeep(f * 2, 0.5, "sine"); }, i * 140));
+}
+function dkPlayPickSound() {
+  if (!document.querySelector("#dk-pick-sound").checked) return;
+  if (dkPickUrl) { const a = new Audio(dkPickUrl); a.volume = dkVolume(); a.play().catch(() => {}); return; }
+  dkChime();
+}
+async function dkLoadPickSound() {
+  try {
+    const file = await dkSoundFile("get", null, "pick");
+    if (dkPickUrl) URL.revokeObjectURL(dkPickUrl);
+    dkPickUrl = file ? URL.createObjectURL(file) : null;
+    document.querySelector("#dk-pick-now").textContent = file ? `Your file: ${file.name || "custom sound"}` : "Built-in chime";
+    document.querySelector("#dk-pick-clear").hidden = !file;
+  } catch { /* storage unavailable: built-in chime */ }
+}
+document.querySelector("#dk-pick-file").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("audio/")) { dkStatus.textContent = "That isn't a sound file. Choose an MP3, WAV or OGG."; return; }
+  if (file.size > 5 * 1024 * 1024) { dkStatus.textContent = "That file is over 5 MB. Use a shorter clip."; return; }
+  try {
+    await dkSoundFile("put", new File([file], file.name, { type: file.type }), "pick");
+    await dkLoadPickSound();
+    dkStatus.textContent = `Pick sound set to ${file.name}.`;
+  } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
+});
+document.querySelector("#dk-pick-clear").addEventListener("click", async () => {
+  try { await dkSoundFile("delete", null, "pick"); } catch { /* nothing stored */ }
+  await dkLoadPickSound();
+  dkStatus.textContent = "Back to the built-in pick chime.";
+});
+document.querySelector("#dk-pick-test").addEventListener("click", () => {
+  const box = document.querySelector("#dk-pick-sound");
+  const was = box.checked;
+  box.checked = true;
+  dkPlayPickSound();
+  box.checked = was;
+});
+document.querySelector("#dk-pick-sound").addEventListener("change", () => {
+  try { localStorage.setItem(`${dkSoundKey}-pick`, document.querySelector("#dk-pick-sound").checked ? "on" : "off"); } catch { /* fine */ }
+});
+try { if (localStorage.getItem(`${dkSoundKey}-pick`) === "off") document.querySelector("#dk-pick-sound").checked = false; } catch { /* default on */ }
+dkLoadPickSound();
     dkStatus.textContent = `Countdown sound set to ${file.name}. It plays from 10 seconds left.`;
   } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
 });
 document.querySelector("#dk-sound-clear").addEventListener("click", async () => {
   try { await dkSoundFile("delete"); } catch { /* nothing stored */ }
   await dkLoadCustomSound();
+
+// ---------- Pick sound ----------
+// Plays when a pick is made: a built-in chime (a rising bell arpeggio) or the commissioner's own file ("pick" in the
+// same IndexedDB store).
+let dkPickUrl = null;
+function dkChime() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => { dkBeep(f, 0.9, "triangle"); dkBeep(f * 2, 0.5, "sine"); }, i * 140));
+}
+function dkPlayPickSound() {
+  if (!document.querySelector("#dk-pick-sound").checked) return;
+  if (dkPickUrl) { const a = new Audio(dkPickUrl); a.volume = dkVolume(); a.play().catch(() => {}); return; }
+  dkChime();
+}
+async function dkLoadPickSound() {
+  try {
+    const file = await dkSoundFile("get", null, "pick");
+    if (dkPickUrl) URL.revokeObjectURL(dkPickUrl);
+    dkPickUrl = file ? URL.createObjectURL(file) : null;
+    document.querySelector("#dk-pick-now").textContent = file ? `Your file: ${file.name || "custom sound"}` : "Built-in chime";
+    document.querySelector("#dk-pick-clear").hidden = !file;
+  } catch { /* storage unavailable: built-in chime */ }
+}
+document.querySelector("#dk-pick-file").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("audio/")) { dkStatus.textContent = "That isn't a sound file. Choose an MP3, WAV or OGG."; return; }
+  if (file.size > 5 * 1024 * 1024) { dkStatus.textContent = "That file is over 5 MB. Use a shorter clip."; return; }
+  try {
+    await dkSoundFile("put", new File([file], file.name, { type: file.type }), "pick");
+    await dkLoadPickSound();
+    dkStatus.textContent = `Pick sound set to ${file.name}.`;
+  } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
+});
+document.querySelector("#dk-pick-clear").addEventListener("click", async () => {
+  try { await dkSoundFile("delete", null, "pick"); } catch { /* nothing stored */ }
+  await dkLoadPickSound();
+  dkStatus.textContent = "Back to the built-in pick chime.";
+});
+document.querySelector("#dk-pick-test").addEventListener("click", () => {
+  const box = document.querySelector("#dk-pick-sound");
+  const was = box.checked;
+  box.checked = true;
+  dkPlayPickSound();
+  box.checked = was;
+});
+document.querySelector("#dk-pick-sound").addEventListener("change", () => {
+  try { localStorage.setItem(`${dkSoundKey}-pick`, document.querySelector("#dk-pick-sound").checked ? "on" : "off"); } catch { /* fine */ }
+});
+try { if (localStorage.getItem(`${dkSoundKey}-pick`) === "off") document.querySelector("#dk-pick-sound").checked = false; } catch { /* default on */ }
+dkLoadPickSound();
   dkStatus.textContent = "Back to the built-in countdown beeps.";
 });
 document.querySelector("#dk-sound-test").addEventListener("click", () => {
@@ -614,3 +757,54 @@ try {
   }
 } catch { /* defaults */ }
 dkLoadCustomSound();
+
+// ---------- Pick sound ----------
+// Plays when a pick is made: a built-in chime (a rising bell arpeggio) or the commissioner's own file ("pick" in the
+// same IndexedDB store).
+let dkPickUrl = null;
+function dkChime() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => { dkBeep(f, 0.9, "triangle"); dkBeep(f * 2, 0.5, "sine"); }, i * 140));
+}
+function dkPlayPickSound() {
+  if (!document.querySelector("#dk-pick-sound").checked) return;
+  if (dkPickUrl) { const a = new Audio(dkPickUrl); a.volume = dkVolume(); a.play().catch(() => {}); return; }
+  dkChime();
+}
+async function dkLoadPickSound() {
+  try {
+    const file = await dkSoundFile("get", null, "pick");
+    if (dkPickUrl) URL.revokeObjectURL(dkPickUrl);
+    dkPickUrl = file ? URL.createObjectURL(file) : null;
+    document.querySelector("#dk-pick-now").textContent = file ? `Your file: ${file.name || "custom sound"}` : "Built-in chime";
+    document.querySelector("#dk-pick-clear").hidden = !file;
+  } catch { /* storage unavailable: built-in chime */ }
+}
+document.querySelector("#dk-pick-file").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("audio/")) { dkStatus.textContent = "That isn't a sound file. Choose an MP3, WAV or OGG."; return; }
+  if (file.size > 5 * 1024 * 1024) { dkStatus.textContent = "That file is over 5 MB. Use a shorter clip."; return; }
+  try {
+    await dkSoundFile("put", new File([file], file.name, { type: file.type }), "pick");
+    await dkLoadPickSound();
+    dkStatus.textContent = `Pick sound set to ${file.name}.`;
+  } catch (error) { dkStatus.textContent = `The sound couldn't be saved in this browser (${error.message || "storage unavailable"}).`; }
+});
+document.querySelector("#dk-pick-clear").addEventListener("click", async () => {
+  try { await dkSoundFile("delete", null, "pick"); } catch { /* nothing stored */ }
+  await dkLoadPickSound();
+  dkStatus.textContent = "Back to the built-in pick chime.";
+});
+document.querySelector("#dk-pick-test").addEventListener("click", () => {
+  const box = document.querySelector("#dk-pick-sound");
+  const was = box.checked;
+  box.checked = true;
+  dkPlayPickSound();
+  box.checked = was;
+});
+document.querySelector("#dk-pick-sound").addEventListener("change", () => {
+  try { localStorage.setItem(`${dkSoundKey}-pick`, document.querySelector("#dk-pick-sound").checked ? "on" : "off"); } catch { /* fine */ }
+});
+try { if (localStorage.getItem(`${dkSoundKey}-pick`) === "off") document.querySelector("#dk-pick-sound").checked = false; } catch { /* default on */ }
+dkLoadPickSound();

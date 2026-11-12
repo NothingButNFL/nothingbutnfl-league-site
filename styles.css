@@ -2829,3 +2829,27 @@ a.dr-team:hover { text-decoration: underline; }
 .dk-sound-now { color: #ffd37a; font: 12px var(--mono); }
 .dk-volume { display: flex; align-items: center; gap: 8px; color: #fff; font: 12px var(--mono); }
 .dk-sound-panel [hidden] { display: none; }
+/* Draft room: Last Player Selected */
+.dk-last { --dk-team: #0c2b50; display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 20px; align-items: center; margin-bottom: 16px; padding: 16px 24px; border: 1px solid #ffd37a; border-radius: 12px; background: linear-gradient(110deg, color-mix(in srgb, var(--dk-team) 75%, #071a33), #0c2b50 75%); }
+.dk-last[hidden] { display: none; }
+.dk-last-logo { display: grid; place-items: center; width: 84px; height: 84px; color: #fff; font: 800 22px var(--mono); }
+.dk-last-logo img { width: 84px; height: 84px; object-fit: contain; }
+.dk-last-text { display: grid; gap: 4px; min-width: 0; }
+.dk-last-label { color: #ffd37a; font: 700 12px var(--mono); letter-spacing: .16em; }
+.dk-last-name { overflow: hidden; color: #fff; font: 800 38px var(--display, var(--body)); line-height: 1.05; letter-spacing: -.01em; text-overflow: ellipsis; white-space: nowrap; }
+.dk-last-meta { color: #fff; font: 600 15px var(--body); opacity: .9; }
+.dk-last-pick { display: grid; gap: 3px; justify-items: end; text-align: right; }
+.dk-last-pick span { color: #fff; font: 700 13px var(--mono); opacity: .85; }
+.dk-last-pick strong { color: #fff; font: 800 20px var(--display, var(--body)); }
+.dk-last-pick small { color: #ffd37a; font: 11px var(--mono); }
+.dk-last.is-flash { animation: dk-last-flash 2.4s ease-out; }
+.dk-last.is-flash .dk-last-name { animation: dk-last-pop .6s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes dk-last-flash {
+  0%, 30%, 60% { box-shadow: 0 0 0 3px #ffd37a, 0 0 40px rgba(255, 211, 122, .7); filter: brightness(1.35); }
+  15%, 45% { box-shadow: 0 0 0 1px #ffd37a; filter: brightness(1); }
+  100% { box-shadow: none; filter: none; }
+}
+@keyframes dk-last-pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .dk-last.is-flash, .dk-last.is-flash .dk-last-name { animation: none; } }
+@media (max-width: 800px) { .dk-last { grid-template-columns: 56px minmax(0, 1fr); } .dk-last-logo, .dk-last-logo img { width: 56px; height: 56px; } .dk-last-pick { grid-column: 1 / -1; justify-items: start; text-align: left; } .dk-last-name { font-size: 28px; white-space: normal; } }
+.dk-sound-head { margin: 14px 0 0; color: #fff; }

@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=4d8c4a3d">
-    <link rel="stylesheet" href="theme-light.css?v=969fe3ca">
+    <link rel="stylesheet" href="styles.css?v=5e3cedb4">
+    <link rel="stylesheet" href="theme-light.css?v=a87b5947">
     <link rel="stylesheet" href="theme-gray.css?v=cd6bac6f">
     <link rel="stylesheet" href="theme-team.css?v=495d665c">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -43,7 +43,7 @@
     <script src="league-core.js?v=f8902b5a" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=0bdb85f5" defer></script>
+    <script src="draft-room.js?v=1b95cb33" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -151,6 +151,8 @@
         <div class="section-wrap">
           <p class="workspace-status" id="dk-status" role="status" aria-live="polite"></p>
 
+          <div class="dk-last" id="dk-last" hidden aria-live="polite"></div>
+
           <div class="dk-clock" id="dk-clock">
             <div class="dk-clock-main">
               <span class="dk-clock-label" id="dk-clock-label">ON THE CLOCK</span>
@@ -165,6 +167,7 @@
                 <button class="workspace-button" type="button" id="dk-timer-reset">Reset</button>
                 <button class="workspace-button" type="button" id="dk-skip" title="Skip the team on the clock; it can still pick later">Skip team</button>
                 <label class="dk-sound-toggle"><input type="checkbox" id="dk-sound" checked> Countdown sound</label>
+                <label class="dk-sound-toggle"><input type="checkbox" id="dk-pick-sound" checked> Pick sound</label>
                 <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
               </div>
             </div>
@@ -172,13 +175,21 @@
           </div>
 
           <details class="management-panel dk-sound-panel" id="dk-sound-panel">
-            <summary><span class="panel-index">SOUND</span><strong>Countdown sound</strong> <span class="dk-sound-now" id="dk-sound-now">Built-in beeps</span></summary>
+            <summary><span class="panel-index">SOUNDS</span><strong>Countdown &amp; pick sounds</strong> <span class="dk-sound-now" id="dk-sound-now">Built-in beeps</span> <span class="dk-sound-now" id="dk-pick-now">Built-in chime</span></summary>
+            <h4 class="dk-sound-head">Countdown</h4>
             <p class="hs-help">With 10 seconds left on the pick clock, a countdown plays: a beep each second, higher for the last three, and a horn at 0:00. To use your own countdown instead (an MP3, WAV or OGG file of about 10 seconds), choose it below; it starts at 10 seconds left. The file stays in this browser.</p>
             <div class="hs-actions">
               <label class="workspace-button hs-file">Choose a sound file<input id="dk-sound-file" type="file" accept="audio/*" hidden></label>
               <button class="workspace-button" type="button" id="dk-sound-test">Play it</button>
               <button class="workspace-button" type="button" id="dk-sound-clear" hidden>Use the built-in beeps</button>
               <label class="dk-volume">Volume<input type="range" id="dk-volume" min="0" max="1" step="0.05" value="0.8"></label>
+            </div>
+            <h4 class="dk-sound-head">When a pick is made</h4>
+            <p class="hs-help">A chime plays as each pick goes in, and the player flashes at the top of the page under Last Player Selected. Choose your own sound file to play instead.</p>
+            <div class="hs-actions">
+              <label class="workspace-button hs-file">Choose a sound file<input id="dk-pick-file" type="file" accept="audio/*" hidden></label>
+              <button class="workspace-button" type="button" id="dk-pick-test">Play it</button>
+              <button class="workspace-button" type="button" id="dk-pick-clear" hidden>Use the built-in chime</button>
             </div>
           </details>
 
