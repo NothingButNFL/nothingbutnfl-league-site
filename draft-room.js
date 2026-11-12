@@ -259,7 +259,7 @@ const dkSkipped = (errors) => {
 
 // Reads the draft order in any of these forms. Returns { slots, errors }; slots from a pick sheet carry their round.
 //   Current, Round, Original, Pick Number  (the league's draft picks sheet: "CHI, 1, CAR, 1" — Pick Number can be the
-//                                           overall pick or the pick within the round, and a * marks a comp pick)
+//                                           overall pick or the pick within the round; a * on the round marks a comp pick)
 //   Pick, Team (from team)                 ("1, Chicago Bears (CAR)")
 //   just team names, one per line, in order
 function dkParseOrder(text) {
@@ -270,9 +270,10 @@ function dkParseOrder(text) {
     if (!t || /^(round|rnd|rd|pick|team|current|owner)\b[^\d]*$/i.test(t) || /^round\s+\d+\s*[-–:]?\s*$/i.test(t)) return;
     const cells = drSplit(t) || t.split(/\s+(?=\D)/);
     const sheetCells = (drSplit(t) || t.split(/\s+/)).filter((c) => c !== "");
-    if (sheetCells.length >= 4 && /^\d{1,2}$/.test(sheetCells[1]) && drTeamToken(sheetCells[0]) && drTeamToken(sheetCells[2]) && drPickToken(sheetCells[3])) {
+    // A * on the round (or the pick) marks a compensatory pick in that round: "BAL, 3*, BAL, 97".
+    if (sheetCells.length >= 4 && /^\d{1,2}\s*\*?$/.test(sheetCells[1]) && drTeamToken(sheetCells[0]) && drTeamToken(sheetCells[2]) && drPickToken(sheetCells[3])) {
       const teamId = drTeamToken(sheetCells[0]), original = drTeamToken(sheetCells[2]), pick = drPickToken(sheetCells[3]);
-      slots.push({ round: Number(sheetCells[1]), pick: pick.pick, compensatory: pick.compensatory || /\*/.test(sheetCells[2]), teamId, fromTeam: original !== teamId ? original : undefined });
+      slots.push({ round: Number.parseInt(sheetCells[1], 10), pick: pick.pick, compensatory: pick.compensatory || /\*/.test(sheetCells[1]), teamId, fromTeam: original !== teamId ? original : undefined });
       return;
     }
     let pick = drPickToken(cells[0]);
@@ -346,7 +347,7 @@ document.querySelector("#dk-order-standings").addEventListener("click", () => {
 document.querySelector("#dk-order-current").addEventListener("click", () => {
   const order = dkOrder();
   document.querySelector("#dk-order-text").value = order.length
-    ? ["Current, Round, Original, Pick Number", ...order.map((s) => `${s.teamId}, ${s.round}, ${s.fromTeam || s.teamId}, ${s.pick}${s.compensatory ? "*" : ""}`)].join("\n")
+    ? ["Current, Round, Original, Pick Number", ...order.map((s) => `${s.teamId}, ${s.round}${s.compensatory ? "*" : ""}, ${s.fromTeam || s.teamId}, ${s.pick}`)].join("\n")
     : "";
 });
 

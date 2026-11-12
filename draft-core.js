@@ -78,9 +78,11 @@ function drParseLine(line) {
   if (cells) {
     cells = cells.filter((c, i) => c !== "" || i === 0);
     // Round first: two leading numbers ("1, 1, …" or "1  32  …").
-    if (cells.length >= 4 && /^\d{1,2}$/.test(cells[0]) && drPickToken(cells[1]) && !drTeamToken(cells[1])) { round = Number(cells[0]); cells = cells.slice(1); }
+    let roundComp = false;
+    if (cells.length >= 4 && /^\d{1,2}\s*\*?$/.test(cells[0]) && drPickToken(cells[1]) && !drTeamToken(cells[1])) { round = Number.parseInt(cells[0], 10); roundComp = /\*/.test(cells[0]); cells = cells.slice(1); }
     const pick = drPickToken(cells[0]);
     if (!pick) return { error: "no pick number at the start" };
+    if (roundComp) pick.compensatory = true; // "3*, 97, …": a comp pick in round 3
     const teamId = drTeamToken(cells[1]);
     if (!teamId) {
       // "1. Bears - Caleb Williams, QB, USC": pick, team and player share the first cell.
