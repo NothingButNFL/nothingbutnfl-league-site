@@ -274,6 +274,11 @@ html[data-theme="gray"] .md-best-item { border-bottom-color: #303236; }
 html[data-theme="gray"] .md-best-photo.is-logo .leader-logo { color: #18191b; }
 html[data-theme="gray"] .md-slate { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
 html[data-theme="gray"] .md-slate-pane { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; }
+html[data-theme="gray"] .md-best { background-color: #1e1f22; }
+html[data-theme="gray"] .md-top-card { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #2c2e32; }
+html[data-theme="gray"] .md-top-label { color: #d5d7db; }
+html[data-theme="gray"] .md-top-pos { color: #d5d7db; }
+html[data-theme="gray"] .md-top-empty { color: #d5d7db; }
 html[data-theme="gray"] .si-table th, html[data-theme="gray"] .si-table td { border-bottom-color: #303236; }
 html[data-theme="gray"] .si-week { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; background-color: #1e1f22; }
 @media (max-width: 1300px) {

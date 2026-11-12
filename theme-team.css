@@ -345,7 +345,12 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-slate-nav:hover:not(:disabled), html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-slate-nav:focus-visible { color: rgb(var(--tm-07162b)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-slate-pane { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-slate-pane.is-featured .md-slate-tag { color: rgb(var(--tm-07162b)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-best { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-top-tab.is-active { background-color: rgb(var(--tm-eef1f6)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-top-card { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-10335d)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-top-label { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-top-pos { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-top-empty { color: rgb(var(--tm-c5d5e8)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .si-table th, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .si-table td { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .si-week { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .salary-section-label { border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-0f3460)); }

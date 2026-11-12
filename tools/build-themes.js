@@ -37,8 +37,8 @@ const themes = {
     colorScheme: "light",
     invertWhiteButtons: true,
     // Broadcast-style panels with their own dark artwork keep their dark-theme colors (white text on the art):
-    // Game of the Week, the week's game cards, Top Players, the draft ticker and Last Player Selected.
-    keepDark: "\\.(md-gotw|md-slate-(pane|tag|rows|team|name|score|note)|md-best(?!-title)|md-top-(?!dot)|draft-ticker|dt-|dk-last)",
+    // Game of the Week, the week's game cards, the draft ticker and Last Player Selected.
+    keepDark: "\\.(md-gotw|md-slate-(pane|tag|rows|team|name|score|note)|draft-ticker|dt-|dk-last)",
     rgba: [
       ["255, 255, 255", "18, 18, 19", 1.4], ["0, 0, 0", "0, 0, 0", 0.25], ["7, 26, 51", "255, 255, 255", 1],
       ["3, 12, 26", "0, 0, 0", 0.4], ["143, 208, 255", "26, 95, 193", 1], ["49, 82, 122", "220, 221, 223", 1]
@@ -74,8 +74,8 @@ const themes = {
     colorScheme: "light",
     invertWhiteButtons: true,
     // Broadcast-style panels with their own dark artwork keep their dark-theme colors (white text on the art):
-    // Game of the Week, the week's game cards, Top Players, the draft ticker and Last Player Selected.
-    keepDark: "\\.(md-gotw|md-slate-(pane|tag|rows|team|name|score|note)|md-best(?!-title)|md-top-(?!dot)|draft-ticker|dt-|dk-last)",
+    // Game of the Week, the week's game cards, the draft ticker and Last Player Selected.
+    keepDark: "\\.(md-gotw|md-slate-(pane|tag|rows|team|name|score|note)|draft-ticker|dt-|dk-last)",
     // The sidebar stays dark, like ESPN's black top bar: its rules get these charcoal colors instead, with ESPN red for
     // the active and hover marks.
     sidebar: "\\.(site-header|primary-nav|teams-(dropdown|trigger|menu|chevron)|admin-(trigger|menu|dropdown|chevron)|season-(menu|trigger|dropdown)|frontoffice-menu|news-menu|sidebar-collapse|theme-(picker|option|menu)|nav-|brand|menu-toggle|sample-nav|team-menu-)",
