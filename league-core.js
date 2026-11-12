@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3288,6 +3288,66 @@ function bettingSettle(data, bet) {
   }
   return { status: outcome, profit: outcome === "won" ? bettingProfit(bet.stake, bet.odds) : outcome === "lost" ? -bet.stake : 0 };
 }
+// ---- Pick'em lineups: each member picks 1 QB, 1 RB, 1 WR, 1 TE, 1 FLEX (RB/WR/TE) and 1 D/ST a week ----
+// data.lineups = [{ season, week, member, slots: { QB|RB|WR|TE|FLEX: { name, team, pos }, DST: teamId } }]. Scored from the
+// box scores (half-point PPR): pass yd 0.04, pass TD 4, INT −2, rush/rec yd 0.1, rush/rec TD 6, reception 0.5.
+// D/ST: sack 1, INT 2, fumble recovery 2, defensive TD 6, plus points allowed (0: 10, 1–6: 7, 7–13: 4, 14–20: 1,
+// 21–27: 0, 28–34: −1, 35+: −4).
+const pickemSlots = [["QB", ["QB"]], ["RB", ["RB", "HB", "FB"]], ["WR", ["WR"]], ["TE", ["TE"]], ["FLEX", ["RB", "HB", "FB", "WR", "TE"]], ["DST", []]];
+function validLineups(list) {
+  if (list === undefined) return true;
+  const team = (id) => nflTeams.some((t) => t.id === id);
+  return Array.isArray(list) && list.length <= 20000 && list.every((l) => l && isIntegerInRange(l.season, 2000, 2100) && isIntegerInRange(l.week, 1, 22) &&
+    typeof l.member === "string" && l.slots && typeof l.slots === "object" && Object.entries(l.slots).every(([slot, v]) =>
+      slot === "DST" ? team(v) : pickemSlots.some(([k]) => k === slot) && v && typeof v.name === "string" && v.name.length <= 70 && team(v.team) && (v.pos === undefined || (typeof v.pos === "string" && v.pos.length <= 10))));
+}
+// The box-score game a team played in a week of a season (data.games), or null.
+function pickemGame(data, season, week, teamId) {
+  return (data.games || []).find((g) => g.week === week && g.teams?.some((t) => t.team === teamId) &&
+    (/^\d{4}-\d{2}-\d{2}/.test(g.date || "") ? currentLeagueYear(new Date(`${g.date.slice(0, 10)}T12:00:00`)) : (data.standings?.season || currentLeagueYear())) === season) || null;
+}
+const pickemRound = (n) => Math.round(n * 100) / 100;
+// { points, played, line } for one player slot ({ name, team }).
+function pickemPlayerPoints(data, season, week, pick) {
+  const game = pickemGame(data, season, week, pick.team);
+  if (!game) return { points: 0, played: false, line: "" };
+  const found = boxScoreStats(game, pick.name);
+  if (!found) return { points: 0, played: true, line: "No stats" };
+  const v = found.values, n = (x) => Number(x) || 0;
+  const points = n(v.passYds) * 0.04 + n(v.passTd) * 4 - n(v.int) * 2 + n(v.rushYds) * 0.1 + n(v.rushTd) * 6 + n(v.recYds) * 0.1 + n(v.recTd) * 6 + n(v.rec) * 0.5;
+  const bits = [];
+  if (v.att) bits.push(`${v.cmp}/${v.att}, ${v.passYds} yds, ${v.passTd} TD${v.int ? `, ${v.int} INT` : ""}`);
+  if (v.rushYds || v.rushTd) bits.push(`${v.rushYds} rush yds${v.rushTd ? `, ${v.rushTd} TD` : ""}`);
+  if (v.rec || v.recYds) bits.push(`${v.rec} rec, ${v.recYds} yds${v.recTd ? `, ${v.recTd} TD` : ""}`);
+  return { points: pickemRound(points), played: true, line: bits.join(" · ") };
+}
+// { points, played, line } for a team defense.
+function pickemDefensePoints(data, season, week, teamId) {
+  const game = pickemGame(data, season, week, teamId);
+  if (!game) return { points: 0, played: false, line: "" };
+  const opp = game.teams.find((t) => t.team !== teamId);
+  const lines = (game.players?.defense || []).filter((l) => l.team === teamId);
+  const sum = (k) => lines.reduce((t, l) => t + (Number(l[k]) || 0), 0);
+  const sacks = sum("sacks"), ints = sum("int"), fr = sum("fr"), tds = sum("td");
+  const pa = opp ? opp.score : 0;
+  const tier = pa === 0 ? 10 : pa <= 6 ? 7 : pa <= 13 ? 4 : pa <= 20 ? 1 : pa <= 27 ? 0 : pa <= 34 ? -1 : -4;
+  return { points: pickemRound(sacks + ints * 2 + fr * 2 + tds * 6 + tier), played: true,
+    line: `${pa} pts allowed${sacks ? `, ${sacks} sk` : ""}${ints ? `, ${ints} INT` : ""}${fr ? `, ${fr} FR` : ""}${tds ? `, ${tds} TD` : ""}` };
+}
+// A lineup's total and each slot's score.
+function pickemLineupPoints(data, lineup) {
+  const slots = {};
+  let total = 0;
+  for (const [slot] of pickemSlots) {
+    const pick = lineup?.slots?.[slot];
+    if (!pick) continue;
+    const s = slot === "DST" ? pickemDefensePoints(data, lineup.season, lineup.week, pick) : pickemPlayerPoints(data, lineup.season, lineup.week, pick);
+    slots[slot] = s;
+    total += s.points;
+  }
+  return { total: pickemRound(total), slots };
+}
+
 // A member's play-money balance for a season: the starting balance + settled results − stakes still riding.
 function bettingBalance(data, member, season) {
   const start = data.bettingSettings?.startingBalance ?? bettingDefaultBalance;

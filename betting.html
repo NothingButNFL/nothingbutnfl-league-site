@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=11838045">
-    <link rel="stylesheet" href="theme-light.css?v=98142aaa">
-    <link rel="stylesheet" href="theme-gray.css?v=bc5d1449">
-    <link rel="stylesheet" href="theme-espn.css?v=6af39680">
-    <link rel="stylesheet" href="theme-team.css?v=3bb7e471">
+    <link rel="stylesheet" href="styles.css?v=6fb1e2fe">
+    <link rel="stylesheet" href="theme-light.css?v=bed3e77e">
+    <link rel="stylesheet" href="theme-gray.css?v=ddb29a88">
+    <link rel="stylesheet" href="theme-espn.css?v=1bda95bd">
+    <link rel="stylesheet" href="theme-team.css?v=b1c74b00">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -42,10 +42,10 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=ae58a17c" defer></script>
+    <script src="league-core.js?v=b4318e2b" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=19478b65" defer></script>
-    <script src="betting.js?v=39f7dd64" defer></script>
+    <script src="betting.js?v=a4feb701" defer></script>
   </head>
   <body class="admin-page members-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -144,7 +144,7 @@
             <div>
               <div class="section-kicker"><span>01</span> THE BOOK</div>
               <h2>Betting</h2>
-              <p class="section-subtitle">Lines for every game this week, worked out from this season's box scores (points scored and allowed per game, plus 1.5 points for home field). Bet with play money, and every bet settles by itself once the game's box score is entered. Pick'em is separate: pick the winner of each game for a season leaderboard. Bets and picks lock once a game's score is in.</p>
+              <p class="section-subtitle">Lines for every game this week, worked out from this season's box scores (points scored and allowed per game, plus 1.5 points for home field). Bet with play money, and every bet settles by itself once the game's box score is entered. Pick'em is separate: set a weekly lineup of 1 QB, 1 RB, 1 WR, 1 TE, 1 FLEX and 1 D/ST, scored from the box scores, for a season leaderboard. Bets and lineup spots lock once that game's score is in.</p>
             </div>
             <div class="bet-who">
               <label>You are<select id="bet-member"></select></label>
@@ -182,7 +182,7 @@
               </div>
               <div class="management-panel">
                 <div class="panel-heading"><div><span class="panel-index">PICK'EM</span><h3>Season standings</h3></div></div>
-                <div class="management-table-wrap"><table class="management-table bet-lb-table"><thead><tr><th>#</th><th>MEMBER</th><th>CORRECT</th><th>PICKED</th><th>THIS WEEK</th></tr></thead><tbody id="bet-lb-picks"></tbody></table></div>
+                <div class="management-table-wrap"><table class="management-table bet-lb-table"><thead><tr><th>#</th><th>MEMBER</th><th>POINTS</th><th>WEEKS</th><th>THIS WEEK</th></tr></thead><tbody id="bet-lb-picks"></tbody></table></div>
               </div>
             </div>
           </div>

@@ -3287,3 +3287,30 @@ main .bet-lb-table td:nth-child(n+3) { text-align: right; }
 .bet-setup-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 10px; }
 .bet-setup-row label { display: grid; gap: 4px; font: 700 11px var(--mono); text-transform: uppercase; }
 .bet-setup-row input { min-height: 36px; padding: 4px 8px; border: 1px solid #54749b; background: #071a33; color: #fff; }
+
+/* Betting › Pick'em lineup */
+#bet-view-pickem .bet-pick-grid { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+@media (max-width: 1000px) { #bet-view-pickem .bet-pick-grid { grid-template-columns: 1fr; } }
+.pk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.pk-head h3 { margin: 0; }
+.pk-total { color: #75e28b; font: 800 26px var(--display); }
+.pk-slots { display: grid; gap: 8px; margin-top: 8px; }
+.pk-slot { display: grid; grid-template-columns: 56px minmax(0, 1fr) 70px minmax(180px, 260px); align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #31527a; border-radius: 8px; background: #071a33; }
+@media (max-width: 760px) { .pk-slot { grid-template-columns: 50px minmax(0, 1fr) 60px; } .pk-slot .pk-select, .pk-slot .pk-lock { grid-column: 1 / -1; } }
+.pk-slot-label { display: grid; place-items: center; height: 34px; border-radius: 6px; background: #174477; color: #fff; font: 800 12px var(--mono); }
+.pk-slot-info { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; min-width: 0; }
+.pk-slot-info .bet-logo { grid-row: span 3; }
+.pk-slot-name { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.pk-slot-info small { color: #a7bdd7; font-size: 11px; }
+.pk-slot-line { grid-column: 2; }
+.pk-slot-empty { grid-column: 1 / -1; color: #a7bdd7; font-style: italic; }
+.pk-slot-pts { font: 800 18px var(--display); text-align: right; }
+.pk-slot-pts.is-pending { opacity: .45; }
+.pk-select { min-height: 34px; max-width: 100%; padding: 4px 6px; border: 1px solid #54749b; background: #0c2b50; color: #fff; font: 12px var(--body); }
+.pk-lock { color: #ffd37a; font: 700 11px var(--mono); letter-spacing: .08em; text-align: center; }
+.pk-week h3 { margin: 0 0 8px; }
+.pk-week-list { display: grid; gap: 4px; margin: 0; padding: 0 0 0 22px; }
+.pk-week-list li { padding: 4px 0; border-bottom: 1px solid #1d3a5f; }
+.pk-week-list li > * { display: inline-block; }
+.pk-week-list li b { float: right; }
+.pk-week-list li.is-me { color: #8fd0ff; }

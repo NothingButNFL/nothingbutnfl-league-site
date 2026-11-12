@@ -178,40 +178,95 @@ function renderSlip() {
   }) : [betEl("li", "bet-none", me ? "No bets this week." : "—")]));
 }
 
-// ---------- Pick'em ----------
+// ---------- Pick'em: a weekly lineup (QB, RB, WR, TE, FLEX, D/ST) scored from the box scores ----------
+const pickemLabels = { QB: "QB", RB: "RB", WR: "WR", TE: "TE", FLEX: "FLEX", DST: "D/ST" };
+const pickemFirstPos = (pos) => String(pos || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
+// Everyone who can fill a slot this week: main-roster players on teams playing, by position.
+function pickemPool(week) {
+  const season = betSeason();
+  const playing = new Map();
+  for (const g of betGames(week)) { playing.set(g.away, g.home); playing.set(g.home, g.away); }
+  const pool = [];
+  for (const [team, opp] of playing) {
+    for (const player of officeData.teams[team]?.roster || []) {
+      if (!isPlayerOnSeason(player, season)) continue;
+      const entry = seasonEntry(player, season);
+      if (isOnCel(entry) || (isPracticeSquad(entry) && !isPsElevated(entry))) continue;
+      const pos = pickemFirstPos(entry.position);
+      if (["QB", "RB", "HB", "FB", "WR", "TE"].includes(pos)) pool.push({ name: player.name, team, pos, opp, cap: capHitFor(entry) });
+    }
+  }
+  return pool.sort((a, b) => b.cap - a.cap);
+}
+function pickemLineup(member, week) {
+  return (officeData.lineups || []).find((l) => l.member === member && l.season === betSeason() && l.week === week) || null;
+}
+const pickemFinal = (week, team) => Boolean(team && pickemGame(officeData, betSeason(), week, team));
 function renderPickem() {
   const week = betWeek, season = betSeason(), me = betMe();
-  const games = betGames(week);
   const grid = document.querySelector("#bet-pick-grid");
-  if (!games.length) { grid.replaceChildren(betEl("p", "empty-state", `No games for week ${week}.`)); return; }
-  if (!me) { grid.replaceChildren(betEl("p", "empty-state", betMembers().length ? "Choose who you are at the top to make your picks." : "Add people on the Members page first; they make the picks.")); return; }
-  grid.replaceChildren(...games.map((g) => {
-    const key = bettingGameKey(g.away, g.home);
-    const res = bettingResult(officeData, season, week, g.away, g.home);
-    const winner = res ? (res.awayScore > res.homeScore ? g.away : res.homeScore > res.awayScore ? g.home : null) : null;
-    const pick = (officeData.pickem || []).find((p) => p.member === me && p.season === season && p.week === week && p.game === key);
-    const odds = bettingOdds(officeData, season, week, g.away, g.home);
-    const card = betEl("article", "bet-pick");
-    card.append(betEl("span", "bet-pick-line", res ? `FINAL ${res.awayScore}–${res.homeScore}` : `${g.home} ${betLine(odds.spread)}`));
-    const row = betEl("div", "bet-pick-teams");
-    for (const team of [g.away, g.home]) {
-      const b = betEl("button", "bet-pick-team");
-      b.type = "button";
-      b.disabled = Boolean(res);
-      b.append(betLogo(team, "lg"), betEl("strong", "", team), betEl("small", "", betRecord(team)));
-      if (pick?.pick === team) b.classList.add("is-picked");
-      if (res && pick?.pick === team) b.classList.add(winner === team ? "is-right" : "is-wrong");
-      b.addEventListener("click", () => {
-        officeData.pickem = (officeData.pickem || []).filter((p) => !(p.member === me && p.season === season && p.week === week && p.game === key));
-        officeData.pickem.push({ season, week, game: key, member: me, pick: team });
-        if (betSave(`Picked ${teamName(team)}.`)) renderPickem();
+  if (!betGames(week).length) { grid.replaceChildren(betEl("p", "empty-state", `No games for week ${week}.`)); return; }
+  if (!me) { grid.replaceChildren(betEl("p", "empty-state", betMembers().length ? "Choose who you are at the top to set your lineup." : "Add people on the Members page first; they set the lineups.")); return; }
+  const lineup = pickemLineup(me, week);
+  const scored = pickemLineupPoints(officeData, lineup || { season, week, slots: {} });
+  const pool = pickemPool(week);
+  const used = new Set(Object.entries(lineup?.slots || {}).filter(([k]) => k !== "DST").map(([, v]) => `${normalizePlayerName(v.name)}|${v.team}`));
+  const card = betEl("div", "management-panel pk-card");
+  const head = betEl("div", "pk-head");
+  head.append(betEl("h3", "", `Week ${week} lineup`), betEl("strong", "pk-total", `${scored.total.toFixed(2)} pts`));
+  card.append(head, betEl("p", "hs-help", "Pick 1 QB, 1 RB, 1 WR, 1 TE, 1 FLEX (RB, WR or TE) and 1 D/ST from teams playing this week. Each spot locks once that player's game is final. Scoring: half-point PPR (passing yard 0.04, TD 4, INT −2; rushing/receiving yard 0.1, TD 6, catch 0.5); D/ST gets sacks, takeaways, TDs and points allowed."));
+  const list = betEl("div", "pk-slots");
+  for (const [slot, positions] of pickemSlots) {
+    const row = betEl("div", "pk-slot");
+    row.append(betEl("b", "pk-slot-label", pickemLabels[slot]));
+    const pick = lineup?.slots?.[slot];
+    const pickTeam = slot === "DST" ? pick : pick?.team;
+    const locked = pickemFinal(week, pickTeam);
+    const info = betEl("div", "pk-slot-info");
+    if (pick) {
+      const s = scored.slots[slot];
+      const name = slot === "DST" ? `${teamName(pick)} D/ST` : `${pick.name}`;
+      info.append(betLogo(pickTeam), betEl("span", "pk-slot-name", name), betEl("small", "", slot === "DST" ? "" : `${pick.pos || ""} · ${pick.team}`));
+      if (s?.played) info.append(betEl("small", "pk-slot-line", s.line));
+      row.append(info, betEl("strong", `pk-slot-pts${s?.played ? "" : " is-pending"}`, s?.played ? s.points.toFixed(2) : "—"));
+    } else { info.append(betEl("span", "pk-slot-empty", "Empty")); row.append(info, betEl("strong", "pk-slot-pts is-pending", "—")); }
+    if (!locked) {
+      const sel = betEl("select", "pk-select");
+      sel.setAttribute("aria-label", `Choose your ${pickemLabels[slot]}`);
+      sel.append(new Option(pick ? "Change…" : "Choose…", ""));
+      if (slot === "DST") {
+        for (const g of betGames(week)) for (const [t, o] of [[g.away, g.home], [g.home, g.away]]) if (!pickemFinal(week, t)) sel.append(new Option(`${teamName(t)} D/ST (vs ${o})`, `DST|${t}`));
+      } else {
+        for (const p of pool) {
+          if (!positions.includes(p.pos) || pickemFinal(week, p.team)) continue;
+          const key = `${normalizePlayerName(p.name)}|${p.team}`;
+          if (used.has(key) && !(pick && normalizePlayerName(pick.name) === normalizePlayerName(p.name) && pick.team === p.team)) continue;
+          sel.append(new Option(`${p.name} · ${p.pos} · ${p.team} vs ${p.opp}`, `${p.team}|${p.pos}|${p.name}`));
+        }
+      }
+      sel.addEventListener("change", () => {
+        if (!sel.value) return;
+        const all = (officeData.lineups || []).filter((l) => !(l.member === me && l.season === season && l.week === week));
+        const slots = { ...(lineup?.slots || {}) };
+        if (slot === "DST") slots.DST = sel.value.split("|")[1];
+        else { const [team, pos, ...rest] = sel.value.split("|"); slots[slot] = { name: rest.join("|"), team, pos }; }
+        officeData.lineups = [...all, { season, week, member: me, slots }];
+        if (betSave(`${pickemLabels[slot]}: ${slot === "DST" ? `${teamName(slots.DST)} D/ST` : slots[slot].name}.`)) renderPickem();
       });
-      row.append(b);
-      if (team === g.away) row.append(betEl("span", "bet-pick-at", "@"));
-    }
-    card.append(row);
-    return card;
-  }));
+      row.append(sel);
+    } else row.append(betEl("span", "pk-lock", "LOCKED"));
+    list.append(row);
+  }
+  card.append(list);
+  // This week's scores for everyone
+  const others = betMembers().map((m) => ({ m, l: pickemLineup(m.id, week) })).filter((x) => x.l)
+    .map((x) => ({ ...x, pts: pickemLineupPoints(officeData, x.l).total })).sort((a, b) => b.pts - a.pts);
+  const side = betEl("div", "management-panel pk-week");
+  side.append(betEl("h3", "", `Week ${week} scores`));
+  const ol = betEl("ol", "pk-week-list");
+  ol.append(...(others.length ? others.map((x) => { const li = betEl("li", x.m.id === me ? "is-me" : ""); li.append(betEl("span", "", x.m.name), betEl("b", "", x.pts.toFixed(2))); return li; }) : [betEl("li", "bet-none", "No lineups yet.")]));
+  side.append(ol);
+  grid.replaceChildren(card, side);
 }
 
 // ---------- Leaderboards ----------
@@ -226,20 +281,18 @@ function renderLeaders() {
     return tr;
   }) : [Object.assign(document.createElement("tr"), { innerHTML: '<td colspan="5" class="empty-state">No members yet.</td>' })]));
   const picks = members.map((m) => {
-    let correct = 0, decided = 0, week = 0;
-    for (const p of (officeData.pickem || []).filter((x) => x.member === m.id && x.season === season)) {
-      const [away, home] = p.game.split("@");
-      const res = bettingResult(officeData, season, p.week, away, home);
-      if (!res) continue;
-      const winner = res.awayScore > res.homeScore ? away : res.homeScore > res.awayScore ? home : null;
-      decided += 1;
-      if (winner === p.pick) { correct += 1; if (p.week === betWeek) week += 1; }
+    let total = 0, weeks = 0, week = 0;
+    for (const l of (officeData.lineups || []).filter((x) => x.member === m.id && x.season === season)) {
+      const pts = pickemLineupPoints(officeData, l).total;
+      total += pts;
+      if (Object.values(pickemLineupPoints(officeData, l).slots).some((x) => x.played)) weeks += 1;
+      if (l.week === betWeek) week = pts;
     }
-    return { m, correct, decided, week };
-  }).sort((a, b) => b.correct - a.correct || a.decided - b.decided);
+    return { m, total: Math.round(total * 100) / 100, weeks, week };
+  }).sort((a, b) => b.total - a.total);
   document.querySelector("#bet-lb-picks").replaceChildren(...(picks.length ? picks.map((r, i) => {
     const tr = document.createElement("tr");
-    for (const v of [String(i + 1), r.m.name, String(r.correct), r.decided ? `${r.decided} (${Math.round((r.correct / r.decided) * 100)}%)` : "0", String(r.week)]) tr.insertCell().textContent = v;
+    for (const v of [String(i + 1), r.m.name, r.total.toFixed(2), String(r.weeks), r.week ? r.week.toFixed(2) : "—"]) tr.insertCell().textContent = v;
     return tr;
   }) : [Object.assign(document.createElement("tr"), { innerHTML: '<td colspan="5" class="empty-state">No members yet.</td>' })]));
 }

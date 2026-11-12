@@ -488,3 +488,10 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .be
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bet-pick-team small { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bet-pick-team.is-picked { border-top-color: rgb(var(--tm-8fd0ff)); border-right-color: rgb(var(--tm-8fd0ff)); border-bottom-color: rgb(var(--tm-8fd0ff)); border-left-color: rgb(var(--tm-8fd0ff)); background-color: rgb(var(--tm-8fd0ff) / 0.15); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bet-setup-row input { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-slot { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-slot-label { background-color: rgb(var(--tm-174477)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-slot-info small { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-slot-empty { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-select { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-week-list li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .pk-week-list li.is-me { color: rgb(var(--tm-8fd0ff)); }
