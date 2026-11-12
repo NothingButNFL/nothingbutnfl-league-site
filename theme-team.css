@@ -454,3 +454,8 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .bx-table.bx-team-table :is(th, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) td).bx-ts-label { color: rgb(var(--tm-9fb4cf)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rb-count-table td.rbc-abv { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rb-count-table tr.is-selected td { box-shadow: rgb(var(--tm-8fd0ff)) 0px 1px 0px inset, rgb(var(--tm-8fd0ff)) 0px -1px 0px inset; }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-team-tag { background-color: rgb(var(--tm-174477)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-cell.is-live { box-shadow: rgb(var(--tm-8fd0ff) / 0.45) 0px 0px 0px 1px inset; }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-live { color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-table tfoot :is(th, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) td) { border-top-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .msf-tiers li { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); }

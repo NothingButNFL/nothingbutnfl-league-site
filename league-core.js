@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3181,6 +3181,32 @@ function tradeDraftOrderPick(data, year, pickNumber, toTeam, gets = null) {
   if (asset) asset.currentOwner = toTeam;
   data.draftTrades = [...(data.draftTrades || []), trade].slice(-2000);
   return trade;
+}
+
+// ---- Minimum Spending Floor (Article 8) ----
+// Each team must spend 76.5% of its cap space (total cap: base + rollover + adjustment) in rostered cap hits every
+// league year (active, CEL, practice squad, IR; dead cap excluded). data.spendingHistory = { [year]: { [teamId]: percent } }
+// holds league years entered by hand (before the salary sheets); site seasons are worked out from the sheets.
+const spendingFloorPct = 76.5;
+function validSpendingHistory(history) {
+  if (history === undefined) return true;
+  if (!history || typeof history !== "object" || Array.isArray(history)) return false;
+  return Object.entries(history).every(([year, row]) => isIntegerInRange(Number(year), 1990, 2100) && row && typeof row === "object" && !Array.isArray(row) &&
+    Object.entries(row).every(([id, pct]) => nflTeams.some((t) => t.id === id) && typeof pct === "number" && Number.isFinite(pct) && pct >= 0 && pct <= 500));
+}
+// { pct, spent, cap, source: "entered" | "sheets" } or null for one team and league year.
+function spendingFor(data, teamId, year) {
+  const entered = data.spendingHistory?.[year]?.[teamId];
+  if (typeof entered === "number") return { pct: entered, source: "entered" };
+  if (!seasons.includes(year)) return null;
+  const f = seasonCapFigures(teamId, year, data);
+  if (!f.totalCap) return null;
+  return { pct: (f.payroll / f.totalCap) * 100, spent: f.payroll, cap: f.totalCap, source: "sheets" };
+}
+// The forfeited pick for a shortfall (percentage points below the floor), per Section 4.
+function spendingPenalty(shortfall) {
+  if (!(shortfall > 0)) return null;
+  return shortfall <= 2 ? "4th-round pick" : shortfall <= 5 ? "3rd-round pick" : shortfall <= 10 ? "2nd-round pick" : "1st-round pick";
 }
 
 // Home › Latest Stream: the league's YouTube channel. data.youtubeChannel = { id: "UC…" (24 characters) }

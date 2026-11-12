@@ -3179,3 +3179,34 @@ main .rb-count-table :is(th, td):last-child { padding-right: 14px !important; }
 #add-player-form label { font-size: 11px; }
 #add-player-form :is(input, select) { font-size: 12px; }
 #add-player-form button { font-size: 11px; }
+
+/* Season Information › Minimum Spending Window */
+.msf-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 1100px) { .msf-layout { grid-template-columns: 1fr; } }
+.msf-side { display: grid; gap: 18px; }
+main .msf-table :is(th, td), main .msf-dead-table :is(th, td) { text-align: center !important; white-space: nowrap; }
+main .msf-table :is(th, td):first-child, main .msf-dead-table :is(th, td):first-child { padding-left: 12px !important; }
+main .msf-table td.msf-status, main .msf-table th.msf-status-h { text-align: left !important; white-space: normal; min-width: 210px; }
+.msf-table { min-width: 0; font-variant-numeric: tabular-nums; }
+.msf-dead-table { min-width: 0; font-variant-numeric: tabular-nums; }
+main .msf-dead-table td:not(:first-child) { text-align: right !important; }
+.msf-team-tag { display: inline-block; min-width: 46px; padding: 3px 6px; border-radius: 3px; background: #174477; color: #fff; font-weight: 800; text-align: center; text-decoration: none; }
+.msf-cell.is-ok { background: rgba(117, 226, 139, .2); }
+.msf-cell.is-short { background: rgba(255, 77, 94, .55); color: #fff; font-weight: 700; }
+.msf-cell.is-live { box-shadow: inset 0 0 0 1px rgba(143, 208, 255, .45); }
+.msf-avg { font-weight: 700; }
+.msf-avg.is-short { color: #ff6b7a; }
+.msf-none { opacity: .5; }
+.msf-live { display: block; color: #8fd0ff; font-size: 9px; letter-spacing: .1em; }
+.msf-flag { margin-right: 4px; padding: 1px 6px; border-radius: 3px; font-size: 10px; letter-spacing: .06em; }
+.msf-flag.is-ok { background: rgba(117, 226, 139, .25); color: #75e28b; }
+.msf-flag.is-short { background: rgba(255, 77, 94, .3); color: #ff9299; }
+.msf-table tfoot :is(th, td) { border-top: 2px solid #31527a; font-weight: 700; }
+.msf-table tfoot tr.msf-min :is(th, td) { border-top: 0; color: #ffd37a; }
+.msf-tiers { display: grid; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.msf-tiers li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; border: 1px solid #31527a; border-radius: 6px; font-size: 13px; }
+.msf-tiers li span { color: #ff9299; font-weight: 700; text-align: right; }
+.msf-tiers li.is-repeat { border-color: #ff6b7a; }
+.msf-setup { margin-top: 18px; }
+.msf-setup textarea { width: 100%; margin-top: 8px; }
+.msf-setup summary { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }

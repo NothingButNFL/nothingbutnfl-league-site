@@ -942,3 +942,15 @@ html[data-theme="espn"] .rb-count-table td.rbc-short { color: #121213; }
 html[data-theme="espn"] .rb-count-table td.rbc-main.is-under { color: #121213; }
 html[data-theme="espn"] .rb-count-table tr.is-selected td { box-shadow: #d00 0px 1px 0px inset, #d00 0px -1px 0px inset; }
 html[data-theme="espn"] .cel-mark { color: #8a6d00; }
+html[data-theme="espn"] .msf-team-tag { background-color: #ebedf0; color: #121213; }
+html[data-theme="espn"] .msf-cell.is-short { color: #121213; }
+html[data-theme="espn"] .msf-cell.is-live { box-shadow: rgba(221, 0, 0, 0.450) 0px 0px 0px 1px inset; }
+html[data-theme="espn"] .msf-avg.is-short { color: #d0021b; }
+html[data-theme="espn"] .msf-live { color: #0068d1; }
+html[data-theme="espn"] .msf-flag.is-ok { color: #1e7f3a; }
+html[data-theme="espn"] .msf-flag.is-short { color: #d0021b; }
+html[data-theme="espn"] .msf-table tfoot :is(th, html[data-theme="espn"] td) { border-top-color: #dcdddf; }
+html[data-theme="espn"] .msf-table tfoot tr.msf-min :is(th, html[data-theme="espn"] td) { color: #d00; }
+html[data-theme="espn"] .msf-tiers li { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; }
+html[data-theme="espn"] .msf-tiers li span { color: #d0021b; }
+html[data-theme="espn"] .msf-tiers li.is-repeat { border-top-color: #d0021b; border-right-color: #d0021b; border-bottom-color: #d0021b; border-left-color: #d0021b; }
