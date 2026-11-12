@@ -3013,3 +3013,17 @@ html.draft-live .sample-toast { bottom: 140px; }
 .empty-state { color: #ffffff; font-size: 12px; }
 .help-pop > p, .panel-heading .help-pop > p { max-width: none; margin: 0; color: #ffffff; font-size: 14px; line-height: 1.55; }
 .panel-heading .help-head > h3 { margin: 0; }
+
+/* Last Player Selected: last college season */
+.dk-last-stats { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; margin-top: 4px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.dk-last-stats.is-loading { display: block; color: #fff; font: 12px var(--mono); opacity: .7; }
+.dk-last-stats-label { color: #ffd37a; font: 700 11px var(--mono); letter-spacing: .14em; white-space: nowrap; }
+.dk-last-stats-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.dk-last-stats-list div { display: grid; justify-items: center; min-width: 64px; padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, .22); }
+.dk-last-stats-list strong { color: #fff; font: 800 18px var(--display, var(--body)); line-height: 1.1; }
+.dk-last-stats-list span { color: #fff; font: 700 10px var(--mono); letter-spacing: .08em; opacity: .75; white-space: nowrap; }
+.dk-last-stats-src { color: #fff; font: 10px var(--mono); opacity: .55; white-space: nowrap; }
+@media (max-width: 800px) { .dk-last-stats { grid-template-columns: 1fr; gap: 8px; } }
+.dk-cfbd-row { display: flex; gap: 8px; margin-top: 8px; }
+.dk-cfbd-row input { flex: 1 1 auto; min-width: 0; }
+.dk-cfbd-status.is-bad { color: #ff9b9b; }

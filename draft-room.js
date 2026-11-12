@@ -334,6 +334,137 @@ function dkRenderMore(box, last) {
   if (pages > 1) dkMoreTimer = setInterval(() => { dkMorePage += 1; show(); }, 15000);
 }
 
+// College stats on Last Player Selected, from CollegeFootballData.com (free API key, entered under Draft setup and
+// kept only in this browser). The player's last college season (the year before the draft) is looked up once and
+// cached; if that season has nothing, the season before is tried. Linemen and players CFBD doesn't track show nothing.
+const dkCfbdKeyName = "nbf-cfbd-key";
+const dkStatsCacheKey = "nbf-college-stats";
+const dkCfbdBase = "https://api.collegefootballdata.com";
+const dkStatPlan = { // category → [stat, label], in display order
+  passing: [["COMPLETIONS", "CMP"], ["ATT", "ATT"], ["YDS", "PASS YDS"], ["TD", "PASS TD"], ["INT", "INT"]],
+  rushing: [["CAR", "CAR"], ["YDS", "RUSH YDS"], ["TD", "RUSH TD"], ["YPC", "YPC"]],
+  receiving: [["REC", "REC"], ["YDS", "REC YDS"], ["TD", "REC TD"], ["YPR", "YPR"]],
+  defensive: [["TOT", "TKL"], ["TFL", "TFL"], ["SACKS", "SACKS"], ["PD", "PD"], ["QB HUR", "QB HUR"]],
+  interceptions: [["INT", "INT"], ["YDS", "INT YDS"], ["TD", "PICK-6"]],
+  kicking: [["FGM", "FGM"], ["FGA", "FGA"], ["LONG", "LONG"], ["XPM", "XPM"]],
+  punting: [["NO", "PUNTS"], ["YPP", "AVG"], ["LONG", "LONG"], ["In 20", "IN 20"]],
+};
+const dkPosCats = {
+  QB: ["passing", "rushing"], RB: ["rushing", "receiving"], FB: ["rushing", "receiving"], WR: ["receiving", "rushing"], TE: ["receiving"],
+  K: ["kicking"], P: ["punting"], DL: ["defensive"], DE: ["defensive"], DT: ["defensive"], EDGE: ["defensive"], LB: ["defensive", "interceptions"],
+  ILB: ["defensive", "interceptions"], OLB: ["defensive"], CB: ["defensive", "interceptions"], S: ["defensive", "interceptions"], DB: ["defensive", "interceptions"],
+  FS: ["defensive", "interceptions"], SS: ["defensive", "interceptions"],
+};
+function dkCfbdKey() { try { return localStorage.getItem(dkCfbdKeyName) || ""; } catch { return ""; } }
+const dkStatsMemory = {};
+function dkStatsCache() { try { return { ...dkStatsMemory, ...(JSON.parse(localStorage.getItem(dkStatsCacheKey)) || {}) }; } catch { return { ...dkStatsMemory }; } }
+function dkStatsSave(key, value) {
+  dkStatsMemory[key] = value;
+  const cache = dkStatsCache();
+  cache[key] = value;
+  const keys = Object.keys(cache);
+  if (keys.length > 400) keys.sort((a, b) => (cache[a].at || 0) - (cache[b].at || 0)).slice(0, keys.length - 400).forEach((k) => delete cache[k]);
+  try { localStorage.setItem(dkStatsCacheKey, JSON.stringify(cache)); } catch { /* fine without the cache */ }
+}
+const dkNameKey = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, "").replace(/[^a-z]/g, "");
+const dkSchoolKey = (s) => String(s || "").toLowerCase().replace(/\bst\.?(?=\s|$)/g, "state").replace(/\buniversity( of)?\b/g, "").replace(/[^a-z]/g, "");
+async function dkCfbd(path, key) {
+  const res = await fetch(`${dkCfbdBase}${path}`, { headers: { Accept: "application/json", Authorization: `Bearer ${key}` } });
+  if (res.status === 401 || res.status === 403) throw Object.assign(new Error("key"), { auth: true });
+  if (!res.ok) throw new Error(`CFBD ${res.status}`);
+  return res.json();
+}
+// Finds the player on a college roster for the season and returns { season, team, cats: { passing: { YDS: "3592" } } }.
+async function dkFetchCollegeStats(pick, key) {
+  const want = dkNameKey(pick.player);
+  const school = dkSchoolKey(pick.college);
+  for (const season of [pick.year - 1, pick.year - 2]) {
+    const found = await dkCfbd(`/player/search?searchTerm=${encodeURIComponent(pick.player)}&year=${season}`, key);
+    const named = (Array.isArray(found) ? found : []).filter((p) => dkNameKey(p.name || `${p.firstName} ${p.lastName}`) === want);
+    const player = named.find((p) => school && dkSchoolKey(p.team) === school)
+      || named.find((p) => school && (dkSchoolKey(p.team).includes(school) || school.includes(dkSchoolKey(p.team))))
+      || (named.length === 1 ? named[0] : null);
+    if (!player) continue;
+    let rows;
+    try { rows = await dkCfbd(`/stats/player/season?year=${season}&team=${encodeURIComponent(player.team)}&seasonType=both`, key); }
+    catch (error) { if (error.auth) throw error; rows = await dkCfbd(`/stats/player/season?year=${season}&team=${encodeURIComponent(player.team)}`, key); }
+    const mine = (Array.isArray(rows) ? rows : []).filter((r) => String(r.playerId) === String(player.id) || dkNameKey(r.player) === want);
+    if (!mine.length) continue;
+    const cats = {};
+    mine.forEach((r) => { (cats[r.category] ||= {})[r.statType] = String(r.stat); });
+    return { season, team: player.team, cats, at: Date.now() };
+  }
+  return { none: true, at: Date.now() };
+}
+const dkNum = (v) => { const n = Number(v); return Number.isFinite(n) && Math.abs(n) >= 1000 && Number.isInteger(n) ? n.toLocaleString("en-US") : v; };
+function dkStatItems(stats, position) {
+  const cats = stats.cats || {};
+  const order = [...(dkPosCats[String(position || "").toUpperCase()] || []), ...Object.keys(dkStatPlan)];
+  const items = [];
+  [...new Set(order)].filter((c) => cats[c] && dkStatPlan[c]).slice(0, 2).forEach((c) => {
+    dkStatPlan[c].forEach(([stat, label]) => {
+      const v = cats[c][stat];
+      if (v === undefined || v === "" || (c === "rushing" && position === "WR" && Number(cats[c].CAR) < 10)) return;
+      if (!items.some((i) => i.label === label)) items.push({ label, value: dkNum(v) });
+    });
+  });
+  return items.slice(0, 9);
+}
+const dkStatsLoading = new Set();
+function dkRenderStats(box, last) {
+  if (!last.player) return;
+  const cacheKey = `${last.year}|${dkNameKey(last.player)}|${dkSchoolKey(last.college)}`;
+  const cached = dkStatsCache()[cacheKey];
+  const key = dkCfbdKey();
+  const row = document.createElement("div");
+  row.className = "dk-last-stats";
+  if (cached && !cached.none) {
+    const items = dkStatItems(cached, last.position);
+    if (!items.length) return;
+    row.append(Object.assign(document.createElement("span"), { className: "dk-last-stats-label", textContent: `${cached.season} SEASON · ${String(cached.team).toUpperCase()}` }));
+    const list = Object.assign(document.createElement("div"), { className: "dk-last-stats-list" });
+    list.append(...items.map(({ label, value }) => {
+      const cell = document.createElement("div");
+      cell.append(Object.assign(document.createElement("strong"), { textContent: value }), Object.assign(document.createElement("span"), { textContent: label }));
+      return cell;
+    }));
+    row.append(list, Object.assign(document.createElement("small"), { className: "dk-last-stats-src", textContent: "CollegeFootballData.com" }));
+    box.append(row);
+    return;
+  }
+  if (!key || (cached?.none && Date.now() - cached.at < 864e5)) return; // nothing found: try again tomorrow
+  if (dkStatsLoading.has(cacheKey)) return;
+  dkStatsLoading.add(cacheKey);
+  row.classList.add("is-loading");
+  row.textContent = "Loading college stats…";
+  box.append(row);
+  dkFetchCollegeStats(last, key)
+    .then((stats) => dkStatsSave(cacheKey, stats))
+    .catch((error) => { dkStatsMemory[cacheKey] = { none: true, at: Date.now() }; if (error.auth) dkStatsAuthFailed = true; dkRenderCfbdStatus(); })
+    .finally(() => { dkStatsLoading.delete(cacheKey); dkRenderLast(); });
+}
+let dkStatsAuthFailed = false;
+function dkRenderCfbdStatus() {
+  const note = document.querySelector("#dk-cfbd-status");
+  if (!note) return;
+  const key = dkCfbdKey();
+  note.textContent = !key ? "No key saved: college stats are off." : dkStatsAuthFailed ? "CollegeFootballData didn't accept this key. Check it and save it again." : "Key saved in this browser. Stats show on Last Player Selected.";
+  note.classList.toggle("is-bad", Boolean(key && dkStatsAuthFailed));
+}
+document.querySelector("#dk-cfbd-save")?.addEventListener("click", () => {
+  const input = document.querySelector("#dk-cfbd-key");
+  const key = input.value.trim().replace(/^Bearer\s+/i, "");
+  try { if (key) localStorage.setItem(dkCfbdKeyName, key); else localStorage.removeItem(dkCfbdKeyName); } catch { /* storage unavailable */ }
+  input.value = "";
+  dkStatsAuthFailed = false;
+  const cache = dkStatsCache(); // forget "nothing found" results so they're looked up with the new key
+  Object.keys(cache).forEach((k) => { if (cache[k].none) { delete cache[k]; delete dkStatsMemory[k]; } });
+  try { localStorage.setItem(dkStatsCacheKey, JSON.stringify(cache)); } catch { /* fine */ }
+  dkRenderCfbdStatus();
+  dkRenderLast();
+});
+dkRenderCfbdStatus();
+
 // "Last Player Selected": the most recent pick, across the top; it flashes when a pick is made on this screen.
 let dkFlashId = null;
 function dkRenderLast() {
@@ -363,6 +494,7 @@ function dkRenderLast() {
     Object.assign(document.createElement("strong"), { textContent: team.name }),
     Object.assign(document.createElement("small"), { textContent: last.fromTeam ? `Pick from the ${teamName(last.fromTeam)}` : "" }));
   box.replaceChildren(logo, text, pick);
+  dkRenderStats(box, last);
   dkRenderMore(box, last);
   if (dkFlashId === last.id) {
     dkFlashId = null;
