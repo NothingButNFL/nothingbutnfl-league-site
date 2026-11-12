@@ -42,12 +42,12 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=83038052" defer></script>
+    <script src="league-core.js?v=a5dde32d" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
-    <script src="draft-ticker.js?v=8731de28" defer></script>
+    <script src="draft-ticker.js?v=19478b65" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
-    <script src="draft-room.js?v=9292a988" defer></script>
+    <script src="draft-room.js?v=e2e1ab8b" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -268,7 +268,14 @@
                 <p class="hs-help" id="dk-combine-count"></p>
               </div>
               <div>
-                <h4>4. Start over</h4>
+                <h4>4. Last season's records</h4>
+                <p class="hs-help">Shown next to each team in the draft ticker's NEXT row. If last season's standings or games aren't on the site, paste each team's final record here, one per line: <code>Team, W-L-T</code> (like <code>Chicago Bears, 11-6</code> or <code>CHI, 11, 6, 0</code>). Copying the standings table from a spreadsheet works too.</p>
+                <textarea id="dk-records-text" rows="6" placeholder="ARI, 3-14&#10;ATL, 8-9&#10;BAL, 13-4"></textarea>
+                <div class="hs-actions"><button class="button button-lime" type="button" id="dk-records-save">Save records</button><button class="workspace-button" type="button" id="dk-records-clear">Clear records</button></div>
+                <p class="hs-help" id="dk-records-count"></p>
+              </div>
+              <div>
+                <h4>5. Start over</h4>
                 <p class="hs-help">Removes every pick made in this draft. The order and the pool stay.</p>
                 <button class="workspace-button dk-danger" type="button" id="dk-reset">Clear all picks</button>
               </div>

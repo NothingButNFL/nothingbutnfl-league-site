@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3181,6 +3181,30 @@ function tradeDraftOrderPick(data, year, pickNumber, toTeam, gets = null) {
   if (asset) asset.currentOwner = toTeam;
   data.draftTrades = [...(data.draftTrades || []), trade].slice(-2000);
   return trade;
+}
+
+// Final regular-season records entered by hand (Season Information › Draft › Draft setup): { [year]: { [teamId]: { w, l, t } } }.
+function validSeasonRecords(records) {
+  if (records === undefined) return true;
+  if (!records || typeof records !== "object" || Array.isArray(records)) return false;
+  return Object.entries(records).every(([year, row]) => isIntegerInRange(Number(year), 1990, 2100) && row && typeof row === "object" && !Array.isArray(row) &&
+    Object.entries(row).every(([id, r]) => nflTeams.some((t) => t.id === id) && r && ["w", "l", "t"].every((k) => isIntegerInRange(r[k] ?? 0, 0, 20))));
+}
+// A team's record for a season: entered records, else the standings if they're for that season, else its games on record.
+function seasonRecordFor(data, teamId, season) {
+  const entered = data.seasonRecords?.[season]?.[teamId];
+  if (entered) return { w: entered.w || 0, l: entered.l || 0, t: entered.t || 0 };
+  if (data.standings?.season === season && data.standings.teams?.[teamId]) { const r = data.standings.teams[teamId]; return { w: r.w || 0, l: r.l || 0, t: r.t || 0 }; }
+  let r = null;
+  try {
+    for (const g of archivedGames(data)) {
+      if (g.season !== season || (g.week && g.week > 18) || (g.away !== teamId && g.home !== teamId)) continue;
+      r ||= { w: 0, l: 0, t: 0 };
+      const mine = g.away === teamId ? g.awayScore : g.homeScore, theirs = g.away === teamId ? g.homeScore : g.awayScore;
+      r[mine > theirs ? "w" : mine < theirs ? "l" : "t"] += 1;
+    }
+  } catch { r = null; }
+  return r;
 }
 
 // ---- Minimum Spending Floor (Article 8) ----

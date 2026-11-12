@@ -39,28 +39,10 @@
     return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock && onClock && s.round === onClock.round), last: shown[shown.length - 1] };
   }
 
-  // Last season's record (the season before this draft): from the standings when they're for that season, otherwise
-  // added up from that season's regular-season games on record. Nothing is shown if neither has it.
-  let recordsFor = null, records = {};
+  // Last season's record (the season before this draft): entered under Draft setup, else the standings when they're for
+  // that season, else added up from that season's regular-season games on record. Nothing is shown if none has it.
   function lastRecord(teamId) {
-    const season = year() - 1;
-    const stamp = `${season}|${data?.standings?.season}|${(data?.gameArchive || []).length}|${(data?.games || []).length}`;
-    if (recordsFor !== stamp) {
-      recordsFor = stamp;
-      records = {};
-      if (data?.standings?.season === season) {
-        Object.entries(data.standings.teams || {}).forEach(([id, r]) => { records[id] = { w: r.w || 0, l: r.l || 0, t: r.t || 0 }; });
-      } else {
-        try {
-          archivedGames(data).filter((g) => g.season === season && (!g.week || g.week <= 18)).forEach((g) => {
-            const add = (id, mine, theirs) => { const r = (records[id] ||= { w: 0, l: 0, t: 0 }); r[mine > theirs ? "w" : mine < theirs ? "l" : "t"] += 1; };
-            add(g.away, g.awayScore, g.homeScore);
-            add(g.home, g.homeScore, g.awayScore);
-          });
-        } catch { records = {}; }
-      }
-    }
-    const r = records[teamId];
+    const r = data ? seasonRecordFor(data, teamId, year() - 1) : null;
     return r && r.w + r.l + r.t ? `(${r.w}-${r.l}${r.t ? `-${r.t}` : ""})` : "";
   }
 

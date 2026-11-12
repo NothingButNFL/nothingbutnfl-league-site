@@ -873,6 +873,44 @@ document.querySelector("#dk-combine-clear").addEventListener("click", async () =
   if (dkSave((data) => { data.draftCombine = (data.draftCombine || []).filter((c) => c.year !== dkYear); }, "Combine results cleared.")) dkRenderCombineCount();
 });
 
+// ---------- Draft setup: last season's records (for the ticker's NEXT row) ----------
+function dkRenderRecordsCount() {
+  const el = document.querySelector("#dk-records-count");
+  if (!el) return;
+  const season = dkYear - 1;
+  const n = Object.keys(dkData.seasonRecords?.[season] || {}).length;
+  const shown = nflTeams.filter(({ id }) => seasonRecordFor(dkData, id, season)).length;
+  el.textContent = n ? `${n} team${n === 1 ? "" : "s"} entered for ${season}.` : shown ? `${season} records found on the site for ${shown} teams.` : `No ${season} records yet.`;
+}
+document.querySelector("#dk-records-save").addEventListener("click", () => {
+  const season = dkYear - 1;
+  const rows = {};
+  const skipped = [];
+  for (const line of document.querySelector("#dk-records-text").value.split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t) continue;
+    const cells = t.includes("\t") ? t.split("\t") : t.split(",");
+    const team = drTeamToken ? drTeamToken(cells[0].trim()) : null;
+    const id = (team && nflTeams.some((x) => x.id === team) ? team : null) || nflTeams.find((x) => x.id.toLowerCase() === cells[0].trim().toLowerCase() || x.name.toLowerCase() === cells[0].trim().toLowerCase())?.id;
+    const nums = (cells.slice(1).join(" ").match(/\d+/g) || []).map(Number);
+    if (!id || nums.length < 2) { if (!/^(team|rk|#)/i.test(t)) skipped.push(cells[0].trim()); continue; }
+    rows[id] = { w: Math.min(20, nums[0]), l: Math.min(20, nums[1]), t: Math.min(20, nums[2] || 0) };
+  }
+  const n = Object.keys(rows).length;
+  if (!n) { dkStatus.textContent = "Paste each team's record, like: Chicago Bears, 11-6"; return; }
+  if (dkSave((data) => { data.seasonRecords = { ...(data.seasonRecords || {}), [season]: { ...(data.seasonRecords?.[season] || {}), ...rows } }; },
+    `Saved ${season} records for ${n} team${n === 1 ? "" : "s"}.${skipped.length ? ` Skipped: ${skipped.join(", ")}.` : ""}`)) {
+    document.querySelector("#dk-records-text").value = "";
+    dkRenderRecordsCount();
+  }
+});
+document.querySelector("#dk-records-clear").addEventListener("click", async () => {
+  const season = dkYear - 1;
+  if (!dkData.seasonRecords?.[season]) { dkStatus.textContent = `No ${season} records were entered.`; return; }
+  if (!(await confirmAction(`Clear the ${season} records you entered?`, { confirmLabel: "Clear records", danger: true }))) return;
+  if (dkSave((data) => { delete data.seasonRecords[season]; if (!Object.keys(data.seasonRecords).length) delete data.seasonRecords; }, `${season} records cleared.`)) dkRenderRecordsCount();
+});
+
 // ---------- Draft setup: pool ----------
 function dkParsePool(text) {
   const out = [];
@@ -939,6 +977,7 @@ dkTimerLeft = dkTimerLength();
 dkTimerShow();
 dkRender();
 dkRenderCombineCount();
+dkRenderRecordsCount();
 
 // ---------- Countdown sound ----------
 // With 10 seconds left: built-in beeps (Web Audio, a beep a second, higher for the last 3, a horn at 0:00), or the
