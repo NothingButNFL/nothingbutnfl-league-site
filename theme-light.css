@@ -939,3 +939,4 @@ html[data-theme="light"] .rb-count-table td.rbc-abv { color: #6c6d6f; }
 html[data-theme="light"] .rb-count-table td.rbc-short { color: #121213; }
 html[data-theme="light"] .rb-count-table td.rbc-main.is-under { color: #121213; }
 html[data-theme="light"] .rb-count-table tr.is-selected td { box-shadow: #1a5fc1 0px 1px 0px inset, #1a5fc1 0px -1px 0px inset; }
+html[data-theme="light"] .cel-mark { color: #8a6d00; }

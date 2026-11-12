@@ -178,29 +178,30 @@ const rbcMain = 53; // main roster size
 const rbcPs = "16+1"; // practice squad: 16, plus 1 international exemption
 function rosterCountsByColumn(teamId) {
   const counts = Object.fromEntries(rbcColumns.map(([label]) => [label, 0]));
-  let main = 0, ps = 0, other = 0;
+  let main = 0, ps = 0, other = 0, cel = 0;
   for (const player of officeData.teams[teamId].roster) {
     if (!isPlayerOnSeason(player, rbSeason)) continue;
     const entry = seasonEntry(player, rbSeason);
     if (isPracticeSquad(entry)) { ps += 1; continue; }
+    if (isOnCel(entry)) { cel += 1; continue; } // on the Commissioner's Exempt List: not on the main roster
     main += 1;
     const first = String(entry.position || "").toUpperCase().split(/[\s/,-]+/).find(Boolean) || "";
     const col = rbcColumns.find(([, list]) => list.includes(first));
     if (col) counts[col[0]] += 1; else other += 1;
   }
-  return { counts, main, ps, other };
+  return { counts, main, ps, other, cel };
 }
 function renderCounts() {
   const th = (text, cls = "") => { const e = document.createElement("th"); e.scope = "col"; e.textContent = text; if (cls) e.className = cls; return e; };
-  document.querySelector("#rbc-head").replaceChildren(th("TEAM", "rbc-team"), th("ABV"), ...rbcColumns.map(([label]) => th(label)), th("MAIN", "rbc-main-h"), th("PS"));
+  document.querySelector("#rbc-head").replaceChildren(th("TEAM", "rbc-team"), th("ABV"), ...rbcColumns.map(([label]) => th(label)), th("MAIN", "rbc-main-h"), th("PS"), th("CEL"));
   const req = document.createElement("tr");
   req.className = "rbc-req";
   const cell = (tr, text, cls = "") => { const td = tr.insertCell(); td.textContent = text; if (cls) td.className = cls; return td; };
   cell(req, "Requirements", "rbc-team"); cell(req, "");
   rbcColumns.forEach(([, , min]) => cell(req, String(min)));
-  cell(req, String(rbcMain)); cell(req, rbcPs);
+  cell(req, String(rbcMain)); cell(req, rbcPs); cell(req, String(celLimit));
   const rows = nflTeams.map(({ id }) => {
-    const { counts, main, ps, other } = rosterCountsByColumn(id);
+    const { counts, main, ps, other, cel } = rosterCountsByColumn(id);
     const tr = document.createElement("tr");
     if (id === rbTeamSelect.value) tr.className = "is-selected";
     const name = tr.insertCell();
@@ -219,6 +220,8 @@ function renderCounts() {
     const m = cell(tr, String(main), `rbc-main ${main === rbcMain ? "is-ok" : main > rbcMain ? "is-over" : "is-under"}`);
     m.title = `${main} on the main roster${other ? ` (${other} with no position or one not in these columns)` : ""}`;
     cell(tr, String(ps), `rbc-ps ${ps <= 17 ? "is-ok" : "is-over"}`);
+    const c = cell(tr, String(cel), `rbc-cel${cel >= celLimit ? " is-full" : ""}`);
+    c.title = `${cel} of ${celLimit} Commissioner's Exempt List spots used`;
     return tr;
   });
   document.querySelector("#rbc-rows").replaceChildren(req, ...rows);

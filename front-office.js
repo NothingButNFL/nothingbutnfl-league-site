@@ -776,7 +776,7 @@ function renderSalaryRows() {
   // The practice squad has its own table below (renderPracticeSquadRows); the counters for both sit on top here.
   const sequence = roster.length ? [{ section: "active" }, ...active] : [];
   for (const item of sequence) {
-    if (item.section) { salaryRows.append(salarySectionRow(item.section, active.length, practice.length)); continue; }
+    if (item.section) { salaryRows.append(salarySectionRow(item.section, active.filter((p) => !isOnCel(seasonEntry(p, activeSeason))).length, practice.length, active.filter((p) => isOnCel(seasonEntry(p, activeSeason))).length)); continue; }
     const player = item;
     const entry = seasonEntry(player, activeSeason);
     const row = salaryRows.insertRow();
@@ -818,6 +818,13 @@ function renderSalaryRows() {
       fifth.title = `${activeSeason} is ${player.name}'s 5th-year option. Click to remove the tag.`;
       fifth.setAttribute("aria-label", `${player.name}: 5th-year option. Click to remove`);
       nameCell.append(fifth);
+    }
+    if (isOnCel(entry)) {
+      const cel = document.createElement("span");
+      cel.className = "vmb-mark cel-mark";
+      cel.textContent = "CEL";
+      cel.title = `${player.name} is on the Commissioner's Exempt List for ${activeSeason}: under contract, not counted on the active roster. He comes off automatically at the start of the next league year.`;
+      nameCell.append(cel);
     }
     if (isPsElevated(entry)) {
       const up = document.createElement("button");
@@ -1065,7 +1072,7 @@ document.querySelector("#ps-rows")?.addEventListener("click", (event) => {
 
 // Section header rows on the salary sheet. The top one carries both counters ("ACTIVE ROSTER 52 / 53" and
 // "PRACTICE SQUAD 4 / 16"); the practice squad section below has its own heading, and a note when it's empty.
-function salarySectionRow(section, activeCount, psCount) {
+function salarySectionRow(section, activeCount, psCount, celCount = 0) {
   const row = document.createElement("tr");
   row.className = `salary-section-row is-${section === "ps-empty" ? "ps-empty" : section}`;
   const cell = document.createElement(section === "ps-empty" ? "td" : "th");
@@ -1084,8 +1091,9 @@ function salarySectionRow(section, activeCount, psCount) {
     const wrap = document.createElement("div");
     wrap.className = "salary-section-counters";
     wrap.append(
-      counter("ACTIVE ROSTER", activeCount, activeRosterLimit, activeRosterLimit, `Active roster limit: ${activeRosterLimit} players. Practice squad players aren't counted here.`),
-      counter("PRACTICE SQUAD", psCount, practiceSquadLimit, practiceSquadLimit + 1, psTitle));
+      counter("ACTIVE ROSTER", activeCount, activeRosterLimit, activeRosterLimit, `Active roster limit: ${activeRosterLimit} players. Practice squad and Commissioner's Exempt List players aren't counted here.`),
+      counter("PRACTICE SQUAD", psCount, practiceSquadLimit, practiceSquadLimit + 1, psTitle),
+      counter("CEL", celCount, celLimit, celLimit, `Commissioner's Exempt List: up to ${celLimit} players with 0 years of experience. They keep their contracts but don't count toward the active roster, until the next league year.`));
     cell.append(wrap);
   } else if (section === "ps") {
     const label = document.createElement("span");
@@ -1903,6 +1911,7 @@ function openPlayerMenu(cog, player) {
   } else if (entry) {
     const { practiceSquad } = rosterCounts(activeTeamId, activeSeason);
     add("ps-move", `${releaseVerb(player)} To Practice Squad`, noSave || notCurrent || (practiceSquad >= practiceSquadLimit + 1 ? `The practice squad is full (${practiceSquad}).` : ""));
+    add("cel", isOnCel(entry) ? "On Commissioner's Exempt List ✓" : "Place On Commissioner's Exempt List", noSave || celProblem(officeData, activeTeamId, player, activeSeason));
   }
   menu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-menu-action]");
@@ -1957,7 +1966,21 @@ async function promoteFromPracticeSquad(player) {
   saveOfficeData(`${player.name} signed to the ${year} active roster on a 1-year minimum: ${formatCurrency(contract.prorated + earned)} cap hit (${active} / ${activeRosterLimit})${active > activeRosterLimit ? `. That's over the ${activeRosterLimit}-man limit` : ""}.`);
 }
 
+async function placePlayerOnCel(player) {
+  const year = activeSeason;
+  const ok = await confirmAction(`Place ${player.name} on the Commissioner's Exempt List for ${year}? He keeps his contract and cap hit but stops counting toward the ${activeRosterLimit}-man active roster. This can't be undone: he stays on the CEL until the next league year starts.`,
+    { confirmLabel: "Place on CEL", danger: true });
+  if (!ok) return;
+  const result = placeOnCel(officeData, activeTeamId, player, year);
+  if (result.error) { workspaceStatus.textContent = result.error; return; }
+  renderSalaryRows();
+  updateCapOverview();
+  if (typeof renderDepthChart === "function") renderDepthChart();
+  saveOfficeData(`${player.name} is on the Commissioner's Exempt List for ${year} (${result.cel} of ${celLimit} spots used). He no longer counts toward the active roster.`);
+}
+
 function runPlayerMenuAction(action, player) {
+  if (action === "cel") { placePlayerOnCel(player); return; }
   if (action === "release") { recordRosterTransaction(player, "release"); return; }
   if (action === "ps-move") { recordRosterTransaction(player, "release", { toPracticeSquad: true }); return; }
   if (action === "ps-promote") { promoteFromPracticeSquad(player); return; }

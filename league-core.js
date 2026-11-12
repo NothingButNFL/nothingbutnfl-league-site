@@ -105,6 +105,7 @@ function validateOfficeData(data) {
             (entry.vmbCapBase !== undefined && !isIntegerInRange(entry.vmbCapBase, 0, 999999999)) ||
             (entry.fifthYearOption !== undefined && typeof entry.fifthYearOption !== "boolean") ||
             (entry.psElevated !== undefined && typeof entry.psElevated !== "boolean") ||
+            (entry.cel !== undefined && typeof entry.cel !== "boolean") ||
             (entry.psWeekly !== undefined && !isIntegerInRange(entry.psWeekly, 0, 9999999)) ||
             (entry.psWeeks !== undefined && !isIntegerInRange(entry.psWeeks, 0, regularSeasonWeeks)) ||
             (entry.psEarned !== undefined && !isIntegerInRange(entry.psEarned, 0, 99999999))) return false;
@@ -376,13 +377,44 @@ const practiceSquadLimit = 16; // 17 with an International Player Pathway exempt
 const practiceSquadRosterType = "Practice Squad";
 const isPracticeSquad = (entry) => /practice|^\s*p[\s.-]*s(?:quad)?\b/i.test(entry?.rosterType || "");
 const isPsElevated = (entry) => isPracticeSquad(entry) && entry?.psElevated === true;
-// { active, practiceSquad, elevated } for one team and season.
+// ---- Commissioner's Exempt List (CEL) ----
+// A league exception for a player with 0 years of experience: he stays on the team and his contract (and cap hit)
+// stays, but he doesn't count toward the 53-man active roster. Once placed he can't be taken off; it ends on its own at
+// the start of the next league year, because the flag lives on that one season (entry.cel). Up to 5 per team.
+const celLimit = 5;
+const isOnCel = (entry) => entry?.cel === true && !isPracticeSquad(entry);
+// Why a player can't go on the CEL for a season ("" when he can).
+function celProblem(data, teamId, player, year) {
+  if (!isPlayerOnSeason(player, year)) return `Not on the ${year} sheet.`;
+  const entry = seasonEntry(player, year);
+  if (isOnCel(entry)) return "Already on the CEL.";
+  if (isPracticeSquad(entry)) return "Practice squad players can't go on the CEL.";
+  const exp = projectedExperience(player, year);
+  if (exp === null) return "His years of experience aren't set (Player Contracts).";
+  if (exp !== 0) return `Only players with 0 years of experience (he has ${exp}).`;
+  const used = rosterCounts(teamId, year, data).cel;
+  if (used >= celLimit) return `All ${celLimit} CEL spots are used.`;
+  return "";
+}
+function placeOnCel(data, teamId, player, year) {
+  const problem = celProblem(data, teamId, player, year);
+  if (problem) return { error: problem };
+  const entry = seasonEntry(player, year);
+  entry.cel = true;
+  const { cel } = rosterCounts(teamId, year, data);
+  logTransaction(data, { type: "other", teams: [teamId], player: player.name, auto: true,
+    details: `${player.name}${entry.position ? ` (${entry.position})` : ""} placed on the Commissioner's Exempt List for ${year}. He stays under contract but doesn't count toward the active roster (${cel} of ${celLimit} CEL spots used).` });
+  return { ok: true, cel };
+}
+
+// { active, practiceSquad, elevated, cel } for one team and season. CEL players aren't in "active".
 function rosterCounts(teamId, year, data = officeData) {
-  const counts = { active: 0, practiceSquad: 0, elevated: 0 };
+  const counts = { active: 0, practiceSquad: 0, elevated: 0, cel: 0 };
   for (const player of data.teams[teamId]?.roster || []) {
     if (!isPlayerOnSeason(player, year)) continue;
     const entry = seasonEntry(player, year);
     if (isPracticeSquad(entry)) { counts.practiceSquad += 1; if (isPsElevated(entry)) counts.elevated += 1; }
+    else if (isOnCel(entry)) counts.cel += 1;
     else counts.active += 1;
   }
   return counts;
