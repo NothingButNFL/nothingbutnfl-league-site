@@ -146,7 +146,7 @@
     // made, ON THE CLOCK, SKIPPED, or just the team for picks to come), then back to the round's first pick. When the
     // round is finished it moves on to "ROUND 2", and so on to the end of the draft.
     const crawl = el("div", "dt-crawl");
-    const label = el("span", "dt-crawl-label", "THE PICKS");
+    const label = el("span", "dt-crawl-label", "SELECTIONS");
     const track = el("div", "dt-crawl-track");
     const round = (s.pending || s.onClock || s.skipped[0] || s.order[s.order.length - 1]).round;
     const madeMap = new Map(s.picks.map((p) => [p.pick, p]));
