@@ -45,11 +45,19 @@ const initials = (name) => String(name).split(/\s+/).filter(Boolean).map((word) 
 function combineFor(entry) {
   return combineResultsFor(officeData, entry.player.name, entry.source === "prospect" ? entry.player.year : (playerProfile(entry.player).draftYear || null));
 }
+// A prospect's date of birth: typed in, or from the NFL's official roster feed (nfl-experience.js) once he's signed.
+function shownBirthDate(entry) {
+  if (entry.player.birthDate || entry.source !== "prospect") return entry.player.birthDate || "";
+  return nflRecordFor(entry)?.birthDate || "";
+}
 function shownProfile(entry) {
   const profile = playerProfile(entry.player);
   if (entry.source !== "prospect") return profile;
   const c = combineFor(entry);
+  const record = nflRecordFor(entry);
   const shown = { ...profile };
+  if (!shown.height && !c?.ht && record?.height) shown.height = formatHeight(record.height);
+  if (!shown.weight && !c?.wt && record?.weight) shown.weight = record.weight;
   if (!shown.positions && entry.player.position) shown.positions = entry.player.position;
   if (!shown.college && entry.player.college) shown.college = entry.player.college;
   if (!shown.height && c?.ht) shown.height = c.ht;
@@ -64,6 +72,7 @@ function currentPosition(entry) {
 }
 
 function nflRecordFor(entry) {
+  if (entry.source === "prospect") return matchNflProspect(entry.player);
   const match = matchNflExperience(entry.player.name, currentPosition(entry), entry.teamId && entry.teamId !== freeAgentTeamId ? entry.teamId : null);
   return match.record || null;
 }
@@ -105,7 +114,8 @@ function renderHero(entry) {
   name.textContent = player.name;
   const facts = document.createElement("p");
   facts.className = "player-facts";
-  const age = playerAge(player);
+  const birth = shownBirthDate(entry);
+  const age = birth ? ageFromBirthDate(birth) : playerAge(player);
   const position = profile.positions || currentPosition(entry);
   const bits = [
     position,
@@ -156,7 +166,7 @@ function fillBioForm(entry) {
   f.name.value = lastFirst(player.name);
   f.positions.value = profile.positions;
   f.positions.placeholder = currentPosition(entry) ? `${currentPosition(entry)} (from ${entry.source === "sheet" ? "the salary sheet" : entry.source === "prospect" ? "the Draft Pool" : "Player Contracts"})` : "e.g. QB or CB / S";
-  f.birthDate.value = player.birthDate || "";
+  f.birthDate.value = shownBirthDate(entry);
   f.college.value = profile.college;
   f.draftYear.value = profile.draftYear ?? "";
   f.draftRound.value = profile.draftRound ?? "";
@@ -246,7 +256,7 @@ document.querySelector("#player-fill").addEventListener("click", () => {
     statusEl.textContent = "NFL roster data could not be loaded.";
     return;
   }
-  const record = entry.source === "prospect" ? null : nflRecordFor(entry);
+  const record = nflRecordFor(entry);
   if (!record) {
     statusEl.textContent = `No NFL roster match for ${entry.player.name}, so nothing was filled. Enter the bio by hand.`;
     return;
@@ -264,7 +274,7 @@ document.querySelector("#player-fill").addEventListener("click", () => {
     profile.draftPick = record.draftPick || null;
     filled.push("draft year, round and pick");
   }
-  if (player.experience == null && record.experience != null) { player.experience = record.experience; filled.push("experience"); }
+  if (entry.source !== "prospect" && player.experience == null && record.experience != null) { player.experience = record.experience; filled.push("experience"); }
   player.profile = profile;
   save(filled.length
     ? `Filled ${filled.join(", ")} from NFL roster data (${record.fullName}, ${record.team}). Fields you'd already entered were kept.`
@@ -518,7 +528,6 @@ function render() {
   fillBioForm(entry);
   renderCombine(entry);
   renderContract(entry);
-  document.querySelector("#player-fill").hidden = entry.source === "prospect"; // NFL roster data has no prospects
   const back = document.querySelector(".team-back-link");
   if (entry.source === "prospect") { back.href = "draft.html"; back.lastChild.textContent = " DRAFT"; }
   renderStatsPanel(entry);

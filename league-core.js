@@ -764,8 +764,8 @@ let nflExperienceIndex = null;
 function experienceIndex() {
   if (nflExperienceIndex || typeof nflExperienceSnapshot === "undefined") return nflExperienceIndex;
   nflExperienceIndex = new Map();
-  for (const [fullName, altName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick] of nflExperienceSnapshot.players) {
-    const record = { fullName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick };
+  for (const [fullName, altName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear] of nflExperienceSnapshot.players) {
+    const record = { fullName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear };
     for (const key of new Set([normalizePlayerName(fullName), altName && normalizePlayerName(altName)].filter(Boolean))) {
       if (!nflExperienceIndex.has(key)) nflExperienceIndex.set(key, []);
       nflExperienceIndex.get(key).push(record);
@@ -803,6 +803,24 @@ function matchNflExperience(name, position, teamId) {
   }
   if (new Set(candidates.map((p) => `${p.experience}|${p.birthDate}`)).size > 1) return { error: "ambiguous", candidates };
   return { experience: candidates[0].experience, record: candidates[0] };
+}
+
+// A Draft Pool prospect in the NFL roster snapshot: players who entered the league in his draft year, narrowed by
+// college and position. Only an unambiguous match counts.
+function matchNflProspect(prospect) {
+  const index = experienceIndex();
+  if (!index) return null;
+  let candidates = (index.get(normalizePlayerName(prospect.name)) || []).filter((p) => p.entryYear === prospect.year || p.draftYear === prospect.year);
+  const school = (s) => String(s || "").toLowerCase().replace(/\bst\.?(?=\s|$)/g, "state").replace(/[^a-z]/g, "");
+  for (const narrow of [
+    (c) => c.filter((p) => prospect.college && school(p.college) === school(prospect.college)),
+    (c) => c.filter((p) => samePositionGroup(p.position, prospect.position)),
+  ]) {
+    if (candidates.length <= 1) break;
+    const narrowed = narrow(candidates);
+    if (narrowed.length) candidates = narrowed;
+  }
+  return candidates.length && new Set(candidates.map((p) => p.birthDate)).size === 1 ? candidates[0] : null;
 }
 
 // ---- Player-level contract details (Player Contracts page) ----
