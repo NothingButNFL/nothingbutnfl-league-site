@@ -2990,3 +2990,11 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dt-prev-row { overflow: hidden; color: #dbe7f5; font: 600 12px/1.25 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .dt-prev-pos { margin: 0 2px; padding: 0 5px; border-radius: 3px; background: #ffd37a; color: #0c1424; font-weight: 800; }
 @media (prefers-reduced-motion: reduce) { .dt-prev-rows.is-in { animation: none; } }
+/* Draft room: sound settings in a dialog opened from the Sounds button */
+.dk-sound-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 20px 24px; border: 1px solid #31527a; border-radius: 12px; background: #0c2b50; color: #fff; overflow: auto; }
+.dk-sound-dialog::backdrop { background: rgba(3, 12, 26, .7); }
+.dk-sound-dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.dk-sound-dialog-head h3 { margin: 4px 0 0; }
+.dk-sound-dialog .dk-sound-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.dk-sound-dialog [hidden] { display: none; }
+.dk-controls .dk-sounds-btn { margin-left: 2px; }

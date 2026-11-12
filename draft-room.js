@@ -978,3 +978,8 @@ window.addEventListener("storage", (event) => {
 });
 dkLoadTradeSound();
 dkFillTradeForm();
+
+// Sounds: the settings open from the Sounds button next to the per-pick time.
+document.querySelector("#dk-sounds-open").addEventListener("click", () => document.querySelector("#dk-sound-panel").showModal());
+document.querySelector("#dk-sound-close").addEventListener("click", () => document.querySelector("#dk-sound-panel").close());
+document.querySelector("#dk-sound-panel").addEventListener("click", (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });

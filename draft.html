@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=60f278f5">
-    <link rel="stylesheet" href="theme-light.css?v=fd706865">
-    <link rel="stylesheet" href="theme-gray.css?v=a63255fc">
-    <link rel="stylesheet" href="theme-team.css?v=a20163a3">
+    <link rel="stylesheet" href="styles.css?v=cda08f25">
+    <link rel="stylesheet" href="theme-light.css?v=cdced04c">
+    <link rel="stylesheet" href="theme-gray.css?v=3f0b52b8">
+    <link rel="stylesheet" href="theme-team.css?v=1e02ceb3">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -44,7 +44,7 @@
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=cb436706" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=c8189552" defer></script>
+    <script src="draft-room.js?v=92d211b1" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -177,33 +177,9 @@
             <label class="dk-sound-toggle"><input type="checkbox" id="dk-pick-sound" checked> Pick sound</label>
             <label class="dk-sound-toggle"><input type="checkbox" id="dk-trade-sound" checked> Trade sound</label>
             <label>Per pick<select id="dk-timer-length"><option value="60">1 min</option><option value="120">2 min</option><option value="180">3 min</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
+            <button class="workspace-button dk-sounds-btn" type="button" id="dk-sounds-open" aria-haspopup="dialog">Sounds</button>
           </div>
 
-          <details class="management-panel dk-sound-panel" id="dk-sound-panel">
-            <summary><span class="panel-index">SOUNDS</span><strong>Countdown &amp; pick sounds</strong> <span class="dk-sound-now" id="dk-sound-now">Built-in beeps</span> <span class="dk-sound-now" id="dk-pick-now">Built-in chime</span></summary>
-            <h4 class="dk-sound-head">Countdown</h4>
-            <p class="hs-help">With 10 seconds left on the pick clock, a countdown plays: a beep each second, higher for the last three, and a horn at 0:00. To use your own countdown instead (an MP3, WAV or OGG file of about 10 seconds), choose it below; it starts at 10 seconds left. The file stays in this browser.</p>
-            <div class="hs-actions">
-              <label class="workspace-button hs-file">Choose a sound file<input id="dk-sound-file" type="file" accept="audio/*" hidden></label>
-              <button class="workspace-button" type="button" id="dk-sound-test">Play it</button>
-              <button class="workspace-button" type="button" id="dk-sound-clear" hidden>Use the built-in beeps</button>
-              <label class="dk-volume">Volume<input type="range" id="dk-volume" min="0" max="1" step="0.05" value="0.8"></label>
-            </div>
-            <h4 class="dk-sound-head">When a pick is made</h4>
-            <p class="hs-help">A chime plays as each pick goes in, and the player flashes at the top of the page under Last Player Selected. Choose your own sound file to play instead.</p>
-            <div class="hs-actions">
-              <label class="workspace-button hs-file">Choose a sound file<input id="dk-pick-file" type="file" accept="audio/*" hidden></label>
-              <button class="workspace-button" type="button" id="dk-pick-test">Play it</button>
-              <button class="workspace-button" type="button" id="dk-pick-clear" hidden>Use the built-in chime</button>
-            </div>
-            <h4 class="dk-sound-head">When a pick is traded <span class="dk-sound-now" id="dk-trade-now">Built-in trade sound</span></h4>
-            <p class="hs-help">Plays with the TRADE header on the draft ticker, only while the draft is live, on whichever page the trade is made (here, Draft Pick Manager, or approving it under Admin › Pending Trades).</p>
-            <div class="hs-actions">
-              <label class="workspace-button hs-file">Choose a sound file<input id="dk-trade-file" type="file" accept="audio/*" hidden></label>
-              <button class="workspace-button" type="button" id="dk-trade-test">Play it</button>
-              <button class="workspace-button" type="button" id="dk-trade-clear" hidden>Use the built-in trade sound</button>
-            </div>
-          </details>
 
           <div class="management-panel dk-skipped" id="dk-skipped" hidden>
             <div class="panel-heading"><div><span class="panel-index">SKIPPED</span><h3>Ran out the clock</h3></div>
@@ -290,6 +266,31 @@
           </details>
         </div>
       </section>
+          <dialog class="dk-sound-dialog" id="dk-sound-panel" aria-labelledby="dk-sound-title">
+            <div class="dk-sound-dialog-head"><div><span class="panel-index">SOUNDS</span><h3 id="dk-sound-title">Draft sounds</h3></div><button class="workspace-button" type="button" id="dk-sound-close">Close</button></div>
+            <h4 class="dk-sound-head">Countdown <span class="dk-sound-now" id="dk-sound-now">Built-in beeps</span></h4>
+            <p class="hs-help">With 10 seconds left on the pick clock, a countdown plays: a beep each second, higher for the last three, and a horn at 0:00. To use your own countdown instead (an MP3, WAV or OGG file of about 10 seconds), choose it below; it starts at 10 seconds left. The file stays in this browser.</p>
+            <div class="hs-actions">
+              <label class="workspace-button hs-file">Choose a sound file<input id="dk-sound-file" type="file" accept="audio/*" hidden></label>
+              <button class="workspace-button" type="button" id="dk-sound-test">Play it</button>
+              <button class="workspace-button" type="button" id="dk-sound-clear" hidden>Use the built-in beeps</button>
+              <label class="dk-volume">Volume<input type="range" id="dk-volume" min="0" max="1" step="0.05" value="0.8"></label>
+            </div>
+            <h4 class="dk-sound-head">When a pick is made <span class="dk-sound-now" id="dk-pick-now">Built-in chime</span></h4>
+            <p class="hs-help">A chime plays as each pick goes in, and the player flashes at the top of the page under Last Player Selected. Choose your own sound file to play instead.</p>
+            <div class="hs-actions">
+              <label class="workspace-button hs-file">Choose a sound file<input id="dk-pick-file" type="file" accept="audio/*" hidden></label>
+              <button class="workspace-button" type="button" id="dk-pick-test">Play it</button>
+              <button class="workspace-button" type="button" id="dk-pick-clear" hidden>Use the built-in chime</button>
+            </div>
+            <h4 class="dk-sound-head">When a pick is traded <span class="dk-sound-now" id="dk-trade-now">Built-in trade sound</span></h4>
+            <p class="hs-help">Plays with the TRADE header on the draft ticker, only while the draft is live, on whichever page the trade is made (here, Draft Pick Manager, or approving it under Admin › Pending Trades).</p>
+            <div class="hs-actions">
+              <label class="workspace-button hs-file">Choose a sound file<input id="dk-trade-file" type="file" accept="audio/*" hidden></label>
+              <button class="workspace-button" type="button" id="dk-trade-test">Play it</button>
+              <button class="workspace-button" type="button" id="dk-trade-clear" hidden>Use the built-in trade sound</button>
+            </div>
+          </dialog>
     </main>
 
     <footer class="site-footer">

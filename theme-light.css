@@ -991,3 +991,5 @@ html[data-theme="light"] .dt-next-none { color: #5d7391; }
 html[data-theme="light"] .dt-prev-label { border-top-color: #c98a12; border-right-color: #c98a12; border-bottom-color: #c98a12; border-left-color: #c98a12; color: #946100; }
 html[data-theme="light"] .dt-prev-row { color: #22385a; }
 html[data-theme="light"] .dt-prev-pos { background-color: #c98a12; }
+html[data-theme="light"] .dk-sound-dialog { border-top-color: #c6d4e5; border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; background-color: #ffffff; color: #0b1f3a; }
+html[data-theme="light"] .dk-sound-dialog::backdrop { background-color: rgba(15, 30, 60, 0.420); }
