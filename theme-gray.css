@@ -323,3 +323,4 @@ html[data-theme="gray"] .dk-trade { border-top-color: #47494f; }
 html[data-theme="gray"] .dk-controls { border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
 html[data-theme="gray"] .dk-controls-sep { background-color: #47494f; }
 html[data-theme="gray"] .dt-next-none { color: #8a8d94; }
+html[data-theme="gray"] .dt-prev-row { color: #e2e3e6; }

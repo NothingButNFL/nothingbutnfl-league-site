@@ -130,10 +130,19 @@
     const title = el("div", "dt-title");
     const main = el("div", "dt-title-main");
     main.append(el("strong", "", `${y} NBNFL DRAFT`), el("span", "", s.pending ? `ROUND ${s.pending.round}` : s.onClock ? `ROUND ${s.onClock.round}` : "LATE PICKS"));
+    // The team on the clock's earlier picks in this draft, two at a time, the next two every 10 seconds:
+    // "ROUND 1 - PICK 5 - Fernando Mendoza [QB] Indiana".
+    const prev = !s.pending && !s.trade && s.onClock ? s.picks.filter((d) => d.teamId === s.onClock.teamId).sort((a, b) => a.pick - b.pick) : [];
+    if (prev.length) {
+      const box = el("div", "dt-prev");
+      box.append(el("span", "dt-prev-label", `${s.onClock.teamId} PICKS`), el("div", "dt-prev-rows"));
+      title.append(main, box);
+      showPrev(box, s.onClock.teamId, prev);
+    }
     const sub = el("div", "dt-title-sub", s.pending ? `THE ${teamName(s.pending.teamId).toUpperCase()} HAVE MADE THEIR SELECTION AT PICK ${s.pending.pick}…` : s.last
       ? `LAST PICK · #${s.last.pick} ${s.last.teamId} · ${s.last.player}${s.last.position ? `, ${s.last.position}` : ""}${s.last.college ? ` · ${s.last.college}` : ""}`
       : "THE DRAFT IS UNDERWAY");
-    title.append(main, sub);
+    if (!prev.length) { title.append(main, sub); stopPrev(); }
     // Clock / status
     const right = el("div", "dt-right");
     const c = clockText();
@@ -257,6 +266,35 @@
       playTradeSound(s.trade);
     }
   };
+
+  // Rotation for the on-the-clock team's earlier picks (keeps its place across re-renders of the ticker).
+  const prevState = { team: null, page: 0, timer: null, box: null, picks: [] };
+  function drawPrev() {
+    const { box, picks } = prevState;
+    if (!box) return;
+    const pages = Math.ceil(picks.length / 2);
+    const page = prevState.page % pages;
+    const rows = box.querySelector(".dt-prev-rows");
+    rows.replaceChildren(...picks.slice(page * 2, page * 2 + 2).map((d) => {
+      const row = el("div", "dt-prev-row");
+      row.append(`ROUND ${d.round} - PICK ${d.pick}${d.compensatory ? "*" : ""} - ${d.player} `);
+      if (d.position) row.append(el("b", "dt-prev-pos", d.position));
+      if (d.college) row.append(` ${d.college}`);
+      return row;
+    }));
+    rows.classList.remove("is-in");
+    void rows.offsetWidth;
+    rows.classList.add("is-in");
+  }
+  function showPrev(box, team, picks) {
+    if (prevState.team !== team) { prevState.team = team; prevState.page = 0; }
+    prevState.box = box;
+    prevState.picks = picks;
+    drawPrev();
+    clearInterval(prevState.timer);
+    prevState.timer = picks.length > 2 ? setInterval(() => { if (!prevState.box?.isConnected) return; prevState.page += 1; drawPrev(); }, 10000) : null;
+  }
+  function stopPrev() { clearInterval(prevState.timer); prevState.timer = null; }
 
   window.renderDraftTicker = render;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render); else render();

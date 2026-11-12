@@ -2982,3 +2982,11 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dt-next-run { display: inline-flex; align-items: center; white-space: nowrap; }
 .dt-next-none { color: #54749b; font-size: 12px; }
 .dt-next-track.is-cut { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 140px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 140px), transparent); }
+/* Ticker: the on-the-clock team's earlier picks, two at a time */
+.dt-prev { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dt-prev-label { flex: none; padding: 2px 6px; border: 1px solid #ffd37a; color: #ffd37a; font: 700 10px var(--mono); letter-spacing: .08em; }
+.dt-prev-rows { display: grid; gap: 1px; min-width: 0; }
+.dt-prev-rows.is-in { animation: dk-more-in .4s ease-out; }
+.dt-prev-row { overflow: hidden; color: #dbe7f5; font: 600 12px/1.25 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.dt-prev-pos { margin: 0 2px; padding: 0 5px; border-radius: 3px; background: #ffd37a; color: #0c1424; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .dt-prev-rows.is-in { animation: none; } }
