@@ -36,7 +36,7 @@
     const lastTrade = (data.draftTrades || []).filter((t) => t.year === year()).sort((a, b) => a.at.localeCompare(b.at)).pop();
     const tradeUntil = lastTrade ? Date.parse(lastTrade.at) + tradeMs : 0;
     const trade = tradeUntil > Date.now() && !(pending && Date.parse(pending.madeAt) > Date.parse(lastTrade.at)) ? lastTrade : null;
-    return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock).slice(0, 16), last: shown[shown.length - 1] };
+    return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock && onClock && s.round === onClock.round), last: shown[shown.length - 1] };
   }
 
   function clockText() {
@@ -139,28 +139,30 @@
     const c = clockText();
     right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
     // Next
+    // Next: every pick still to come in this round (it scrolls if they don't all fit), then any skipped teams.
     const next = el("div", "dt-next");
-    next.append(el("span", "dt-next-label", "NEXT ▸"), ...s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`)));
-    if (s.skipped.length) next.append(el("span", "dt-next-label dt-skipped", `SKIPPED ▸ ${s.skipped.map((k) => k.teamId).join(" ")}`));
-    // Crawl: the current round, pick by pick — "ROUND 1", then every pick of the round in order (the player for picks
-    // made, ON THE CLOCK, SKIPPED, or just the team for picks to come), then back to the round's first pick. When the
+    const nextTrack = el("div", "dt-next-track");
+    const nextRun = el("div", "dt-next-run");
+    const nextItems = s.next.length
+      ? s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`))
+      : [el("span", "dt-next-team dt-next-none", s.onClock ? `LAST PICK OF ROUND ${s.onClock.round}` : "")];
+    if (s.skipped.length) nextItems.push(el("span", "dt-next-label dt-skipped", `SKIPPED ▸ ${s.skipped.map((k) => k.teamId).join(" ")}`));
+    nextRun.append(...nextItems);
+    nextTrack.append(nextRun);
+    next.append(el("span", "dt-next-label", "NEXT ▸"), nextTrack);
+    // Crawl: "ROUND 1", then the players selected so far in that round, in pick order, then back around. When the
     // round is finished it moves on to "ROUND 2", and so on to the end of the draft.
     const crawl = el("div", "dt-crawl");
     const label = el("span", "dt-crawl-label", "SELECTIONS");
     const track = el("div", "dt-crawl-track");
     const round = (s.pending || s.onClock || s.skipped[0] || s.order[s.order.length - 1]).round;
     const madeMap = new Map(s.picks.map((p) => [p.pick, p]));
-    const items = [el("span", "dt-crawl-item dt-crawl-round", `ROUND ${round}`), ...s.order.filter((slot) => slot.round === round).map((slot) => {
+    const roundPicks = s.order.filter((slot) => slot.round === round && madeMap.has(slot.pick)).map((slot) => madeMap.get(slot.pick));
+    const items = [el("span", "dt-crawl-item dt-crawl-round", `ROUND ${round}`), ...(roundPicks.length ? roundPicks.map((made) => {
       const item = el("span", "dt-crawl-item");
-      const made = madeMap.get(slot.pick);
-      item.append(el("b", "", `${slot.pick}${slot.compensatory ? "*" : ""}. ${slot.teamId}`));
-      if (made) item.append(` ${made.player}${made.position ? `, ${made.position}` : ""}${made.college ? ` (${made.college})` : ""}`);
-      else if (s.pending && s.pending.pick === slot.pick) item.append(el("em", "dt-crawl-tag is-in", "THE PICK IS IN"));
-      else if (s.onClock && s.onClock.pick === slot.pick) item.append(el("em", "dt-crawl-tag", "ON THE CLOCK"));
-      else if (slot.skipped) item.append(el("em", "dt-crawl-tag is-skipped", "SKIPPED"));
-      if (!made) item.classList.add("is-open");
+      item.append(el("b", "", `${made.pick}${made.compensatory ? "*" : ""}. ${made.teamId}`), ` ${made.player}${made.position ? `, ${made.position}` : ""}${made.college ? ` (${made.college})` : ""}`);
       return item;
-    })];
+    }) : [el("span", "dt-crawl-item is-open", `No selections yet in round ${round}`)])];
     const run = el("div", "dt-crawl-run");
     run.append(...items, ...items.map((i) => i.cloneNode(true))); // doubled for a seamless loop
     run.style.animationDuration = `${Math.max(25, items.length * 6)}s`;
@@ -169,6 +171,11 @@
     const top = el("div", "dt-top");
     top.append(brand, clock, selection || title, right);
     bar.replaceChildren(top, next, crawl);
+    if (nextRun.scrollWidth > nextTrack.clientWidth) {
+      nextRun.append(...[...nextRun.children].map((i) => i.cloneNode(true)));
+      nextRun.classList.add("is-moving");
+      nextRun.style.animationDuration = `${Math.max(20, nextItems.length * 1.6)}s`;
+    }
     clearTimeout(revealTimer);
     if (s.pending || s.trade) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
     if (!tickTimer) tickTimer = setInterval(() => {

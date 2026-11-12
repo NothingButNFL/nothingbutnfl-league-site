@@ -429,3 +429,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-trade { border-top-color: rgb(var(--tm-31527a)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-controls { border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-controls-sep { background-color: rgb(var(--tm-31527a)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-next-none { color: rgb(var(--tm-54749b)); }

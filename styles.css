@@ -2977,3 +2977,10 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dt-selection.is-trade { gap: 18px; }
 .dt-selection.is-trade strong { font-size: 24px; letter-spacing: .2em; }
 .dt-trade-text em { display: -webkit-box; white-space: normal; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+/* Ticker Next row: all remaining picks in the round, scrolling when they don't fit */
+.dt-next-track { flex: 1; min-width: 0; overflow: hidden; }
+.dt-next-run { display: inline-flex; align-items: center; white-space: nowrap; }
+.dt-next-run.is-moving { animation: dt-crawl linear infinite; }
+.dt-next-run.is-moving .dt-next-team { padding: 0 10px; }
+.dt-next-none { color: #54749b; font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .dt-next-run.is-moving { animation: none; } }

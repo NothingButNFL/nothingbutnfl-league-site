@@ -987,3 +987,4 @@ html[data-theme="light"] .dk-last-more-item small { color: #0b1f3a; }
 html[data-theme="light"] .dk-last-more-dots i { background-color: rgba(11, 31, 58, 0.420); }
 html[data-theme="light"] .dk-last-more-dots i.is-on { background-color: #c98a12; }
 html[data-theme="light"] .dt-trade-text em { color: #946100; }
+html[data-theme="light"] .dt-next-none { color: #5d7391; }
