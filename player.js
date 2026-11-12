@@ -62,7 +62,7 @@ function shownProfile(entry) {
   if (!shown.college && entry.player.college) shown.college = entry.player.college;
   if (!shown.height && c?.ht) shown.height = c.ht;
   if (!shown.weight && c?.wt && isIntegerInRange(Number(c.wt), 100, 500)) shown.weight = Number(c.wt);
-  if (!shown.draftYear && entry.pick) { shown.draftYear = entry.pick.year; shown.draftRound = entry.pick.round; shown.draftPick = entry.pick.pick; }
+  if (entry.pick) { shown.draftYear = entry.pick.year; shown.draftRound = entry.pick.round; shown.draftPick = entry.pick.pick; } // the league's own pick wins
   return shown;
 }
 
@@ -268,7 +268,8 @@ document.querySelector("#player-fill").addEventListener("click", () => {
   if (!profile.college && record.college) { profile.college = record.college; filled.push("college"); }
   if (!profile.height && record.height) { profile.height = formatHeight(record.height); filled.push("height"); }
   if (!profile.weight && record.weight) { profile.weight = record.weight; filled.push("weight"); }
-  if (!profile.draftYear && record.draftYear) {
+  // Draft year/round/pick for a Draft Pool prospect come only from this league's draft, never the NFL's.
+  if (entry.source !== "prospect" && !profile.draftYear && record.draftYear) {
     profile.draftYear = record.draftYear;
     profile.draftRound = record.draftRound || null;
     profile.draftPick = record.draftPick || null;
