@@ -139,7 +139,8 @@
     const c = clockText();
     right.append(el("strong", `dt-time${c && c.left <= 10 ? " is-low" : ""}`, c ? c.text : "LIVE"), el("span", "", c ? (c.running ? "ON THE CLOCK" : "CLOCK PAUSED") : `${s.picks.length} OF ${s.order.length} PICKS IN`));
     // Next
-    // Next: every pick still to come in this round (it scrolls if they don't all fit), then any skipped teams.
+    // Next: every pick still to come in this round, out to the edge of the screen (fading out whatever doesn't fit),
+    // then any skipped teams.
     const next = el("div", "dt-next");
     const nextTrack = el("div", "dt-next-track");
     const nextRun = el("div", "dt-next-run");
@@ -171,11 +172,7 @@
     const top = el("div", "dt-top");
     top.append(brand, clock, selection || title, right);
     bar.replaceChildren(top, next, crawl);
-    if (nextRun.scrollWidth > nextTrack.clientWidth) {
-      nextRun.append(...[...nextRun.children].map((i) => i.cloneNode(true)));
-      nextRun.classList.add("is-moving");
-      nextRun.style.animationDuration = `${Math.max(20, nextItems.length * 1.6)}s`;
-    }
+    nextTrack.classList.toggle("is-cut", nextRun.scrollWidth > nextTrack.clientWidth); // fade out what doesn't fit
     clearTimeout(revealTimer);
     if (s.pending || s.trade) revealTimer = setTimeout(render, Math.max(50, s.revealAt - Date.now() + 30));
     if (!tickTimer) tickTimer = setInterval(() => {

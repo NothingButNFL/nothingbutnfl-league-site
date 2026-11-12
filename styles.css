@@ -2980,7 +2980,5 @@ html.draft-live .sample-toast { bottom: 140px; }
 /* Ticker Next row: all remaining picks in the round, scrolling when they don't fit */
 .dt-next-track { flex: 1; min-width: 0; overflow: hidden; }
 .dt-next-run { display: inline-flex; align-items: center; white-space: nowrap; }
-.dt-next-run.is-moving { animation: dt-crawl linear infinite; }
-.dt-next-run.is-moving .dt-next-team { padding: 0 10px; }
 .dt-next-none { color: #54749b; font-size: 12px; }
-@media (prefers-reduced-motion: reduce) { .dt-next-run.is-moving { animation: none; } }
+.dt-next-track.is-cut { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 140px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 140px), transparent); }
