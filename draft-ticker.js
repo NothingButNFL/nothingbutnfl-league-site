@@ -39,6 +39,31 @@
     return { order, picks: shown, onClock, pending: trade ? null : pending, trade, revealAt: trade ? tradeUntil : revealAt, skipped: left.filter((s) => s.skipped), next: left.filter((s) => !s.skipped && s !== onClock && onClock && s.round === onClock.round), last: shown[shown.length - 1] };
   }
 
+  // Last season's record (the season before this draft): from the standings when they're for that season, otherwise
+  // added up from that season's regular-season games on record. Nothing is shown if neither has it.
+  let recordsFor = null, records = {};
+  function lastRecord(teamId) {
+    const season = year() - 1;
+    const stamp = `${season}|${data?.standings?.season}|${(data?.gameArchive || []).length}|${(data?.games || []).length}`;
+    if (recordsFor !== stamp) {
+      recordsFor = stamp;
+      records = {};
+      if (data?.standings?.season === season) {
+        Object.entries(data.standings.teams || {}).forEach(([id, r]) => { records[id] = { w: r.w || 0, l: r.l || 0, t: r.t || 0 }; });
+      } else {
+        try {
+          archivedGames(data).filter((g) => g.season === season && (!g.week || g.week <= 18)).forEach((g) => {
+            const add = (id, mine, theirs) => { const r = (records[id] ||= { w: 0, l: 0, t: 0 }); r[mine > theirs ? "w" : mine < theirs ? "l" : "t"] += 1; };
+            add(g.away, g.awayScore, g.homeScore);
+            add(g.home, g.homeScore, g.awayScore);
+          });
+        } catch { records = {}; }
+      }
+    }
+    const r = records[teamId];
+    return r && r.w + r.l + r.t ? `(${r.w}-${r.l}${r.t ? `-${r.t}` : ""})` : "";
+  }
+
   function clockText() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(clockKey) || "null"); } catch { saved = null; }
@@ -153,10 +178,18 @@
     const next = el("div", "dt-next");
     const nextTrack = el("div", "dt-next-track");
     const nextRun = el("div", "dt-next-run");
+    // Each pick as [Pick #] [Team Name] [last season's record].
+    const nextPick = (n, cls = "") => {
+      const item = el("span", `dt-next-team${cls}`);
+      item.append(el("b", "dt-next-num", `${n.pick}${n.compensatory ? "*" : ""}`), el("span", "dt-next-name", teamName(n.teamId)));
+      const rec = lastRecord(n.teamId);
+      if (rec) item.append(el("small", "dt-next-rec", rec));
+      return item;
+    };
     const nextItems = s.next.length
-      ? s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`))
+      ? s.next.map((n) => nextPick(n))
       : [el("span", "dt-next-team dt-next-none", s.onClock ? `LAST PICK OF ROUND ${s.onClock.round}` : "")];
-    if (s.skipped.length) nextItems.push(el("span", "dt-next-label dt-skipped", `SKIPPED ▸ ${s.skipped.map((k) => k.teamId).join(" ")}`));
+    if (s.skipped.length) nextItems.push(el("span", "dt-next-label dt-skipped", "SKIPPED ▸"), ...s.skipped.map((k) => nextPick(k, " is-skipped")));
     nextRun.append(...nextItems);
     nextTrack.append(nextRun);
     next.append(el("span", "dt-next-label", "NEXT ▸"), nextTrack);

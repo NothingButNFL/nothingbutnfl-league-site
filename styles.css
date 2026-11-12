@@ -2884,7 +2884,11 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dt-right span { color: #c5d5e8; font: 700 10px var(--mono); letter-spacing: .1em; }
 .dt-next { display: flex; align-items: center; gap: 0; min-height: 26px; overflow: hidden; background: #dbe7f5; color: #0c2b50; white-space: nowrap; }
 .dt-next-label { padding: 0 12px; color: #54749b; font: 700 13px var(--mono); }
-.dt-next-team { padding: 0 12px; color: #0c2b50; font: 700 14px var(--mono); }
+.dt-next-team { display: inline-flex; align-items: center; gap: 7px; padding: 0 14px; color: #0c2b50; font: 700 14px var(--body); }
+.dt-next-num { display: inline-grid; place-items: center; min-width: 26px; padding: 1px 5px; border-radius: 4px; background: #0c2b50; color: #ffd37a; font: 800 12px var(--mono); }
+.dt-next-rec { color: #54749b; font: 700 12px var(--mono); }
+.dt-next-team.is-skipped .dt-next-num { background: #c0283a; color: #fff; }
+.dt-next-none { font-family: var(--mono); }
 .dt-skipped { color: #c0283a; }
 .dt-crawl { display: flex; align-items: stretch; min-height: 28px; overflow: hidden; background: #0c0f14; }
 .dt-crawl-label { display: flex; align-items: center; padding: 0 14px; background: #1f6fc5; font: 800 11px var(--mono); letter-spacing: .08em; white-space: nowrap; }
