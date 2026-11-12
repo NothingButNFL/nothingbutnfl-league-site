@@ -15,9 +15,10 @@
     <link rel="stylesheet" href="theme-gray.css">
     <link rel="stylesheet" href="theme-team.css">
     <link rel="stylesheet" href="theme-neon.css">
+    <link rel="stylesheet" href="theme-seasonal.css">
     <script>
-      // Applies the saved theme (NBNFL / Dark / Light / Neon / an NFL team) before the page paints.
-      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; else if (/^(team-[A-Z]{2,3}|neon)$/.test(savedTheme)) { var themeVars = localStorage.getItem("nbf-theme-vars"); if (themeVars) { document.documentElement.dataset.theme = savedTheme; themeVars.split(";").forEach(function (pair) { var i = pair.indexOf(":"); document.documentElement.style.setProperty(pair.slice(0, i), pair.slice(i + 1)); }); } } } catch (e) {}
+      // Applies the saved theme (NBNFL / Dark / Light / Neon / a seasonal theme / an NFL team) before the page paints.
+      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; else if (/^(team-[A-Z]{2,3}|season-[a-z]+|neon)$/.test(savedTheme)) { var themeVars = localStorage.getItem("nbf-theme-vars"); if (themeVars) { document.documentElement.dataset.theme = savedTheme; themeVars.split(";").forEach(function (pair) { var i = pair.indexOf(":"); document.documentElement.style.setProperty(pair.slice(0, i), pair.slice(i + 1)); }); } } } catch (e) {}
     </script>
     <script>
       // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.

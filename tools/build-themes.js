@@ -141,7 +141,7 @@ const themes = {
       used[key] = c;
       return a === undefined ? `rgb(var(--tm-${key}))` : `rgb(var(--tm-${key}) / ${a})`;
     });
-    const scope = 'html:is([data-theme^="team-"], [data-theme="neon"])'; // Neon uses the same variables
+    const scope = 'html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"])'; // Neon and the seasonal themes use the same variables
     const prefix = (sel) => sel.split(",").map((s) => {
       s = s.trim();
       if (s.startsWith(":root")) return scope + s.slice(5);
