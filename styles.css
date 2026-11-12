@@ -3032,6 +3032,9 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-last-stats-btn:hover, .dk-last-stats-btn:focus-visible { background: rgba(255, 211, 122, .15); }
 .dk-last-stats-note { color: #fff; font: 13px var(--body); opacity: .8; }
 .dk-last-stats.is-edit { display: block; }
+.dk-last-stats > .dk-last-stats-label { min-width: 200px; }
+@media (max-width: 800px) { .dk-last-stats > .dk-last-stats-label { min-width: 0; } }
+.dk-last-stats.is-combine { margin-top: 0; padding-top: 10px; border-top-style: dashed; }
 .dk-last-stats-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .dk-last-stats-form input { flex: 1 1 260px; min-width: 0; }
 @media (max-width: 800px) { .dk-last-stats { grid-template-columns: 1fr; gap: 8px; } }

@@ -543,6 +543,24 @@ function dkRenderStats(box, last) {
     .finally(() => { dkStatsLoading.delete(cacheKey); dkRenderLast(); });
 }
 
+// The player's combine results (pasted under Draft setup), under his college stats.
+function dkRenderCombine(box, last) {
+  const c = dkCombineFor(last.player);
+  if (!c) return;
+  const items = Object.keys(dkCombineLabels).filter((k) => c[k]).map((k) => ({ label: dkCombineLabels[k], value: c[k] }));
+  if (!items.length) return;
+  const row = dkStatsEl("div", "dk-last-stats is-combine");
+  row.append(dkStatsEl("span", "dk-last-stats-label", `${last.year} NFL COMBINE`));
+  const list = dkStatsEl("div", "dk-last-stats-list");
+  list.append(...items.map(({ label, value }) => {
+    const cell = document.createElement("div");
+    cell.append(dkStatsEl("strong", "", value), dkStatsEl("span", "", label));
+    return cell;
+  }));
+  row.append(list, dkStatsEl("div", "dk-last-stats-side"));
+  box.append(row);
+}
+
 // "Last Player Selected": the most recent pick, across the top; it flashes when a pick is made on this screen.
 let dkFlashId = null;
 function dkRenderLast() {
@@ -573,6 +591,7 @@ function dkRenderLast() {
     Object.assign(document.createElement("small"), { textContent: last.fromTeam ? `Pick from the ${teamName(last.fromTeam)}` : "" }));
   box.replaceChildren(logo, text, pick);
   dkRenderStats(box, last);
+  dkRenderCombine(box, last);
   dkRenderMore(box, last);
   if (dkFlashId === last.id) {
     dkFlashId = null;
@@ -765,6 +784,62 @@ document.querySelector("#dk-order-current").addEventListener("click", () => {
     : "";
 });
 
+// ---------- Draft setup: combine results ----------
+// Columns are matched from a header row (NFL.com's combine tracker table, or a spreadsheet); otherwise
+// Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle.
+const dkCombineCols = [
+  ["name", /^(name|player|prospect)$/], ["ht", /^(ht|height)$/], ["wt", /^(wt|weight)$/], ["forty", /^(40|40yd|40yard|40yarddash|forty|40time|dash)$/],
+  ["bench", /^(bench|benchpress|bp|reps)$/], ["vert", /^(vert|vertical|verticaljump|vj)$/], ["broad", /^(broad|broadjump|bj)$/],
+  ["cone", /^(3cone|3conedrill|cone|threecone)$/], ["shuttle", /^(shuttle|20yardshuttle|20yshuttle|ss|shortshuttle)$/], ["arm", /^(arm|arms|armlength)$/], ["hand", /^(hand|hands|handsize)$/],
+];
+const dkCombineDefault = ["name", "ht", "wt", "forty", "bench", "vert", "broad", "cone", "shuttle"];
+const dkCombineLabels = { ht: "HT", wt: "WT", forty: "40 YD", bench: "BENCH", vert: "VERT", broad: "BROAD", cone: "3-CONE", shuttle: "SHUTTLE", arm: "ARM", hand: "HAND" };
+function dkParseCombine(text) {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const split = (l) => (l.includes("\t") ? l.split("\t") : l.split(/,(?!\d{3}\b)/)).map((c) => c.trim());
+  let cols = dkCombineDefault;
+  const out = [];
+  lines.forEach((line) => {
+    const cells = split(line);
+    const keys = cells.map((c) => c.toLowerCase().replace(/[^a-z0-9]/g, ""));
+    const mapped = keys.map((k) => (dkCombineCols.find(([, re]) => re.test(k)) || [null])[0]);
+    if (mapped.includes("name") && mapped.filter(Boolean).length >= 2) { cols = mapped; return; } // header row
+    const row = { year: dkYear };
+    cols.forEach((key, i) => {
+      const v = String(cells[i] ?? "").replace(/^(dnp|-+|—|n\/a)$/i, "").slice(0, key === "name" ? 70 : 12);
+      if (key && v) row[key] = v;
+    });
+    if (row.name && Object.keys(row).length > 2) out.push(row);
+  });
+  return out;
+}
+function dkCombineFor(player) {
+  const key = dkNameKey(player);
+  return (dkData.draftCombine || []).find((c) => c.year === dkYear && dkNameKey(c.name) === key) || null;
+}
+function dkRenderCombineCount() {
+  const n = (dkData.draftCombine || []).filter((c) => c.year === dkYear).length;
+  const el = document.querySelector("#dk-combine-count");
+  if (el) el.textContent = n ? `${n} player${n === 1 ? "" : "s"} with ${dkYear} combine results.` : "No combine results yet.";
+}
+document.querySelector("#dk-combine-add").addEventListener("click", () => {
+  const add = dkParseCombine(document.querySelector("#dk-combine-text").value);
+  if (!add.length) { dkStatus.textContent = "Paste combine results first (a name and at least one measurement on each line)."; return; }
+  const keys = new Set(add.map((c) => dkNameKey(c.name)));
+  if (dkSave((data) => {
+    data.draftCombine = [...(data.draftCombine || []).filter((c) => c.year !== dkYear || !keys.has(dkNameKey(c.name))), ...add];
+  }, `Saved combine results for ${add.length} player${add.length === 1 ? "" : "s"}.`)) {
+    document.querySelector("#dk-combine-text").value = "";
+    dkRenderCombineCount();
+  }
+});
+document.querySelector("#dk-combine-clear").addEventListener("click", async () => {
+  const n = (dkData.draftCombine || []).filter((c) => c.year === dkYear).length;
+  if (!n) { dkStatus.textContent = "There are no combine results to clear."; return; }
+  if (!(await confirmAction(`Remove the ${dkYear} combine results for ${n} player${n === 1 ? "" : "s"}?`, { confirmLabel: "Clear combine results", danger: true }))) return;
+  if (dkSave((data) => { data.draftCombine = (data.draftCombine || []).filter((c) => c.year !== dkYear); }, "Combine results cleared.")) dkRenderCombineCount();
+});
+
 // ---------- Draft setup: pool ----------
 function dkParsePool(text) {
   const out = [];
@@ -830,6 +905,7 @@ window.addEventListener("storage", (event) => {
 dkTimerLeft = dkTimerLength();
 dkTimerShow();
 dkRender();
+dkRenderCombineCount();
 
 // ---------- Countdown sound ----------
 // With 10 seconds left: built-in beeps (Web Audio, a beep a second, higher for the last 3, a horn at 0:00), or the

@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=1e332166">
+    <link rel="stylesheet" href="styles.css?v=539317ba">
     <link rel="stylesheet" href="theme-light.css?v=46f4a594">
     <link rel="stylesheet" href="theme-gray.css?v=825f70dc">
     <link rel="stylesheet" href="theme-team.css?v=70e85a60">
@@ -41,11 +41,11 @@
     </script>
     <script src="teams.js?v=63b57a1f" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=a1af3dc1" defer></script>
+    <script src="league-core.js?v=431c5e59" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=8731de28" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
-    <script src="draft-room.js?v=283142d4" defer></script>
+    <script src="draft-room.js?v=e464657d" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -259,7 +259,14 @@
                 <div class="hs-actions"><button class="button button-lime" type="button" id="dk-pool-add">Add to pool</button></div>
               </div>
               <div>
-                <h4>3. Start over</h4>
+                <h4>3. Combine results</h4>
+                <p class="hs-help">Paste the combine results (copy the table from NFL.com's combine tracker, or a spreadsheet) and they show on Last Player Selected when the player is picked. Put a header row first so the columns are matched, like <code>Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle</code> (Arm and Hand work too). Without a header, that's the order used. Adding again updates players already in the list.</p>
+                <textarea id="dk-combine-text" rows="6" placeholder="Name, Ht, Wt, 40, Bench, Vert, Broad, 3-Cone, Shuttle&#10;Fernando Mendoza, 6'5&quot;, 236, 4.82, , 30.5, 9'6&quot;, , "></textarea>
+                <div class="hs-actions"><button class="button button-lime" type="button" id="dk-combine-add">Add combine results</button><button class="workspace-button" type="button" id="dk-combine-clear">Clear combine results</button></div>
+                <p class="hs-help" id="dk-combine-count"></p>
+              </div>
+              <div>
+                <h4>4. Start over</h4>
                 <p class="hs-help">Removes every pick made in this draft. The order and the pool stay.</p>
                 <button class="workspace-button dk-danger" type="button" id="dk-reset">Clear all picks</button>
               </div>
