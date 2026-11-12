@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=df9b8098">
+    <link rel="stylesheet" href="styles.css?v=03faf754">
     <link rel="stylesheet" href="theme-light.css?v=7c7f2e3b">
     <link rel="stylesheet" href="theme-gray.css?v=925d8ac3">
     <link rel="stylesheet" href="theme-espn.css?v=7cf7f32e">
@@ -208,33 +208,37 @@
             </div>
           </section>
 
-          <section class="leaders-section" id="leaders" aria-labelledby="leaders-title">
-            <div class="section-wrap">
-              <div class="section-kicker light-kicker"><span>01</span> THE NUMBERS</div>
-              <div class="section-heading-row">
-                <div>
-                  <h2 id="leaders-title">League Leaders</h2>
-                  <p class="section-subtitle" id="leaders-subtitle">Top 5 in each category, from the Season Stats page.</p>
+          <!-- League Leaders on the left, AFC over NFC on the right -->
+          <div class="home-stats">
+            <section class="leaders-section" id="leaders" aria-labelledby="leaders-title">
+              <div class="section-wrap">
+                <div class="section-kicker light-kicker"><span>01</span> THE NUMBERS</div>
+                <div class="section-heading-row">
+                  <div>
+                    <h2 id="leaders-title">League Leaders</h2>
+                    <p class="section-subtitle" id="leaders-subtitle">Top 5 in each category, from the Season Stats page.</p>
+                  </div>
+                  <a class="workspace-button leaders-link" href="stats.html">Full stats <span aria-hidden="true">→</span></a>
                 </div>
-                <a class="workspace-button leaders-link" href="stats.html">Full stats <span aria-hidden="true">→</span></a>
+                <div class="leaders-grid" id="leaders-grid"></div>
               </div>
-              <div class="leaders-grid" id="leaders-grid"></div>
-            </div>
-          </section>
+            </section>
 
-          <section class="leaders-section conference-section" id="top-teams" aria-labelledby="top-teams-title">
-            <div class="section-wrap">
-              <div class="section-kicker light-kicker"><span>02</span> THE RACE</div>
-              <div class="section-heading-row">
-                <div>
-                  <h2 id="top-teams-title">Conference Leaders</h2>
-                  <p class="section-subtitle" id="top-teams-subtitle">Top 7 teams in each conference, from the Standings page.</p>
+            <section class="leaders-section conference-section" id="top-teams" aria-labelledby="top-teams-title">
+              <div class="section-wrap">
+                <div class="section-kicker light-kicker"><span>02</span> THE RACE</div>
+                <div class="section-heading-row">
+                  <div>
+                    <h2 id="top-teams-title">Conference Leaders</h2>
+                    <p class="section-subtitle" id="top-teams-subtitle">Top 7 teams in each conference, from the Standings page.</p>
+                  </div>
+                  <a class="workspace-button leaders-link" href="standings.html">Full standings <span aria-hidden="true">→</span></a>
                 </div>
-                <a class="workspace-button leaders-link" href="standings.html">Full standings <span aria-hidden="true">→</span></a>
+                <div class="conference-grid" id="conference-grid"></div>
               </div>
-              <div class="conference-grid" id="conference-grid"></div>
-            </div>
-          </section>
+            </section>
+
+          </div>
 
           <section class="leaders-section recent-section news-section" id="recent-news" aria-labelledby="news-title">
             <div class="section-wrap">
