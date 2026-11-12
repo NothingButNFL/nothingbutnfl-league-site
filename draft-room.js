@@ -257,14 +257,24 @@ const dkSkipped = (errors) => {
   if (errors.length) box.open = true;
 };
 
-// Reads "Pick, Team (from team)" lines, or just team names in order. Returns { slots, errors }.
+// Reads the draft order in any of these forms. Returns { slots, errors }; slots from a pick sheet carry their round.
+//   Current, Round, Original, Pick Number  (the league's draft picks sheet: "CHI, 1, CAR, 1" — Pick Number can be the
+//                                           overall pick or the pick within the round, and a * marks a comp pick)
+//   Pick, Team (from team)                 ("1, Chicago Bears (CAR)")
+//   just team names, one per line, in order
 function dkParseOrder(text) {
   const slots = [], errors = [];
   let n = 0;
   text.split(/\r?\n/).forEach((line, i) => {
     const t = line.trim();
-    if (!t || /^(round|rnd|rd|pick|team)\b[^\d]*$/i.test(t) || /^round\s+\d+\s*[-–:]?\s*$/i.test(t)) return;
+    if (!t || /^(round|rnd|rd|pick|team|current|owner)\b[^\d]*$/i.test(t) || /^round\s+\d+\s*[-–:]?\s*$/i.test(t)) return;
     const cells = drSplit(t) || t.split(/\s+(?=\D)/);
+    const sheetCells = (drSplit(t) || t.split(/\s+/)).filter((c) => c !== "");
+    if (sheetCells.length >= 4 && /^\d{1,2}$/.test(sheetCells[1]) && drTeamToken(sheetCells[0]) && drTeamToken(sheetCells[2]) && drPickToken(sheetCells[3])) {
+      const teamId = drTeamToken(sheetCells[0]), original = drTeamToken(sheetCells[2]), pick = drPickToken(sheetCells[3]);
+      slots.push({ round: Number(sheetCells[1]), pick: pick.pick, compensatory: pick.compensatory || /\*/.test(sheetCells[2]), teamId, fromTeam: original !== teamId ? original : undefined });
+      return;
+    }
     let pick = drPickToken(cells[0]);
     let teamText = pick ? cells.slice(1).join(" ") : t;
     if (!pick) pick = { pick: n + 1, compensatory: /\*/.test(t) };
@@ -302,7 +312,14 @@ document.querySelector("#dk-order-save").addEventListener("click", async () => {
   dkSkipped(errors);
   if (!slots.length) { dkStatus.textContent = "Paste the draft order first."; return; }
   let order;
-  if (slots.length <= 32 && slots.every((s) => s.pick <= 32 && !s.compensatory)) {
+  if (slots.some((s) => s.round)) {
+    // A pick sheet: order by round, then pick. Keep the pick numbers if they're already overall numbers (each one
+    // higher than the last); if they restart every round, number the picks 1, 2, 3… straight through.
+    const sorted = [...slots].sort((a, b) => (a.round || 0) - (b.round || 0) || (a.compensatory === b.compensatory ? 0 : a.compensatory ? 1 : -1) || a.pick - b.pick);
+    const overall = sorted.every((s, i) => i === 0 || s.pick > sorted[i - 1].pick);
+    order = sorted.map((s, i) => ({ year: dkYear, pick: overall ? s.pick : i + 1, round: s.round || 1, teamId: s.teamId,
+      ...(s.fromTeam ? { fromTeam: s.fromTeam } : {}), ...(s.compensatory ? { compensatory: true } : {}) }));
+  } else if (slots.length <= 32 && slots.every((s) => s.pick <= 32 && !s.compensatory)) {
     const originals = slots.map((s) => s.fromTeam || s.teamId);
     const twice = [...new Set(originals.filter((t, i) => originals.indexOf(t) !== i))];
     if (twice.length) { dkStatus.textContent = `Each team's own first-round pick can only be in the order once, but ${twice.join(", ")} ${twice.length === 1 ? "is" : "are"} there twice (a traded pick is written as the new team with the original team in brackets: "Chicago Bears (CAR)" in Carolina's spot).`; return; }
@@ -327,7 +344,10 @@ document.querySelector("#dk-order-standings").addEventListener("click", () => {
   dkStatus.textContent = `Filled in worst record first from the ${dkData.standings?.season || ""} standings. Adjust it (and add "(from team)" for traded first-round picks), then Save draft order.`;
 });
 document.querySelector("#dk-order-current").addEventListener("click", () => {
-  document.querySelector("#dk-order-text").value = dkOrder().map((s) => `${s.pick}${s.compensatory ? "*" : ""}, ${teamName(s.teamId)}${s.fromTeam ? ` (${s.fromTeam})` : ""}`).join("\n");
+  const order = dkOrder();
+  document.querySelector("#dk-order-text").value = order.length
+    ? ["Current, Round, Original, Pick Number", ...order.map((s) => `${s.teamId}, ${s.round}, ${s.fromTeam || s.teamId}, ${s.pick}${s.compensatory ? "*" : ""}`)].join("\n")
+    : "";
 });
 
 // ---------- Draft setup: pool ----------

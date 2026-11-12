@@ -43,7 +43,7 @@
     <script src="league-core.js?v=fe1259c3" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-core.js?v=aa56ae2b" defer></script>
-    <script src="draft-room.js?v=c9f0ac7f" defer></script>
+    <script src="draft-room.js?v=15936152" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -209,12 +209,12 @@
             <div class="dk-setup-grid">
               <div>
                 <h4>1. Draft order</h4>
-                <p class="hs-help">Paste the first-round order (32 teams, one per line) and the other rounds are built from it, using each team's traded picks from Draft Pick Manager. Or paste every pick: <code>Pick, Team (from team)</code>, with a * for compensatory picks (<code>97*, Ravens</code>).</p>
+                <p class="hs-help">Paste your draft picks sheet straight in: <code>Current, Round, Original, Pick Number</code> (e.g. <code>CHI, 1, CAR, 1</code>: Chicago has Carolina's 1st-round pick). Pick Number can be the overall pick or the pick within the round, with a * for compensatory picks. Or paste just the first-round order (32 teams) and the other rounds are built from Draft Pick Manager, or every pick as <code>Pick, Team (from team)</code>.</p>
                 <div class="hs-actions">
                   <button class="workspace-button" type="button" id="dk-order-standings">Fill in reverse standings</button>
                   <button class="workspace-button" type="button" id="dk-order-current">Show the current order</button>
                 </div>
-                <textarea id="dk-order-text" rows="10" placeholder="1, Raiders&#10;2, Jets&#10;3, Cardinals (from Texans)"></textarea>
+                <textarea id="dk-order-text" rows="10" placeholder="Current, Round, Original, Pick Number&#10;LV, 1, LV, 1&#10;NYJ, 1, NYJ, 2&#10;ARI, 1, HOU, 3"></textarea>
                 <div class="hs-actions"><button class="button button-lime" type="button" id="dk-order-save">Save draft order</button></div>
                 <details class="hs-unmatched dr-skipped" id="dk-order-skipped" hidden><summary>Skipped lines</summary><ul></ul></details>
               </div>
