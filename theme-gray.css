@@ -331,3 +331,4 @@ html[data-theme="gray"] .dk-sound-dialog::backdrop { background-color: rgba(10, 
 html[data-theme="gray"] .help-bubble { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
 html[data-theme="gray"] .help-pop { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
 html[data-theme="gray"] .stream-editor { border-top-color: #303236; }
+html[data-theme="gray"] .stream-card.is-beside { border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }

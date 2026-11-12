@@ -1015,3 +1015,4 @@ html[data-theme="light"] .dk-last-stats-note { color: #0b1f3a; }
 html[data-theme="light"] .player-combine-grid div { background-color: rgba(11, 31, 58, 0.056); }
 html[data-theme="light"] .stream-editor { border-top-color: #e2e9f2; }
 html[data-theme="light"] .stream-empty { color: #0b1f3a; }
+html[data-theme="light"] .stream-card.is-beside { border-right-color: #c6d4e5; border-bottom-color: #c6d4e5; border-left-color: #c6d4e5; border-top-color: #0c2b50; background-color: #f5f8fc; }

@@ -83,6 +83,26 @@
   section.querySelector("#stream-clear").addEventListener("click", () => {
     if (save((data) => { delete data.youtubeChannel; }, "Channel removed.")) { input.value = ""; }
   });
+  // Where the card sits: beside the week's games, under the Scoreboard, when the scoreboard area is showing;
+  // otherwise in its own section below it.
+  const card = section.querySelector(".stream-card");
+  const slot = document.querySelector("#md-stream-slot");
+  const matchday = document.querySelector("#matchday");
+  const slate = document.querySelector("#md-slate");
+  function place() {
+    const beside = Boolean(slot && matchday && slate && !matchday.hidden && !slate.hidden);
+    const target = beside ? slot : section.querySelector(".section-wrap");
+    if (card.parentElement !== target) target.append(card);
+    card.classList.toggle("is-beside", beside);
+    section.hidden = beside;
+    if (slot) slot.hidden = !beside;
+  }
+  if (matchday && slate) {
+    const watcher = new MutationObserver(place);
+    watcher.observe(matchday, { attributes: true, attributeFilter: ["hidden"] });
+    watcher.observe(slate, { attributes: true, attributeFilter: ["hidden"] });
+  }
   window.addEventListener("storage", (event) => { if (event.key === officeStorageKey) render(); });
   render();
+  place();
 })();
