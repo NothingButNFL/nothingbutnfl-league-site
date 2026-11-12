@@ -8,9 +8,12 @@
   --line: #31527a;
   --lime: #ffffff;
   --orange: #ffffff;
-  --mono: "Cascadia Code", "Courier New", monospace;
-  --body: "Play", "Segoe UI", Arial, sans-serif;
-  --display: "Play", "Arial", "Segoe UI", sans-serif;
+  /* ESPN's type: Benton Sans (ESPN's licensed web font, used when it's installed) with Roboto, then Arial, as ESPN's own
+     fallbacks; headlines in a bold condensed face like ESPN's (Roboto Condensed stands in for it). Labels that were in a
+     monospace face use the same sans, so the whole site reads in one family. */
+  --mono: "benton-sans", "Roboto", Arial, sans-serif;
+  --body: "benton-sans", "Roboto", Arial, sans-serif;
+  --display: "Roboto Condensed", "benton-sans", "Roboto", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
