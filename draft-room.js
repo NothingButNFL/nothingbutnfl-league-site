@@ -279,9 +279,25 @@ function dkRenderPool() {
 }
 
 // ---------- The board ----------
+// The board follows the pick on the clock: when it changes, the board switches to that pick's round and scrolls (inside
+// the list, not the page) so that pick sits near the top with the previous pick just above it.
+let dkFollowPick = null;
+function dkFollowCurrent(board, slot) {
+  const key = slot ? `${slot.year ?? ""}-${slot.pick}` : null;
+  if (!key || key === dkFollowPick) return;
+  const now = board.querySelector(".dk-slot.is-now");
+  if (!now) return;
+  dkFollowPick = key;
+  const target = now.previousElementSibling || now;
+  const top = board.scrollTop + target.getBoundingClientRect().top - board.getBoundingClientRect().top;
+  board.scrollTo({ top: Math.max(0, top), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
 function dkRenderBoard() {
   const order = dkOrder();
   const slot = dkOnClock();
+  // A new pick on the clock brings the board back to the current round.
+  if (slot && `${slot.year ?? ""}-${slot.pick}` !== dkFollowPick) dkRound = 0;
   const made = dkPicks();
   document.querySelector("#dk-made").textContent = String(made.length);
   document.querySelector("#dk-total").textContent = String(order.length);
@@ -311,6 +327,7 @@ function dkRenderBoard() {
     li.append(who);
     return li;
   }));
+  dkFollowCurrent(document.querySelector("#dk-board"), slot);
 }
 
 // Under Last Player Selected: the same team's other picks in this draft (not the one just made), two at a time,
