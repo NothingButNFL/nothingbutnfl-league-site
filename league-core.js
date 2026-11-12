@@ -1974,9 +1974,10 @@ function showSampleBanner() {
   const text = document.createElement("span");
   text.innerHTML = "<strong>Sample league.</strong> You're looking at a made-up league 8 weeks into its season, with made-up contracts and moves. ";
   const link = document.createElement("a");
-  link.href = "index.html#sample-league";
-  link.textContent = "Remove it on the Overview";
-  text.append(link, " to get your own data back.");
+  link.href = "#";
+  link.textContent = "Remove Sample League";
+  link.addEventListener("click", (event) => { event.preventDefault(); if (typeof removeSampleLeague === "function") removeSampleLeague(); });
+  text.append("Use ", link, " (bottom of the menu) to get your own data back.");
   banner.append(text);
   (document.querySelector("main") || document.body).prepend(banner);
 }

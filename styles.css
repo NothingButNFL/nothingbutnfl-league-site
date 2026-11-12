@@ -2698,3 +2698,8 @@ button.md-slate-tag:hover, button.md-slate-tag:focus-visible { border-color: #c9
 .hs-unmatched summary { cursor: pointer; color: #fff; font-weight: 700; }
 .hs-unmatched ul { columns: 3 220px; margin: 10px 0 0; padding-left: 18px; color: #fff; font-size: 13px; }
 .hs-unmatched[hidden], #hs-report[hidden] { display: none; }
+/* Sidebar › Load / Remove Sample League, and its message toast */
+.primary-nav > a.sample-nav { margin-top: 10px; border-top: 1px solid #31527a; padding-top: 10px; }
+.primary-nav > a.sample-nav.is-loaded { color: #ffd37a; }
+.sample-toast { position: fixed; right: 20px; bottom: 20px; z-index: 10000; display: flex; gap: 12px; align-items: flex-start; max-width: min(460px, calc(100vw - 40px)); padding: 14px 16px; border: 1px solid #54749b; border-radius: 8px; background: #0c2b50; color: #ffffff; font-size: 14px; line-height: 1.45; box-shadow: 0 12px 32px rgba(0, 0, 0, .45); }
+.sample-toast-close { flex: none; border: 0; background: transparent; color: #ffffff; font-size: 20px; line-height: 1; cursor: pointer; }

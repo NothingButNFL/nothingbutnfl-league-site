@@ -874,3 +874,7 @@ html[data-theme="light"] .hs-card img { border-top-color: #c6d4e5; border-right-
 html[data-theme="light"] .hs-card figcaption { color: #0b1f3a; }
 html[data-theme="light"] .hs-unmatched summary { color: #0b1f3a; }
 html[data-theme="light"] .hs-unmatched ul { color: #0b1f3a; }
+html[data-theme="light"] .primary-nav > a.sample-nav { border-top-color: #c6d4e5; }
+html[data-theme="light"] .primary-nav > a.sample-nav.is-loaded { color: #946100; }
+html[data-theme="light"] .sample-toast { border-top-color: #9fb2cb; border-right-color: #9fb2cb; border-bottom-color: #9fb2cb; border-left-color: #9fb2cb; background-color: #ffffff; color: #0b1f3a; box-shadow: rgba(15, 35, 70, 0.158) 0px 12px 32px; }
+html[data-theme="light"] .sample-toast-close { color: #0b1f3a; }
