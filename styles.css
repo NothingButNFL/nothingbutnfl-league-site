@@ -2729,10 +2729,10 @@ a.dr-team:hover { text-decoration: underline; }
 .dr-editor textarea { width: 100%; font: 13px var(--mono); }
 .dr-editor[hidden], #dr-empty[hidden] { display: none; }
 .dr-entry { margin-top: 24px; }
-.dr-entry-fields { display: grid; grid-template-columns: 90px 90px minmax(170px, 1.2fr) minmax(180px, 1.5fr) 100px minmax(160px, 1.2fr); gap: 12px; margin-top: 12px; }
+.dr-entry-fields { display: grid; grid-template-columns: 90px 80px minmax(160px, 1.1fr) minmax(150px, 1fr) minmax(170px, 1.4fr) 90px minmax(150px, 1.1fr); gap: 12px; margin-top: 12px; }
 .dr-entry-fields label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
 .dr-entry-fields :is(input, select) { width: 100%; min-width: 0; }
-@media (max-width: 900px) { .dr-entry-fields { grid-template-columns: 1fr 1fr; } .dr-f-team, .dr-f-player, .dr-f-school { grid-column: 1 / -1; } }
+@media (max-width: 1100px) { .dr-entry-fields { grid-template-columns: 1fr 1fr; } .dr-f-team, .dr-f-from, .dr-f-player, .dr-f-school { grid-column: 1 / -1; } }
 .dr-entry-note { margin: 0; }
 .dr-entry [hidden] { display: none; }
 .dr-col-edit { width: 110px; white-space: nowrap; }
@@ -2740,3 +2740,9 @@ a.dr-team:hover { text-decoration: underline; }
 .dr-comp { color: #ffd37a; font-weight: 700; }
 .dr-legend { margin: 10px 0 0; }
 .dr-legend[hidden] { display: none; }
+.dr-skipped { margin: 10px 0; }
+.dr-skipped li { margin-bottom: 4px; }
+.dr-skipped code { color: #ffd37a; font-size: 12px; }
+.dr-skipped[hidden] { display: none; }
+.dr-via { display: block; margin-top: 2px; color: #ffd37a; font: 11px var(--mono); }
+.dr-entry-fields small { opacity: .7; }

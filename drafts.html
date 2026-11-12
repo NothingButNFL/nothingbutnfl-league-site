@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap">
-    <link rel="stylesheet" href="styles.css?v=d5d94d7f">
-    <link rel="stylesheet" href="theme-light.css?v=0684777a">
+    <link rel="stylesheet" href="styles.css?v=b246ca17">
+    <link rel="stylesheet" href="theme-light.css?v=6deeaaab">
     <link rel="stylesheet" href="theme-gray.css?v=26ef33ad">
     <link rel="stylesheet" href="theme-team.css?v=70f0aefd">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
@@ -40,10 +40,10 @@
       })();
     </script>
     <script src="teams.js?v=63cc3c02" defer></script>
-    <script src="league-core.js?v=95bb70b5" defer></script>
+    <script src="league-core.js?v=65df71ea" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="nfl-drafts.js?v=23a1862c" defer></script>
-    <script src="drafts.js?v=51e38ed4" defer></script>
+    <script src="drafts.js?v=0c3a5ed4" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -181,6 +181,7 @@
               <label class="dr-f-pick">Pick<input name="pick" inputmode="numeric" pattern="\s*\d{1,3}\s*\*?\s*" required placeholder="97*" title="Pick number; add * for a compensatory pick"></label>
               <label class="dr-f-round">Round<input name="round" type="number" min="1" max="20" placeholder="auto"></label>
               <label class="dr-f-team">Team<select name="team" required><option value="">Choose a team</option></select></label>
+              <label class="dr-f-from">Pick from <small>(if traded)</small><select name="fromTeam"><option value="">Own pick</option></select></label>
               <label class="dr-f-player">Player name<input name="player" maxlength="70" required placeholder="e.g. Fernando Mendoza"></label>
               <label class="dr-f-pos">Position<input name="position" maxlength="10" placeholder="QB" list="dr-positions"></label>
               <label class="dr-f-school">Player school<input name="college" maxlength="80" placeholder="Indiana"></label>
@@ -195,12 +196,13 @@
 
           <details class="management-panel dr-editor" id="dr-editor">
             <summary><span class="panel-index">FASTER</span><strong>Paste a whole draft</strong></summary>
-            <p class="hs-help">One pick per line: <code>Pick, Team, Player name, Position, Player school</code>, with a * after the pick number for a compensatory pick (<code>97*, Ravens, …</code>). Team can be an abbreviation (BUF) or a name (Bills). Copying from a spreadsheet works too. Saving replaces every pick recorded for the year below.</p>
+            <p class="hs-help">One pick per line: <code>Pick, Team, Player name, Position, Player school</code>, with a * after the pick number for a compensatory pick (<code>97*, Ravens, …</code>). Team can be an abbreviation (BUF) or a name (Bills), and a team in brackets after it means the pick came from that team: <code>Chicago Bears (CAR)</code> is Chicago using the pick it got from Carolina. Copying from a spreadsheet or website table works too, and "Round 1" heading lines are ignored. Any line that can&#39;t be read is listed with the reason. Saving replaces every pick recorded for the year below.</p>
             <div class="dr-editor-row">
               <label>Year<select id="dr-edit-year"></select></label>
               <button class="workspace-button" type="button" id="dr-copy-nfl">Start from the real NFL draft</button>
             </div>
             <textarea id="dr-paste" rows="8" placeholder="1, Raiders, Fernando Mendoza, QB, Indiana&#10;2, Jets, David Bailey, OLB, Texas Tech"></textarea>
+            <details class="hs-unmatched dr-skipped" id="dr-skipped" hidden><summary>Skipped lines</summary><ul></ul></details>
             <div class="hs-actions">
               <button class="button button-lime" type="button" id="dr-save">Save draft</button>
               <button class="workspace-button" type="button" id="dr-delete">Delete every pick for this year</button>

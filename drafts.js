@@ -107,6 +107,7 @@ function drRender() {
     meta.className = "dr-first-meta";
     meta.textContent = [p.position, p.college].filter(Boolean).join(" · ");
     card.append(n, drTeamTag(p.teamId), name, meta);
+    if (p.fromTeam) { const via = document.createElement("span"); via.className = "dr-via"; via.textContent = `Pick from ${teamName(p.fromTeam)}`; card.insertBefore(via, name); }
     return card;
   }));
   // Table
@@ -121,7 +122,15 @@ function drRender() {
     const pickCell = tr.insertCell();
     pickCell.textContent = drPickText(p);
     if (p.compensatory) { pickCell.title = `Compensatory pick, round ${p.round}`; pickCell.className = "dr-comp"; }
-    tr.insertCell().append(drTeamTag(p.teamId));
+    const teamCell = tr.insertCell();
+    teamCell.append(drTeamTag(p.teamId));
+    if (p.fromTeam) {
+      const via = document.createElement("span");
+      via.className = "dr-via";
+      via.textContent = `from ${p.fromTeam}`;
+      via.title = `${teamName(p.teamId)} got this pick from the ${teamName(p.fromTeam)}`;
+      teamCell.append(via);
+    }
     const nameCell = tr.insertCell();
     const here = now.get(normalizePlayerName(p.player));
     if (here) {
@@ -187,29 +196,111 @@ function drSave(change, message) {
   return true;
 }
 
-// "1, 1, LV, Fernando Mendoza, QB, Indiana" (commas or tabs). Returns { picks, errors }.
+// ---------- Reading a pasted draft ----------
+// Accepts one pick per line: Pick, Team, Player, Position, School (or Round first), separated by tabs, commas, pipes,
+// semicolons or runs of spaces, and copes with what drafts copied from websites and spreadsheets usually contain:
+// "1.", "#1", "1st", "Pick 1", "97*" or "97 (comp)" pick numbers; teams with trade notes ("Rams (from Falcons)",
+// "HOU via CLE"); "Smith, Jr." names split by a comma; and "Round 1" heading lines. Returns { picks, errors } where
+// each error says which line and why.
+const drPositions = new Set(["QB", "RB", "HB", "FB", "WR", "TE", "OT", "T", "OG", "G", "C", "OL", "IOL", "DE", "EDGE", "DT", "DL", "NT", "LB", "ILB", "OLB", "MLB", "CB", "DB", "S", "FS", "SS", "SAF", "K", "P", "LS", "ATH", "KR", "PR"]);
+const drSuffix = /^(jr\.?|sr\.?|ii|iii|iv|v)$/i;
+
+function drPickToken(text) {
+  const raw = String(text || "").trim();
+  const comp = /\*|\bcomp(ensatory)?\b|\(c\)/i.test(raw);
+  const m = raw.replace(/^(pick|no\.?|#)\s*/i, "").match(/^(\d{1,3})(?:st|nd|rd|th)?\.?\s*\*?(?:\s|$|\(|\*)/i) || raw.replace(/^(pick|no\.?|#)\s*/i, "").match(/^(\d{1,3})(?:st|nd|rd|th)?\.?\*?$/i);
+  return m ? { pick: Number(m[1]), compensatory: comp } : null;
+}
+function drTeamToken(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+  const clean = raw.replace(/\s*[([].*$/, "").replace(/\s+(via|from|thru|through)\b.*$/i, "").replace(/[*†‡]+$/, "").trim();
+  return lookupTeamId(clean) || lookupTeamId(raw);
+}
+// The team a traded pick came from: "Chicago Bears (CAR)", "Bears (from Panthers)", "CHI via CAR" → "CAR".
+function drFromToken(text) {
+  const raw = String(text || "");
+  const m = raw.match(/[([]\s*(?:from|via|thru|through)?\s*([^)\]]+?)\s*[)\]]/i) || raw.match(/\b(?:via|from|thru|through)\s+(.+)$/i);
+  if (!m) return null;
+  const parts = m[1].split(/\s*(?:,|\/|\bthrough\b|\bvia\b|\bthru\b)\s*/i).filter(Boolean); // first team listed = where it came from
+  return lookupTeamId(parts[0].replace(/^from\s+/i, "")) || null;
+}
+
+function drSplit(line) {
+  for (const sep of ["\t", "|", ";", ","]) if (line.includes(sep)) return line.split(sep).map((c) => c.trim());
+  const wide = line.trim().split(/\s{2,}/);
+  return wide.length >= 3 ? wide : null; // single spaces only: read word by word
+}
+
+function drParseLine(line) {
+  let cells = drSplit(line);
+  let round = null;
+  if (cells) {
+    cells = cells.filter((c, i) => c !== "" || i === 0);
+    // Round first: two leading numbers ("1, 1, …" or "1  32  …").
+    if (cells.length >= 4 && /^\d{1,2}$/.test(cells[0]) && drPickToken(cells[1]) && !drTeamToken(cells[1])) { round = Number(cells[0]); cells = cells.slice(1); }
+    const pick = drPickToken(cells[0]);
+    if (!pick) return { error: "no pick number at the start" };
+    const teamId = drTeamToken(cells[1]);
+    if (!teamId) {
+      // "1. Bears - Caleb Williams, QB, USC": pick, team and player share the first cell.
+      const head = drWords(cells[0], round);
+      if (head.error) return { error: `team "${cells[1] || ""}" not recognised` };
+      const [position, ...school] = cells.slice(1);
+      return { ...head, position: head.position || position || "", college: [head.college, ...school].filter(Boolean).join(", ") };
+    }
+    let rest = cells.slice(2);
+    if (rest.length > 1 && drSuffix.test(rest[1])) rest = [`${rest[0]} ${rest[1]}`, ...rest.slice(2)]; // "Smith, Jr."
+    const [player, position, ...school] = rest;
+    if (!player) return { error: "no player name" };
+    return { round, ...pick, teamId, fromTeam: drFromToken(cells[1]), player, position: position || "", college: school.filter(Boolean).join(", ") };
+  }
+  return drWords(line, round);
+}
+
+// Word by word: pick, team (1-3 words), player…, position, school… ("-" separators are ignored).
+function drWords(text, round = null) {
+  let words = text.trim().replace(/\s+[-–—]+\s+/g, " ").split(/\s+/);
+  if (/^\d{1,2}$/.test(words[0]) && words[1] && drPickToken(words[1]) && !drTeamToken(words[1])) { round = Number(words[0]); words = words.slice(1); }
+  const pick = drPickToken(words[0]);
+  if (!pick) return { error: "no pick number at the start" };
+  words = words.slice(1);
+  if (words[0] === "*") words = words.slice(1);
+  let teamId = null, used = 0;
+  for (const n of [3, 2, 1]) { teamId = words.length > n ? drTeamToken(words.slice(0, n).join(" ")) : null; if (teamId) { used = n; break; } }
+  if (!teamId) return { error: `team "${words.slice(0, 2).join(" ")}" not recognised` };
+  words = words.slice(used);
+  let fromTeam = null;
+  if (words[0] && /^[([]/.test(words[0])) { // "(CAR)" or "(from Carolina Panthers)" after the team
+    let end = words.findIndex((w) => /[)\]]$/.test(w));
+    if (end === -1) end = 0;
+    fromTeam = drFromToken(words.slice(0, end + 1).join(" "));
+    words = words.slice(end + 1);
+  }
+  const posAt = words.findIndex((w, i) => i > 0 && drPositions.has(w.toUpperCase().replace(/[^A-Z]/g, "")));
+  const player = (posAt === -1 ? words : words.slice(0, posAt)).join(" ");
+  if (!player) return { error: "no player name" };
+  return { round, ...pick, teamId, fromTeam, player, position: posAt === -1 ? "" : words[posAt].toUpperCase(), college: posAt === -1 ? "" : words.slice(posAt + 1).join(" ") };
+}
+
 function drParse(text, year) {
   const picks = [], errors = [];
   text.split(/\r?\n/).forEach((line, i) => {
-    if (!line.trim()) return;
-    const cells = line.split(line.includes("\t") ? "\t" : ",").map((c) => c.trim());
-    if (i === 0 && /round|pick/i.test(cells[0])) return; // header row
-    // Pick, Team, Player, Position, School — or the same with Round first (six columns, starting with two numbers).
-    const withRound = cells.length >= 6 && /^\d+$/.test(cells[0]) && drParsePick(cells[1]);
-    const [pickText, team, player, position, college] = withRound ? cells.slice(1) : cells;
-    const parsed = drParsePick(pickText);
-    const pick = parsed ? parsed.pick : NaN;
-    const round = withRound ? cells[0] : "1"; // worked out below from the * marks
-    const teamId = lookupTeamId(team || "") || (nflTeams.some(({ id }) => id === (team || "").toUpperCase()) ? team.toUpperCase() : null);
-    if (!isIntegerInRange(Number(round), 1, 20) || !isIntegerInRange(Number(pick), 1, 400) || !teamId || !player) {
-      errors.push(`Line ${i + 1}: ${line.trim().slice(0, 60)}`);
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    // Headings and header rows: "Round 1", "Round 2 -", "Pick, Team, Player…", "RD PICK TEAM…"
+    if (/^(round|rd)\s*\d*\s*[-–:]?\s*$/i.test(trimmed) || /^(round|rnd|rd|pick|pk|no\.?|#|ovr|overall)\b[^\d]*$/i.test(trimmed)) return;
+    const row = drParseLine(trimmed);
+    if (row.error || !isIntegerInRange(row.pick, 1, 400)) {
+      errors.push({ line: i + 1, text: trimmed.slice(0, 90), why: row.error || "pick number out of range" });
       return;
     }
-    const entry = { id: newRecordId("draft"), year, round: Number(round), pick, teamId, player: player.slice(0, 70) };
-    if (parsed.compensatory) entry.compensatory = true;
-    if (withRound) entry.roundManual = true;
-    if (position) entry.position = position.slice(0, 10);
-    if (college) entry.college = college.slice(0, 80);
+    const entry = { id: newRecordId("draft"), year, round: row.round && isIntegerInRange(row.round, 1, 20) ? row.round : 1, pick: row.pick, teamId: row.teamId, player: row.player.slice(0, 70) };
+    if (row.compensatory) entry.compensatory = true;
+    if (row.fromTeam && row.fromTeam !== row.teamId) entry.fromTeam = row.fromTeam;
+    if (row.round) entry.roundManual = true;
+    if (row.position) entry.position = row.position.slice(0, 10);
+    if (row.college) entry.college = row.college.slice(0, 80);
     picks.push(entry);
   });
   drReround(picks, year);
@@ -228,15 +319,35 @@ document.querySelector("#dr-save").addEventListener("click", async () => {
   const year = drEditYear();
   if (!isIntegerInRange(year, 1936, 2100)) { drStatus.textContent = "Enter the draft year."; return; }
   const { picks, errors } = drParse(document.querySelector("#dr-paste").value, year);
-  if (!picks.length) { drStatus.textContent = errors.length ? `No picks could be read. ${errors.slice(0, 3).join("; ")}` : "Paste the picks first."; return; }
+  drShowSkipped(errors);
+  if (!picks.length) { drStatus.textContent = errors.length ? "No picks could be read; the lines are listed under the box with the reason." : "Paste the picks first."; return; }
+  const dupes = picks.length - new Set(picks.map((p) => p.pick)).size;
   const replacing = drLeague().filter((d) => d.year === year).length;
   if (replacing && !(await confirmAction(`Replace the league's ${replacing} recorded picks for ${year} with these ${picks.length}?`, { confirmLabel: "Replace draft" }))) return;
   drYear.value = String(year);
-  if (drSave((list) => [...list.filter((d) => d.year !== year), ...picks], `Saved the league's ${year} draft: ${picks.length} picks.${errors.length ? ` ${errors.length} line${errors.length === 1 ? "" : "s"} skipped (${errors.slice(0, 2).join("; ")}).` : ""}`)) {
+  if (drSave((list) => [...list.filter((d) => d.year !== year), ...picks], `Saved the league's ${year} draft: ${picks.length} picks.${errors.length ? ` ${errors.length} line${errors.length === 1 ? " was" : "s were"} skipped; they're listed under the box so you can fix them and save again.` : ""}${dupes ? ` ${dupes} pick number${dupes === 1 ? " appears" : "s appear"} twice.` : ""}`)) {
     drYear.value = String(year);
     drRender();
   }
 });
+// Lines a paste couldn't read, with the reason, so they can be fixed in the box and saved again.
+function drShowSkipped(errors) {
+  const box = document.querySelector("#dr-skipped");
+  box.hidden = !errors.length;
+  if (!errors.length) return;
+  box.querySelector("summary").textContent = `${errors.length} line${errors.length === 1 ? "" : "s"} skipped`;
+  box.querySelector("ul").replaceChildren(...errors.map(({ line, text, why }) => {
+    const li = document.createElement("li");
+    const b = document.createElement("strong");
+    b.textContent = `Line ${line}: ${why}. `;
+    const code = document.createElement("code");
+    code.textContent = text;
+    li.append(b, code);
+    return li;
+  }));
+  box.open = true;
+}
+
 document.querySelector("#dr-delete").addEventListener("click", async () => {
   const year = drEditYear();
   const count = drLeague().filter((d) => d.year === year).length;
@@ -259,6 +370,7 @@ function drFillYears() {
 // ---------- Enter one pick ----------
 const drForm = document.querySelector("#dr-entry");
 drForm.elements.team.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(name, id)));
+drForm.elements.fromTeam.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(`${name} (${id})`, id)));
 function drAutoRound() {
   const parsed = drParsePick(drForm.elements.pick.value);
   if (drForm.elements.round.dataset.touched) return;
@@ -287,6 +399,7 @@ function drStartEdit(p) {
   f.round.value = p.round;
   if (p.roundManual) f.round.dataset.touched = "1"; else delete f.round.dataset.touched;
   f.team.value = p.teamId;
+  f.fromTeam.value = p.fromTeam || "";
   f.player.value = p.player;
   f.position.value = p.position || "";
   f.college.value = p.college || "";
@@ -311,6 +424,7 @@ drForm.addEventListener("submit", async (event) => {
   const entry = { id: drEditing || newRecordId("draft"), year, round: Number(f.round.value) || 1, pick, teamId: f.team.value, player: f.player.value.trim().slice(0, 70) };
   if (compensatory) entry.compensatory = true;
   if (manual) entry.roundManual = true;
+  if (f.fromTeam.value && f.fromTeam.value !== entry.teamId) entry.fromTeam = f.fromTeam.value;
   if (f.position.value.trim()) entry.position = f.position.value.trim().toUpperCase().slice(0, 10);
   if (f.college.value.trim()) entry.college = f.college.value.trim().slice(0, 80);
   const clash = drLeague().find((d) => d.year === year && d.pick === pick && d.id !== entry.id);

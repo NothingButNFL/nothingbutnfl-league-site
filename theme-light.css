@@ -890,3 +890,5 @@ html[data-theme="light"] .dr-editor summary { color: #0b1f3a; }
 html[data-theme="light"] .dr-editor-row label { color: #0b1f3a; }
 html[data-theme="light"] .dr-entry-fields label { color: #0b1f3a; }
 html[data-theme="light"] .dr-comp { color: #946100; }
+html[data-theme="light"] .dr-skipped code { color: #946100; }
+html[data-theme="light"] .dr-via { color: #946100; }
