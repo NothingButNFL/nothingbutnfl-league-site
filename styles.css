@@ -2953,3 +2953,18 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-team-big strong { overflow-wrap: anywhere; }
 @media (max-width: 1100px) { .dk-clock { grid-template-columns: minmax(0, 1fr) auto; } .dk-next { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; } }
 @media (max-width: 640px) { .dk-clock { grid-template-columns: 1fr; } .dk-timer { justify-items: start; } .dk-controls-sep { display: none; } }
+/* Last Player Selected: the team's other picks, two at a time */
+.dk-last-more { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; margin-top: 4px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.dk-last-more-label { color: #ffd37a; font: 700 11px var(--mono); letter-spacing: .14em; white-space: nowrap; }
+.dk-last-more-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.dk-last-more-list.is-in { animation: dk-more-in .5s ease-out; }
+@keyframes dk-more-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.dk-last-more-item { display: grid; gap: 1px; min-width: 0; padding: 8px 12px; border-radius: 8px; background: rgba(0, 0, 0, .22); }
+.dk-last-more-item span { color: #fff; font: 700 11px var(--mono); opacity: .8; }
+.dk-last-more-item strong { overflow: hidden; color: #fff; font: 700 16px var(--body); text-overflow: ellipsis; white-space: nowrap; }
+.dk-last-more-item small { overflow: hidden; color: #fff; font-size: 12px; opacity: .8; text-overflow: ellipsis; white-space: nowrap; }
+.dk-last-more-dots { display: flex; gap: 6px; }
+.dk-last-more-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .3); }
+.dk-last-more-dots i.is-on { background: #ffd37a; }
+@media (prefers-reduced-motion: reduce) { .dk-last-more-list.is-in { animation: none; } }
+@media (max-width: 800px) { .dk-last-more { grid-template-columns: 1fr; } .dk-last-more-list { grid-template-columns: 1fr; } }

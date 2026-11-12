@@ -298,6 +298,42 @@ function dkRenderBoard() {
   }));
 }
 
+// Under Last Player Selected: the same team's other picks in this draft (not the one just made), two at a time,
+// moving on to the next two every 15 seconds. A team with only one other pick shows just that one.
+let dkMoreTimer = null, dkMoreFor = null, dkMorePage = 0;
+function dkRenderMore(box, last) {
+  const others = dkPicks().filter((d) => d.teamId === last.teamId && d.id !== last.id).sort((a, b) => a.pick - b.pick);
+  if (dkMoreFor !== last.id) { dkMoreFor = last.id; dkMorePage = 0; }
+  clearInterval(dkMoreTimer);
+  dkMoreTimer = null;
+  if (!others.length) return;
+  const pages = Math.ceil(others.length / 2);
+  const more = document.createElement("div");
+  more.className = "dk-last-more";
+  const label = Object.assign(document.createElement("span"), { className: "dk-last-more-label" });
+  const list = Object.assign(document.createElement("div"), { className: "dk-last-more-list" });
+  const dots = Object.assign(document.createElement("span"), { className: "dk-last-more-dots" });
+  more.append(label, list, dots);
+  box.append(more);
+  const show = () => {
+    const page = dkMorePage % pages;
+    label.textContent = `ALSO DRAFTED BY THE ${teamName(last.teamId).split(" ").pop().toUpperCase()}`;
+    list.replaceChildren(...others.slice(page * 2, page * 2 + 2).map((d) => {
+      const item = Object.assign(document.createElement("div"), { className: "dk-last-more-item" });
+      item.append(Object.assign(document.createElement("span"), { textContent: `RD ${d.round} · PK ${d.pick}${d.compensatory ? "*" : ""}` }),
+        Object.assign(document.createElement("strong"), { textContent: d.player }),
+        Object.assign(document.createElement("small"), { textContent: [d.position, d.college].filter(Boolean).join(" · ") }));
+      return item;
+    }));
+    list.classList.remove("is-in");
+    void list.offsetWidth;
+    list.classList.add("is-in");
+    dots.replaceChildren(...(pages > 1 ? Array.from({ length: pages }, (_, i) => Object.assign(document.createElement("i"), { className: i === page ? "is-on" : "" })) : []));
+  };
+  show();
+  if (pages > 1) dkMoreTimer = setInterval(() => { dkMorePage += 1; show(); }, 15000);
+}
+
 // "Last Player Selected": the most recent pick, across the top; it flashes when a pick is made on this screen.
 let dkFlashId = null;
 function dkRenderLast() {
@@ -327,6 +363,7 @@ function dkRenderLast() {
     Object.assign(document.createElement("strong"), { textContent: team.name }),
     Object.assign(document.createElement("small"), { textContent: last.fromTeam ? `Pick from the ${teamName(last.fromTeam)}` : "" }));
   box.replaceChildren(logo, text, pick);
+  dkRenderMore(box, last);
   if (dkFlashId === last.id) {
     dkFlashId = null;
     box.classList.remove("is-flash");
