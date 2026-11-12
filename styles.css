@@ -2913,3 +2913,9 @@ html.draft-live .md-ticker { display: none; }
 @keyframes dt-pick-in { to { opacity: .25; } }
 @media (prefers-reduced-motion: reduce) { .dt-pick-in, .dt-pick-in-time { animation: none; } }
 @media (max-width: 640px) { .dt-clock.is-pick-in .dt-clock-words { display: grid; } }
+.dt-crawl-round { padding: 0 18px; background: #ffd37a; color: #0c2b50; font: 800 12px var(--mono); letter-spacing: .1em; }
+.dt-crawl-round::after { display: none; }
+.dt-crawl-item.is-open { color: #c5d5e8; }
+.dt-crawl-tag { margin-left: 8px; color: #8fd0ff; font: 700 11px var(--mono); font-style: normal; letter-spacing: .06em; }
+.dt-crawl-tag.is-in { color: #ffd37a; }
+.dt-crawl-tag.is-skipped { color: #ff9299; }

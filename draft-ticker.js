@@ -111,16 +111,25 @@
     const next = el("div", "dt-next");
     next.append(el("span", "dt-next-label", "NEXT ▸"), ...s.next.map((n) => el("span", "dt-next-team", `${n.teamId}${n.compensatory ? "*" : ""}`)));
     if (s.skipped.length) next.append(el("span", "dt-next-label dt-skipped", `SKIPPED ▸ ${s.skipped.map((k) => k.teamId).join(" ")}`));
-    // Crawl of picks made
+    // Crawl: the current round, pick by pick — "ROUND 1", then every pick of the round in order (the player for picks
+    // made, ON THE CLOCK, SKIPPED, or just the team for picks to come), then back to the round's first pick. When the
+    // round is finished it moves on to "ROUND 2", and so on to the end of the draft.
     const crawl = el("div", "dt-crawl");
     const label = el("span", "dt-crawl-label", "THE PICKS");
     const track = el("div", "dt-crawl-track");
-    const items = (s.picks.length ? s.picks : [{ pick: 0 }]).map((p) => {
-      if (!p.pick) return el("span", "dt-crawl-item", `${y} NBNFL Draft · Round 1 is on the clock · Follow every pick in the Draft room`);
+    const round = (s.pending || s.onClock || s.skipped[0] || s.order[s.order.length - 1]).round;
+    const madeMap = new Map(s.picks.map((p) => [p.pick, p]));
+    const items = [el("span", "dt-crawl-item dt-crawl-round", `ROUND ${round}`), ...s.order.filter((slot) => slot.round === round).map((slot) => {
       const item = el("span", "dt-crawl-item");
-      item.append(el("b", "", `${p.pick}${p.compensatory ? "*" : ""}. ${p.teamId}`), ` ${p.player}${p.position ? `, ${p.position}` : ""}${p.college ? ` (${p.college})` : ""}`);
+      const made = madeMap.get(slot.pick);
+      item.append(el("b", "", `${slot.pick}${slot.compensatory ? "*" : ""}. ${slot.teamId}`));
+      if (made) item.append(` ${made.player}${made.position ? `, ${made.position}` : ""}${made.college ? ` (${made.college})` : ""}`);
+      else if (s.pending && s.pending.pick === slot.pick) item.append(el("em", "dt-crawl-tag is-in", "THE PICK IS IN"));
+      else if (s.onClock && s.onClock.pick === slot.pick) item.append(el("em", "dt-crawl-tag", "ON THE CLOCK"));
+      else if (slot.skipped) item.append(el("em", "dt-crawl-tag is-skipped", "SKIPPED"));
+      if (!made) item.classList.add("is-open");
       return item;
-    });
+    })];
     const run = el("div", "dt-crawl-run");
     run.append(...items, ...items.map((i) => i.cloneNode(true))); // doubled for a seamless loop
     run.style.animationDuration = `${Math.max(25, items.length * 6)}s`;

@@ -317,3 +317,5 @@ html[data-theme="gray"] .dt-next { color: #18191b; }
 html[data-theme="gray"] .dt-next-label { color: #8a8d94; }
 html[data-theme="gray"] .dt-next-team { color: #18191b; }
 html[data-theme="gray"] .dt-crawl-item::after { color: #8a8d94; }
+html[data-theme="gray"] .dt-crawl-round { color: #18191b; }
+html[data-theme="gray"] .dt-crawl-item.is-open { color: #d5d7db; }

@@ -423,3 +423,6 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl { background-color: rgb(var(--tm-0c0f14)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl-label { background-color: rgb(var(--tm-1f6fc5)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl-item::after { color: rgb(var(--tm-54749b)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl-round { color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl-item.is-open { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dt-crawl-tag { color: rgb(var(--tm-8fd0ff)); }
