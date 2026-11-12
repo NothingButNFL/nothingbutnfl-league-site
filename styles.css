@@ -3027,4 +3027,11 @@ html.draft-live .sample-toast { bottom: 140px; }
 .dk-last-stats-list strong { color: #fff; font: 800 18px var(--display, var(--body)); line-height: 1.1; }
 .dk-last-stats-list span { color: #fff; font: 700 10px var(--mono); letter-spacing: .08em; opacity: .75; white-space: nowrap; }
 .dk-last-stats-src { color: #fff; font: 10px var(--mono); opacity: .55; white-space: nowrap; }
+.dk-last-stats-side { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+.dk-last-stats-btn { padding: 4px 10px; border: 1px solid rgba(255, 211, 122, .6); border-radius: 6px; background: transparent; color: #ffd37a; font: 700 11px var(--mono); cursor: pointer; }
+.dk-last-stats-btn:hover, .dk-last-stats-btn:focus-visible { background: rgba(255, 211, 122, .15); }
+.dk-last-stats-note { color: #fff; font: 13px var(--body); opacity: .8; }
+.dk-last-stats.is-edit { display: block; }
+.dk-last-stats-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.dk-last-stats-form input { flex: 1 1 260px; min-width: 0; }
 @media (max-width: 800px) { .dk-last-stats { grid-template-columns: 1fr; gap: 8px; } }

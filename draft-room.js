@@ -414,14 +414,15 @@ async function dkFetchCollegeStats(pick) {
   const want = dkNameKey(pick.player);
   const school = dkSchoolKey(pick.college);
   const q = encodeURIComponent(pick.player);
-  let found = [];
+  let found = [], reached = false;
   for (const url of [
     `https://site.web.api.espn.com/apis/common/v3/search?query=${q}&limit=25&type=player&sport=football&league=college-football`,
     `https://site.web.api.espn.com/apis/search/v2?query=${q}&limit=25`,
   ]) {
-    try { found = dkEspnPlayers(await dkEspn(url)).filter((p) => dkNameKey(p.name) === want); } catch { found = []; }
+    try { found = dkEspnPlayers(await dkEspn(url)).filter((p) => dkNameKey(p.name) === want); reached = true; } catch { found = []; }
     if (found.length) break;
   }
+  if (!reached) throw new Error("ESPN couldn't be reached");
   const ids = [...new Set([...found.filter((p) => school && dkSchoolKey(p.text).includes(school)), ...found].map((p) => p.id))].slice(0, 3);
   for (const id of ids) {
     let table = null;
@@ -451,35 +452,94 @@ function dkStatItems(stats, position) {
   return items.slice(0, 9);
 }
 const dkStatsLoading = new Set();
+// Stats typed in by hand ("3,535 PASS YDS, 41 PASS TD, 6 INT") → [{ value, label }].
+function dkParseStatLine(text) {
+  return String(text || "").split(/,(?!\d)|[;·|\n]+/).map((part) => part.trim()).filter(Boolean).map((part) => {
+    const m = part.match(/^([\d.,%-]+)\s+(.+)$/) || part.match(/^(.+?)\s+([\d.,%-]+)$/);
+    if (!m) return { value: part, label: "" };
+    return /^[\d.,%-]+$/.test(m[1]) ? { value: m[1], label: m[2].toUpperCase() } : { value: m[2], label: m[1].toUpperCase() };
+  }).slice(0, 10);
+}
+const dkStatsEl = (tag, cls, text) => Object.assign(document.createElement(tag), cls ? { className: cls } : {}, text !== undefined ? { textContent: text } : {});
+let dkStatsEditing = null;
+// The college stats section of Last Player Selected. It's always there for the last pick: the stats (typed in for
+// the pick, or found on ESPN), "Loading…", or a note that ESPN had nothing with Try again and Enter stats.
 function dkRenderStats(box, last) {
   if (!last.player) return;
   const cacheKey = `${last.year}|${dkNameKey(last.player)}|${dkSchoolKey(last.college)}`;
   const cached = dkStatsCache()[cacheKey];
-  const row = document.createElement("div");
-  row.className = "dk-last-stats";
-  if (cached && !cached.none) {
-    const items = dkStatItems(cached, last.position);
-    if (!items.length) return;
-    row.append(Object.assign(document.createElement("span"), { className: "dk-last-stats-label", textContent: `${cached.season} SEASON${cached.team ? ` · ${String(cached.team).toUpperCase()}` : ""}` }));
-    const list = Object.assign(document.createElement("div"), { className: "dk-last-stats-list" });
-    list.append(...items.map(({ label, value }) => {
-      const cell = document.createElement("div");
-      cell.append(Object.assign(document.createElement("strong"), { textContent: value }), Object.assign(document.createElement("span"), { textContent: label }));
-      return cell;
-    }));
-    row.append(list, Object.assign(document.createElement("small"), { className: "dk-last-stats-src", textContent: "ESPN" }));
-    box.append(row);
+  const row = dkStatsEl("div", "dk-last-stats");
+  box.append(row);
+  const edit = () => { dkStatsEditing = last.id; dkRenderLast(); };
+  if (dkStatsEditing === last.id) {
+    row.classList.add("is-edit");
+    const form = dkStatsEl("form", "dk-last-stats-form");
+    const input = dkStatsEl("input");
+    input.maxLength = 200;
+    input.placeholder = "e.g. 3,535 PASS YDS, 41 PASS TD, 6 INT";
+    input.value = last.collegeStats || (cached && !cached.none ? dkStatItems(cached, last.position).map((i) => `${i.value} ${i.label}`).join(", ") : "");
+    input.setAttribute("aria-label", `College stats for ${last.player}`);
+    const save = dkStatsEl("button", "button button-lime", "Save stats");
+    save.type = "submit";
+    const cancel = dkStatsEl("button", "workspace-button", "Cancel");
+    cancel.type = "button";
+    cancel.addEventListener("click", () => { dkStatsEditing = null; dkRenderLast(); });
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const value = input.value.trim().slice(0, 200);
+      dkStatsEditing = null;
+      dkSave((data) => {
+        const pick = (data.draftHistory || []).find((d) => d.id === last.id);
+        if (!pick) return;
+        if (value) pick.collegeStats = value; else delete pick.collegeStats;
+      }, value ? `College stats saved for ${last.player}.` : `Typed-in stats removed for ${last.player}.`);
+    });
+    form.append(dkStatsEl("span", "dk-last-stats-label", "COLLEGE STATS"), input, save, cancel);
+    row.append(form);
+    setTimeout(() => input.focus(), 0);
     return;
   }
-  if (cached?.none && Date.now() - cached.at < 6 * 36e5) return; // nothing found: try again in a few hours
-  if (dkStatsLoading.has(cacheKey)) return;
+  const manual = last.collegeStats ? dkParseStatLine(last.collegeStats) : null;
+  const items = manual || (cached && !cached.none ? dkStatItems(cached, last.position) : []);
+  if (items.length) {
+    row.append(dkStatsEl("span", "dk-last-stats-label", manual ? `${last.year - 1} SEASON${last.college ? ` · ${last.college.toUpperCase()}` : ""}` : `${cached.season} SEASON${cached.team ? ` · ${String(cached.team).toUpperCase()}` : ""}`));
+    const list = dkStatsEl("div", "dk-last-stats-list");
+    list.append(...items.map(({ label, value }) => {
+      const cell = document.createElement("div");
+      cell.append(dkStatsEl("strong", "", value), dkStatsEl("span", "", label));
+      return cell;
+    }));
+    const side = dkStatsEl("div", "dk-last-stats-side");
+    const editBtn = dkStatsEl("button", "dk-last-stats-btn", "Edit");
+    editBtn.type = "button";
+    editBtn.addEventListener("click", edit);
+    side.append(dkStatsEl("small", "dk-last-stats-src", manual ? "Entered by hand" : "ESPN"), editBtn);
+    row.append(list, side);
+    return;
+  }
+  const loading = dkStatsLoading.has(cacheKey);
+  const failed = cached?.none && !loading;
+  row.append(dkStatsEl("span", "dk-last-stats-label", "COLLEGE STATS"));
+  row.append(dkStatsEl("span", "dk-last-stats-note", failed
+    ? (cached.error ? `Couldn't reach ESPN for ${last.player}'s stats.` : `ESPN has no college stats for ${last.player}${/^(OL|OT|OG|G|T|C|IOL|LS)$/i.test(last.position || "") ? " (linemen don't have any)" : ""}.`)
+    : "Loading college stats from ESPN…"));
+  const side = dkStatsEl("div", "dk-last-stats-side");
+  if (failed) {
+    const retry = dkStatsEl("button", "dk-last-stats-btn", "Try again");
+    retry.type = "button";
+    retry.addEventListener("click", () => { delete dkStatsMemory[cacheKey]; dkRenderLast(); });
+    side.append(retry);
+  }
+  const enter = dkStatsEl("button", "dk-last-stats-btn", "Enter stats");
+  enter.type = "button";
+  enter.addEventListener("click", edit);
+  side.append(enter);
+  row.append(side);
+  if (failed || loading) return;
   dkStatsLoading.add(cacheKey);
-  row.classList.add("is-loading");
-  row.textContent = "Loading college stats from ESPN…";
-  box.append(row);
   dkFetchCollegeStats(last)
     .then((stats) => (stats.none ? (dkStatsMemory[cacheKey] = stats) : dkStatsSave(cacheKey, stats)))
-    .catch(() => { dkStatsMemory[cacheKey] = { none: true, at: Date.now() }; })
+    .catch(() => { dkStatsMemory[cacheKey] = { none: true, error: true, at: Date.now() }; })
     .finally(() => { dkStatsLoading.delete(cacheKey); dkRenderLast(); });
 }
 

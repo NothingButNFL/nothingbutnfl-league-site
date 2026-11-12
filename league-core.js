@@ -2958,7 +2958,8 @@ function validDraftHistory(list) {
     (d.position === undefined || (typeof d.position === "string" && d.position.length <= 10)) &&
     (d.college === undefined || (typeof d.college === "string" && d.college.length <= 80)) &&
     (d.compensatory === undefined || typeof d.compensatory === "boolean") && (d.roundManual === undefined || typeof d.roundManual === "boolean") &&
-    (d.fromTeam === undefined || nflTeams.some(({ id }) => id === d.fromTeam)) && (d.poolId === undefined || typeof d.poolId === "string"));
+    (d.fromTeam === undefined || nflTeams.some(({ id }) => id === d.fromTeam)) && (d.poolId === undefined || typeof d.poolId === "string") &&
+    (d.collegeStats === undefined || (typeof d.collegeStats === "string" && d.collegeStats.length <= 200)));
 }
 
 // Season Information › Draft: the order of picks for a draft and the pool of prospects to pick from.

@@ -1010,3 +1010,5 @@ html[data-theme="light"] .dk-last-stats-list div { background-color: rgba(15, 35
 html[data-theme="light"] .dk-last-stats-list strong { color: #0b1f3a; }
 html[data-theme="light"] .dk-last-stats-list span { color: #0b1f3a; }
 html[data-theme="light"] .dk-last-stats-src { color: #0b1f3a; }
+html[data-theme="light"] .dk-last-stats-btn { color: #946100; }
+html[data-theme="light"] .dk-last-stats-note { color: #0b1f3a; }
