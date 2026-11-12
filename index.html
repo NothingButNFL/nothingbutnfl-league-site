@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=03faf754">
+    <link rel="stylesheet" href="styles.css?v=66d2e95f">
     <link rel="stylesheet" href="theme-light.css?v=7c7f2e3b">
     <link rel="stylesheet" href="theme-gray.css?v=925d8ac3">
     <link rel="stylesheet" href="theme-espn.css?v=7cf7f32e">
@@ -46,7 +46,7 @@
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=19478b65" defer></script>
     <script src="stat-totals.js?v=232daaef" defer></script>
-    <script src="overview.js?v=f4f8954a" defer></script>
+    <script src="overview.js?v=0fcc539e" defer></script>
     <script src="insider.js?v=1c99afdd" defer></script>
     <script src="stream-card.js?v=de7c11ab" defer></script>
     <script src="matchday.js?v=cfb1b5ee" defer></script>
@@ -183,118 +183,117 @@
         </div>
       </section>
 
-      <!-- Main home content on the left, the Transaction Log as a tall card on the right -->
-      <div class="section-wrap home-split">
-        <div class="home-main">
-          <section class="leaders-section key-dates-section" id="key-dates" aria-labelledby="key-dates-title">
-            <div class="section-wrap">
-              <article class="recent-card key-dates-card">
-                <div class="recent-head">
-                  <h2 id="key-dates-title">Key Dates</h2>
-                  <button class="workspace-button leaders-link" id="key-dates-edit" type="button" aria-pressed="false" aria-controls="key-dates-editor">Edit dates</button>
-                </div>
-                <ol class="key-dates-list" id="key-dates-list"></ol>
-                <div class="key-dates-editor" id="key-dates-editor" hidden>
-                  <form class="key-dates-form" id="key-dates-form">
-                    <label>Date<input name="date" id="key-date-date" type="date" required></label>
-                    <label>Event<input name="label" id="key-date-label" maxlength="80" placeholder="e.g. Trade deadline" required></label>
-                    <label>Note<input name="note" id="key-date-note" maxlength="140" placeholder="Optional"></label>
-                    <button class="button button-lime" type="submit">Add date <span aria-hidden="true">+</span></button>
-                  </form>
-                  <p class="key-dates-status" id="key-dates-status" role="status" aria-live="polite"></p>
-                  <ul class="key-dates-manage" id="key-dates-manage"></ul>
-                </div>
-              </article>
+      <section class="leaders-section key-dates-section" id="key-dates" aria-labelledby="key-dates-title">
+        <div class="section-wrap">
+          <article class="recent-card key-dates-card">
+            <div class="recent-head">
+              <h2 id="key-dates-title">Key Dates</h2>
+              <button class="workspace-button leaders-link" id="key-dates-edit" type="button" aria-pressed="false" aria-controls="key-dates-editor">Edit dates</button>
             </div>
-          </section>
-
-          <!-- League Leaders on the left, AFC over NFC on the right -->
-          <div class="home-stats">
-            <section class="leaders-section" id="leaders" aria-labelledby="leaders-title">
-              <div class="section-wrap">
-                <div class="section-kicker light-kicker"><span>01</span> THE NUMBERS</div>
-                <div class="section-heading-row">
-                  <div>
-                    <h2 id="leaders-title">League Leaders</h2>
-                    <p class="section-subtitle" id="leaders-subtitle">Top 5 in each category, from the Season Stats page.</p>
-                  </div>
-                  <a class="workspace-button leaders-link" href="stats.html">Full stats <span aria-hidden="true">→</span></a>
-                </div>
-                <div class="leaders-grid" id="leaders-grid"></div>
-              </div>
-            </section>
-
-            <section class="leaders-section conference-section" id="top-teams" aria-labelledby="top-teams-title">
-              <div class="section-wrap">
-                <div class="section-kicker light-kicker"><span>02</span> THE RACE</div>
-                <div class="section-heading-row">
-                  <div>
-                    <h2 id="top-teams-title">Conference Leaders</h2>
-                    <p class="section-subtitle" id="top-teams-subtitle">Top 7 teams in each conference, from the Standings page.</p>
-                  </div>
-                  <a class="workspace-button leaders-link" href="standings.html">Full standings <span aria-hidden="true">→</span></a>
-                </div>
-                <div class="conference-grid" id="conference-grid"></div>
-              </div>
-            </section>
-
-          </div>
-
-          <section class="leaders-section recent-section news-section" id="recent-news" aria-labelledby="news-title">
-            <div class="section-wrap">
-              <article class="recent-card">
-                <div class="recent-head">
-                  <h2 id="news-title">Recent News</h2>
-                  <a class="workspace-button leaders-link" href="media.html">All media <span aria-hidden="true">→</span></a>
-                </div>
-                <div class="news-list" id="news-list"></div>
-                <div class="insider-wire" id="insider-wire" aria-labelledby="insider-title">
-                  <h3 class="insider-title" id="insider-title">Insider Wire <a class="insider-all" href="media.html?view=insider-wire">Full wire →</a></h3>
-                  <div class="insider-top">
-                    <p class="insider-sub">Breaking-news reports on the latest moves, written automatically from the Transaction Log by the league's (made-up) insiders, plus posts written by the league.</p>
-                    <button class="button button-lime insider-compose-toggle" id="insider-compose-toggle" type="button" aria-expanded="false" aria-controls="insider-compose">Write a post <span aria-hidden="true">+</span></button>
-                  </div>
-                  <form class="management-panel insider-compose" id="insider-compose" hidden>
-                    <div class="insider-compose-row">
-                      <label>Post as<select name="reporter" id="insider-reporter"></select></label>
-                      <label>Tag teams<span class="insider-team-pickers"><select name="team1"></select><select name="team2"></select></span></label>
-                    </div>
-                    <fieldset class="insider-new-reporter" id="insider-new-reporter" hidden>
-                      <legend>New reporter</legend>
-                      <label>Name<input name="rName" maxlength="40" placeholder="e.g. Gridiron Gossip"></label>
-                      <label>Handle<input name="rHandle" maxlength="29" placeholder="e.g. GridironGossip"></label>
-                      <label>Color<input name="rColor" type="color" value="#2f9e5b"></label>
-                      <label>Profile picture<input name="rPhoto" type="file" accept="image/png,image/jpeg,image/webp"></label>
-                      <label class="insider-url">…or picture URL<input name="rPhotoUrl" type="url" maxlength="500" placeholder="https://…"></label>
-                      <span class="insider-preview-avatar" id="insider-avatar-preview" aria-hidden="true"></span>
-                    </fieldset>
-                    <label class="insider-text-field">Post<textarea name="text" maxlength="600" rows="3" placeholder="Sources: #Bills are… (#Team hashtags turn blue)"></textarea></label>
-                    <div class="insider-compose-actions">
-                      <span class="insider-count" id="insider-count">0 / 600</span>
-                      <a class="workspace-button" href="media.html?view=reporters">Manage reporters ↗</a>
-                      <button class="workspace-button" type="button" id="insider-cancel">Cancel</button>
-                      <button class="button button-lime" type="submit">Post</button>
-                    </div>
-                    <p class="workspace-status" id="insider-status" role="status" aria-live="polite"></p>
-                  </form>
-                  <div class="insider-list" id="insider-list"></div>
-                </div>
-              </article>
+            <ol class="key-dates-list" id="key-dates-list"></ol>
+            <div class="key-dates-editor" id="key-dates-editor" hidden>
+              <form class="key-dates-form" id="key-dates-form">
+                <label>Date<input name="date" id="key-date-date" type="date" required></label>
+                <label>Event<input name="label" id="key-date-label" maxlength="80" placeholder="e.g. Trade deadline" required></label>
+                <label>Note<input name="note" id="key-date-note" maxlength="140" placeholder="Optional"></label>
+                <button class="button button-lime" type="submit">Add date <span aria-hidden="true">+</span></button>
+              </form>
+              <p class="key-dates-status" id="key-dates-status" role="status" aria-live="polite"></p>
+              <ul class="key-dates-manage" id="key-dates-manage"></ul>
             </div>
-          </section>
-
+          </article>
         </div>
-          <aside class="leaders-section recent-section recent-side" id="recent-transactions" aria-labelledby="recent-title">
-            <div class="section-wrap">
-              <article class="recent-card recent-side-card">
-                <div class="recent-head">
-                  <h2 id="recent-title">Recent Transactions</h2>
-                  <a class="workspace-button leaders-link" href="transactions.html">Transaction log <span aria-hidden="true">→</span></a>
-                </div>
-                <ol class="recent-list" id="recent-list"></ol>
-              </article>
+      </section>
+
+      <!-- League Leaders on the left, AFC over NFC on the right -->
+      <div class="home-stats">
+        <section class="leaders-section" id="leaders" aria-labelledby="leaders-title">
+          <div class="section-wrap">
+            <div class="section-kicker light-kicker"><span>01</span> THE NUMBERS</div>
+            <div class="section-heading-row">
+              <div>
+                <h2 id="leaders-title">League Leaders</h2>
+                <p class="section-subtitle" id="leaders-subtitle">Top 5 in each category, from the Season Stats page.</p>
+              </div>
+              <a class="workspace-button leaders-link" href="stats.html">Full stats <span aria-hidden="true">→</span></a>
             </div>
-          </aside>
+            <div class="leaders-grid" id="leaders-grid"></div>
+          </div>
+        </section>
+
+        <section class="leaders-section conference-section" id="top-teams" aria-labelledby="top-teams-title">
+          <div class="section-wrap">
+            <div class="section-kicker light-kicker"><span>02</span> THE RACE</div>
+            <div class="section-heading-row">
+              <div>
+                <h2 id="top-teams-title">Conference Leaders</h2>
+                <p class="section-subtitle" id="top-teams-subtitle">Top 7 teams in each conference, from the Standings page.</p>
+              </div>
+              <a class="workspace-button leaders-link" href="standings.html">Full standings <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="conference-grid" id="conference-grid"></div>
+          </div>
+        </section>
+
+      </div>
+
+
+      <!-- Recent News & Insider Wire with the latest transactions beside it -->
+      <div class="section-wrap home-news-row">
+        <section class="leaders-section recent-section news-section" id="recent-news" aria-labelledby="news-title">
+          <div class="section-wrap">
+            <article class="recent-card">
+              <div class="recent-head">
+                <h2 id="news-title">Recent News</h2>
+                <a class="workspace-button leaders-link" href="media.html">All media <span aria-hidden="true">→</span></a>
+              </div>
+              <div class="news-list" id="news-list"></div>
+              <div class="insider-wire" id="insider-wire" aria-labelledby="insider-title">
+                <h3 class="insider-title" id="insider-title">Insider Wire <a class="insider-all" href="media.html?view=insider-wire">Full wire →</a></h3>
+                <div class="insider-top">
+                  <p class="insider-sub">Breaking-news reports on the latest moves, written automatically from the Transaction Log by the league's (made-up) insiders, plus posts written by the league.</p>
+                  <button class="button button-lime insider-compose-toggle" id="insider-compose-toggle" type="button" aria-expanded="false" aria-controls="insider-compose">Write a post <span aria-hidden="true">+</span></button>
+                </div>
+                <form class="management-panel insider-compose" id="insider-compose" hidden>
+                  <div class="insider-compose-row">
+                    <label>Post as<select name="reporter" id="insider-reporter"></select></label>
+                    <label>Tag teams<span class="insider-team-pickers"><select name="team1"></select><select name="team2"></select></span></label>
+                  </div>
+                  <fieldset class="insider-new-reporter" id="insider-new-reporter" hidden>
+                    <legend>New reporter</legend>
+                    <label>Name<input name="rName" maxlength="40" placeholder="e.g. Gridiron Gossip"></label>
+                    <label>Handle<input name="rHandle" maxlength="29" placeholder="e.g. GridironGossip"></label>
+                    <label>Color<input name="rColor" type="color" value="#2f9e5b"></label>
+                    <label>Profile picture<input name="rPhoto" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                    <label class="insider-url">…or picture URL<input name="rPhotoUrl" type="url" maxlength="500" placeholder="https://…"></label>
+                    <span class="insider-preview-avatar" id="insider-avatar-preview" aria-hidden="true"></span>
+                  </fieldset>
+                  <label class="insider-text-field">Post<textarea name="text" maxlength="600" rows="3" placeholder="Sources: #Bills are… (#Team hashtags turn blue)"></textarea></label>
+                  <div class="insider-compose-actions">
+                    <span class="insider-count" id="insider-count">0 / 600</span>
+                    <a class="workspace-button" href="media.html?view=reporters">Manage reporters ↗</a>
+                    <button class="workspace-button" type="button" id="insider-cancel">Cancel</button>
+                    <button class="button button-lime" type="submit">Post</button>
+                  </div>
+                  <p class="workspace-status" id="insider-status" role="status" aria-live="polite"></p>
+                </form>
+                <div class="insider-list" id="insider-list"></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="leaders-section recent-section recent-side" id="recent-transactions" aria-labelledby="recent-title">
+          <div class="section-wrap">
+            <article class="recent-card recent-side-card" id="recent-side-card">
+              <div class="recent-head">
+                <h2 id="recent-title">Recent Transactions</h2>
+              </div>
+              <ol class="recent-list" id="recent-list"></ol>
+              <a class="button button-lime recent-all" href="transactions.html">See all transactions <span aria-hidden="true">→</span></a>
+            </article>
+          </div>
+        </aside>
       </div>
     </main>
 

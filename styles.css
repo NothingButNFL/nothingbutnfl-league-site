@@ -3315,25 +3315,24 @@ main .bet-lb-table td:nth-child(n+3) { text-align: right; }
 .pk-week-list li b { float: right; }
 .pk-week-list li.is-me { color: #8fd0ff; }
 
-/* Home: Transaction Log as a vertical card on the right */
-.home-split { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 22px; align-items: start; }
-.home-split .section-wrap { max-width: none; padding-right: 0; padding-left: 0; }
-.home-main { min-width: 0; }
-.recent-side { position: sticky; top: 16px; padding-top: 14px; }
-@media (min-width: 1181px) { .recent-side { top: 62px; } .recent-side-card { max-height: calc(100vh - 92px) !important; } }
-@media (min-width: 1101px) and (max-width: 1799px) { .home-split .leaders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.recent-side-card { display: flex; flex-direction: column; max-height: calc(100vh - 48px); padding: 16px 16px 6px; }
-.recent-side-card .recent-head { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #1d3a5f; }
-.recent-side-card .recent-list { overflow-y: auto; margin-right: -8px; padding-right: 8px; }
+/* Home: Recent Transactions beside Recent News & Insider Wire, as tall as that card */
+.home-news-row { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; align-items: stretch; }
+.home-news-row .section-wrap { max-width: none; height: 100%; padding-right: 0; padding-left: 0; }
+.home-news-row > * { min-width: 0; }
+.recent-side { display: flex; flex-direction: column; }
+.recent-side > .section-wrap { display: flex; flex-direction: column; }
+.recent-side-card { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 16px 16px 16px; }
+.recent-side-card .recent-head { padding-bottom: 8px; border-bottom: 1px solid #1d3a5f; }
+.recent-side-card .recent-list { flex: 1 1 0; min-height: 0; overflow: hidden; }
 .recent-side-card .recent-item { grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; padding: 12px 0; }
 .recent-side-card .recent-meta { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; align-items: center; gap: 10px; }
 .recent-side-card .recent-meta time { font-size: 12px; }
 .recent-side-card .recent-teams { flex-direction: column; flex-wrap: nowrap; }
 .recent-side-card .recent-body p { -webkit-line-clamp: 3; }
+.recent-all { align-self: stretch; justify-content: center; margin-top: 10px; text-align: center; }
 @media (max-width: 1100px) {
-  .home-split { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .recent-side { position: static; }
-  .recent-side-card { max-height: none; }
+  .home-news-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .recent-side-card .recent-list { flex: none; overflow: visible; }
 }
 
 /* Home: Conference Leaders stacked (AFC over NFC) to the right of League Leaders */
@@ -3364,3 +3363,7 @@ main .bet-lb-table td:nth-child(n+3) { text-align: right; }
   .home-stats .conference-section .section-heading-row h2 { font-size: 34px !important; }
   .home-stats .leaders-section:not(.conference-section) .section-heading-row { min-height: 0; }
 }
+.recent-item[hidden] { display: none !important; }
+.home-news-row > .recent-side { padding-bottom: 0; }
+.home-news-row > .recent-side > .section-wrap { flex: 1; height: auto; }
+.home-news-row > #recent-news { padding-bottom: 0; }

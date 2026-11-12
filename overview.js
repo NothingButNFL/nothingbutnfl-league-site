@@ -190,7 +190,7 @@ function renderRecentTransactions() {
   const list = document.querySelector("#recent-list");
   // Most recently recorded first (entries are appended to the log as they happen), so a move made today shows up
   // even when the log already has later-dated entries.
-  const entries = [...(data.transactions || [])].reverse().slice(0, 12);
+  const entries = [...(data.transactions || [])].reverse().slice(0, 30);
   if (!entries.length) {
     const empty = document.createElement("li");
     empty.className = "recent-empty";
@@ -468,3 +468,27 @@ renderKeyDates();
 renderLeaders();
 renderConferenceLeaders();
 renderRecentTransactions();
+
+// Beside Recent News the transactions card is exactly as tall as that card: show only the moves that fit.
+function fitRecentTransactions() {
+  const list = document.querySelector("#recent-list");
+  if (!list) return;
+  const items = [...list.children];
+  items.forEach((item) => { item.hidden = false; });
+  if (getComputedStyle(list).overflow !== "hidden") { items.slice(8).forEach((item) => { item.hidden = true; }); return; }
+  const bottom = list.getBoundingClientRect().bottom;
+  let cut = false;
+  for (const item of items) {
+    if (cut || item.getBoundingClientRect().bottom > bottom + 1) { item.hidden = true; cut = true; }
+  }
+  if (items.length && items[0].hidden) items[0].hidden = false;
+}
+{
+  const fit = () => requestAnimationFrame(fitRecentTransactions);
+  const news = document.querySelector("#recent-news");
+  if (news && "ResizeObserver" in window) new ResizeObserver(fit).observe(news);
+  const list = document.querySelector("#recent-list");
+  if (list && "MutationObserver" in window) new MutationObserver(fit).observe(list, { childList: true });
+  window.addEventListener("resize", fit);
+  fit();
+}
