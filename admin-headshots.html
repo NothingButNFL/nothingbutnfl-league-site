@@ -45,7 +45,8 @@
     <script src="league-core.js?v=9ea55927" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=19478b65" defer></script>
-    <script src="admin-headshots.js?v=08ab9217" defer></script>
+    <script src="prospect-headshots.js?v=7ced4a85" defer></script>
+    <script src="admin-headshots.js?v=76f2a084" defer></script>
   </head>
   <body class="admin-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -179,6 +180,13 @@
               <button class="workspace-button" id="hs-clear" type="button">Remove imported headshots</button>
             </div>
             <p class="workspace-status" id="hs-status" role="status" aria-live="polite"></p>
+          </div>
+          <div class="management-panel hs-panel">
+            <div class="panel-heading"><div><span class="panel-index">DRAFT POOL</span><h3>Prospects before they're drafted</h3></div><p id="hs-pool-info"></p></div>
+            <p class="hs-help">Sleeper's list only has players once they're in the NFL. For Draft Pool prospects, this searches ESPN's college football players by name and school and links their college headshot. It runs on its own when prospects are added to the pool on the Draft page; use it here to look again for anyone still without a photo.</p>
+            <div class="hs-options"><label><input type="checkbox" id="hs-pool-replace"> Look again for prospects that already have an imported headshot</label></div>
+            <div class="hs-actions"><button class="button button-lime" id="hs-pool-run" type="button">Find prospect headshots</button></div>
+            <p class="workspace-status" id="hs-pool-status" role="status" aria-live="polite"></p>
           </div>
           <div class="management-panel hs-panel" id="hs-report" hidden>
             <div class="panel-heading"><div><span class="panel-index">RESULTS</span><h3 id="hs-report-title">Import results</h3></div></div>

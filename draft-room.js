@@ -252,7 +252,7 @@ function dkRenderPool() {
     tr.insertCell().textContent = p.rank ?? "";
     const name = tr.insertCell();
     name.className = "dk-pool-name";
-    name.append(Object.assign(document.createElement("a"), { className: "dk-profile-link", href: profileUrl(p.id), textContent: p.name, title: `${p.name}: player profile` }));
+    name.append(playerPortrait(p), Object.assign(document.createElement("a"), { className: "dk-profile-link", href: profileUrl(p.id), textContent: p.name, title: `${p.name}: player profile` }));
     tr.insertCell().textContent = p.position || "";
     tr.insertCell().textContent = p.college || "";
     const cell = tr.insertCell();
@@ -411,7 +411,10 @@ function dkEspnPlayers(json) {
     const name = node.displayName || node.name;
     const uid = String(node.uid || "");
     const flat = JSON.stringify(node);
-    const cfb = /~l:23~/.test(`${uid}~`) || /college-football/.test(`${node.league || ""} ${node.defaultLeagueSlug || ""} ${node.link?.web || node.link || ""} ${uid}`);
+    // College (league 23), or NFL (league 28) once he's been drafted: ESPN keeps the same athlete id, so his college
+    // stats are still under that id.
+    const cfb = /~l:2[38]~/.test(`${uid}~`) || /college-football/.test(`${node.league || ""} ${node.defaultLeagueSlug || ""} ${node.link?.web || node.link || ""} ${uid}`) ||
+      (/^s:20~/.test(uid) && /\bnfl\b/.test(`${node.defaultLeagueSlug || ""} ${node.link?.web || ""}`));
     const id = (uid.match(/~a:(\d+)/) || [])[1] || (/^\d+$/.test(String(node.id || "")) && /a:|athlete|player/i.test(`${uid} ${node.type || ""}`) ? String(node.id) : "");
     if (typeof name === "string" && id && cfb) out.push({ id, name, text: flat });
     else Object.values(node).forEach(walk);
@@ -448,8 +451,8 @@ async function dkFetchCollegeStats(pick) {
   const q = encodeURIComponent(pick.player);
   let found = [], reached = false;
   for (const url of [
-    `https://site.web.api.espn.com/apis/common/v3/search?query=${q}&limit=25&type=player&sport=football&league=college-football`,
     `https://site.web.api.espn.com/apis/search/v2?query=${q}&limit=25`,
+    `https://site.web.api.espn.com/apis/common/v3/search?query=${q}&limit=25&type=player&sport=football&league=college-football`,
   ]) {
     try { found = dkEspnPlayers(await dkEspn(url)).filter((p) => dkNameKey(p.name) === want); reached = true; } catch { found = []; }
     if (found.length) break;
@@ -949,7 +952,42 @@ document.querySelector("#dk-pool-add").addEventListener("click", () => {
   const have = new Set(dkPool().map((p) => normalizePlayerName(p.name)));
   const fresh = add.filter((p) => !have.has(normalizePlayerName(p.name)));
   if (dkSave((data) => { data.draftPool = [...(data.draftPool || []), ...fresh]; },
-    `Added ${fresh.length} prospect${fresh.length === 1 ? "" : "s"} to the Draft Pool${add.length > fresh.length ? ` (${add.length - fresh.length} already in it)` : ""}.`)) document.querySelector("#dk-pool-text").value = "";
+    `Added ${fresh.length} prospect${fresh.length === 1 ? "" : "s"} to the Draft Pool${add.length > fresh.length ? ` (${add.length - fresh.length} already in it)` : ""}.`)) {
+    document.querySelector("#dk-pool-text").value = "";
+    if (fresh.length) dkFindHeadshots(fresh, `Added ${fresh.length} prospect${fresh.length === 1 ? "" : "s"}.`);
+  }
+});
+
+// ---------- Draft setup: prospect headshots (prospect-headshots.js) ----------
+// Runs on its own after prospects are added, and from the Find headshots button for anyone still without one.
+let dkFindingPhotos = false;
+async function dkFindHeadshots(prospects, lead = "") {
+  if (dkFindingPhotos || typeof findPoolHeadshots !== "function") return;
+  const button = document.querySelector("#dk-pool-photos");
+  dkFindingPhotos = true;
+  button.disabled = true;
+  const prefix = lead ? `${lead} ` : "";
+  dkStatus.textContent = `${prefix}Looking for headshots on ESPN…`;
+  try {
+    const result = await findPoolHeadshots(prospects, { onProgress: (done, total) => { dkStatus.textContent = `${prefix}Looking for headshots on ESPN… ${done} of ${total}`; } });
+    if (!result.checked) { dkStatus.textContent = `${prefix}Every prospect already has a headshot.`; return; }
+    if (result.unreachable) { dkStatus.textContent = `${prefix}ESPN couldn't be reached from this browser, so no headshots were found. Try Find headshots again later, or add photos on each prospect's profile.`; return; }
+    let set = 0;
+    if (result.found.size) {
+      try { dkData = readStoredOffice() || dkData; } catch { /* use what's on screen */ }
+      dkSave((data) => { set = applyPoolHeadshots(data, result.found); });
+    }
+    const miss = result.missing.length;
+    dkStatus.textContent = `${prefix}Found ${set} headshot${set === 1 ? "" : "s"}${miss ? `; none on ESPN for ${miss} (${result.missing.slice(0, 6).join(", ")}${miss > 6 ? ", …" : ""}), add those on the prospect's profile` : ""}.`;
+  } finally {
+    dkFindingPhotos = false;
+    button.disabled = false;
+  }
+}
+document.querySelector("#dk-pool-photos").addEventListener("click", () => {
+  const pool = dkPool();
+  if (!pool.length) { dkStatus.textContent = "The Draft Pool is empty."; return; }
+  dkFindHeadshots(pool);
 });
 document.querySelector("#dk-pool-nfl").addEventListener("click", () => {
   const use = () => {

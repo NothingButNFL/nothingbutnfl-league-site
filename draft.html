@@ -47,7 +47,8 @@
     <script src="draft-ticker.js?v=19478b65" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
-    <script src="draft-room.js?v=c93c53d5" defer></script>
+    <script src="prospect-headshots.js?v=7ced4a85" defer></script>
+    <script src="draft-room.js?v=9aa119f0" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -253,9 +254,10 @@
               </div>
               <div>
                 <h4>2. Draft pool</h4>
-                <p class="hs-help">One prospect per line: <code>Rank, Name, Position, School</code> (rank is optional). Adding keeps the players already in the pool.</p>
+                <p class="hs-help">One prospect per line: <code>Rank, Name, Position, School</code> (rank is optional). Adding keeps the players already in the pool. New prospects get a headshot automatically: ESPN's college photo, matched by name and school. Find headshots looks again for anyone still missing one.</p>
                 <div class="hs-actions">
                   <button class="workspace-button" type="button" id="dk-pool-nfl">Use the real NFL draft class</button>
+                  <button class="workspace-button" type="button" id="dk-pool-photos">Find headshots</button>
                   <button class="workspace-button" type="button" id="dk-pool-clear">Clear the pool</button>
                 </div>
                 <textarea id="dk-pool-text" rows="10" placeholder="1, Fernando Mendoza, QB, Indiana&#10;2, Jeremiyah Love, RB, Notre Dame"></textarea>

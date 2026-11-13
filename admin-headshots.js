@@ -179,3 +179,34 @@ document.querySelector("#hs-clear").addEventListener("click", async () => {
   catch (error) { hsStatus.textContent = `Couldn't save: ${error.message}.`; }
   document.querySelector("#hs-report").hidden = true;
 });
+
+// Draft Pool prospects before they're drafted: ESPN college headshots (prospect-headshots.js).
+const hsPoolStatus = document.querySelector("#hs-pool-status");
+function hsPoolInfo() {
+  let data;
+  try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }
+  const pool = data.draftPool || [];
+  const without = pool.filter((p) => !(p.profile?.photoUrl || p.profile?.photoData)).length;
+  document.querySelector("#hs-pool-info").textContent = pool.length ? `${pool.length} in the pool, ${without} without a headshot.` : "The Draft Pool is empty.";
+}
+hsPoolInfo();
+document.querySelector("#hs-pool-run").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  let data;
+  try { data = readStoredOffice() || emptyOfficeData(); } catch { hsPoolStatus.textContent = "Saved league data couldn't be read."; return; }
+  const pool = data.draftPool || [];
+  if (!pool.length) { hsPoolStatus.textContent = "The Draft Pool is empty. Add prospects on the Draft page first."; return; }
+  button.disabled = true;
+  try {
+    const result = await findPoolHeadshots(pool, { replace: document.querySelector("#hs-pool-replace").checked,
+      onProgress: (done, total) => { hsPoolStatus.textContent = `Searching ESPN… ${done} of ${total}`; } });
+    if (!result.checked) { hsPoolStatus.textContent = "Every prospect already has a headshot."; return; }
+    if (result.unreachable) { hsPoolStatus.textContent = "ESPN couldn't be reached from this browser, so nothing was found. Try again later."; return; }
+    try { data = readStoredOffice() || data; } catch { /* keep the copy above */ }
+    const set = applyPoolHeadshots(data, result.found);
+    try { writeStoredOffice(data); } catch (error) { hsPoolStatus.textContent = `Couldn't save: ${error.message}.`; return; }
+    const miss = result.missing.length;
+    hsPoolStatus.textContent = `Found ${set} headshot${set === 1 ? "" : "s"}.${miss ? ` None on ESPN for ${miss}: ${result.missing.slice(0, 12).join(", ")}${miss > 12 ? ", …" : ""}.` : ""}`;
+    hsPoolInfo();
+  } finally { button.disabled = false; }
+});
