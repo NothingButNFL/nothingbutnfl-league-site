@@ -609,8 +609,17 @@ function dkRenderLast() {
   const img = document.createElement("img");
   img.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${team.logo}.png`;
   img.alt = "";
-  img.addEventListener("error", () => { img.remove(); logo.textContent = team.id; }, { once: true });
+  img.addEventListener("error", () => { img.remove(); if (!logo.querySelector(".dk-last-headshot")) logo.textContent = team.id; }, { once: true });
   logo.append(img);
+  // The prospect's headshot (Admin › Player Headshots, or set on his profile), with the team logo as a badge.
+  const prospect = (dkData.draftPool || []).find((p) => p.id === dkPoolIdFor(last));
+  const photo = prospect ? profilePhotoSrc(playerProfile(prospect)) : "";
+  if (photo) {
+    const shot = Object.assign(document.createElement("img"), { className: "dk-last-headshot", src: photo, alt: "" });
+    shot.addEventListener("error", () => { shot.remove(); logo.classList.remove("has-photo"); }, { once: true });
+    logo.classList.add("has-photo");
+    logo.prepend(shot);
+  }
   const text = document.createElement("div");
   text.className = "dk-last-text";
   const label = Object.assign(document.createElement("span"), { className: "dk-last-label", textContent: "LAST PLAYER SELECTED" });

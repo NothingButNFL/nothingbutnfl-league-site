@@ -378,3 +378,5 @@ html[data-theme="gray"] .recent-side-card .recent-head { border-bottom-color: #3
 @media (min-width: 1251px) {
   html[data-theme="gray"] .home-stats .leader-card ol:not(:has(li:not([hidden]))) ~ *, html[data-theme="gray"] .home-stats .leader-card:has(ol li:not([hidden])) .leader-top { border-bottom-color: #47494f; }
 }
+html[data-theme="gray"] .dk-last-logo .dk-last-headshot { background-color: #1e1f22; }
+html[data-theme="gray"] .dk-last-logo.has-photo > img:not(.dk-last-headshot) { background-color: #18191b; }

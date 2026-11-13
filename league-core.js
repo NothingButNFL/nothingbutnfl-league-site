@@ -3412,7 +3412,8 @@ function validDraftPool(list) {
     isIntegerInRange(p.year, 1936, 2100) && typeof p.name === "string" && p.name.trim() && p.name.length <= 70 &&
     (p.position === undefined || (typeof p.position === "string" && p.position.length <= 10)) &&
     (p.college === undefined || (typeof p.college === "string" && p.college.length <= 80)) &&
-    (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)));
+    (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)) &&
+    (p.profile === undefined || validPlayerProfile(p.profile)));
 }
 
 function validInsiderCustom(data) {

@@ -499,3 +499,5 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .re
 @media (min-width: 1251px) {
   html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .home-stats .leader-card ol:not(:has(li:not([hidden]))) ~ *, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .home-stats .leader-card:has(ol li:not([hidden])) .leader-top { border-bottom-color: rgb(var(--tm-31527a)); }
 }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-last-logo .dk-last-headshot { background-color: rgb(var(--tm-0a2647)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-last-logo.has-photo > img:not(.dk-last-headshot) { background-color: rgb(var(--tm-071a33)); }

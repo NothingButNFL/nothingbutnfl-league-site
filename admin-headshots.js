@@ -1,11 +1,13 @@
 // Admin › Player Headshots: matches every player on the salary sheets and in Player Contracts against Sleeper's public
 // NFL player list (https://api.sleeper.app/v1/players/nfl) by name, team and position, then saves a link to his ESPN
 // headshot (Sleeper's own picture when he has no ESPN id) as profile.photoUrl, marked profile.photoSource = "import".
+// Draft Pool prospects are matched too (by name, college, position and years in the NFL, since their league team
+// isn't their NFL team), so their profiles and the draft room show a headshot.
 // The list itself (~15 MB) is kept in memory only.
 const hsStatus = document.querySelector("#hs-status");
 const hsInfo = document.querySelector("#hs-list-info");
 const hsRun = document.querySelector("#hs-run");
-let hsList = null; // [{ id, name, key, team, position, espnId, active, college, height, weight }]
+let hsList = null; // [{ id, name, key, team, position, espnId, active, college, height, weight, exp }]
 
 // Sleeper's team codes that differ from the site's.
 const hsTeamAliases = { JAC: "JAX", WSH: "WAS", LA: "LAR", OAK: "LV", SD: "LAC", STL: "LAR" };
@@ -19,7 +21,8 @@ function hsUseList(raw) {
       const name = p.full_name || `${p.first_name} ${p.last_name}`;
       return { id: String(p.player_id), name, key: normalizePlayerName(name), team: hsTeamAliases[p.team] || p.team || "",
         position: p.position || "", espnId: p.espn_id ? String(p.espn_id) : "", active: p.active === true,
-        college: typeof p.college === "string" ? p.college : "", height: Number(p.height) || 0, weight: Number(p.weight) || 0 };
+        college: typeof p.college === "string" ? p.college : "", height: Number(p.height) || 0, weight: Number(p.weight) || 0,
+        exp: Number.isInteger(p.years_exp) ? p.years_exp : null };
     });
   if (!hsList.length) { hsList = null; throw new Error("that file doesn't look like Sleeper's NFL player list"); }
   hsInfo.textContent = `${hsList.length.toLocaleString("en-US")} players loaded (${hsList.filter((p) => p.espnId).length.toLocaleString("en-US")} with an ESPN id).`;
@@ -66,6 +69,24 @@ function hsMatch(index, name, teamId, position) {
   return list.length === 1 ? list[0] : null;
 }
 
+// A Draft Pool prospect: same name, then the same school, position group and NFL experience for his draft class.
+const hsSchool = (text) => String(text || "").toLowerCase().replace(/\b(university|college|of|the)\b|[^a-z]/g, "");
+function hsMatchProspect(index, prospect) {
+  const all = index.get(normalizePlayerName(prospect.name)) || [];
+  if (!all.length) return null;
+  const narrow = (list, test) => { const kept = list.filter(test); return kept.length ? kept : list; };
+  const expected = Math.max(0, hsNflSeason() - prospect.year);
+  let list = all.filter((p) => p.exp === null || Math.abs(p.exp - expected) <= 1);
+  if (!list.length) return null;
+  if (prospect.college) list = narrow(list, (p) => p.college && hsSchool(p.college) === hsSchool(prospect.college));
+  if (list.length > 1 && prospect.position) list = narrow(list, (p) => positionGroupFor(p.position) === positionGroupFor(prospect.position));
+  if (list.length > 1) list = narrow(list, (p) => p.exp === expected);
+  if (list.length > 1) list = narrow(list, (p) => p.espnId);
+  return list.length === 1 ? list[0] : null;
+}
+// Sleeper's years_exp counts the current NFL season (it rolls over when the season starts in September).
+function hsNflSeason() { const now = new Date(); return now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear() - 1; }
+
 const hsHeightText = (inches) => (inches >= 60 && inches <= 90 ? `${Math.floor(inches / 12)}'${inches % 12}"` : "");
 
 function hsEveryPlayer(data) {
@@ -73,7 +94,8 @@ function hsEveryPlayer(data) {
   return [
     ...nflTeams.flatMap(({ id }) => data.teams[id].roster.map((player) => ({ player, teamId: id,
       position: (seasonEntry(player, year)?.position || player.activeSeasons.map((y) => seasonEntry(player, y)?.position).find(Boolean) || "") }))),
-    ...(data.contractPlayers || []).map((player) => ({ player, teamId: player.team, position: player.position || "" }))
+    ...(data.contractPlayers || []).map((player) => ({ player, teamId: player.team, position: player.position || "" })),
+    ...(data.draftPool || []).map((player) => ({ player, teamId: "", position: player.position || "", prospect: true }))
   ];
 }
 
@@ -87,9 +109,11 @@ hsRun.addEventListener("click", () => {
   for (const p of hsList) { if (!index.has(p.key)) index.set(p.key, []); index.get(p.key).push(p); }
   let added = 0, kept = 0, filled = 0;
   const unmatched = [], shown = [];
-  for (const { player, teamId, position } of hsEveryPlayer(data)) {
-    const match = hsMatch(index, player.name, teamId, position);
-    if (!match) { unmatched.push(`${player.name}${position ? ` (${position}` : " ("}${teamId ? `${position ? ", " : ""}${teamId}` : ""})`); continue; }
+  let prospects = 0;
+  for (const { player, teamId, position, prospect } of hsEveryPlayer(data)) {
+    const match = prospect ? hsMatchProspect(index, player) : hsMatch(index, player.name, teamId, position);
+    const where = prospect ? `${player.year} Draft Pool` : teamId;
+    if (!match) { unmatched.push(`${player.name} (${[position, where].filter(Boolean).join(", ")})`); continue; }
     const profile = { ...(player.profile || {}) };
     const own = (profile.photoUrl || profile.photoData) && profile.photoSource !== "import";
     if (own && !replace) kept += 1;
@@ -98,10 +122,11 @@ hsRun.addEventListener("click", () => {
       profile.photoSource = "import";
       delete profile.photoData;
       added += 1;
-      if (shown.length < 24) shown.push({ name: player.name, teamId, src: profile.photoUrl });
+      if (prospect) prospects += 1;
+      if (shown.length < 24) shown.push({ name: player.name, teamId: prospect ? `${player.year} prospect` : teamId, src: profile.photoUrl });
     }
     if (details) {
-      if (!profile.college && match.college) { profile.college = match.college.slice(0, profileTextLimits.college); filled += 1; }
+      if (!prospect && !profile.college && match.college) { profile.college = match.college.slice(0, profileTextLimits.college); filled += 1; }
       if (!profile.height && hsHeightText(match.height)) profile.height = hsHeightText(match.height);
       if (!profile.weight && match.weight >= 100 && match.weight <= 500) profile.weight = Math.round(match.weight);
     }
@@ -115,7 +140,7 @@ hsRun.addEventListener("click", () => {
       : `Couldn't save: ${error.message}. Nothing was changed.`;
     return;
   }
-  hsStatus.textContent = `Imported ${added.toLocaleString("en-US")} headshot${added === 1 ? "" : "s"}${kept ? `; kept ${kept} photo${kept === 1 ? "" : "s"} you set yourself` : ""}${details ? `; filled in details for ${filled.toLocaleString("en-US")} player${filled === 1 ? "" : "s"}` : ""}. ${unmatched.length ? `${unmatched.length} not matched (listed below).` : "Every player matched."}`;
+  hsStatus.textContent = `Imported ${added.toLocaleString("en-US")} headshot${added === 1 ? "" : "s"}${prospects ? ` (${prospects.toLocaleString("en-US")} for Draft Pool prospects)` : ""}${kept ? `; kept ${kept} photo${kept === 1 ? "" : "s"} you set yourself` : ""}${details ? `; filled in details for ${filled.toLocaleString("en-US")} player${filled === 1 ? "" : "s"}` : ""}. ${unmatched.length ? `${unmatched.length} not matched (listed below).` : "Every player matched."}`;
   hsShowReport(shown, unmatched);
 });
 
