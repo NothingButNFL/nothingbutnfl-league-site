@@ -200,13 +200,14 @@ document.querySelector("#hs-pool-run").addEventListener("click", async (event) =
   try {
     const result = await findPoolHeadshots(pool, { replace: document.querySelector("#hs-pool-replace").checked,
       onProgress: (done, total) => { hsPoolStatus.textContent = `Searching ESPN… ${done} of ${total}`; } });
-    if (!result.checked) { hsPoolStatus.textContent = "Every prospect already has a headshot."; return; }
+    if (!result.checked) { hsPoolStatus.textContent = "Every prospect already has a headshot and a year in school."; return; }
     if (result.unreachable) { hsPoolStatus.textContent = "ESPN couldn't be reached from this browser, so nothing was found. Try again later."; return; }
     try { data = readStoredOffice() || data; } catch { /* keep the copy above */ }
-    const set = applyPoolHeadshots(data, result.found);
+    const set = applyPoolHeadshots(data, result.found, result.years);
+    const yrs = applyPoolHeadshots.yearsSet || 0;
     try { writeStoredOffice(data); } catch (error) { hsPoolStatus.textContent = `Couldn't save: ${error.message}.`; return; }
     const miss = result.missing.length;
-    hsPoolStatus.textContent = `Found ${set} headshot${set === 1 ? "" : "s"}.${miss ? ` None on ESPN for ${miss}: ${result.missing.slice(0, 12).join(", ")}${miss > 12 ? ", …" : ""}.` : ""}`;
+    hsPoolStatus.textContent = `Found ${set} headshot${set === 1 ? "" : "s"}${yrs ? ` and ${yrs} year${yrs === 1 ? "" : "s"} in school` : ""}.${miss ? ` None on ESPN for ${miss}: ${result.missing.slice(0, 12).join(", ")}${miss > 12 ? ", …" : ""}.` : ""}`;
     hsPoolInfo();
   } finally { button.disabled = false; }
 });

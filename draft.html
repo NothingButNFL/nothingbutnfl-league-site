@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=b409bad4">
-    <link rel="stylesheet" href="theme-light.css?v=196e23ef">
-    <link rel="stylesheet" href="theme-gray.css?v=f6078b8a">
-    <link rel="stylesheet" href="theme-espn.css?v=1e1fc06b">
-    <link rel="stylesheet" href="theme-team.css?v=2b3485ba">
+    <link rel="stylesheet" href="styles.css?v=f8cac96b">
+    <link rel="stylesheet" href="theme-light.css?v=4cba4095">
+    <link rel="stylesheet" href="theme-gray.css?v=ca18f3a5">
+    <link rel="stylesheet" href="theme-espn.css?v=a0eb501e">
+    <link rel="stylesheet" href="theme-team.css?v=27413832">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -42,13 +42,13 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=9ea55927" defer></script>
+    <script src="league-core.js?v=ba51464b" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
-    <script src="draft-ticker.js?v=19478b65" defer></script>
+    <script src="draft-ticker.js?v=dabde0a3" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
-    <script src="prospect-headshots.js?v=7ced4a85" defer></script>
-    <script src="draft-room.js?v=9aa119f0" defer></script>
+    <script src="prospect-headshots.js?v=c95f64ea" defer></script>
+    <script src="draft-room.js?v=02278014" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -201,7 +201,7 @@
               </div>
               <div class="management-table-wrap dk-pool-wrap">
                 <table class="management-table dk-pool-table">
-                  <thead><tr><th>#</th><th>PLAYER</th><th>POS</th><th>SCHOOL</th><th aria-label="Draft"></th></tr></thead>
+                  <thead><tr><th>#</th><th>PLAYER</th><th>POS</th><th>SCHOOL</th><th>YEAR</th><th aria-label="Draft"></th></tr></thead>
                   <tbody id="dk-pool-rows"></tbody>
                 </table>
               </div>
@@ -254,10 +254,10 @@
               </div>
               <div>
                 <h4>2. Draft pool</h4>
-                <p class="hs-help">One prospect per line: <code>Rank, Name, Position, School</code> (rank is optional). Adding keeps the players already in the pool. New prospects get a headshot automatically: ESPN's college photo, matched by name and school. Find headshots looks again for anyone still missing one.</p>
+                <p class="hs-help">One prospect per line: <code>Rank, Name, Position, School, Year</code> (rank and year are optional; year like <code>JR</code> or <code>RS SO</code>). Adding keeps the players already in the pool. New prospects get a headshot and their year in school (FR/SO/JR/SR) from ESPN automatically, matched by name and school. ESPN doesn't mark redshirts, so pick (RS) years in the pool's Year column. Find headshots looks again for anyone still missing either.</p>
                 <div class="hs-actions">
                   <button class="workspace-button" type="button" id="dk-pool-nfl">Use the real NFL draft class</button>
-                  <button class="workspace-button" type="button" id="dk-pool-photos">Find headshots</button>
+                  <button class="workspace-button" type="button" id="dk-pool-photos">Find headshots &amp; years</button>
                   <button class="workspace-button" type="button" id="dk-pool-clear">Clear the pool</button>
                 </div>
                 <textarea id="dk-pool-text" rows="10" placeholder="1, Fernando Mendoza, QB, Indiana&#10;2, Jeremiyah Love, RB, Notre Dame"></textarea>

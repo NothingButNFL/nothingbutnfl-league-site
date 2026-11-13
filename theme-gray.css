@@ -380,3 +380,4 @@ html[data-theme="gray"] .recent-side-card .recent-head { border-bottom-color: #3
 }
 html[data-theme="gray"] .dk-last-logo .dk-last-headshot { background-color: #1e1f22; }
 html[data-theme="gray"] .dk-last-logo.has-photo > img:not(.dk-last-headshot) { background-color: #18191b; }
+html[data-theme="gray"] .dk-yr-select { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }

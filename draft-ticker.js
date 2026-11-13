@@ -11,6 +11,8 @@
   let data = null;
   let tickTimer = null;
 
+  // A pick's year in school, from his Draft Pool entry: "(RS) JR".
+  const yearOf = (pick) => (typeof draftPickClassYear === "function" ? draftPickClassYear(data, pick) : "");
   const read = () => { try { return readStoredOffice() || null; } catch { return null; } };
   const year = () => currentLeagueYear();
   const logoUrl = (id) => `https://a.espncdn.com/i/teamlogos/nfl/500/${nflTeams.find((t) => t.id === id)?.logo || id.toLowerCase()}.png`;
@@ -147,7 +149,7 @@
       showPrev(box, s.onClock.teamId, prev);
     }
     const sub = el("div", "dt-title-sub", s.pending ? `THE ${teamName(s.pending.teamId).toUpperCase()} HAVE MADE THEIR SELECTION AT PICK ${s.pending.pick}…` : s.last
-      ? `LAST PICK · #${s.last.pick} ${s.last.teamId} · ${s.last.player}${s.last.position ? `, ${s.last.position}` : ""}${s.last.college ? ` · ${s.last.college}` : ""}`
+      ? `LAST PICK · #${s.last.pick} ${s.last.teamId} · ${s.last.player}${s.last.position ? `, ${s.last.position}` : ""}${s.last.college ? ` · ${s.last.college}` : ""}${yearOf(s.last) ? ` · ${yearOf(s.last)}` : ""}`
       : "THE DRAFT IS UNDERWAY");
     if (!prev.length) { title.append(main, sub); stopPrev(); }
     // Clock / status
@@ -185,7 +187,7 @@
     const roundPicks = s.order.filter((slot) => slot.round === round && madeMap.has(slot.pick)).map((slot) => madeMap.get(slot.pick));
     const items = [el("span", "dt-crawl-item dt-crawl-round", `ROUND ${round}`), ...(roundPicks.length ? roundPicks.map((made) => {
       const item = el("span", "dt-crawl-item");
-      item.append(el("b", "", `${made.pick}${made.compensatory ? "*" : ""}. ${made.teamId}`), ` ${made.player}${made.position ? `, ${made.position}` : ""}${made.college ? ` (${made.college})` : ""}`);
+      item.append(el("b", "", `${made.pick}${made.compensatory ? "*" : ""}. ${made.teamId}`), ` ${made.player}${made.position ? `, ${made.position}` : ""}${made.college ? ` (${made.college}${yearOf(made) ? `, ${yearOf(made)}` : ""})` : yearOf(made) ? ` (${yearOf(made)})` : ""}`);
       return item;
     }) : [el("span", "dt-crawl-item is-open", `No selections yet in round ${round}`)])];
     const run = el("div", "dt-crawl-run");
@@ -295,6 +297,7 @@
       row.append(`ROUND ${d.round} - PICK ${d.pick}${d.compensatory ? "*" : ""} - ${d.player} `);
       if (d.position) row.append(el("b", "dt-prev-pos", d.position));
       if (d.college) row.append(` ${d.college}`);
+      if (yearOf(d)) row.append(` · ${yearOf(d)}`);
       return row;
     }));
     rows.classList.remove("is-in");

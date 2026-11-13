@@ -501,3 +501,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .re
 }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-last-logo .dk-last-headshot { background-color: rgb(var(--tm-0a2647)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-last-logo.has-photo > img:not(.dk-last-headshot) { background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-yr-select { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }

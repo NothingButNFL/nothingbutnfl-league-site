@@ -46,9 +46,10 @@ function phImageLoads(url, wait = 10000) {
   });
 }
 
-// { url, espnId } for one prospect, or null when ESPN has no player or no picture for him. Throws when ESPN's
-// search can't be reached at all, so callers can say so instead of reporting "not found".
-async function findProspectHeadshot(prospect) {
+// One prospect on ESPN: { url, espnId, classYear } (url/classYear empty when ESPN has none), or null when ESPN has no
+// player we can be sure is him. `photo` / `year` say what to look up. Throws when ESPN's search can't be reached at
+// all, so callers can say so instead of reporting "not found".
+async function findProspectEspn(prospect, { photo = true, year = true } = {}) {
   const want = phNameKey(prospect.name);
   const school = phSchoolKey(prospect.college);
   const q = encodeURIComponent(prospect.name);
@@ -66,45 +67,69 @@ async function findProspectHeadshot(prospect) {
   const sameSchool = school ? found.filter((p) => p.league === "college" && phSchoolKey(p.text).includes(school)) : [];
   const unique = [...new Set(found.map((p) => p.id))];
   const ids = sameSchool.length ? [...new Set(sameSchool.map((p) => p.id))].slice(0, 2) : unique.length === 1 ? unique : [];
+  let best = null;
   for (const id of ids) {
-    const listed = found.filter((p) => p.id === id && p.image).sort((a, b) => (a.league === "nfl" ? -1 : 1) - (b.league === "nfl" ? -1 : 1)).map((p) => p.image);
-    for (const url of [...new Set([...listed, phCollegePhoto(id), phNflPhoto(id)])]) {
-      if (await phImageLoads(url)) return { url, espnId: id };
+    const hit = { url: "", espnId: id, classYear: "" };
+    if (photo) {
+      const listed = found.filter((p) => p.id === id && p.image).sort((a, b) => (a.league === "nfl" ? -1 : 1) - (b.league === "nfl" ? -1 : 1)).map((p) => p.image);
+      for (const url of [...new Set([...listed, phCollegePhoto(id), phNflPhoto(id)])]) {
+        if (await phImageLoads(url)) { hit.url = url; break; }
+      }
     }
+    // His class (FR/SO/JR/SR) in his latest college season. ESPN doesn't say whether he redshirted.
+    if (year) {
+      try {
+        const athlete = await phJson(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/athletes/${id}`);
+        hit.classYear = normalizeClassYear(athlete?.experience?.abbreviation || athlete?.experience?.displayValue || "");
+      } catch { /* no class */ }
+    }
+    if (hit.url || hit.classYear) return hit;
+    best ||= hit;
   }
-  return null;
+  return best;
+}
+async function findProspectHeadshot(prospect) {
+  const hit = await findProspectEspn(prospect, { year: false });
+  return hit?.url ? hit : null;
 }
 
-// Looks up every prospect in the list (a few at a time). Skips anyone who already has a photo unless `replace`;
-// photos set by hand (not "import") are never replaced. onProgress(done, total) after each one.
-// Returns { found: Map(prospectId → url), missing: [names], unreachable: boolean, checked }.
+// Looks up every prospect in the list (a few at a time) that still needs a headshot or a class year. Skips anyone
+// who already has a photo unless `replace`; photos set by hand (not "import") are never replaced. onProgress(done,
+// total) after each one. Returns { found: Map(id → url), years: Map(id → class), missing: [names without a photo],
+// unreachable: boolean, checked }.
 async function findPoolHeadshots(prospects, { replace = false, onProgress } = {}) {
-  const todo = prospects.filter((p) => {
+  const needs = (p) => {
     const profile = p.profile || {};
     const has = profile.photoUrl || profile.photoData;
-    return !has || (replace && profile.photoSource === "import");
-  });
-  const found = new Map(), missing = [];
+    return { photo: !has || (replace && profile.photoSource === "import"), year: !p.classYear };
+  };
+  const todo = prospects.filter((p) => { const n = needs(p); return n.photo || n.year; });
+  const found = new Map(), years = new Map(), missing = [];
   let unreachable = 0, done = 0, next = 0;
   const worker = async () => {
     while (next < todo.length) {
       const p = todo[next++];
+      const n = needs(p);
       try {
-        const hit = await findProspectHeadshot(p);
-        if (hit) found.set(p.id, hit.url); else missing.push(p.name);
-      } catch { unreachable += 1; missing.push(p.name); }
+        const hit = await findProspectEspn(p, n);
+        if (hit?.url) found.set(p.id, hit.url); else if (n.photo) missing.push(p.name);
+        if (hit?.classYear) years.set(p.id, hit.classYear);
+      } catch { unreachable += 1; if (n.photo) missing.push(p.name); }
       done += 1;
       onProgress?.(done, todo.length);
     }
   };
   await Promise.all(Array.from({ length: Math.min(4, todo.length) }, worker));
-  return { found, missing, unreachable: todo.length > 0 && unreachable === todo.length, checked: todo.length };
+  return { found, years, missing, unreachable: todo.length > 0 && unreachable === todo.length, checked: todo.length };
 }
 
-// Writes found headshots into data.draftPool (by prospect id). Returns how many were set.
-function applyPoolHeadshots(data, found) {
-  let set = 0;
+// Writes found headshots and class years into data.draftPool (by prospect id). A class year typed in is never
+// replaced. Returns how many headshots were set (and sets .yearsSet on the function's result via the second value).
+function applyPoolHeadshots(data, found, years = new Map()) {
+  let set = 0, yearsSet = 0;
   for (const p of data.draftPool || []) {
+    const year = years.get(p.id);
+    if (year && !p.classYear) { p.classYear = year; yearsSet += 1; }
     const url = found.get(p.id);
     if (!url) continue;
     const profile = { ...(p.profile || {}) };
@@ -115,5 +140,6 @@ function applyPoolHeadshots(data, found) {
     p.profile = profile;
     set += 1;
   }
+  applyPoolHeadshots.yearsSet = yearsSet;
   return set;
 }

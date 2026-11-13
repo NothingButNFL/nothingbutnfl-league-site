@@ -3413,7 +3413,30 @@ function validDraftPool(list) {
     (p.position === undefined || (typeof p.position === "string" && p.position.length <= 10)) &&
     (p.college === undefined || (typeof p.college === "string" && p.college.length <= 80)) &&
     (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)) &&
-    (p.profile === undefined || validPlayerProfile(p.profile)));
+    (p.profile === undefined || validPlayerProfile(p.profile)) &&
+    (p.classYear === undefined || classYears.includes(p.classYear)));
+}
+
+// A prospect's year in school: FR, SO, JR, SR (and GR), with "RS " in front for a redshirt. Shown as "(RS) JR".
+const classYears = ["FR", "RS FR", "SO", "RS SO", "JR", "RS JR", "SR", "RS SR", "GR"];
+function normalizeClassYear(text) {
+  let t = String(text || "").trim().toUpperCase().replace(/[().\-_]/g, " ").replace(/\s+/g, " ").trim();
+  if (!t) return "";
+  let rs = false;
+  const m = t.match(/^(REDSHIRT|RS|R)\s*(.*)$/);
+  if (m && m[2]) { rs = true; t = m[2].trim(); }
+  const base = /^(FR|FRESHMAN|FRESH)$/.test(t) ? "FR" : /^(SO|SOPH|SOPHOMORE)$/.test(t) ? "SO" : /^(JR|JUNIOR)$/.test(t) ? "JR"
+    : /^(SR|SENIOR)$/.test(t) ? "SR" : /^(GR|GRAD|GRADUATE|5TH|SUPER SENIOR)$/.test(t) ? "GR" : "";
+  if (!base) return "";
+  return rs && base !== "GR" ? `RS ${base}` : base;
+}
+const classYearText = (year) => (year ? String(year).replace(/^RS /, "(RS) ") : "");
+// The class year of the Draft Pool prospect behind a draft pick (by poolId, else his name in that draft's pool).
+function draftPickClassYear(data, pick) {
+  const pool = (data?.draftPool || []).filter((p) => p.year === pick.year);
+  const key = normalizePlayerName(pick.player);
+  const p = pool.find((x) => x.id === pick.poolId) || pool.find((x) => normalizePlayerName(x.name) === key);
+  return classYearText(p?.classYear);
 }
 
 function validInsiderCustom(data) {

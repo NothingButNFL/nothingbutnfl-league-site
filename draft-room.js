@@ -255,6 +255,21 @@ function dkRenderPool() {
     name.append(playerPortrait(p), Object.assign(document.createElement("a"), { className: "dk-profile-link", href: profileUrl(p.id), textContent: p.name, title: `${p.name}: player profile` }));
     tr.insertCell().textContent = p.position || "";
     tr.insertCell().textContent = p.college || "";
+    // Year in school: filled from ESPN (FR/SO/JR/SR) or the pasted list; the commissioner can set it here, redshirts too.
+    const yr = tr.insertCell();
+    yr.className = "dk-pool-yr";
+    if (dkCanSave) {
+      const sel = document.createElement("select");
+      sel.className = "dk-yr-select";
+      sel.setAttribute("aria-label", `${p.name}: year in school`);
+      sel.append(new Option("—", ""), ...classYears.map((y) => new Option(classYearText(y), y)));
+      sel.value = p.classYear || "";
+      sel.addEventListener("change", () => {
+        dkSave((data) => { const it = (data.draftPool || []).find((x) => x.id === p.id); if (!it) return; if (sel.value) it.classYear = sel.value; else delete it.classYear; },
+          `${p.name}: ${sel.value ? classYearText(sel.value) : "year cleared"}.`);
+      });
+      yr.append(sel);
+    } else yr.textContent = classYearText(p.classYear);
     const cell = tr.insertCell();
     const b = document.createElement("button");
     b.type = "button";
@@ -629,7 +644,7 @@ function dkRenderLast() {
   const name = dkProfileName(last.player, dkPoolIdFor(last), "strong");
   name.className = "dk-last-name";
   const meta = Object.assign(document.createElement("span"), { className: "dk-last-meta",
-    textContent: [last.position, last.college].filter(Boolean).join(" · ") });
+    textContent: [last.position, last.college, draftPickClassYear(dkData, last)].filter(Boolean).join(" · ") });
   text.append(label, name, meta);
   const pick = document.createElement("div");
   pick.className = "dk-last-pick";
@@ -936,12 +951,27 @@ function dkParsePool(text) {
       const posAt = words.findIndex((w, i) => i > 0 && drPositions.has(w.toUpperCase()));
       cells = [rank, (posAt === -1 ? words : words.slice(0, posAt)).join(" "), posAt === -1 ? "" : words[posAt], posAt === -1 ? "" : words.slice(posAt + 1).join(" ")];
     } else if (!/^\d+\.?$/.test(cells[0])) cells = ["", ...cells];
-    const [rank, name, position, ...college] = cells;
+    let [rank, name, position, ...college] = cells;
     if (!name) return;
+    // An optional Year at the end: "…, Indiana, RS JR" (or "Indiana RS-Jr" when the line has no commas).
+    let classYear = "";
+    college = college.filter(Boolean);
+    if (college.length > 1 && normalizeClassYear(college[college.length - 1])) classYear = normalizeClassYear(college.pop());
+    else if (college.length) {
+      const words = college[college.length - 1].split(/\s+/);
+      for (const take of [2, 1]) {
+        if (words.length > take && normalizeClassYear(words.slice(-take).join(" "))) {
+          classYear = normalizeClassYear(words.splice(-take).join(" "));
+          college[college.length - 1] = words.join(" ");
+          break;
+        }
+      }
+    }
     const p = { id: newRecordId("prospect"), year: dkYear, name: name.slice(0, 70) };
     if (/^\d+/.test(rank)) p.rank = Math.min(5000, Number.parseInt(rank, 10));
     if (position) p.position = position.toUpperCase().slice(0, 10);
     if (college.filter(Boolean).length) p.college = college.filter(Boolean).join(", ").slice(0, 80);
+    if (classYear) p.classYear = classYear;
     out.push(p);
   });
   return out;
@@ -969,16 +999,21 @@ async function dkFindHeadshots(prospects, lead = "") {
   const prefix = lead ? `${lead} ` : "";
   dkStatus.textContent = `${prefix}Looking for headshots on ESPN…`;
   try {
+    applyPoolHeadshots.yearsSet = 0;
     const result = await findPoolHeadshots(prospects, { onProgress: (done, total) => { dkStatus.textContent = `${prefix}Looking for headshots on ESPN… ${done} of ${total}`; } });
-    if (!result.checked) { dkStatus.textContent = `${prefix}Every prospect already has a headshot.`; return; }
+    if (!result.checked) { dkStatus.textContent = `${prefix}Every prospect already has a headshot and a year.`; return; }
     if (result.unreachable) { dkStatus.textContent = `${prefix}ESPN couldn't be reached from this browser, so no headshots were found. Try Find headshots again later, or add photos on each prospect's profile.`; return; }
     let set = 0;
     if (result.found.size) {
       try { dkData = readStoredOffice() || dkData; } catch { /* use what's on screen */ }
-      dkSave((data) => { set = applyPoolHeadshots(data, result.found); });
+      dkSave((data) => { set = applyPoolHeadshots(data, result.found, result.years); });
+    } else if (result.years.size) {
+      try { dkData = readStoredOffice() || dkData; } catch { /* use what's on screen */ }
+      dkSave((data) => { applyPoolHeadshots(data, result.found, result.years); });
     }
+    const yrs = applyPoolHeadshots.yearsSet || 0;
     const miss = result.missing.length;
-    dkStatus.textContent = `${prefix}Found ${set} headshot${set === 1 ? "" : "s"}${miss ? `; none on ESPN for ${miss} (${result.missing.slice(0, 6).join(", ")}${miss > 6 ? ", …" : ""}), add those on the prospect's profile` : ""}.`;
+    dkStatus.textContent = `${prefix}Found ${set} headshot${set === 1 ? "" : "s"}${yrs ? ` and ${yrs} year${yrs === 1 ? "" : "s"} in school` : ""}${miss ? `; none on ESPN for ${miss} (${result.missing.slice(0, 6).join(", ")}${miss > 6 ? ", …" : ""}), add those on the prospect's profile` : ""}.`;
   } finally {
     dkFindingPhotos = false;
     button.disabled = false;
