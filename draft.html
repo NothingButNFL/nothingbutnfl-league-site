@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=ebe05342">
+    <link rel="stylesheet" href="styles.css?v=a29c66bc">
     <link rel="stylesheet" href="theme-light.css?v=4a683e3f">
     <link rel="stylesheet" href="theme-gray.css?v=11f291fc">
     <link rel="stylesheet" href="theme-espn.css?v=82f5bfa5">
@@ -48,7 +48,7 @@
     <script src="draft-core.js?v=fe85255e" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
     <script src="prospect-headshots.js?v=c95f64ea" defer></script>
-    <script src="draft-room.js?v=8de16371" defer></script>
+    <script src="draft-room.js?v=b9d5fab2" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -232,16 +232,6 @@
                 <button class="workspace-button" type="button" id="dk-undo">Undo last pick</button></div>
               <div class="season-tabs dk-rounds" id="dk-rounds" role="tablist" aria-label="Round"></div>
               <ol class="dk-board" id="dk-board"></ol>
-              <form class="dk-trade" id="dk-trade-form">
-                <strong>Draft-day trade</strong>
-                <div class="dk-trade-fields">
-                  <label>Pick<select id="dk-trade-pick" required></select></label>
-                  <label>Goes to<select id="dk-trade-to" required><option value="">Choose a team</option></select></label>
-                  <button class="button button-lime" type="submit">Record trade</button>
-                </div>
-                <p class="hs-help">Moves the pick to the new team (in Draft Pick Manager too) and shows TRADE on the draft ticker. Teams can also trade these picks the usual way, from their team page trade builder; once approved they move here by themselves.</p>
-              </form>
-              <a class="dk-history-link" href="drafts.html">See every draft in League History › Previous Drafts →</a>
             </div>
           </div>
 
@@ -250,7 +240,7 @@
             <div class="dk-setup-grid">
               <div>
                 <h4>1. Draft order</h4>
-                <p class="hs-help"><strong>From Draft Pick Manager (recommended):</strong> put the 32 teams in first-round order (whose pick comes first; <strong>Fill in reverse standings</strong> gives you a start), then <strong>Build from Draft Pick Manager</strong>. Every round's picks, who owns them after trades, and compensatory picks come from the manager, and any trade of these picks (a team's trade builder, Pending Trades, Draft Pick Manager, or Draft-day trade below) moves the pick here too.</p>
+                <p class="hs-help"><strong>From Draft Pick Manager (recommended):</strong> put the 32 teams in first-round order (whose pick comes first; <strong>Fill in reverse standings</strong> gives you a start), then <strong>Build from Draft Pick Manager</strong>. Every round's picks, who owns them after trades, and compensatory picks come from the manager, and any trade of these picks (a team's trade builder, Pending Trades, or Draft Pick Manager) moves the pick here too.</p>
                 <p class="hs-help"><strong>Or paste the order:</strong> your draft picks sheet straight in as <code>Current, Round, Original, Pick Number</code> (e.g. <code>CHI, 1, CAR, 1</code>: Chicago has Carolina's 1st-round pick). Pick Number can be the overall pick or the pick within the round. A * on the round means a compensatory pick in that round (<code>BAL, 3*, BAL, 97</code>). Or paste just the first-round order (32 teams) and the other rounds are built from Draft Pick Manager, or every pick as <code>Pick, Team (from team)</code>.</p>
                 <div class="hs-actions">
                   <button class="workspace-button" type="button" id="dk-order-standings">Fill in reverse standings</button>

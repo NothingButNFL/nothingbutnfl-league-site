@@ -1472,6 +1472,7 @@ document.querySelector("#dk-live").addEventListener("click", async () => {
 // header, and plays the trade sound here while the draft is live.
 function dkFillTradeForm() {
   const pickSelect = document.querySelector("#dk-trade-pick");
+  if (!pickSelect) return; // the Draft-day trade form was taken off the page; trades go through Draft Pick Manager
   const keep = pickSelect.value;
   const open = dkOrder().filter((s) => !dkMadeAt(s.pick));
   pickSelect.replaceChildren(new Option("Choose a pick", ""), ...open.map((s) => new Option(`Rd ${s.round} · Pick ${s.pick}${s.compensatory ? "*" : ""} · ${teamName(s.teamId)}`, String(s.pick))));
@@ -1479,7 +1480,7 @@ function dkFillTradeForm() {
   const to = document.querySelector("#dk-trade-to");
   if (to.options.length <= 1) to.append(...[...nflTeams].sort((a, b) => a.name.localeCompare(b.name)).map(({ id, name }) => new Option(name, id)));
 }
-document.querySelector("#dk-trade-form").addEventListener("submit", async (event) => {
+document.querySelector("#dk-trade-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const pick = Number(document.querySelector("#dk-trade-pick").value);
   const to = document.querySelector("#dk-trade-to").value;

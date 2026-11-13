@@ -3434,3 +3434,10 @@ main .dk-pool-table :is(th, td):first-child,
 main .dk-pool-table :is(th, td):nth-child(3),
 main .dk-pool-table .dk-pool-actions { text-align: left !important; }
 main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; padding-left: 0; }
+
+/* Draft room: Selections runs the full height of the Draft Pool beside it */
+@media (min-width: 1001px) {
+  .dk-layout { align-items: stretch; }
+  .dk-layout .dk-log-panel { display: flex; flex-direction: column; min-height: 640px; contain: size; }
+  .dk-log-panel .dk-board { flex: 1 1 0; min-height: 0; max-height: none; }
+}
