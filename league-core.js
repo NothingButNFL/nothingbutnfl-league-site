@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3415,6 +3415,15 @@ function validDraftPool(list) {
     (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)) &&
     (p.profile === undefined || validPlayerProfile(p.profile)) &&
     (p.classYear === undefined || classYears.includes(p.classYear)));
+}
+
+// data.draftQueues = { [year]: { [teamId]: [poolId, …] } } (draft-room.js).
+function validDraftQueues(queues) {
+  if (queues === undefined) return true;
+  if (!queues || typeof queues !== "object" || Array.isArray(queues)) return false;
+  return Object.entries(queues).every(([year, teams]) => /^\d{4}$/.test(year) && teams && typeof teams === "object" && !Array.isArray(teams) &&
+    Object.entries(teams).every(([team, ids]) => nflTeams.some(({ id }) => id === team) && Array.isArray(ids) && ids.length <= 50 &&
+      ids.every((id) => typeof id === "string" && id.length <= 80)));
 }
 
 // A prospect's year in school: FR, SO, JR, SR (and GR), with "RS " in front for a redshirt. Shown as "(RS) JR".

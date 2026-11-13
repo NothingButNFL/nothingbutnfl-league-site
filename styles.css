@@ -3400,3 +3400,31 @@ main .bet-lb-table td:nth-child(n+3) { text-align: right; }
 
 .dk-pool-yr { white-space: nowrap; }
 .dk-yr-select { min-height: 28px; padding: 2px 4px; border: 1px solid #54749b; background: #0c2b50; color: #fff; font: 12px var(--body); }
+
+/* Draft room: queues */
+.dk-pool-table :is(th, td):nth-child(3) { width: 44px; padding-right: 4px; padding-left: 4px; text-align: center; }
+.dk-pool-table :is(th, td):nth-child(5) { width: 74px; padding-right: 4px; padding-left: 4px; }
+.dk-pool-table .dk-yr-select { width: 70px; padding: 2px; font-size: 11px; }
+.dk-pool-actions { width: 1%; white-space: nowrap; text-align: right; }
+.dk-pool-actions .dk-draft-btn { margin-right: 6px; }
+.dk-queue-btn { min-height: 0; padding: 6px 10px; font-size: 12px; min-width: 62px; }
+.dk-queue-btn.is-queued { border-color: #ffd37a; color: #ffd37a; font-weight: 800; }
+.dk-queue-btn:disabled { opacity: .4; cursor: not-allowed; }
+.dk-queue { margin: 4px 0 12px; padding: 12px; border: 1px solid #31527a; border-radius: 8px; background: #071a33; }
+.dk-queue[hidden] { display: none; }
+.dk-queue-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px; }
+.dk-queue-head label { display: grid; gap: 4px; color: #fff; font: 12px var(--mono); }
+.dk-queue-head select { max-width: 100%; min-height: 32px; }
+.dk-queue-count { color: #ffd37a; font: 700 12px var(--mono); }
+.dk-queue .hs-help { margin: 8px 0; }
+.dk-queue-list { display: grid; gap: 4px; margin: 0; padding: 0 0 0 22px; max-height: 220px; overflow: auto; }
+.dk-queue-list:empty { display: none; }
+.dk-queue-list li { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #1d3a5f; color: #fff; }
+.dk-queue-name { font-weight: 700; }
+.dk-queue-list small { overflow: hidden; color: #a7bdd7; text-overflow: ellipsis; white-space: nowrap; }
+.dk-queue-tools { display: flex; gap: 4px; }
+.dk-queue-move { width: 26px; height: 26px; padding: 0; border: 1px solid #54749b; border-radius: 4px; background: #0c2b50; color: #fff; font: 700 13px var(--body); cursor: pointer; }
+.dk-queue-move:disabled { opacity: .35; cursor: default; }
+.dk-clock-queue { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; color: #fff; font-size: 13px; }
+.dk-clock-queue-label { color: #ffd37a; font: 700 11px var(--mono); letter-spacing: .08em; }
+.dk-queue-pick { min-height: 0; padding: 5px 10px; font-size: 12px; }

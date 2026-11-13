@@ -27,6 +27,57 @@ const dkDrafted = () => {
   return (p) => ids.has(p.id) || names.has(normalizePlayerName(p.name));
 };
 
+// ---------- Draft queues ----------
+// data.draftQueues = { [year]: { [teamId]: [poolId, …] } }: players a team wants, best first, in case it isn't there
+// for its pick. When its pick clock runs out, the first queued player still in the pool is taken for it instead of a
+// skip; the commissioner can also make that pick early with "Pick from queue". Drafted players drop out of queues.
+const dkQueueTeamKey = "nbf-draft-queue-team";
+const dkQueueRaw = (teamId) => dkData.draftQueues?.[dkYear]?.[teamId] || [];
+function dkQueueFor(teamId) {
+  const drafted = dkDrafted();
+  const pool = new Map(dkPool().map((p) => [p.id, p]));
+  return dkQueueRaw(teamId).map((id) => pool.get(id)).filter((p) => p && !drafted(p));
+}
+function dkQueueSet(teamId, ids, message) {
+  return dkSave((data) => {
+    const all = data.draftQueues || {};
+    const year = { ...(all[dkYear] || {}) };
+    if (ids.length) year[teamId] = ids.slice(0, 50); else delete year[teamId];
+    if (Object.keys(year).length) all[dkYear] = year; else delete all[dkYear];
+    if (Object.keys(all).length) data.draftQueues = all; else delete data.draftQueues;
+  }, message);
+}
+// Teams that still have a pick to make in this draft, in draft order.
+function dkQueueTeams() {
+  const seen = new Set();
+  return dkOrder().filter((s) => !dkMadeAt(s.pick)).map((s) => s.teamId).filter((id) => !seen.has(id) && seen.add(id));
+}
+function dkQueueTeam() {
+  const teams = dkQueueTeams();
+  let saved = "";
+  try { saved = localStorage.getItem(dkQueueTeamKey) || ""; } catch { /* none */ }
+  return teams.includes(saved) ? saved : dkOnClock()?.teamId || teams[0] || "";
+}
+function dkQueueToggle(p) {
+  const team = dkQueueTeam();
+  if (!team) { dkStatus.textContent = "Set the draft order first; queues are for teams with picks left."; return; }
+  const ids = dkQueueFor(team).map((x) => x.id);
+  const has = ids.includes(p.id);
+  const next = has ? ids.filter((id) => id !== p.id) : [...ids, p.id];
+  if (!has && next.length > 50) { dkStatus.textContent = "A queue holds up to 50 players."; return; }
+  dkQueueSet(team, next, has ? `${p.name} removed from the ${teamName(team)} queue.` : `${p.name} added to the ${teamName(team)} queue (#${next.length}).`);
+}
+// The pick clock ran out (or the commissioner chose Pick from queue): take the team's first queued player still left.
+function dkPickFromQueue(auto) {
+  const slot = dkOnClock();
+  if (!slot) return false;
+  const first = dkQueueFor(slot.teamId)[0];
+  if (!first) return false;
+  dkLate = null;
+  dkMakePick({ name: first.name, position: first.position, college: first.college, poolId: first.id }, { keepClock: auto, note: auto ? `Time's up: taken from the ${teamName(slot.teamId)} queue. ` : "From the queue: " });
+  return true;
+}
+
 function dkSave(change, message) {
   if (!dkCanSave) { dkStatus.textContent = "Saved league data couldn't be read, so nothing can be saved here."; return false; }
   const before = JSON.stringify(dkData);
@@ -44,7 +95,7 @@ function dkSave(change, message) {
 }
 
 // ---------- Making a pick ----------
-function dkMakePick(player) {
+function dkMakePick(player, { keepClock = false, note = "" } = {}) {
   const slot = dkActive();
   const late = Boolean(slot?.skipped);
   if (!slot) { dkStatus.textContent = dkOrder().length ? "Every pick has been made." : "Set the draft order under Draft setup first."; return; }
@@ -59,13 +110,19 @@ function dkMakePick(player) {
   const ok = dkSave((data) => {
     data.draftHistory = [...(data.draftHistory || []).filter((d) => !(d.year === dkYear && d.pick === slot.pick)), entry];
     data.draftLive = dkYear; // the first pick puts the draft ticker on every page
+    // He's gone: out of every team's queue.
+    const queues = data.draftQueues?.[dkYear];
+    if (queues && entry.poolId) for (const team of Object.keys(queues)) {
+      queues[team] = queues[team].filter((id) => id !== entry.poolId);
+      if (!queues[team].length) delete queues[team];
+    }
   },
-    `${late ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
+    `${note}${late ? "Late pick" : "Pick"} ${slot.pick}: the ${teamName(slot.teamId)} select ${entry.player}${entry.position ? `, ${entry.position}` : ""}${entry.college ? `, ${entry.college}` : ""}.`);
   if (!ok) return;
   dkFlashId = entry.id;
   dkPlayPickSound();
   if (late) dkLate = null; // the team on the clock keeps its time
-  else dkTimerRestart();
+  else dkTimerRestart(keepClock);
   dkRender();
 }
 
@@ -164,6 +221,23 @@ function dkRenderClock() {
   document.querySelector("#dk-timer-for").textContent = late && dkOnClock() ? `${dkOnClock().teamId}'s clock keeps running` : "";
   clock.classList.toggle("is-late-pick", late);
   teamBox.replaceChildren(dkTeamBlock(slot, true));
+  // The team's queue: who'll be taken for it if its clock runs out.
+  const queued = late ? [] : dkQueueFor(slot.teamId);
+  if (queued.length) {
+    const q = document.createElement("div");
+    q.className = "dk-clock-queue";
+    q.append(Object.assign(document.createElement("span"), { className: "dk-clock-queue-label", textContent: `QUEUE (${queued.length})` }),
+      Object.assign(document.createElement("span"), { textContent: queued.slice(0, 3).map((p, i) => `${i + 1}. ${p.name}${p.position ? ` (${p.position})` : ""}`).join("  ·  ") + (queued.length > 3 ? "  ·  …" : "") }));
+    if (dkCanSave) {
+      const go = Object.assign(document.createElement("button"), { type: "button", className: "workspace-button dk-queue-pick", textContent: `Pick ${queued[0].name} from queue` });
+      go.addEventListener("click", async () => {
+        if (!(await confirmAction(`Pick ${slot.pick}: the ${teamName(slot.teamId)} select ${queued[0].name}, the first player in their queue?`, { confirmLabel: "Make the pick" }))) return;
+        dkPickFromQueue(false);
+      });
+      q.append(go);
+    }
+    teamBox.append(q);
+  }
   pickText.textContent = `Round ${slot.round} · Pick ${slot.pick}${slot.compensatory ? " (compensatory)" : ""}${late && dkOnClock() ? ` · then back to the ${teamName(dkOnClock().teamId)}` : ""}`;
   if (late) {
     const back = document.createElement("button");
@@ -247,6 +321,7 @@ function dkRenderPool() {
     .sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name));
   document.querySelector("#dk-pool-count").textContent = String(available.length);
   const slot = dkActive();
+  const queueIds = dkQueueFor(dkQueueTeam()).map((x) => x.id);
   document.querySelector("#dk-pool-rows").replaceChildren(...shown.slice(0, 400).map((p) => {
     const tr = document.createElement("tr");
     tr.insertCell().textContent = p.rank ?? "";
@@ -283,15 +358,73 @@ function dkRenderPool() {
       if (!(await confirmAction(`${now.skipped ? "Late pick" : "Pick"} ${now.pick}: the ${teamName(now.teamId)} select ${p.name}${p.position ? `, ${p.position}` : ""}${p.college ? `, ${p.college}` : ""}?`, { confirmLabel: "Make the pick" }))) return;
       dkMakePick({ name: p.name, position: p.position, college: p.college, poolId: p.id });
     });
-    cell.append(b);
+    // Queue: adds him to (or takes him off) the queue of the team chosen in "Queue for".
+    const qTeam = dkQueueTeam();
+    const qAt = queueIds.indexOf(p.id);
+    const qb = document.createElement("button");
+    qb.type = "button";
+    qb.className = `workspace-button dk-queue-btn${qAt >= 0 ? " is-queued" : ""}`;
+    qb.textContent = qAt >= 0 ? `Q${qAt + 1}` : "Queue";
+    qb.disabled = !qTeam || !dkCanSave;
+    qb.title = !qTeam ? "No team has a pick left" : qAt >= 0 ? `#${qAt + 1} in the ${teamName(qTeam)} queue: click to remove` : `Add ${p.name} to the ${teamName(qTeam)} queue`;
+    qb.setAttribute("aria-pressed", String(qAt >= 0));
+    qb.addEventListener("click", () => dkQueueToggle(p));
+    cell.className = "dk-pool-actions";
+    cell.append(b, qb);
     return tr;
   }));
+  dkRenderQueue();
   const empty = document.querySelector("#dk-pool-empty");
   empty.hidden = shown.length > 0;
   empty.textContent = !pool.length ? "The Draft Pool is empty. Add prospects under Draft setup, or type a player into the form below."
     : available.length ? "No prospects match." : "Every prospect in the pool has been drafted.";
   document.querySelector("#dk-own-submit").disabled = !slot || !dkCanSave;
 }
+
+// The "Queue for" team picker and that team's queue (reorder with ↑ ↓, remove with ×).
+function dkRenderQueue() {
+  const select = document.querySelector("#dk-queue-team");
+  const teams = dkQueueTeams();
+  const team = dkQueueTeam();
+  const picksLeft = (id) => dkOrder().filter((s) => s.teamId === id && !dkMadeAt(s.pick)).map((s) => s.pick);
+  select.replaceChildren(...teams.map((id) => {
+    const left = picksLeft(id);
+    return new Option(`${teamName(id)} · ${dkQueueFor(id).length} queued · next pick ${left[0]}`, id);
+  }));
+  select.value = team;
+  select.disabled = !teams.length;
+  const list = document.querySelector("#dk-queue-list");
+  const box = document.querySelector("#dk-queue");
+  box.hidden = !teams.length;
+  const queued = team ? dkQueueFor(team) : [];
+  document.querySelector("#dk-queue-count").textContent = queued.length ? `${queued.length} queued` : "Empty: use Queue in the list below";
+  list.replaceChildren(...queued.map((p, i) => {
+    const li = document.createElement("li");
+    li.append(Object.assign(document.createElement("span"), { className: "dk-queue-name", textContent: p.name }),
+      Object.assign(document.createElement("small"), { textContent: [p.position, p.college, classYearText(p.classYear)].filter(Boolean).join(" · ") }));
+    const tools = document.createElement("span");
+    tools.className = "dk-queue-tools";
+    const ids = queued.map((x) => x.id);
+    const move = (label, text, to) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "dk-queue-move", textContent: text, title: label });
+      b.setAttribute("aria-label", `${label}: ${p.name}`);
+      b.disabled = !dkCanSave || to < 0 || to >= ids.length;
+      b.addEventListener("click", () => { const next = [...ids]; next.splice(i, 1); next.splice(to, 0, p.id); dkQueueSet(team, next, `${p.name} is now #${to + 1} in the ${teamName(team)} queue.`); });
+      return b;
+    };
+    const rm = Object.assign(document.createElement("button"), { type: "button", className: "dk-queue-move", textContent: "×", title: "Remove" });
+    rm.setAttribute("aria-label", `Remove ${p.name} from the queue`);
+    rm.disabled = !dkCanSave;
+    rm.addEventListener("click", () => dkQueueSet(team, ids.filter((id) => id !== p.id), `${p.name} removed from the ${teamName(team)} queue.`));
+    tools.append(move("Move up", "↑", i - 1), move("Move down", "↓", i + 1), rm);
+    li.append(tools);
+    return li;
+  }));
+}
+document.querySelector("#dk-queue-team").addEventListener("change", (event) => {
+  try { localStorage.setItem(dkQueueTeamKey, event.target.value); } catch { /* fine */ }
+  dkRenderPool();
+});
 
 // ---------- The board ----------
 // The board follows the pick on the clock: when it changes, the board switches to that pick's round and scrolls (inside
@@ -707,7 +840,7 @@ function dkTimerStart() {
   dkTimerHandle = setInterval(() => {
     dkTimerLeft -= 1;
     dkSoundTick(dkTimerLeft);
-    if (dkTimerLeft <= 0) { dkTimerLeft = 0; clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); dkSkip(true); return; }
+    if (dkTimerLeft <= 0) { dkTimerLeft = 0; clearInterval(dkTimerHandle); dkTimerHandle = null; dkTimerShow(); if (!dkPickFromQueue(true)) dkSkip(true); return; }
     dkTimerShow();
   }, 1000);
   dkTimerShow();

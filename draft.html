@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=f8cac96b">
-    <link rel="stylesheet" href="theme-light.css?v=4cba4095">
-    <link rel="stylesheet" href="theme-gray.css?v=ca18f3a5">
-    <link rel="stylesheet" href="theme-espn.css?v=a0eb501e">
-    <link rel="stylesheet" href="theme-team.css?v=27413832">
+    <link rel="stylesheet" href="styles.css?v=1b6ee60d">
+    <link rel="stylesheet" href="theme-light.css?v=4a683e3f">
+    <link rel="stylesheet" href="theme-gray.css?v=11f291fc">
+    <link rel="stylesheet" href="theme-espn.css?v=82f5bfa5">
+    <link rel="stylesheet" href="theme-team.css?v=9209f9d0">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -42,13 +42,13 @@
     </script>
     <script src="teams.js?v=fa3f149a" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=ba51464b" defer></script>
+    <script src="league-core.js?v=4d0c79d5" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
     <script src="draft-core.js?v=fe85255e" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
     <script src="prospect-headshots.js?v=c95f64ea" defer></script>
-    <script src="draft-room.js?v=02278014" defer></script>
+    <script src="draft-room.js?v=8de16371" defer></script>
   </head>
   <body class="admin-page awards-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -199,9 +199,17 @@
                 <label>Search<input id="dk-pool-search" type="search" placeholder="Name or school"></label>
                 <label>Position<select id="dk-pool-pos"><option value="">All</option></select></label>
               </div>
+              <div class="dk-queue" id="dk-queue" hidden>
+                <div class="dk-queue-head">
+                  <label>Queue for<select id="dk-queue-team"></select></label>
+                  <span class="dk-queue-count" id="dk-queue-count"></span>
+                </div>
+                <p class="hs-help">A team's queue is its list of players, best first, in case it isn't there for its pick. If its pick clock runs out, the first queued player still available is drafted for it instead of a skip.</p>
+                <ol class="dk-queue-list" id="dk-queue-list"></ol>
+              </div>
               <div class="management-table-wrap dk-pool-wrap">
                 <table class="management-table dk-pool-table">
-                  <thead><tr><th>#</th><th>PLAYER</th><th>POS</th><th>SCHOOL</th><th>YEAR</th><th aria-label="Draft"></th></tr></thead>
+                  <thead><tr><th>#</th><th>PLAYER</th><th>POS</th><th>SCHOOL</th><th>YR</th><th aria-label="Draft or queue"></th></tr></thead>
                   <tbody id="dk-pool-rows"></tbody>
                 </table>
               </div>
