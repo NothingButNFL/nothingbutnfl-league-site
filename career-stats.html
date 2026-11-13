@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a33">
+    <meta name="description" content="All-time career stat leaders in the Nothing But NFL league, added up across every season.">
+    <title>Career Stats — Nothing But NFL</title>
+    <link rel="icon" href="assets/nothing-but-nfl-logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
+    <link rel="stylesheet" href="styles.css?v=cb7678f3">
+    <link rel="stylesheet" href="theme-light.css?v=6cc744b1">
+    <link rel="stylesheet" href="theme-gray.css?v=9ffb74b6">
+    <link rel="stylesheet" href="theme-espn.css?v=0a2a46b0">
+    <link rel="stylesheet" href="theme-team.css?v=0ac514de">
+    <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
+    <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
+    <script>
+      // Applies the saved theme (NBNFL / Dark / Light / ESPN / Neon / a seasonal theme / an NFL team) before the page paints.
+      try { var savedTheme = localStorage.getItem("nbf-theme"); if (savedTheme === "light" || savedTheme === "gray" || savedTheme === "dark" || savedTheme === "espn") document.documentElement.dataset.theme = savedTheme; else if (/^(team-[A-Z]{2,3}|season-[a-z]+|neon)$/.test(savedTheme)) { var themeVars = localStorage.getItem("nbf-theme-vars"); if (themeVars) { document.documentElement.dataset.theme = savedTheme; themeVars.split(";").forEach(function (pair) { var i = pair.indexOf(":"); document.documentElement.style.setProperty(pair.slice(0, i), pair.slice(i + 1)); }); } } } catch (e) {}
+    </script>
+    <script>
+      // Shows a clear message if a script file is missing or fails, e.g. when a page is opened from inside a ZIP.
+      (function () {
+        var problems = [];
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target.tagName === "SCRIPT") problems.push("missing file: " + target.getAttribute("src"));
+          else if (event.message && event.message !== "Script error.") problems.push(event.message);
+        }, true);
+        window.addEventListener("load", function () {
+          if (!problems.length) return;
+          var box = document.createElement("div");
+          box.className = "site-file-warning";
+          box.setAttribute("role", "alert");
+          box.textContent = "Part of this page didn't load (" + problems.slice(0, 3).join("; ") + "). Make sure every file from the site is in the same folder: extract the whole ZIP first, then open the pages from the extracted folder.";
+          document.body.prepend(box);
+        });
+      })();
+    </script>
+    <script src="teams.js?v=fa3f149a" defer></script>
+    <script src="help-bubbles.js?v=dea35bf7" defer></script>
+    <script src="league-core.js?v=68983d80" defer></script>
+    <script src="sample-admin.js?v=b55817c4" defer></script>
+    <script src="draft-ticker.js?v=dabde0a3" defer></script>
+    <script src="stat-totals.js?v=232daaef" defer></script>
+    <script src="career-stats.js?v=ff6b1a41" defer></script>
+  </head>
+  <body class="stats-page career-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Expand navigation" aria-expanded="false" aria-controls="primary-nav">
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="index.html#overview"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></a>
+        <div class="teams-menu">
+          <button class="teams-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="teams-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4.5"/></svg></span><span class="nav-label">Teams</span><span class="teams-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="teams-dropdown" id="teams-dropdown" aria-label="NFL team salary sheets"></div>
+        </div>
+        <div class="admin-menu season-menu frontoffice-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="frontoffice-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M3 12.5h18"/><path d="M11 12.5v2h2v-2"/></svg></span><span class="nav-label">Front Office</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="frontoffice-dropdown" aria-label="Front office pages">
+            <a class="admin-menu-link" href="contracts.html" role="menuitem"><span>Player Contracts</span></a>
+            <a class="admin-menu-link" href="trade-block.html" role="menuitem"><span>Trade Block</span></a>
+            <a class="admin-menu-link" href="free-agency.html" role="menuitem"><span>Free Agency</span></a>
+            <a class="admin-menu-link" href="waiver-wire.html" role="menuitem"><span>Waiver Wire</span></a>
+            <a class="admin-menu-link" href="transactions.html" role="menuitem"><span>Transaction Log</span></a>
+            <a class="admin-menu-link" href="cap-summary.html" role="menuitem"><span>Cap Summary</span></a>
+            <a class="admin-menu-link" href="roster-breakdown.html" role="menuitem"><span>Roster Breakdown</span></a>
+          </div>
+        </div>
+        <div class="admin-menu season-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="season-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/></svg></span><span class="nav-label">Season Information</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="season-dropdown" aria-label="Season information pages">
+            <a class="admin-menu-link" href="injuries.html" role="menuitem"><span>Injury Report</span></a>
+            <a class="admin-menu-link" href="standings.html" role="menuitem"><span>Standings</span></a>
+            <a class="admin-menu-link" href="stats.html" role="menuitem"><span>Season Stats</span></a>
+            <a class="admin-menu-link" href="schedule.html" role="menuitem"><span>Schedule</span></a>
+            <a class="admin-menu-link" href="draft.html" role="menuitem"><span>Draft</span></a>
+            <a class="admin-menu-link" href="minimum-spending.html" role="menuitem"><span>Minimum Spending Window</span></a>
+          </div>
+        </div>
+        <div class="admin-menu season-menu is-current">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="history-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5v1.5A3 3 0 0 0 7.5 10.5M16.5 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="nav-label">League History</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="history-dropdown" aria-label="League history pages">
+            <a class="admin-menu-link" href="awards.html" role="menuitem"><span>Awards</span></a>
+            <a class="admin-menu-link" href="super-bowls.html" role="menuitem"><span>Super Bowl Champions</span></a>
+            <a class="admin-menu-link" href="drafts.html" role="menuitem"><span>Previous Drafts</span></a>
+            <a class="admin-menu-link" href="career-stats.html" role="menuitem" aria-current="page"><span>Career Stats</span></a>
+            <a class="admin-menu-link" href="game-log.html" role="menuitem"><span>Game Log Archives</span></a>
+          </div>
+        </div>
+        <a href="members.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.3c2.5.1 4.3 1.8 4.8 4.7"/></svg></span><span class="nav-label">Members</span></a>
+        <a href="betting.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.6"/><path d="M4.5 5.5v3c0 1.45 3.36 2.6 7.5 2.6s7.5-1.15 7.5-2.6v-3"/><path d="M4.5 10.5v3c0 1.45 3.36 2.6 7.5 2.6s7.5-1.15 7.5-2.6v-3"/><path d="M4.5 15.5v3c0 1.45 3.36 2.6 7.5 2.6s7.5-1.15 7.5-2.6v-3"/><path d="M8 8.1v3M16 8.1v3M12 8.6v3M8 13.1v3M16 13.1v3M12 13.6v3M8 18.1v3M16 18.1v3M12 18.6v3"/></svg></span><span class="nav-label">Betting</span></a>
+        <div class="admin-menu season-menu news-menu">
+          <button class="admin-trigger season-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="news-dropdown">
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 5.5h13v12.5a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v9a2 2 0 0 1-2 2"/><path d="M7 9h7M7 12.5h7M7 16h4"/></svg></span><span class="nav-label">News</span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown season-dropdown" id="news-dropdown" aria-label="News pages">
+            <a class="admin-menu-link" href="media.html" role="menuitem"><span>All News</span></a>
+            <a class="admin-menu-link" href="media.html?view=insider-wire" role="menuitem"><span>Insider Wire</span></a>
+            <a class="admin-menu-link" href="media.html?view=power-rankings" role="menuitem"><span>Power Rankings</span></a>
+            <a class="admin-menu-link" href="media.html?view=mock-drafts" role="menuitem"><span>Mock Drafts</span></a>
+            <a class="admin-menu-link" href="media.html?view=independent-media" role="menuitem"><span>Independent Media</span></a>
+            <a class="admin-menu-link" href="media.html?view=reporters" role="menuitem"><span>Manage Reporters</span></a>
+          </div>
+        </div>
+        <div class="admin-menu">
+          <button class="admin-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="admin-dropdown">
+            <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Admin</span><span class="nav-badge nav-badge-trigger" data-badge="admin-total" hidden></span><span class="admin-chevron" aria-hidden="true">›</span>
+          </button>
+          <div class="admin-dropdown" id="admin-dropdown" aria-label="Admin pages">
+            <a class="admin-menu-link" href="admin.html" role="menuitem"><span>League Cap Directory</span></a>
+            <a class="admin-menu-link" href="admin-trades.html" role="menuitem"><span>Pending Trades</span><span class="nav-badge" data-badge="admin-trades" hidden></span></a>
+            <a class="admin-menu-link" href="admin-fa-offers.html" role="menuitem"><span>Free Agent Offers</span><span class="nav-badge" data-badge="admin-fa" hidden></span></a>
+            <a class="admin-menu-link" href="admin-restructures.html" role="menuitem"><span>Restructure Requests</span><span class="nav-badge" data-badge="admin-restructure" hidden></span></a>
+            <a class="admin-menu-link" href="admin-extensions.html" role="menuitem"><span>Extension Offers</span><span class="nav-badge" data-badge="admin-extension" hidden></span></a>
+            <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
+            <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
+            <a class="admin-menu-link" href="admin-schedule.html" role="menuitem"><span>Schedule Import</span></a>
+            <a class="admin-menu-link" href="admin-headshots.html" role="menuitem"><span>Player Headshots</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="standings-section stats-section" id="career" aria-labelledby="career-title">
+        <div class="section-wrap">
+          <div class="section-kicker light-kicker"><span>01</span> THE RECORD BOOK</div>
+          <div class="section-heading-row">
+            <div>
+              <h2 id="career-title">Career Stats</h2>
+              <p class="section-subtitle" id="career-subtitle">All-time leaders, added up across every season in the record book.</p>
+            </div>
+            <button class="workspace-button standings-edit-toggle" id="career-edit" type="button" aria-pressed="false">Manage seasons</button>
+          </div>
+          <div class="standings-toolbar">
+            <div class="tab-list" role="tablist" aria-label="Stat category" id="career-tabs"></div>
+            <span class="standings-note" id="career-note"></span>
+          </div>
+
+          <div class="standings-editor" id="career-editor" hidden>
+            <p class="workspace-status" id="career-status" role="status" aria-live="polite"></p>
+            <p class="hs-help">The season in progress counts on its own, straight from Season Stats (box scores or pasted tables), and is saved to the record book here whenever this page is opened. Saved seasons stay after Season Stats is cleared for a new season. Add older seasons by pasting their stat tables below.</p>
+            <div class="career-seasons" id="career-seasons"></div>
+            <details class="salary-import-panel" id="career-import-panel">
+              <summary><b>Add a past season</b> <span>Paste one category at a time</span></summary>
+              <div class="standings-editor-row">
+                <label>Season<input id="career-season-input" type="number" min="1920" max="2100" step="1"></label>
+                <label>Category<select id="career-cat-input"></select></label>
+              </div>
+              <label for="career-paste">Copy the whole table from your sim or spreadsheet, including the header row (Player, Team, then the stat columns)</label>
+              <textarea id="career-paste" rows="6" spellcheck="false" placeholder="Player&#9;Team&#9;GP&#9;Cmp&#9;Att&#9;Yds&#9;TD&#9;Int"></textarea>
+              <p>Pasting a category for a season that already has it replaces that season's table for the category.</p>
+              <button class="button button-lime" id="career-paste-save" type="button">Add to the record book</button>
+            </details>
+          </div>
+
+          <div class="stats-leaders" id="career-leaders"></div>
+
+          <div class="contracts-toolbar stats-filters">
+            <label>Search<input id="career-search" type="search" placeholder="Player or team" maxlength="60"></label>
+            <label class="career-active"><input type="checkbox" id="career-active"> Active players only</label>
+            <div class="contracts-total"><span>PLAYERS</span><strong id="career-count">0</strong></div>
+          </div>
+          <div class="stats-table-wrap">
+            <table class="stats-table career-table" id="career-table"></table>
+          </div>
+          <p class="empty-state" id="career-empty" hidden></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="index.html#top" aria-label="Nothing But NFL home">
+        <img class="brand-logo" src="assets/nothing-but-nfl-logo.png" alt="">
+        <span class="brand-copy">NOTHING BUT <strong>NFL</strong></span>
+      </a>
+      <p>Built for the love of the game—and the people behind it.</p>
+      <a class="back-top" href="#main">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      <span class="footer-note">COMMUNITY-LED · SAMPLE LEAGUE CONCEPT</span>
+    </footer>
+  </body>
+</html>

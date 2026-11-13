@@ -449,8 +449,16 @@ clearButton.addEventListener("click", () => {
   }
   clearButton.classList.remove("is-armed");
   clearButton.textContent = "Clear this category";
+  // Keep this season's table in the Career Stats record book before it goes.
+  const cleared = ensureStats().tables[category];
+  if (cleared?.rows?.length && category !== "team") {
+    const year = String(officeData.stats.season || currentLeagueYear());
+    const book = { ...(officeData.careerSeasons || {}) };
+    if (!book[year]?.tables?.[category]) book[year] = { tables: { ...(book[year]?.tables || {}), [category]: { headers: [...cleared.headers], rows: cleared.rows.map((r) => [...r]) } } };
+    officeData.careerSeasons = book;
+  }
   delete ensureStats().tables[category];
-  saveStats(`${statCategories[category]} stats cleared.`);
+  saveStats(`${statCategories[category]} stats cleared (a copy stays in League History › Career Stats).`);
   renderStats();
 });
 

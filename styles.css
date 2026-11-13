@@ -3441,3 +3441,16 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
   .dk-layout .dk-log-panel { display: flex; flex-direction: column; min-height: 640px; contain: size; }
   .dk-log-panel .dk-board { flex: 1 1 0; min-height: 0; max-height: none; }
 }
+
+/* League History › Career Stats */
+.career-page .stats-leaders { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.career-leader-card ol li { padding: 5px 0; }
+.career-player-link { color: inherit; text-decoration: none; }
+.career-player-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.career-table td.is-sorted { font-weight: 800; }
+.career-name { font-weight: 700; white-space: nowrap; }
+.career-active { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; align-self: end; min-height: 36px; }
+.career-seasons { display: grid; gap: 6px; margin: 10px 0 14px; }
+.career-season-row { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid #31527a; border-radius: 6px; background: #071a33; color: #fff; }
+.career-season-row strong { font: 800 18px var(--display); }
+.career-season-row span { color: #a7bdd7; font-size: 12px; }

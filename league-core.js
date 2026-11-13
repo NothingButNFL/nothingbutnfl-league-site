@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3415,6 +3415,19 @@ function validDraftPool(list) {
     (p.rank === undefined || isIntegerInRange(p.rank, 1, 5000)) &&
     (p.profile === undefined || validPlayerProfile(p.profile)) &&
     (p.classYear === undefined || classYears.includes(p.classYear)));
+}
+
+// data.careerSeasons = { [season]: { tables: { passing|rushing|receiving|defense|kicking: { headers, rows } } } }
+// (League History › Career Stats).
+function validCareerSeasons(seasons) {
+  if (seasons === undefined) return true;
+  if (!seasons || typeof seasons !== "object" || Array.isArray(seasons) || Object.keys(seasons).length > 120) return false;
+  return Object.entries(seasons).every(([year, entry]) => /^\d{4}$/.test(year) && entry && typeof entry === "object" &&
+    entry.tables && typeof entry.tables === "object" && !Array.isArray(entry.tables) &&
+    Object.entries(entry.tables).every(([key, table]) => ["passing", "rushing", "receiving", "defense", "kicking"].includes(key) &&
+      table && Array.isArray(table.headers) && table.headers.length <= 60 && table.headers.every((h) => typeof h === "string" && h.length <= 40) &&
+      Array.isArray(table.rows) && table.rows.length <= 5000 &&
+      table.rows.every((row) => Array.isArray(row) && row.length <= 60 && row.every((cell) => typeof cell === "string" && cell.length <= 80))));
 }
 
 // data.draftQueues = { [year]: { [teamId]: [poolId, …] } } (draft-room.js).

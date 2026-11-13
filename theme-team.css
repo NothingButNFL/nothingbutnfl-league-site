@@ -506,3 +506,5 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-queue-list li { border-bottom-color: rgb(var(--tm-1d3a5f)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-queue-list small { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dk-queue-move { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-0c2b50)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .career-season-row { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .career-season-row span { color: rgb(var(--tm-a7bdd7)); }

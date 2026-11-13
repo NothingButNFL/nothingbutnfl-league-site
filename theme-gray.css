@@ -385,3 +385,5 @@ html[data-theme="gray"] .dk-queue { border-top-color: #47494f; border-right-colo
 html[data-theme="gray"] .dk-queue-list li { border-bottom-color: #303236; }
 html[data-theme="gray"] .dk-queue-list small { color: #b6b9be; }
 html[data-theme="gray"] .dk-queue-move { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #242528; }
+html[data-theme="gray"] .career-season-row { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
+html[data-theme="gray"] .career-season-row span { color: #b6b9be; }
