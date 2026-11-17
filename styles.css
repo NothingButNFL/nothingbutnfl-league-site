@@ -3508,7 +3508,7 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
 .hub-toggle-btn.is-active { background: #174477; color: #fff; }
 .hub-note { margin: 8px 0 0; color: #a7bdd7; font-size: 12px; }
 .hub-league { display: grid; gap: 14px; margin-top: 12px; }
-.hub-table caption, .hub-block h5 { padding: 0 0 6px; color: #a7bdd7; font: 700 11px var(--mono); letter-spacing: .1em; text-align: left; text-transform: uppercase; }
+.hub-block h5 { padding: 0 0 6px; color: #a7bdd7; font: 700 11px var(--mono); letter-spacing: .1em; text-align: left; text-transform: uppercase; }
 .hub-block h5 { margin: 16px 0 4px; }
 .hub-badge { margin-left: 6px; padding: 1px 5px; border: 1px solid #8fd0ff; border-radius: 3px; color: #8fd0ff; font: 700 9px var(--mono); letter-spacing: .06em; vertical-align: 2px; }
 .hub-badge.is-cel { border-color: #ffd37a; color: #ffd37a; }
@@ -3535,8 +3535,8 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
 .hub-tx { color: #c5d5e8; font-size: 12px; }
 .hub-news time, .hub-tx time { margin-right: 4px; color: #ffd37a; font: 700 11px var(--mono); }
 .hub-espn { justify-self: start; color: #8fd0ff; font-size: 12px; }
-main .hub-table :is(th, td):first-child, main .hub-injury-table :is(th, td) { text-align: left !important; }
-main .hub-table td.stats-name a, main .hub-injury-table td.stats-name a { color: inherit; }
+main .hub-injury-table :is(th, td) { text-align: left !important; }
+main .hub-injury-table td.stats-name a { color: inherit; }
 
 /* Player Hub: NBNFL / IRL switch */
 .hub-view-switch { display: inline-flex; margin-top: 14px; padding: 4px; border: 1px solid #31527a; border-radius: 999px; background: #071a33; }
@@ -3545,3 +3545,21 @@ main .hub-table td.stats-name a, main .hub-injury-table td.stats-name a { color:
 .hub-view-switch + .hub-section { margin-top: 14px; }
 #player-hub-panel .hub-section + .hub-section { padding-top: 0; border-top: 0; }
 .hub-section[hidden] { display: none; }
+
+/* Player Hub › NBNFL stats: one look for every category table, with columns that line up across tables */
+.hub-league { gap: 16px; }
+.hub-table-wrap { overflow-x: auto; border: 1px solid #31527a; border-radius: 8px; background: #071a33; }
+.hub-table-title { padding: 10px 14px; border-bottom: 1px solid #31527a; background: #0c2b50; color: #fff; font: 800 13px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+main .hub-table { width: 100%; min-width: max-content; border-collapse: collapse; table-layout: fixed; }
+main .hub-table th { padding: 8px 12px !important; border-bottom: 1px solid #31527a; background: transparent !important; color: #a7bdd7; font: 700 11px var(--mono) !important; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; position: static; }
+main .hub-table td { padding: 9px 12px !important; border-bottom: 1px solid #13305a; color: #dbe7f5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+main .hub-table tbody tr:last-child td { border-bottom: 0; }
+main .hub-table tbody tr:hover td { background: rgba(255, 255, 255, .04); }
+main .hub-table .hub-col-name { width: 240px; text-align: left !important; }
+main .hub-table td.hub-col-name { color: #fff; font-weight: 700; }
+main .hub-table td.hub-col-name a { color: #fff; text-decoration: none; }
+main .hub-table td.hub-col-name a:hover { text-decoration: underline; text-underline-offset: 3px; }
+main .hub-table .is-number { width: 78px; text-align: right !important; }
+main .hub-table td.is-key { color: #fff; font-weight: 800; }
+main .hub-table .hub-col-fill { width: auto; padding: 0 !important; }
+main .hub-table th.is-number { padding-right: 10px !important; letter-spacing: .04em; }

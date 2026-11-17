@@ -66,22 +66,25 @@
       if (!rows.length) continue;
       const sortKey = { passing: "yds", rushing: "yds", receiving: "yds", defense: "tkl", kicking: "pts" }[category];
       rows.sort((a, b) => (b.t[sortKey] ?? -1) - (a.t[sortKey] ?? -1));
-      const wrap = el("div", "stats-table-wrap hub-table-wrap");
-      const table = el("table", "stats-table hub-table");
-      table.append(el("caption", "", crCats[category]));
+      // Every category's table uses the same column widths (Player, then fixed stat columns, then a filler),
+      // so the columns line up from one table to the next.
+      const wrap = el("div", "hub-table-wrap");
+      wrap.append(el("div", "hub-table-title", crCats[category]));
+      const table = el("table", "hub-table");
       const head = table.createTHead().insertRow();
       for (const label of ["Player", ...(period === "career" ? ["Seasons"] : []), ...spec.map((c) => c.label)]) {
         const th = document.createElement("th");
         th.scope = "col";
         th.textContent = label;
-        if (label !== "Player") th.className = "is-number";
+        th.className = label === "Player" ? "hub-col-name" : "is-number";
         head.append(th);
       }
+      head.append(Object.assign(document.createElement("th"), { className: "hub-col-fill", ariaHidden: "true" }));
       const body = table.createTBody();
       for (const r of rows) {
         const tr = body.insertRow();
         const name = tr.insertCell();
-        name.className = "stats-name";
+        name.className = "hub-col-name";
         const onTeam = byKey.get(r.key);
         if (onTeam) {
           name.append(Object.assign(document.createElement("a"), { href: profileUrl(onTeam.player.id), textContent: r.name }));
@@ -92,7 +95,8 @@
           name.title = "No longer on this team's roster";
         }
         if (period === "career") { const td = tr.insertCell(); td.textContent = String(r.seasons); td.className = "is-number"; }
-        for (const c of spec) { const td = tr.insertCell(); td.textContent = crFormat(c, r.t[c.key]); td.className = "is-number"; }
+        for (const c of spec) { const td = tr.insertCell(); td.textContent = crFormat(c, r.t[c.key]); td.className = `is-number${c.key === sortKey ? " is-key" : ""}`; }
+        tr.insertCell().className = "hub-col-fill";
       }
       wrap.append(table);
       parts.push(wrap);
