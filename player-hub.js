@@ -37,74 +37,199 @@
     for (const c of spec) if (c.calc) t[c.key] = c.calc(t);
     return t;
   }
+  // ESPN-style team stats: tables per category with a NAME column (position after the name), group headings
+  // (TACKLES, SACKS, …), sortable columns with the sorted one shaded, and a Total row; Team Leaders cards on top.
+  const hubCols = {
+    gp: { label: "GP" }, cmp: { label: "CMP" }, att: { label: "ATT" }, car: { label: "CAR", from: "att" }, pct: { label: "CMP%", fmt: 1 },
+    yds: { label: "YDS" }, ypa: { label: "AVG", fmt: 1 }, avg: { label: "AVG", fmt: 1 }, ydsg: { label: "YDS/G", fmt: 1, calc: (t) => (t.gp ? t.yds / t.gp : null) },
+    lng: { label: "LNG", max: true }, td: { label: "TD" }, int: { label: "INT" }, rate: { label: "RTG", fmt: 1 }, rec: { label: "REC" },
+    tkl: { label: "TOT" }, sacks: { label: "SACK", fmt: "half" }, pd: { label: "PD" }, ff: { label: "FF" }, fr: { label: "FR" },
+    fgm: { label: "FGM" }, fga: { label: "FGA" }, fgpct: { label: "FG%", fmt: 1 }, xpm: { label: "XPM" }, xpa: { label: "XPA" },
+    xppct: { label: "XP%", fmt: 1, calc: (t) => (t.xpa ? (t.xpm / t.xpa) * 100 : null) }, pts: { label: "PTS" },
+    rushTd: { label: "RUSH" }, recTd: { label: "REC" }, allTd: { label: "TD" }, fg: { label: "FG" }, pat: { label: "PAT" }, tpg: { label: "TP/G", fmt: 1, calc: (t) => (t.gp ? t.pts / t.gp : null) },
+  };
+  const hubTables = [
+    { key: "passing", title: "Passing", sort: "yds", groups: [["", ["gp", "cmp", "att", "pct", "yds", "ypa", "ydsg", "lng", "td", "int", "rate"]]] },
+    { key: "rushing", title: "Rushing", sort: "yds", groups: [["", ["gp", "car", "yds", "avg", "lng", "td", "ydsg"]]] },
+    { key: "receiving", title: "Receiving", sort: "yds", groups: [["", ["gp", "rec", "yds", "avg", "td", "lng", "ydsg"]]] },
+    { key: "defense", title: "Defense", sort: "tkl", groups: [["", ["gp"]], ["TACKLES", ["tkl"]], ["SACKS", ["sacks"]], ["INTERCEPTIONS", ["pd", "int", "td"]], ["FUMBLES", ["ff", "fr"]]] },
+    { key: "scoring", title: "Scoring", sort: "pts", groups: [["", ["gp"]], ["TOUCHDOWNS", ["rushTd", "recTd", "allTd"]], ["SCORING", ["fg", "pat", "pts", "tpg"]]] },
+    { key: "kicking", title: "Kicking", sort: "fgm", groups: [["", ["gp"]], ["FIELD GOALS", ["fgm", "fga", "fgpct", "lng"]], ["EXTRA POINTS", ["xpm", "xpa", "xppct"]]] },
+  ];
+  const hubSort = {}; // table key → { col, dir }
+  const hubFmt = (col, v) => crFormat(hubCols[col].fmt ? { fmt: hubCols[col].fmt } : {}, v);
+
+  // Rows for one category: [{ name, key, pos, t }] for this season (this team's rows) or careers (current roster).
+  function categoryRows(category, roster, byKey) {
+    const spec = crSpec[category];
+    if (period === "career") {
+      return crTotals(officeData, category).filter((p) => byKey.has(p.key)).map((p) => ({ name: p.name, key: p.key, t: { ...p.t } }));
+    }
+    const table = crSeasons(officeData)[crLiveSeason(officeData)]?.[category];
+    if (!table?.rows?.length) return [];
+    const nameAt = statNameColumn(table), teamAt = statTeamColumn(table), posAt = statColumn(table, /^(POS|POSITION)$/);
+    const rows = [];
+    for (const row of table.rows) {
+      const team = teamAt !== -1 && teamAt !== nameAt ? lookupTeamId(row[teamAt]) : "";
+      const key = normalizePlayerName(String(row[nameAt] || ""));
+      if (team ? team !== activeTeamId : !byKey.has(key)) continue;
+      rows.push({ name: String(row[nameAt]).trim(), key, pos: posAt !== -1 ? String(row[posAt] || "") : "", t: rowLine(table, row, spec) });
+    }
+    return rows;
+  }
+  function withDerived(t) {
+    for (const [k, c] of Object.entries(hubCols)) if (c.calc) t[k] = c.calc(t);
+    if (t.att !== undefined && t.car === undefined) t.car = t.att;
+    if (t.avg === undefined && t.ypa !== undefined) t.avg = t.ypa;
+    return t;
+  }
+  // Total row: counting stats added up, LNG the best, rates worked out again from the totals.
+  function totalLine(category, rows) {
+    const t = {};
+    const spec = crSpec[category] || [];
+    for (const r of rows) for (const [k, v] of Object.entries(r.t)) {
+      if (v === null || v === undefined || !Number.isFinite(v)) continue;
+      const c = spec.find((x) => x.key === k);
+      if (c?.calc || hubCols[k]?.calc) continue;
+      if (k === "gp") t.gp = Math.max(t.gp || 0, v);
+      else if (c?.max || hubCols[k]?.max) t[k] = Math.max(t[k] ?? -Infinity, v);
+      else t[k] = (t[k] || 0) + v;
+    }
+    for (const c of spec) if (c.calc) t[c.key] = c.calc(t);
+    return withDerived(t);
+  }
+
   function renderLeague() {
     const box = document.querySelector("#hub-league");
     const roster = hubRoster();
     const byKey = new Map(roster.map((r) => [r.key, r]));
     const year = crLiveSeason(officeData);
-    const seasonsAll = crSeasons(officeData);
+    const data = {};
+    for (const c of Object.keys(crCats)) data[c] = categoryRows(c, roster, byKey).map((r) => ({ ...r, pos: r.pos || byKey.get(r.key)?.position || "", t: withDerived(r.t) }));
+    // Scoring: touchdowns from rushing and receiving, kicking points, all by player.
+    const scoring = new Map();
+    const add = (r, f) => { const s = scoring.get(r.key) || { name: r.name, key: r.key, pos: r.pos, t: { gp: 0, rushTd: 0, recTd: 0, allTd: 0, fg: 0, pat: 0, pts: 0 } }; f(s.t, r.t); s.t.gp = Math.max(s.t.gp, r.t.gp || 0); scoring.set(r.key, s); };
+    for (const r of data.rushing) add(r, (s, t) => { s.rushTd += t.td || 0; });
+    for (const r of data.receiving) add(r, (s, t) => { s.recTd += t.td || 0; });
+    for (const r of data.kicking) add(r, (s, t) => { s.fg += t.fgm || 0; s.pat += t.xpm || 0; s.kick = t.pts ?? (t.fgm || 0) * 3 + (t.xpm || 0); });
+    data.scoring = [...scoring.values()].map((s) => { s.t.allTd = s.t.rushTd + s.t.recTd; s.t.pts = s.t.allTd * 6 + (s.t.kick || 0); delete s.t.kick; return { ...s, t: withDerived(s.t) }; }).filter((s) => s.t.pts > 0);
+
     const note = document.querySelector("#hub-league-note");
+    note.textContent = period === "season"
+      ? `${year} regular season, from Season Stats (box scores or pasted tables). Click a column to sort.`
+      : "Career NBNFL totals for players on this roster now, across every season in Career Stats (time with other teams included). Click a column to sort.";
     const parts = [];
-    for (const category of Object.keys(crCats)) {
-      const spec = crSpec[category];
-      let rows = [];
-      if (period === "season") {
-        const table = seasonsAll[year]?.[category];
-        if (table?.rows?.length) {
-          const nameAt = statNameColumn(table), teamAt = statTeamColumn(table);
-          for (const row of table.rows) {
-            const team = teamAt !== -1 && teamAt !== nameAt ? lookupTeamId(row[teamAt]) : "";
-            const key = normalizePlayerName(String(row[nameAt] || ""));
-            // His row for this team, or, with no team column, anyone on this team's roster.
-            if (team ? team !== activeTeamId : !byKey.has(key)) continue;
-            rows.push({ name: String(row[nameAt]).trim(), key, t: rowLine(table, row, spec) });
-          }
-        }
-      } else {
-        rows = crTotals(officeData, category).filter((p) => byKey.has(p.key)).map((p) => ({ name: p.name, key: p.key, t: p.t, seasons: p.seasons.size }));
+    // Team leaders
+    const leaders = [["Passing Yards", "passing", "yds"], ["Rushing Yards", "rushing", "yds"], ["Receiving Yards", "receiving", "yds"], ["Tackles", "defense", "tkl"], ["Interceptions", "defense", "int"]]
+      .map(([label, cat, col]) => { const best = [...data[cat]].sort((a, b) => (b.t[col] ?? -1) - (a.t[col] ?? -1))[0]; return best && best.t[col] > 0 ? { label, best, value: hubFmt(col, best.t[col]) } : null; })
+      .filter(Boolean);
+    if (leaders.length) {
+      const wrap = el("div", "hub-leaders-wrap");
+      wrap.append(el("h5", "hub-sub", "Team Leaders"));
+      const row = el("div", "hub-leaders");
+      for (const { label, best, value } of leaders) {
+        const card = el("div", "hub-leader");
+        card.append(el("span", "hub-leader-label", label));
+        const body = el("div", "hub-leader-body");
+        const onTeam = byKey.get(best.key);
+        body.append(onTeam ? playerPortrait(onTeam.player) : el("span", "player-portrait"));
+        const text = el("div", "hub-leader-text");
+        const name = el("span", "hub-leader-name");
+        if (onTeam) name.append(Object.assign(document.createElement("a"), { href: profileUrl(onTeam.player.id), textContent: best.name })); else name.append(best.name);
+        if (best.pos) name.append(el("small", "", ` ${best.pos}`));
+        text.append(name, el("strong", "", value));
+        body.append(text);
+        card.append(body);
+        row.append(card);
       }
+      wrap.append(row);
+      parts.push(wrap);
+    }
+    for (const spec of hubTables) {
+      const rows = data[spec.key] || [];
       if (!rows.length) continue;
-      const sortKey = { passing: "yds", rushing: "yds", receiving: "yds", defense: "tkl", kicking: "pts" }[category];
-      rows.sort((a, b) => (b.t[sortKey] ?? -1) - (a.t[sortKey] ?? -1));
-      // Every category's table uses the same column widths (Player, then fixed stat columns, then a filler),
-      // so the columns line up from one table to the next.
+      const sort = hubSort[spec.key] || { col: spec.sort, dir: -1 };
+      rows.sort((a, b) => (sort.col === "name" ? a.name.localeCompare(b.name) * sort.dir : ((a.t[sort.col] ?? -Infinity) - (b.t[sort.col] ?? -Infinity)) * sort.dir) || a.name.localeCompare(b.name));
+      const cols = spec.groups.flatMap(([, c]) => c);
+      const section = el("section", "hub-cat");
+      section.append(el("h5", "hub-sub", spec.title));
       const wrap = el("div", "hub-table-wrap");
-      wrap.append(el("div", "hub-table-title", crCats[category]));
       const table = el("table", "hub-table");
-      const head = table.createTHead().insertRow();
-      for (const label of ["Player", ...(period === "career" ? ["Seasons"] : []), ...spec.map((c) => c.label)]) {
-        const th = document.createElement("th");
-        th.scope = "col";
-        th.textContent = label;
-        th.className = label === "Player" ? "hub-col-name" : "is-number";
-        head.append(th);
+      // Fixed widths come from the columns (not the group heading row), so every table lines up the same way.
+      const colgroup = el("colgroup");
+      colgroup.append(el("col", "hub-c-name"), ...cols.map(() => el("col", "hub-c-stat")), el("col", "hub-c-fill"));
+      table.append(colgroup);
+      const thead = table.createTHead();
+      // Group headings (TACKLES, SACKS, …) above their columns.
+      if (spec.groups.some(([g]) => g)) {
+        const gr = thead.insertRow();
+        gr.className = "hub-group-row";
+        gr.append(Object.assign(document.createElement("th"), { className: "hub-col-name" }));
+        for (const [g, c] of spec.groups) {
+          const th = document.createElement("th");
+          th.colSpan = c.length;
+          th.textContent = g;
+          th.className = "hub-group";
+          gr.append(th);
+        }
+        gr.append(Object.assign(document.createElement("th"), { className: "hub-col-fill" }));
       }
-      head.append(Object.assign(document.createElement("th"), { className: "hub-col-fill", ariaHidden: "true" }));
+      const hr = thead.insertRow();
+      const sortBtn = (label, col) => {
+        const b = el("button", "hub-sort", label);
+        b.type = "button";
+        b.addEventListener("click", () => { hubSort[spec.key] = { col, dir: sort.col === col ? -sort.dir : col === "name" ? 1 : -1 }; renderLeague(); });
+        return b;
+      };
+      const nameTh = document.createElement("th");
+      nameTh.className = "hub-col-name";
+      nameTh.append(sortBtn("NAME", "name"));
+      hr.append(nameTh);
+      spec.groups.forEach(([, c], gi) => c.forEach((col, ci) => {
+        const th = document.createElement("th");
+        th.className = `is-number${sort.col === col ? " is-sorted" : ""}${ci === 0 && gi > 0 ? " hub-group-start" : ""}`;
+        const b = sortBtn(hubCols[col].label, col);
+        if (sort.col === col) b.append(el("span", "hub-sort-mark", sort.dir < 0 ? " ▾" : " ▴"));
+        th.append(b);
+        th.setAttribute("aria-sort", sort.col === col ? (sort.dir < 0 ? "descending" : "ascending") : "none");
+        hr.append(th);
+      }));
+      hr.append(Object.assign(document.createElement("th"), { className: "hub-col-fill" }));
+      const starts = new Set(spec.groups.slice(1).map(([, c]) => c[0]));
+      const line = (tr, t) => {
+        for (const col of cols) {
+          const td = tr.insertCell();
+          td.textContent = hubFmt(col, t[col]);
+          td.className = `is-number${sort.col === col ? " is-sorted" : ""}${starts.has(col) ? " hub-group-start" : ""}`;
+        }
+        tr.insertCell().className = "hub-col-fill";
+      };
       const body = table.createTBody();
       for (const r of rows) {
         const tr = body.insertRow();
         const name = tr.insertCell();
         name.className = "hub-col-name";
         const onTeam = byKey.get(r.key);
-        if (onTeam) {
-          name.append(Object.assign(document.createElement("a"), { href: profileUrl(onTeam.player.id), textContent: r.name }));
-          if (onTeam.group !== "Active") name.append(el("span", `hub-badge is-${onTeam.group.toLowerCase()}`, onTeam.group));
-        } else {
-          name.append(r.name);
-          name.append(el("span", "hub-badge is-gone", "GONE"));
-          name.title = "No longer on this team's roster";
-        }
-        if (period === "career") { const td = tr.insertCell(); td.textContent = String(r.seasons); td.className = "is-number"; }
-        for (const c of spec) { const td = tr.insertCell(); td.textContent = crFormat(c, r.t[c.key]); td.className = `is-number${c.key === sortKey ? " is-key" : ""}`; }
-        tr.insertCell().className = "hub-col-fill";
+        if (onTeam) name.append(Object.assign(document.createElement("a"), { href: profileUrl(onTeam.player.id), textContent: r.name }));
+        else { name.append(r.name); name.title = "No longer on this team's roster"; }
+        if (r.pos) name.append(el("small", "hub-pos", ` ${r.pos}`));
+        if (onTeam && onTeam.group !== "Active") name.append(el("span", `hub-badge is-${onTeam.group.toLowerCase()}`, onTeam.group));
+        if (!onTeam) name.append(el("span", "hub-badge is-gone", "GONE"));
+        line(tr, r.t);
+      }
+      if (period === "season" && spec.key !== "scoring") {
+        const tf = table.createTFoot().insertRow();
+        tf.className = "hub-total";
+        tf.insertCell().textContent = "Total";
+        tf.cells[0].className = "hub-col-name";
+        line(tf, totalLine(spec.key, rows));
       }
       wrap.append(table);
-      parts.push(wrap);
+      section.append(wrap);
+      parts.push(section);
     }
-    note.textContent = period === "season"
-      ? `${year} stats for this team, from Season Stats (box scores or pasted tables).`
-      : "Career NBNFL totals for players on this team's roster now, across every season in League History › Career Stats (including time with other teams).";
-    box.replaceChildren(...(parts.length ? parts : [el("p", "empty-state", period === "season" ? `No ${year} stats for this team yet. They come from Season Stats as games are played.` : "No career stats on record for this roster yet.")]));
+    if (parts.length <= 0) parts.push(el("p", "empty-state", period === "season" ? `No ${year} stats for this team yet. They come from Season Stats as games are played.` : "No career stats on record for this roster yet."));
+    box.replaceChildren(...parts);
   }
 
   // ---------- ESPN ----------
