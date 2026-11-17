@@ -425,3 +425,4 @@ html[data-theme="gray"] main .hub-table .hub-col-name { border-right-color: #474
 html[data-theme="gray"] main .hub-table .hub-pos { color: #b6b9be; }
 html[data-theme="gray"] main .hub-table .hub-group-start { border-left-color: #47494f; }
 html[data-theme="gray"] main .hub-table tfoot td { border-top-color: #6c6f76; }
+html[data-theme="gray"] .md-tick-rec { color: #b6b9be; }

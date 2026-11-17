@@ -145,7 +145,11 @@ function renderTicker(games, week, upcoming = null, records = null) {
     g.teams.forEach((t, i) => {
       if (i) a.append(mdEl("span", "md-tick-at", "@"));
       const side = mdEl("span", `md-tick-team${t.score === top && g.teams[0].score !== g.teams[1].score ? " is-winner" : ""}`);
-      side.append(overviewLogo(t.team), mdEl("span", "md-tick-code", t.team), mdEl("b", "md-tick-score", String(t.score)));
+      side.append(overviewLogo(t.team), mdEl("span", "md-tick-code", t.team));
+      // The team's record as (W-L-T), from the standings or the box scores.
+      const r = records?.[t.team];
+      if (r) side.append(mdEl("span", "md-tick-rec", `(${r.w}-${r.l}-${r.t})`));
+      side.append(mdEl("b", "md-tick-score", String(t.score)));
       a.append(side);
     });
     return a;

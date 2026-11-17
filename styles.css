@@ -3589,3 +3589,4 @@ main .hub-table col.hub-c-fill { width: auto; }
 /* Home: Top Players sits below the conference and league leaders; hidden with no box scores yet */
 .matchday-best { padding-top: 8px; }
 .matchday-best:not(:has(.md-best:not([hidden]))) { display: none; }
+.md-tick-rec { margin-left: -2px; color: #a7bdd7; font: 500 11px var(--body); white-space: nowrap; }
