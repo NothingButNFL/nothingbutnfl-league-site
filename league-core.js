@@ -1354,6 +1354,9 @@ function validPlayerProfile(profile) {
   return profile.retired === undefined || typeof profile.retired === "boolean";
 }
 
+// Marked retired on his profile (Player bio › Status): off Player Contracts and Free Agency, on League History › Retired Players.
+const isRetiredPlayer = (player) => Boolean(player?.profile?.retired);
+
 // An uploaded photo wins over a Photo URL (links to other sites can be blocked, e.g. in the live preview).
 function profilePhotoSrc(profile) {
   return profile.photoData || profile.photoUrl || "";
@@ -2141,7 +2144,11 @@ function validFaOffers(list) {
   return true;
 }
 
-const pendingFaOffers = (data) => (data.faOffers || []).filter((o) => o.status === "pending");
+// Open offers, leaving out any for a player who has since retired (he can't be signed).
+const pendingFaOffers = (data) => {
+  const retired = new Set((data.contractPlayers || []).filter(isRetiredPlayer).map((p) => p.id));
+  return (data.faOffers || []).filter((o) => o.status === "pending" && !retired.has(o.playerId));
+};
 
 function faOfferTerms(offer) {
   return [`${offer.years} year${offer.years === 1 ? "" : "s"}${offer.voidYears ? ` + ${offer.voidYears} void` : ""}, ${formatCurrency(offer.totalValue)}${offer.vmbCapBase !== undefined ? ` (Veteran Minimum Benefit, ${formatCurrency(offer.vmbCapBase)} cap charge)` : offer.minimum ? ` (minimum, ${minimumTierLabel(offer.minimum)})` : ""}`,
@@ -2267,7 +2274,7 @@ function accelerateVoidDeadCap(team, player, year, date = new Date()) {
 // Returns the transaction, or null if he isn't a free agent any more.
 function signFreeAgent(data, playerId, teamId, contract, date = localDateString(), extraDetails = "") {
   const entry = (data.contractPlayers || []).find((p) => p.id === playerId && p.team === freeAgentTeamId);
-  if (!entry || !data.teams[teamId]) return null;
+  if (!entry || isRetiredPlayer(entry) || !data.teams[teamId]) return null;
   const start = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   const breakdown = contractSeasonBreakdown(contract, start);
   const position = String(entry.position || "").trim().toUpperCase().slice(0, 8);

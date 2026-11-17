@@ -36,7 +36,7 @@ function save(message) {
 const money = parseMoneyText;
 const shortMoney = (v) => (v >= 1e6 ? `$${String(Number((v / 1e6).toFixed(2)))}M` : formatCurrency(v));
 
-const freeAgents = () => (officeData.contractPlayers || []).filter((p) => p.team === freeAgentTeamId);
+const freeAgents = () => (officeData.contractPlayers || []).filter((p) => p.team === freeAgentTeamId && !isRetiredPlayer(p)); // retired players aren't free agents
 
 function lastContract(player) {
   const c = playerContract(player);

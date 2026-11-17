@@ -3459,3 +3459,38 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
 .player-retired-tag strong { color: #fff; }
 .is-retired img { filter: grayscale(1); }
 .career-ret { margin-left: 6px; padding: 1px 5px; border: 1px solid #a7bdd7; border-radius: 3px; color: #a7bdd7; font: 700 9px var(--mono); letter-spacing: .06em; vertical-align: 2px; }
+
+/* League History › Retired Players */
+.retired-list { display: grid; gap: 16px; margin-top: 18px; }
+.retired-card { padding: 20px; }
+.retired-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; }
+.retired-head .retired-photo { width: 76px; height: 76px; margin: 0; border-width: 2px; }
+.retired-head .retired-photo img { filter: grayscale(1); }
+.retired-who h3 { margin: 0; font: 800 26px/1.1 var(--display); }
+.retired-who h3 a { color: inherit; text-decoration: none; }
+.retired-who h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.retired-meta { margin: 6px 0 0; color: #a7bdd7; font-size: 13px; }
+.retired-teams { margin: 4px 0 0; color: #d8e4f2; font-size: 13px; }
+.retired-teams a { color: inherit; }
+.retired-badge { display: grid; justify-items: center; padding: 8px 14px; border: 1px solid #a7bdd7; border-radius: 8px; color: #a7bdd7; }
+.retired-badge span { font: 700 10px var(--mono); letter-spacing: .14em; }
+.retired-badge strong { color: #fff; font: 800 22px var(--display); }
+.retired-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 16px; }
+.retired-total { padding: 10px 12px; border: 1px solid #31527a; border-radius: 6px; background: #071a33; }
+.retired-total-cat { color: #a7bdd7; font: 700 10px var(--mono); letter-spacing: .12em; }
+.retired-total-nums { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 6px; }
+.retired-num { display: grid; }
+.retired-num strong { color: #fff; font: 800 20px var(--display); }
+.retired-num small { color: #a7bdd7; font-size: 11px; }
+.retired-none { margin: 14px 0 0; color: #a7bdd7; font-size: 13px; }
+.retired-seasons { margin-top: 14px; }
+.retired-seasons > summary { color: #fff; font-weight: 700; cursor: pointer; }
+.retired-table-wrap { margin-top: 10px; max-height: none; }
+.retired-table caption { padding: 4px 0 6px; color: #a7bdd7; font: 700 11px var(--mono); letter-spacing: .1em; text-align: left; text-transform: uppercase; }
+.retired-table tfoot td { border-top: 2px solid #54749b; font-weight: 800; }
+@media (max-width: 700px) {
+  .retired-head { grid-template-columns: auto minmax(0, 1fr); }
+  .retired-badge { grid-column: 1 / -1; justify-self: start; display: flex; gap: 8px; align-items: baseline; }
+}
+.retired-head .retired-photo { display: grid; place-items: center; }
+.retired-initials { color: #fff; font: 800 24px var(--display); }

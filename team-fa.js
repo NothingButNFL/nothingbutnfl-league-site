@@ -11,7 +11,7 @@ const teamFaEditor = createContractEditor(document.querySelector("#team-fa-contr
 const teamFaYear = () => seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
 const teamFaMoney = (v) => v < 0 ? `−${formatCurrency(Math.abs(v))}` : formatCurrency(v);
 const teamFaShort = (v) => (v >= 1e6 ? `$${String(Number((v / 1e6).toFixed(2)))}M` : formatCurrency(v));
-const currentFreeAgents = () => (officeData.contractPlayers || []).filter((p) => p.team === freeAgentTeamId);
+const currentFreeAgents = () => (officeData.contractPlayers || []).filter((p) => p.team === freeAgentTeamId && !isRetiredPlayer(p));
 
 function teamFaLastContract(player) {
   const c = playerContract(player);

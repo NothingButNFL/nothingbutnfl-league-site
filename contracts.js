@@ -65,7 +65,8 @@ function contractFields(player) {
 
 function allPlayers() {
   const year = currentLeagueYear();
-  const sheetRows = nflTeams.flatMap(({ id: teamId }) => officeData.teams[teamId].roster.map((player) => {
+  // Retired players (Player bio › Status) aren't listed; they're under League History › Retired Players.
+  const sheetRows = nflTeams.flatMap(({ id: teamId }) => officeData.teams[teamId].roster.filter((player) => !isRetiredPlayer(player)).map((player) => {
     const row = {
       source: "sheet",
       sheetTeamId: teamId,
@@ -82,7 +83,7 @@ function allPlayers() {
     }
     return row;
   }));
-  const directoryRows = officeData.contractPlayers.map((player) => {
+  const directoryRows = officeData.contractPlayers.filter((player) => !isRetiredPlayer(player)).map((player) => {
     const row = {
       source: "directory",
       sheetTeamId: "",

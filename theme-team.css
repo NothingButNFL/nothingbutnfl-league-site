@@ -510,3 +510,12 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ca
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .career-season-row span { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .player-retired-tag { border-top-color: rgb(var(--tm-a7bdd7)); border-right-color: rgb(var(--tm-a7bdd7)); border-bottom-color: rgb(var(--tm-a7bdd7)); border-left-color: rgb(var(--tm-a7bdd7)); color: rgb(var(--tm-d8e4f2)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .career-ret { border-top-color: rgb(var(--tm-a7bdd7)); border-right-color: rgb(var(--tm-a7bdd7)); border-bottom-color: rgb(var(--tm-a7bdd7)); border-left-color: rgb(var(--tm-a7bdd7)); color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-meta { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-teams { color: rgb(var(--tm-d8e4f2)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-badge { border-top-color: rgb(var(--tm-a7bdd7)); border-right-color: rgb(var(--tm-a7bdd7)); border-bottom-color: rgb(var(--tm-a7bdd7)); border-left-color: rgb(var(--tm-a7bdd7)); color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-total { border-top-color: rgb(var(--tm-31527a)); border-right-color: rgb(var(--tm-31527a)); border-bottom-color: rgb(var(--tm-31527a)); border-left-color: rgb(var(--tm-31527a)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-total-cat { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-num small { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-none { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-table caption { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .retired-table tfoot td { border-top-color: rgb(var(--tm-54749b)); }
