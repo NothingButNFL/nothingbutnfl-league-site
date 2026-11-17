@@ -144,14 +144,20 @@ const crFormat = (c, v) => {
 };
 const crActiveCheck = () => {
   const names = new Set();
-  for (const { id } of nflTeams) for (const p of crData.teams[id].roster) names.add(normalizePlayerName(p.name));
-  for (const p of crData.contractPlayers || []) names.add(normalizePlayerName(p.name));
+  // On a roster or in Player Contracts, and not marked retired on his profile.
+  for (const { id } of nflTeams) for (const p of crData.teams[id].roster) if (!p.profile?.retired) names.add(normalizePlayerName(p.name));
+  for (const p of crData.contractPlayers || []) if (!p.profile?.retired) names.add(normalizePlayerName(p.name));
   return (key) => names.has(key);
 };
+const crFound = (p) => (typeof findPlayerByName === "function" ? findPlayerByName(crData, p.name, p.teams[p.teams.length - 1]) : null);
 function crPlayerCell(p) {
-  const found = typeof findPlayerByName === "function" ? findPlayerByName(crData, p.name, p.teams[p.teams.length - 1]) : null;
+  const found = crFound(p);
   if (!found) return document.createTextNode(p.name);
-  return Object.assign(document.createElement("a"), { href: profileUrl(found.player.id), textContent: p.name, className: "career-player-link" });
+  const link = Object.assign(document.createElement("a"), { href: profileUrl(found.player.id), textContent: p.name, className: "career-player-link" });
+  if (!found.player.profile?.retired) return link;
+  const wrap = document.createDocumentFragment();
+  wrap.append(link, Object.assign(document.createElement("span"), { className: "career-ret", textContent: "RET", title: `Retired${found.player.profile.retiredYear ? ` in ${found.player.profile.retiredYear}` : ""}` }));
+  return wrap;
 }
 
 // ---------- Drawing ----------

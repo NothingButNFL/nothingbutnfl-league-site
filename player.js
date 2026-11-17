@@ -154,6 +154,13 @@ function renderHero(entry) {
     tag.append(status, [injury.injury, injury.duration].filter(Boolean).map((bit) => ` · ${bit}`).join(""));
     text.append(tag);
   }
+  if (profile.retired && entry.source !== "prospect") {
+    const tag = document.createElement("p");
+    tag.className = "player-retired-tag";
+    tag.append(Object.assign(document.createElement("strong"), { textContent: "Retired" }), profile.retiredYear ? ` · ${profile.retiredYear}` : "");
+    text.append(tag);
+    avatar.classList.add("is-retired");
+  }
   heroEl.append(avatar, text);
   document.title = `${player.name} — Nothing But NFL`;
 }
@@ -175,7 +182,9 @@ function fillBioForm(entry) {
   f.weight.value = profile.weight ?? "";
   f.photoUrl.value = profile.photoUrl;
   document.querySelector("#photo-remove").hidden = !profile.photoData;
-  f.retired.checked = profile.retired;
+  f.retired.value = profile.retired ? "1" : "";
+  f.retiredYear.value = profile.retiredYear ?? "";
+  f.retiredYear.closest("label").hidden = !profile.retired;
   f.notes.value = profile.notes;
   for (const element of bioForm.elements) element.disabled = !canSave;
 }
@@ -205,8 +214,8 @@ bioForm.addEventListener("change", (event) => {
       player.birthDate = value || null;
       if (value) player.age = null;
       break;
-    case "draftYear": case "draftRound": case "draftPick": case "weight": {
-      const ranges = { draftYear: [1936, 2100], draftRound: [1, 20], draftPick: [1, 400], weight: [100, 500] };
+    case "draftYear": case "draftRound": case "draftPick": case "weight": case "retiredYear": {
+      const ranges = { draftYear: [1936, 2100], draftRound: [1, 20], draftPick: [1, 400], weight: [100, 500], retiredYear: [1936, 2100] };
       const number = value === "" ? null : Number(value);
       if (number !== null && !isIntegerInRange(number, ...ranges[input.name])) return fail(`Enter a whole number from ${ranges[input.name][0]} to ${ranges[input.name][1]}, or leave it blank.`);
       profile[input.name] = number;
@@ -222,7 +231,10 @@ bioForm.addEventListener("change", (event) => {
       delete profile.photoSource; // set by hand: Admin › Player Headshots won't replace it unless asked
       break;
     case "retired":
-      profile.retired = Boolean(value);
+      // Retired: marked on his profile, Career Stats and searches; his contract and roster spot are left as they are.
+      profile.retired = value === "1";
+      if (profile.retired && !profile.retiredYear) profile.retiredYear = currentLeagueYear();
+      if (!profile.retired) delete profile.retiredYear;
       break;
     case "positions": case "college": case "notes":
       profile[input.name] = value.slice(0, profileTextLimits[input.name]);
@@ -232,9 +244,9 @@ bioForm.addEventListener("change", (event) => {
       return;
   }
   player.profile = profile;
-  save(`${player.name}'s profile saved.`);
+  save(input.name === "retired" ? (profile.retired ? `${player.name} is marked as retired (${profile.retiredYear}).` : `${player.name} is marked as active again.`) : `${player.name}'s profile saved.`);
   renderHero(entry);
-  if (input.name === "name") fillBioForm(entry);
+  if (input.name === "name" || input.name === "retired") fillBioForm(entry);
 });
 
 // ---------- uploaded photo (older saves) ----------

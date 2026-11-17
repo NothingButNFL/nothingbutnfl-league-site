@@ -314,7 +314,6 @@ html[data-theme="espn"] .player-facts { color: #121213; }
 html[data-theme="espn"] .player-bio label { color: #121213; }
 html[data-theme="espn"] .player-bio input, html[data-theme="espn"] .player-bio textarea { border-top-color: #eceef0; border-right-color: #eceef0; border-bottom-color: #eceef0; border-left-color: #eceef0; background-color: #edeef0; color: #121213; }
 html[data-theme="espn"] .player-bio input[type="date"] { color-scheme: light; }
-html[data-theme="espn"] .player-bio .player-retired input { accent-color: #121213; }
 html[data-theme="espn"] .player-contract-summary div { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; background-color: #ffffff; }
 html[data-theme="espn"] .player-contract-summary dt { color: #121213; }
 html[data-theme="espn"] .player-contract-summary dd { color: #121213; }
@@ -1035,3 +1034,6 @@ html[data-theme="espn"] .dk-clock-queue { color: #121213; }
 html[data-theme="espn"] .dk-clock-queue-label { color: #d00; }
 html[data-theme="espn"] .career-season-row { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; background-color: #edeef0; color: #121213; }
 html[data-theme="espn"] .career-season-row span { color: #6c6d6f; }
+html[data-theme="espn"] .player-retired-tag { border-top-color: #c8cacd; border-right-color: #c8cacd; border-bottom-color: #c8cacd; border-left-color: #c8cacd; }
+html[data-theme="espn"] .player-retired-tag strong { color: #121213; }
+html[data-theme="espn"] .career-ret { border-top-color: #c8cacd; border-right-color: #c8cacd; border-bottom-color: #c8cacd; border-left-color: #c8cacd; color: #6c6d6f; }

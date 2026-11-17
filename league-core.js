@@ -1335,7 +1335,7 @@ function validGames(games) {
 }
 
 // ---- Player profiles ----
-// player.profile = { positions, college, draftYear, draftRound, draftPick, height, weight, photoUrl, retired, notes }
+// player.profile = { positions, college, draftYear, draftRound, draftPick, height, weight, photoUrl, retired, retiredYear, notes }
 const profileTextLimits = { positions: 40, college: 80, height: 10, photoUrl: 500, notes: 1000 };
 
 function validPlayerProfile(profile) {
@@ -1347,7 +1347,7 @@ function validPlayerProfile(profile) {
   if (profile.photoUrl && !/^https?:\/\//i.test(profile.photoUrl)) return false;
   if (profile.photoData !== undefined && profile.photoData !== null && profile.photoData !== ""
     && (typeof profile.photoData !== "string" || profile.photoData.length > 400000 || !/^data:image\/(jpeg|png|webp);base64,/.test(profile.photoData))) return false;
-  for (const [field, min, max] of [["draftYear", 1936, 2100], ["draftRound", 1, 20], ["draftPick", 1, 400], ["weight", 100, 500]]) {
+  for (const [field, min, max] of [["draftYear", 1936, 2100], ["draftRound", 1, 20], ["draftPick", 1, 400], ["weight", 100, 500], ["retiredYear", 1936, 2100]]) {
     const value = profile[field];
     if (value !== undefined && value !== null && !isIntegerInRange(value, min, max)) return false;
   }

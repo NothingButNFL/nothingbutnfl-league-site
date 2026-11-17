@@ -1003,8 +1003,7 @@ a.txn-team:hover { background: #174477; text-decoration: underline; }
 .player-bio input[type="date"] { color-scheme: dark; }
 .player-bio .is-caps { text-transform: uppercase; }
 .player-bio .is-wide { grid-column: 1 / -1; }
-.player-bio .player-retired { display: flex; align-items: center; gap: 8px; }
-.player-bio .player-retired input { width: 16px; min-height: 16px; accent-color: #fff; }
+.player-bio .player-retired-year[hidden] { display: none; }
 .player-bio textarea { resize: vertical; }
 .player-contract-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
 .player-contract-summary div { padding: 12px 14px; border: 1px solid #31527a; background: #0c2b50; }
@@ -3454,3 +3453,9 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
 .career-season-row { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid #31527a; border-radius: 6px; background: #071a33; color: #fff; }
 .career-season-row strong { font: 800 18px var(--display); }
 .career-season-row span { color: #a7bdd7; font-size: 12px; }
+
+/* Player profile: retired */
+.player-retired-tag { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 6px 12px; border: 1px solid #a7bdd7; border-radius: 999px; color: #d8e4f2; font: 600 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.player-retired-tag strong { color: #fff; }
+.is-retired img { filter: grayscale(1); }
+.career-ret { margin-left: 6px; padding: 1px 5px; border: 1px solid #a7bdd7; border-radius: 3px; color: #a7bdd7; font: 700 9px var(--mono); letter-spacing: .06em; vertical-align: 2px; }
