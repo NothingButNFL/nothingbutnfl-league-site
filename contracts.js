@@ -12,6 +12,9 @@ const searchInput = document.querySelector("#contracts-search");
 const teamFilter = document.querySelector("#contracts-team");
 const positionFilter = document.querySelector("#contracts-position");
 const faFilter = document.querySelector("#contracts-fa");
+// Only players with no Years of Experience, to fix their names or fill it in by hand.
+const blankExpFilter = document.querySelector("#contracts-blank-exp");
+const blankExp = (row) => row.experience === null || row.experience === undefined || row.experience === "";
 const addForm = document.querySelector("#contracts-add-form");
 
 let officeData = emptyOfficeData();
@@ -199,8 +202,11 @@ function renderContracts() {
     (!query || normalizePlayerName(row.name).includes(query)) &&
     (!teamFilter.value || (teamFilter.value === "__none" ? !row.team : row.team === teamFilter.value)) &&
     (!positionFilter.value || row.position === positionFilter.value) &&
-    (!faFilter.value || (faFilter.value === "__none" ? !row.faType : row.faType === faFilter.value))
+    (!faFilter.value || (faFilter.value === "__none" ? !row.faType : row.faType === faFilter.value)) &&
+    (!blankExpFilter.checked || blankExp(row))
   ).sort(compareRows);
+  const blanks = rows.filter(blankExp).length;
+  document.querySelector("#contracts-blank-exp-count").textContent = `(${blanks.toLocaleString("en-US")})`;
 
   const year = currentLeagueYear();
   const fragment = document.createDocumentFragment();
@@ -481,6 +487,7 @@ contractsHeader.addEventListener("click", (event) => {
 
 for (const control of [teamFilter, positionFilter, faFilter]) control.addEventListener("change", renderContracts);
 searchInput.addEventListener("input", renderContracts);
+blankExpFilter.addEventListener("change", renderContracts);
 
 // ---- Add a single player ----
 const addTeamSelect = addForm.elements.team;

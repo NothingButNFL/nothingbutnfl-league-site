@@ -1096,3 +1096,4 @@ html[data-theme="espn"] main .hub-table .hub-group-start { border-left-color: #d
 html[data-theme="espn"] main .hub-table .is-sorted { color: #121213; background-color: rgba(221, 0, 0, 0.120) !important; }
 html[data-theme="espn"] main .hub-table tfoot td { border-top-color: #c8cacd; background-color: rgba(18, 18, 19, 0.070); color: #121213; }
 html[data-theme="espn"] .md-tick-rec { color: #6c6d6f; }
+html[data-theme="espn"] .contracts-blank-exp span { color: #d00; }
