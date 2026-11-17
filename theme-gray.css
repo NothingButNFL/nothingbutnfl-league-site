@@ -396,3 +396,16 @@ html[data-theme="gray"] .retired-num small { color: #b6b9be; }
 html[data-theme="gray"] .retired-none { color: #b6b9be; }
 html[data-theme="gray"] .retired-table caption { color: #b6b9be; }
 html[data-theme="gray"] .retired-table tfoot td { border-top-color: #6c6f76; }
+html[data-theme="gray"] .hub-section + .hub-section { border-top-color: #303236; }
+html[data-theme="gray"] .hub-section-head h4 small { color: #b6b9be; }
+html[data-theme="gray"] .hub-toggle { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; }
+html[data-theme="gray"] .hub-toggle-btn { border-right-color: #6c6f76; color: #d5d7db; }
+html[data-theme="gray"] .hub-toggle-btn.is-active { background-color: #3a3c41; }
+html[data-theme="gray"] .hub-note { color: #b6b9be; }
+html[data-theme="gray"] .hub-table caption, html[data-theme="gray"] .hub-block h5 { color: #b6b9be; }
+html[data-theme="gray"] .hub-badge.is-gone { border-top-color: #7b7e85; border-right-color: #7b7e85; border-bottom-color: #7b7e85; border-left-color: #7b7e85; color: #b6b9be; }
+html[data-theme="gray"] .hub-note-cell { color: #d5d7db; }
+html[data-theme="gray"] .hub-empty, html[data-theme="gray"] .hub-missing { color: #b6b9be; }
+html[data-theme="gray"] .hub-card { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
+html[data-theme="gray"] .hub-card-who small { color: #b6b9be; }
+html[data-theme="gray"] .hub-tx { color: #d5d7db; }

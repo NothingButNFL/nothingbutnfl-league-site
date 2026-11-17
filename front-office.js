@@ -10,7 +10,7 @@ const salaryEmpty = document.querySelector("#salary-empty");
 const requestedTeamId = new URLSearchParams(window.location.search).get("team")?.toUpperCase();
 let activeTeamId = nflTeams.some(({ id }) => id === requestedTeamId) ? requestedTeamId : nflTeams[0].id;
 let activeSeason = firstSeason;
-let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#free-agents" ? "free-agents" : location.hash === "#restructure" ? "restructure" : location.hash === "#extend" ? "extend" : location.hash === "#trade-block" ? "trade-block" : location.hash === "#trade" ? "trade" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
+let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#player-hub" ? "player-hub" : location.hash === "#free-agents" ? "free-agents" : location.hash === "#restructure" ? "restructure" : location.hash === "#extend" ? "extend" : location.hash === "#trade-block" ? "trade-block" : location.hash === "#trade" ? "trade" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
 let officeData = emptyOfficeData(activeTeamId);
 let storageIsAvailable = true;
 let tradePartnerIds = ["", ""];
@@ -197,7 +197,7 @@ const teamActionItems = [
   { id: "free-agents", label: "Free Agents" }
 ];
 const teamActionIds = teamActionItems.map((item) => item.id);
-const tabPanelFor = (id) => ({ "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", "trade-block": "team-block-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
+const tabPanelFor = (id) => ({ "player-hub": "player-hub-panel", "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", "trade-block": "team-block-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
 
 function tradeBadge() {
   const waiting = tradesAwaitingTeam(officeData, activeTeamId).length;
@@ -211,7 +211,7 @@ function tradeBadge() {
 }
 
 function openTeamTab(id) {
-  activeTab = ["draft-picks", "depth-chart", "multi-year", ...teamActionIds].includes(id) ? id : "salary";
+  activeTab = ["draft-picks", "player-hub", "depth-chart", "multi-year", ...teamActionIds].includes(id) ? id : "salary";
   if (activeTab === "salary") activeSeason = Number(id);
   renderFrontOffice();
 }
@@ -246,7 +246,7 @@ function renderSeasonTabs() {
   const tabItems = [{ id: "depth-chart", label: "DEPTH CHART" }, { id: "multi-year", label: "MULTI-YEAR" }, ...seasons.map((year) => ({ id: String(year), label: String(year) })), {
     id: "draft-picks",
     label: "DRAFT PICKS"
-  }, { id: "actions", label: "TEAM ACTIONS" }];
+  }, { id: "player-hub", label: "PLAYER HUB" }, { id: "actions", label: "TEAM ACTIONS" }];
   const isActive = (id) => seasons.some((year) => String(year) === id)
     ? activeTab === "salary" && Number(id) === activeSeason
     : id === "actions" ? teamActionIds.includes(activeTab) : activeTab === id;
@@ -396,6 +396,11 @@ function updateCapOverview() {
     depthPanel.hidden = activeTab !== "depth-chart";
     // The cap cards and salary tables belong to the salary-year tabs only.
     if (activeTab === "depth-chart") globalThis.renderDepthChart?.();
+  }
+  const playerHubPanel = document.querySelector("#player-hub-panel");
+  if (playerHubPanel) {
+    playerHubPanel.hidden = activeTab !== "player-hub";
+    if (activeTab === "player-hub") globalThis.renderPlayerHub?.();
   }
   const multiYearPanel = document.querySelector("#multi-year-panel");
   if (multiYearPanel) {

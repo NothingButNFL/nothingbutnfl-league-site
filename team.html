@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=c6e8bbda">
-    <link rel="stylesheet" href="theme-light.css?v=bef4d1f8">
-    <link rel="stylesheet" href="theme-gray.css?v=f4e012a5">
-    <link rel="stylesheet" href="theme-espn.css?v=fa3c8a0e">
-    <link rel="stylesheet" href="theme-team.css?v=b354ce8e">
+    <link rel="stylesheet" href="styles.css?v=435a8dda">
+    <link rel="stylesheet" href="theme-light.css?v=b50d1604">
+    <link rel="stylesheet" href="theme-gray.css?v=3cf47424">
+    <link rel="stylesheet" href="theme-espn.css?v=06a212a6">
+    <link rel="stylesheet" href="theme-team.css?v=e765effd">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -45,13 +45,16 @@
     <script src="league-core.js?v=fac36f35" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="front-office.js?v=313f1899" defer></script>
+    <script src="front-office.js?v=7d961e9e" defer></script>
     <script src="depth-chart.js?v=5ca772f3" defer></script>
     <script src="multi-year.js?v=3438b053" defer></script>
     <script src="contract-editor.js?v=cdf23358" defer></script>
     <script src="team-fa.js?v=4270513d" defer></script>
     <script src="restructure.js?v=6f6c0d49" defer></script>
     <script src="extend.js?v=6bb16ee3" defer></script>
+    <script src="stat-totals.js?v=232daaef" defer></script>
+    <script src="career-core.js?v=404ff2b3" defer></script>
+    <script src="player-hub.js?v=bb254eb1" defer></script>
     <script src="team-block.js?v=ebe28f2a" defer></script>
   </head>
   <body class="team-page">
@@ -448,6 +451,39 @@
               </table>
             </div>
             <p class="empty-state" id="picks-empty">This team doesn't own any draft picks yet. Picks are added on Admin › Draft Pick Manager.</p>
+          </div>
+          <div class="management-panel player-hub-panel" id="player-hub-panel" role="tabpanel" aria-labelledby="season-tab-player-hub" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">PLAYER HUB</span><h3>Player Hub</h3></div>
+              <p>How this team's players are doing in NBNFL, and what's happening with them in real life.</p>
+            </div>
+            <section class="hub-section" aria-labelledby="hub-league-title">
+              <div class="hub-section-head">
+                <h4 id="hub-league-title">NBNFL stats</h4>
+                <div class="hub-toggle" role="group" aria-label="Stats period">
+                  <button type="button" class="hub-toggle-btn is-active" data-hub-period="season" aria-pressed="true">This season</button>
+                  <button type="button" class="hub-toggle-btn" data-hub-period="career" aria-pressed="false">Career</button>
+                </div>
+              </div>
+              <p class="hub-note" id="hub-league-note"></p>
+              <div class="hub-league" id="hub-league"></div>
+            </section>
+            <section class="hub-section" aria-labelledby="hub-real-title">
+              <div class="hub-section-head">
+                <h4 id="hub-real-title">Real-life updates <small>from ESPN</small></h4>
+                <div class="hub-real-tools">
+                  <div class="hub-toggle" role="group" aria-label="Which players">
+                    <button type="button" class="hub-toggle-btn is-active" data-hub-group="all" aria-pressed="true">All</button>
+                    <button type="button" class="hub-toggle-btn" data-hub-group="Active" aria-pressed="false">Active</button>
+                    <button type="button" class="hub-toggle-btn" data-hub-group="CEL" aria-pressed="false">CEL</button>
+                    <button type="button" class="hub-toggle-btn" data-hub-group="PS" aria-pressed="false">Practice squad</button>
+                  </div>
+                  <button class="workspace-button" type="button" id="hub-refresh">Refresh</button>
+                </div>
+              </div>
+              <p class="workspace-status" id="hub-status" role="status" aria-live="polite"></p>
+              <div class="hub-real" id="hub-real"></div>
+            </section>
           </div>
           <div class="management-panel trade-panel" id="trade-panel" role="tabpanel" aria-labelledby="season-tab-trade" hidden>
             <div class="panel-heading">

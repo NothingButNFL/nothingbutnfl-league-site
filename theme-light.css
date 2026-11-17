@@ -1047,3 +1047,25 @@ html[data-theme="light"] .retired-seasons > summary { color: #121213; }
 html[data-theme="light"] .retired-table caption { color: #6c6d6f; }
 html[data-theme="light"] .retired-table tfoot td { border-top-color: #c8cacd; }
 html[data-theme="light"] .retired-initials { color: #121213; }
+html[data-theme="light"] .hub-section + .hub-section { border-top-color: #eceef0; }
+html[data-theme="light"] .hub-section-head h4 { color: #121213; }
+html[data-theme="light"] .hub-section-head h4 small { color: #6c6d6f; }
+html[data-theme="light"] .hub-toggle { border-top-color: #c8cacd; border-right-color: #c8cacd; border-bottom-color: #c8cacd; border-left-color: #c8cacd; }
+html[data-theme="light"] .hub-toggle-btn { border-right-color: #c8cacd; color: #48494a; }
+html[data-theme="light"] .hub-toggle-btn.is-active { background-color: #ebedf0; color: #121213; }
+html[data-theme="light"] .hub-note { color: #6c6d6f; }
+html[data-theme="light"] .hub-table caption, html[data-theme="light"] .hub-block h5 { color: #6c6d6f; }
+html[data-theme="light"] .hub-badge { border-top-color: #1a5fc1; border-right-color: #1a5fc1; border-bottom-color: #1a5fc1; border-left-color: #1a5fc1; color: #1a5fc1; }
+html[data-theme="light"] .hub-badge.is-cel { border-top-color: #c98a12; border-right-color: #c98a12; border-bottom-color: #c98a12; border-left-color: #c98a12; color: #946100; }
+html[data-theme="light"] .hub-badge.is-gone { border-top-color: #d0d2d5; border-right-color: #d0d2d5; border-bottom-color: #d0d2d5; border-left-color: #d0d2d5; color: #6c6d6f; }
+html[data-theme="light"] .hub-inj { color: #121213; }
+html[data-theme="light"] .hub-note-cell { color: #48494a; }
+html[data-theme="light"] .hub-empty, html[data-theme="light"] .hub-missing { color: #6c6d6f; }
+html[data-theme="light"] .hub-card { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; background-color: #f1f2f4; color: #121213; }
+html[data-theme="light"] .hub-card-who strong a { color: #121213; }
+html[data-theme="light"] .hub-card-who small { color: #6c6d6f; }
+html[data-theme="light"] .hub-game b { color: #121213; }
+html[data-theme="light"] .hub-game-line { color: #1a5fc1; }
+html[data-theme="light"] .hub-tx { color: #48494a; }
+html[data-theme="light"] .hub-news time, html[data-theme="light"] .hub-tx time { color: #946100; }
+html[data-theme="light"] .hub-espn { color: #1a5fc1; }
