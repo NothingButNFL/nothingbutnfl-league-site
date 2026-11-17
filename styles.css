@@ -3585,3 +3585,7 @@ main .hub-table tfoot td { border-top: 1px solid #54749b; border-bottom: 0; back
 main .hub-table col.hub-c-name { width: 210px; }
 main .hub-table col.hub-c-stat { width: 66px; }
 main .hub-table col.hub-c-fill { width: auto; }
+
+/* Home: Top Players sits below the conference and league leaders; hidden with no box scores yet */
+.matchday-best { padding-top: 8px; }
+.matchday-best:not(:has(.md-best:not([hidden]))) { display: none; }
