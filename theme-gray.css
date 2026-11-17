@@ -409,3 +409,6 @@ html[data-theme="gray"] .hub-empty, html[data-theme="gray"] .hub-missing { color
 html[data-theme="gray"] .hub-card { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
 html[data-theme="gray"] .hub-card-who small { color: #b6b9be; }
 html[data-theme="gray"] .hub-tx { color: #d5d7db; }
+html[data-theme="gray"] .hub-view-switch { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #18191b; }
+html[data-theme="gray"] .hub-view-btn { color: #b6b9be; }
+html[data-theme="gray"] .hub-view-btn.is-active { background-color: #3a3c41; }

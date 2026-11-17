@@ -1069,3 +1069,6 @@ html[data-theme="light"] .hub-game-line { color: #1a5fc1; }
 html[data-theme="light"] .hub-tx { color: #48494a; }
 html[data-theme="light"] .hub-news time, html[data-theme="light"] .hub-tx time { color: #946100; }
 html[data-theme="light"] .hub-espn { color: #1a5fc1; }
+html[data-theme="light"] .hub-view-switch { border-top-color: #dcdddf; border-right-color: #dcdddf; border-bottom-color: #dcdddf; border-left-color: #dcdddf; background-color: #f1f2f4; }
+html[data-theme="light"] .hub-view-btn { color: #6c6d6f; }
+html[data-theme="light"] .hub-view-btn.is-active { background-color: #ebedf0; color: #121213; }

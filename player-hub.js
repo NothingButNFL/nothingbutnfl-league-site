@@ -9,6 +9,9 @@
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
   const hubYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]);
   let period = "season";
+  // NBNFL or IRL: one view at a time, remembered in this browser.
+  let view = "nbnfl";
+  try { if (localStorage.getItem("nbf-hub-view") === "irl") view = "irl"; } catch { /* default */ }
   let group = "all";
   let loadingTeam = null;
   const idsKey = "nbf-espn-ids";
@@ -322,10 +325,22 @@
     box.replaceChildren(inj, updates, ...(missing.length ? [miss] : []));
   }
 
-  function renderPlayerHub() {
-    renderLeague();
-    loadReal(false);
+  function showView() {
+    document.querySelectorAll("[data-hub-view]").forEach((b) => { const on = b.dataset.hubView === view; b.classList.toggle("is-active", on); b.setAttribute("aria-selected", String(on)); });
+    document.querySelector("#hub-view-nbnfl").hidden = view !== "nbnfl";
+    document.querySelector("#hub-view-irl").hidden = view !== "irl";
   }
+  // ESPN is only asked once the IRL view is opened.
+  function renderPlayerHub() {
+    showView();
+    if (view === "nbnfl") renderLeague();
+    else loadReal(false);
+  }
+  document.querySelectorAll("[data-hub-view]").forEach((b) => b.addEventListener("click", () => {
+    view = b.dataset.hubView;
+    try { localStorage.setItem("nbf-hub-view", view); } catch { /* fine */ }
+    renderPlayerHub();
+  }));
 
   document.querySelectorAll("[data-hub-period]").forEach((b) => b.addEventListener("click", () => {
     period = b.dataset.hubPeriod;

@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=435a8dda">
-    <link rel="stylesheet" href="theme-light.css?v=b50d1604">
-    <link rel="stylesheet" href="theme-gray.css?v=3cf47424">
-    <link rel="stylesheet" href="theme-espn.css?v=06a212a6">
-    <link rel="stylesheet" href="theme-team.css?v=e765effd">
+    <link rel="stylesheet" href="styles.css?v=877c8e6e">
+    <link rel="stylesheet" href="theme-light.css?v=3335d257">
+    <link rel="stylesheet" href="theme-gray.css?v=f225a23b">
+    <link rel="stylesheet" href="theme-espn.css?v=2993036d">
+    <link rel="stylesheet" href="theme-team.css?v=33e2a8d8">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -54,7 +54,7 @@
     <script src="extend.js?v=6bb16ee3" defer></script>
     <script src="stat-totals.js?v=232daaef" defer></script>
     <script src="career-core.js?v=404ff2b3" defer></script>
-    <script src="player-hub.js?v=bb254eb1" defer></script>
+    <script src="player-hub.js?v=6a563028" defer></script>
     <script src="team-block.js?v=ebe28f2a" defer></script>
   </head>
   <body class="team-page">
@@ -457,7 +457,11 @@
               <div><span class="panel-index">PLAYER HUB</span><h3>Player Hub</h3></div>
               <p>How this team's players are doing in NBNFL, and what's happening with them in real life.</p>
             </div>
-            <section class="hub-section" aria-labelledby="hub-league-title">
+            <div class="hub-view-switch" role="tablist" aria-label="Player Hub view">
+              <button type="button" role="tab" class="hub-view-btn is-active" data-hub-view="nbnfl" aria-selected="true">NBNFL</button>
+              <button type="button" role="tab" class="hub-view-btn" data-hub-view="irl" aria-selected="false">IRL</button>
+            </div>
+            <section class="hub-section" id="hub-view-nbnfl" aria-labelledby="hub-league-title">
               <div class="hub-section-head">
                 <h4 id="hub-league-title">NBNFL stats</h4>
                 <div class="hub-toggle" role="group" aria-label="Stats period">
@@ -468,7 +472,7 @@
               <p class="hub-note" id="hub-league-note"></p>
               <div class="hub-league" id="hub-league"></div>
             </section>
-            <section class="hub-section" aria-labelledby="hub-real-title">
+            <section class="hub-section" id="hub-view-irl" aria-labelledby="hub-real-title" hidden>
               <div class="hub-section-head">
                 <h4 id="hub-real-title">Real-life updates <small>from ESPN</small></h4>
                 <div class="hub-real-tools">

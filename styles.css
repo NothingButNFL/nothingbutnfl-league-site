@@ -3537,3 +3537,11 @@ main .dk-pool-table .dk-yr-select { text-align: left; text-align-last: left; pad
 .hub-espn { justify-self: start; color: #8fd0ff; font-size: 12px; }
 main .hub-table :is(th, td):first-child, main .hub-injury-table :is(th, td) { text-align: left !important; }
 main .hub-table td.stats-name a, main .hub-injury-table td.stats-name a { color: inherit; }
+
+/* Player Hub: NBNFL / IRL switch */
+.hub-view-switch { display: inline-flex; margin-top: 14px; padding: 4px; border: 1px solid #31527a; border-radius: 999px; background: #071a33; }
+.hub-view-btn { min-width: 96px; padding: 8px 18px; border: 0; border-radius: 999px; background: transparent; color: #a7bdd7; font: 800 14px var(--display); letter-spacing: .08em; cursor: pointer; }
+.hub-view-btn.is-active { background: #174477; color: #fff; }
+.hub-view-switch + .hub-section { margin-top: 14px; }
+#player-hub-panel .hub-section + .hub-section { padding-top: 0; border-top: 0; }
+.hub-section[hidden] { display: none; }
