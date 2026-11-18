@@ -557,3 +557,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) mai
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .hub-table .is-sorted { background-color: rgb(var(--tm-8fd0ff) / 0.12) !important; }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .hub-table tfoot td { border-top-color: rgb(var(--tm-54749b)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-tick-rec { color: rgb(var(--tm-a7bdd7)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .contracts-spotrac { color: rgb(var(--tm-8fd0ff)) !important; }

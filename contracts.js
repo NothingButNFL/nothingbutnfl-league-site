@@ -232,6 +232,15 @@ function renderContracts() {
       link.title = `Open ${row.name}'s profile`;
       nameCell.append(link);
     }
+    // Look him up on Spotrac (age, service time, college, draft) in a new tab.
+    const spotrac = document.createElement("a");
+    spotrac.className = `contracts-spotrac${blankExp(row) ? " is-needed" : ""}`;
+    spotrac.href = `https://www.spotrac.com/search?q=${encodeURIComponent(row.name)}`;
+    spotrac.target = "_blank";
+    spotrac.rel = "noopener";
+    spotrac.textContent = "Spotrac ↗";
+    spotrac.title = `Search Spotrac for ${row.name}`;
+    nameCell.append(spotrac);
 
     const teamCell = tr.insertCell();
     if (directory) {

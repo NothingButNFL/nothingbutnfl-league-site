@@ -1095,3 +1095,4 @@ html[data-theme="light"] main .hub-table .is-sorted { color: #121213; background
 html[data-theme="light"] main .hub-table tfoot td { border-top-color: #c8cacd; background-color: rgba(18, 18, 19, 0.070); color: #121213; }
 html[data-theme="light"] .md-tick-rec { color: #6c6d6f; }
 html[data-theme="light"] .contracts-blank-exp span { color: #946100; }
+html[data-theme="light"] .contracts-spotrac { color: #1a5fc1 !important; }
