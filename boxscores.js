@@ -437,7 +437,9 @@ function renderGameLog() {
   for (const game of games) {
     const item = document.createElement("li");
     item.dataset.gameId = game.id;
-    const text = document.createElement("span");
+    const text = document.createElement("a");
+    text.href = `boxscore.html?id=${encodeURIComponent(game.id)}`;
+    text.title = "Open this game's box score";
     const [a, b] = game.teams;
     text.textContent = `${a.team} ${a.score} – ${b.team} ${b.score}`;
     const meta = document.createElement("small");
@@ -630,7 +632,11 @@ function renderScoresView() {
       remove.textContent = "×";
       remove.setAttribute("aria-label", "Remove this game and undo its stats and standings");
       if (!statsCanSave) remove.hidden = true;
-      foot.append(info, remove);
+      const open = document.createElement("a");
+      open.className = "score-open";
+      open.href = `boxscore.html?id=${encodeURIComponent(game.id)}`;
+      open.textContent = "Box score →";
+      foot.append(info, open, remove);
       card.append(foot);
       grid.append(card);
     }

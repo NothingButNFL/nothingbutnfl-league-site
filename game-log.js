@@ -146,10 +146,11 @@ function render() {
     source.className = "gl-source";
     if (g.source === "boxscore") {
       const link = document.createElement("a");
-      link.href = "stats.html";
-      link.textContent = "Box score";
+      link.href = `boxscore.html?id=${encodeURIComponent(g.boxId)}`;
+      link.textContent = "Box score →";
+      link.title = "Open this game's box score";
       source.append(link);
-    } else source.textContent = "Archive";
+    } else source.textContent = g.boxId ? "Score only" : "Archive";
     const actions = tr.insertCell();
     if (g.source === "archive" && canSave) {
       const remove = document.createElement("button");

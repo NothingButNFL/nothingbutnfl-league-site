@@ -3598,3 +3598,5 @@ main .hub-table col.hub-c-fill { width: auto; }
 .contracts-spotrac { margin-left: 8px; color: #8fd0ff !important; font: 600 10px var(--mono) !important; letter-spacing: .04em; text-decoration: none !important; opacity: 0; white-space: nowrap; }
 tr:hover .contracts-spotrac, .contracts-spotrac:focus-visible, .contracts-spotrac.is-needed { opacity: 1; }
 .contracts-spotrac:hover { text-decoration: underline !important; }
+.score-open { margin-left: auto; margin-right: 8px; color: #8fd0ff; font-size: 12px; font-weight: 700; text-decoration: none; }
+.score-open:hover { text-decoration: underline; }

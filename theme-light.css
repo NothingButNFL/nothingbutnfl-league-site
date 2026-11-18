@@ -1096,3 +1096,4 @@ html[data-theme="light"] main .hub-table tfoot td { border-top-color: #c8cacd; b
 html[data-theme="light"] .md-tick-rec { color: #6c6d6f; }
 html[data-theme="light"] .contracts-blank-exp span { color: #946100; }
 html[data-theme="light"] .contracts-spotrac { color: #1a5fc1 !important; }
+html[data-theme="light"] .score-open { color: #1a5fc1; }

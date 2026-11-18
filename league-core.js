@@ -692,6 +692,7 @@ function readStoredOffice() {
 }
 
 function writeStoredOffice(data) {
+  try { syncGameArchive(data); } catch { /* the archive copy is a convenience; never block a save */ }
   localStorage.setItem(officeStorageKey, JSON.stringify(data));
   globalThis.refreshNavNotifications?.();
   globalThis.renderDraftTicker?.(); // a save on this page (e.g. approving a trade with a pick in the draft) updates the ticker
@@ -2319,8 +2320,9 @@ function signFreeAgent(data, playerId, teamId, contract, date = localDateString(
 }
 
 // ---- Game Log Archives ----
-// data.gameArchive = [{ id, season, week (1–22), away, home, awayScore, homeScore, date?, note? }]
-// Games entered by hand (or pasted) for League History. Box scores from Season Stats are added to the archive automatically.
+// data.gameArchive = [{ id, season, week (1–22), away, home, awayScore, homeScore, date?, note?, boxId? }]
+// Games entered by hand (or pasted) for League History. Every box score from Season Stats is also copied in (boxId =
+// its game id) each time league data is saved, so its final score stays on record even after the box score is deleted.
 function validGameArchive(list) {
   if (list === undefined) return true;
   if (!Array.isArray(list) || list.length > 10000) return false;
@@ -2331,22 +2333,54 @@ function validGameArchive(list) {
         !teamIds.has(g.away) || !teamIds.has(g.home) || g.away === g.home ||
         !isIntegerInRange(g.awayScore, 0, 200) || !isIntegerInRange(g.homeScore, 0, 200) ||
         (g.date !== undefined && (typeof g.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(g.date))) ||
-        (g.note !== undefined && (typeof g.note !== "string" || g.note.length > 80))) return false;
+        (g.note !== undefined && (typeof g.note !== "string" || g.note.length > 80)) ||
+        (g.boxId !== undefined && (typeof g.boxId !== "string" || !g.boxId || g.boxId.length > 80))) return false;
     ids.add(g.id);
   }
   return true;
 }
 
-// Every game on record: archived games plus logged box scores (season taken from the game date).
+const boxSeason = (data, played) => {
+  const date = /^\d{4}-\d{2}-\d{2}/.test(played.date || "") ? played.date.slice(0, 10) : undefined;
+  return { date, season: date ? currentLeagueYear(new Date(`${date}T12:00:00`)) : (data.standings?.season || currentLeagueYear()) };
+};
+// Copies every logged box score's final score into data.gameArchive (one entry per box score, kept up to date).
+function syncGameArchive(data) {
+  if (!Array.isArray(data.games) || !data.games.length) return;
+  if (!Array.isArray(data.gameArchive)) data.gameArchive = [];
+  const ids = new Set(nflTeams.map(({ id }) => id));
+  const byBox = new Map(data.gameArchive.filter((g) => g.boxId).map((g) => [g.boxId, g]));
+  const key = (g) => `${g.season}|${g.week}|${[g.away, g.home].sort().join("-")}`;
+  const byKey = new Map(data.gameArchive.filter((g) => !g.boxId).map((g) => [key(g), g]));
+  for (const played of data.games) {
+    const [away, home] = played.teams || [];
+    if (!away || !home || !ids.has(away.team) || !ids.has(home.team) || away.team === home.team) continue;
+    if (!Number.isInteger(played.week) || played.week < 1 || played.week > 22) continue;
+    if (!isIntegerInRange(away.score, 0, 200) || !isIntegerInRange(home.score, 0, 200)) continue;
+    const { date, season } = boxSeason(data, played);
+    const fields = { season, week: played.week, away: away.team, home: home.team, awayScore: away.score, homeScore: home.score, ...(date ? { date } : {}) };
+    const existing = byBox.get(played.id) || byKey.get(key(fields));
+    if (existing) { Object.assign(existing, fields, { boxId: played.id }); if (!date) delete existing.date; continue; }
+    if (data.gameArchive.length >= 10000) return;
+    const id = `box-${played.id}`.slice(0, 80);
+    if (data.gameArchive.some((g) => g.id === id)) continue;
+    data.gameArchive.push({ id, ...fields, boxId: played.id });
+  }
+}
+
+// Every game on record: archived games plus logged box scores (season taken from the game date). source is
+// "boxscore" while the game's box score still exists (so it can be opened), else "archive".
 function archivedGames(data) {
-  const games = (data.gameArchive || []).map((g) => ({ ...g, source: "archive" }));
+  const live = new Set((data.games || []).map((g) => g.id));
+  const games = (data.gameArchive || []).map((g) => ({ ...g, source: g.boxId && live.has(g.boxId) ? "boxscore" : "archive" }));
+  const linked = new Set(games.map((g) => g.boxId).filter(Boolean));
   const key = (g) => `${g.season}|${g.week}|${[g.away, g.home].sort().join("-")}`;
   const seen = new Set(games.map(key));
   for (const played of data.games || []) {
+    if (linked.has(played.id)) continue;
     const [away, home] = played.teams;
-    const date = /^\d{4}-\d{2}-\d{2}/.test(played.date || "") ? played.date.slice(0, 10) : undefined;
-    const season = date ? currentLeagueYear(new Date(`${date}T12:00:00`)) : (data.standings?.season || currentLeagueYear());
-    const game = { id: `box-${played.id}`, season, week: Number.isInteger(played.week) && played.week >= 1 && played.week <= 22 ? played.week : null,
+    const { date, season } = boxSeason(data, played);
+    const game = { id: `box-${played.id}`, boxId: played.id, season, week: Number.isInteger(played.week) && played.week >= 1 && played.week <= 22 ? played.week : null,
       away: away.team, home: home.team, awayScore: away.score, homeScore: home.score, date, source: "boxscore" };
     if (game.week !== null && seen.has(key(game))) continue;
     games.push(game);

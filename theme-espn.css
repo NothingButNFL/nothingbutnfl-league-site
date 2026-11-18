@@ -1098,3 +1098,4 @@ html[data-theme="espn"] main .hub-table tfoot td { border-top-color: #c8cacd; ba
 html[data-theme="espn"] .md-tick-rec { color: #6c6d6f; }
 html[data-theme="espn"] .contracts-blank-exp span { color: #d00; }
 html[data-theme="espn"] .contracts-spotrac { color: #0068d1 !important; }
+html[data-theme="espn"] .score-open { color: #0068d1; }
