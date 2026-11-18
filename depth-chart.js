@@ -9,7 +9,7 @@ const posDT = ["DT", "NT", "IDL", "DL"], posEdge = ["LEDG", "REDG", "EDGE", "DE"
 const posOLB = ["SAM", "WILL", "OLB", "SLB", "WLB", "LOLB", "ROLB"], posILB = ["MIKE", "MLB", "ILB"], posLB = [...posILB, ...posOLB, "LB"];
 const posCB = ["CB", "NB"], posS = ["FS", "SS", "S", "SAF"], posDB = [...posCB, ...posS, "DB"];
 const posK = ["K", "PK"], posP = ["P"];
-const posSkill = [...posRB, ...posFB, ...posWR, ...posTE, ...posQB, ...posDB]; // ball-handling / return positions
+const posSkill = [...posRB, ...posFB, ...posWR, ...posTE, ...posDB]; // ball-handling / return positions (no QBs)
 const uniq = (list) => [...new Set(list)];
 const depthFits = {
   QB: uniq([...posQB, ...posK, ...posP]), HB: uniq([...posRB, ...posFB]), FB: uniq([...posFB, ...posRB, ...posTE]),
