@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=4a0654d1">
+    <link rel="stylesheet" href="styles.css?v=d6d9e690">
     <link rel="stylesheet" href="theme-light.css?v=eaf2a13a">
     <link rel="stylesheet" href="theme-gray.css?v=5d9c1ed1">
     <link rel="stylesheet" href="theme-espn.css?v=4008f726">
@@ -45,7 +45,7 @@
     <script src="league-core.js?v=790cc4ff" defer></script>
     <script src="sample-admin.js?v=b55817c4" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="boxscore.js?v=069594da" defer></script>
+    <script src="boxscore.js?v=76f70c8d" defer></script>
   </head>
   <body class="admin-page boxscore-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -152,6 +152,10 @@
         <div class="section-wrap bx-edit-bar">
           <p class="workspace-status" id="bx-status" role="status" aria-live="polite"></p>
           <button class="button button-lime" id="bx-edit-btn" type="button" hidden>Edit box score</button>
+          <span class="bx-top-actions" id="bx-top-actions" hidden>
+            <button class="workspace-button" id="bx-top-cancel" type="button">Cancel</button>
+            <button class="button button-lime" id="bx-top-save" type="submit" form="bx-editor-form">Save box score</button>
+          </span>
         </div>
         <div class="section-wrap" id="bx-editor" hidden></div>
         <div class="section-wrap" id="bx-body">

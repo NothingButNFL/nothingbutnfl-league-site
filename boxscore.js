@@ -181,6 +181,9 @@
   // Player lines feed Season Stats, Career Stats, leaders and the Player Hub straight away (they're added up from the
   // box scores); a changed score also updates both teams' records in the standings.
   const editBtn = document.querySelector("#bx-edit-btn");
+  // While editing, Save and Cancel take the Edit button's spot at the top (and stay at the bottom too).
+  const topActions = document.querySelector("#bx-top-actions");
+  document.querySelector("#bx-top-cancel").addEventListener("click", () => closeEditor());
   const editor = document.querySelector("#bx-editor");
   const status = document.querySelector("#bx-status");
   const editFields = {
@@ -237,6 +240,7 @@
     if (!game) return;
     const [away, home] = game.teams;
     const form = el("form", "bx-editor-form");
+    form.id = "bx-editor-form";
     form.noValidate = true;
     // Score, week, date
     const top = el("div", "bx-card bx-edit-top");
@@ -323,14 +327,16 @@
     editor.hidden = false;
     body.hidden = true;
     editBtn.hidden = true;
+    topActions.hidden = false;
     status.textContent = "";
-    editor.scrollIntoView({ block: "start" });
+    editBtn.closest(".bx-edit-bar").scrollIntoView({ block: "start" });
   }
   function closeEditor() {
     editor.hidden = true;
     editor.replaceChildren();
     body.hidden = false;
     editBtn.hidden = false;
+    topActions.hidden = true;
   }
   const readNum = (input) => { const t = input.value.trim(); if (t === "") return undefined; const n = Number(t); return Number.isFinite(n) ? n : NaN; };
 

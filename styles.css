@@ -3670,3 +3670,8 @@ main .bx-table.bx-cat-passing :is(th, td) { padding-left: 5px !important; paddin
 main .bx-table.bx-cat-passing th { letter-spacing: 0 !important; white-space: nowrap; }
 main .bx-table.bx-cat-passing td.bx-name { white-space: nowrap; }
 main .bx-table th.bx-name-col { white-space: nowrap; }
+
+/* Box score: Save / Cancel in the Edit button's spot while editing */
+.bx-top-actions { display: inline-flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.bx-top-actions[hidden] { display: none; }
+.bx-top-actions .workspace-button { font-size: 13px !important; font-weight: 700; padding: 0 18px !important; align-self: stretch; }
