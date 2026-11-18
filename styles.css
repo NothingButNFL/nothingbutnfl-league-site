@@ -3680,7 +3680,21 @@ main .bx-table.bx-cat-rushing td.bx-name { white-space: nowrap; }
 main .bx-table td.bx-name { white-space: nowrap; }
 
 /* Box score: Defense has 16 stat columns, so each team's table gets the full width */
-.bx-pair.bx-pair-defense { grid-template-columns: 1fr; }
+/* The editor keeps Defense stacked (inputs need the room); the box score view squeezes it side by side below */
+.bx-editor-form .bx-pair.bx-pair-defense { grid-template-columns: 1fr; }
 main .bx-table.bx-cat-defense :is(th, td) { padding-left: 6px !important; padding-right: 6px !important; }
 main .bx-table.bx-cat-defense th { white-space: nowrap; }
 main .bx-pair-defense .bx-edit-table .bx-edit-name { min-width: 170px; }
+
+/* Box score Defense, side by side: smaller text, tight cells, two-line headers (FUMB / REC) */
+main .bx-pair-defense .bx-table.bx-cat-defense { table-layout: auto; width: 100%; }
+main .bx-pair-defense .bx-table.bx-cat-defense :is(th, td) { padding: 6px 1px !important; text-align: center !important; }
+main .bx-pair-defense .bx-table.bx-cat-defense th,
+main .bx-pair-defense .bx-table.bx-cat-defense th :is(span, button) { font-size: 8.5px !important; letter-spacing: 0 !important; white-space: normal !important; line-height: 1.15; vertical-align: bottom; }
+main .bx-pair-defense .bx-table.bx-cat-defense th.bx-name-col { white-space: nowrap !important; }
+main .bx-pair-defense .bx-table.bx-cat-defense td,
+main .bx-pair-defense .bx-table.bx-cat-defense td :is(a, span, strong, b) { font-size: 11.5px !important; }
+main .bx-pair-defense .bx-table.bx-cat-defense :is(td.bx-name, th.bx-name-col) { text-align: left !important; padding-right: 4px !important; }
+main .bx-pair-defense .bx-table.bx-cat-defense td.bx-name { max-width: 104px; overflow: hidden; text-overflow: ellipsis; }
+main .bx-pair.bx-pair-defense { gap: 14px; }
+@media (max-width: 1320px) { main .bx-pair.bx-pair-defense { grid-template-columns: 1fr; } }
