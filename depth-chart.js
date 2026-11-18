@@ -2,16 +2,28 @@
 // Saved in officeData.depthCharts[teamId] (league-core.js validDepthCharts).
 const depthPanel = document.querySelector("#depth-chart-panel");
 
-// Positions that fit each depth-chart slot, best first. Empty list = anyone.
+// League rules: which positions may play each depth-chart slot, best fit first. Nobody else is offered for that slot.
+const posQB = ["QB"], posRB = ["RB", "HB"], posFB = ["FB"], posWR = ["WR"], posTE = ["TE"];
+const posOT = ["LT", "RT", "OT", "T"], posIOL = ["LG", "RG", "OG", "G", "C", "IOL"], posOL = [...posOT, ...posIOL, "OL"];
+const posDT = ["DT", "NT", "IDL", "DL"], posEdge = ["LEDG", "REDG", "EDGE", "DE", "LE", "RE", "ED", "DL"];
+const posOLB = ["SAM", "WILL", "OLB", "SLB", "WLB", "LOLB", "ROLB"], posILB = ["MIKE", "MLB", "ILB"], posLB = [...posILB, ...posOLB, "LB"];
+const posCB = ["CB", "NB"], posS = ["FS", "SS", "S", "SAF"], posDB = [...posCB, ...posS, "DB"];
+const posK = ["K", "PK"], posP = ["P"];
+const posSkill = [...posRB, ...posFB, ...posWR, ...posTE, ...posQB, ...posDB]; // ball-handling / return positions
+const uniq = (list) => [...new Set(list)];
 const depthFits = {
-  QB: ["QB"], HB: ["HB", "RB"], FB: ["FB", "RB", "HB", "TE"], WR: ["WR"], TE: ["TE"],
-  LT: ["LT", "OT", "T", "RT", "OL"], RT: ["RT", "OT", "T", "LT", "OL"], LG: ["LG", "OG", "G", "RG", "IOL", "OL"], RG: ["RG", "OG", "G", "LG", "IOL", "OL"], C: ["C", "IOL", "OG", "G", "OL"],
-  LE: ["LE", "DE", "EDGE", "ED", "OLB", "DL"], RE: ["RE", "DE", "EDGE", "ED", "OLB", "DL"], DT: ["DT", "NT", "IDL", "DL", "DE"],
-  SAM: ["SAM", "OLB", "SLB", "LB", "EDGE"], MIKE: ["MIKE", "MLB", "ILB", "LB"], WILL: ["WILL", "OLB", "WLB", "LB"],
-  CB: ["CB", "NB", "DB"], FS: ["FS", "S", "SAF", "DB"], SS: ["SS", "S", "SAF", "DB"],
-  K: ["K", "PK"], P: ["P"], LS: ["LS", "C", "TE"], KR: ["WR", "RB", "HB", "CB"], PR: ["WR", "CB", "RB", "HB"], KOS: ["K", "PK", "P"],
-  "3DRB": ["RB", "HB"], GAD: ["RB", "HB", "WR"], PWHB: ["RB", "HB", "FB"], SLWR: ["WR"], RLE: ["DE", "EDGE", "OLB", "LE"], RRE: ["DE", "EDGE", "OLB", "RE"],
-  RDT: ["DT", "DE", "DL"], NT: ["NT", "DT", "DL"], SUBLB: ["LB", "MLB", "ILB", "OLB"], SLCB: ["CB", "NB", "DB"]
+  QB: uniq([...posQB, ...posK, ...posP]), HB: uniq([...posRB, ...posFB]), FB: uniq([...posFB, ...posRB, ...posTE]),
+  WR: uniq([...posWR, ...posRB, ...posTE]), TE: posTE,
+  LT: uniq([...posOT, ...posOL]), RT: uniq([...posOT, ...posOL]), LG: uniq([...posIOL, ...posOL]), RG: uniq([...posIOL, ...posOL]), C: uniq(["C", ...posIOL, ...posOL]),
+  DT: uniq([...posDT, ...posEdge]), LE: uniq([...posEdge, ...posDT, ...posOLB]), RE: uniq([...posEdge, ...posDT, ...posOLB]),
+  SAM: uniq([...posOLB, ...posLB, ...posEdge]), WILL: uniq([...posOLB, ...posLB, ...posEdge]), MIKE: uniq([...posILB, ...posLB]),
+  CB: uniq([...posCB, ...posDB]), FS: uniq(["FS", ...posS, ...posDB]), SS: uniq(["SS", ...posS, ...posDB]),
+  K: uniq([...posK, ...posP]), P: uniq([...posP, ...posK]), KOS: uniq([...posK, ...posP, ...posSkill]),
+  PR: uniq([...posWR, ...posRB, ...posCB, ...posSkill]), KR: uniq([...posWR, ...posRB, ...posCB, ...posSkill]).filter((p) => p !== "SS"),
+  LS: uniq(["LS", ...posTE, ...posIOL]),
+  NT: uniq(["NT", ...posDT]), SUBLB: uniq([...posLB, "SS"]), SLCB: uniq([...posCB, ...posDB]),
+  RRE: uniq([...posEdge, ...posOLB]), RLE: uniq([...posEdge, ...posOLB]), RDT: uniq([...posDT, ...posEdge]),
+  PWHB: uniq([...posRB, ...posFB]), "3DRB": uniq([...posRB, ...posFB]), GAD: posSkill, SLWR: uniq([...posWR, ...posTE, ...posRB])
 };
 // The league's Madden scheme lists.
 const offenseSchemes = ["Multiple Power Run", "Multiple Zone Run", "Vertical Zone Run", "Vertical Power Run", "Spread", "Run And Shoot", "Air Raid", "Pistol", "West Coast Spread", "West Coast Zone Run", "West Coast Power Run"];
@@ -38,11 +50,11 @@ function depthRoster() {
     });
 }
 
+// Best rank among the player's listed positions ("CB / S" counts as either); 99 = not allowed in this slot.
 const fitRank = (slot, position) => {
   const fits = depthFits[slot] || [];
-  const first = position.split(/[\s/,-]+/).find(Boolean) || "";
-  const i = fits.indexOf(first);
-  return i === -1 ? 99 : i;
+  const ranks = String(position || "").toUpperCase().split(/[\s/,-]+/).filter(Boolean).map((p) => fits.indexOf(p)).filter((r) => r >= 0);
+  return ranks.length ? Math.min(...ranks) : 99;
 };
 
 // League overall right now, cached per render (null when he has no starting overall yet).
@@ -196,18 +208,14 @@ function slotSelect(slot, index, chosen, roster, short = false) {
   // Each name shows his league overall (Player Ratings: Madden changes count only once the team has updated him).
   const ovr = (id) => dcOverall(id);
   const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
-  const others = roster.filter((p) => fitRank(slot, p.position) === 99).sort((a, b) => a.name.localeCompare(b.name));
   const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
-  if (fits.length && others.length) {
-    const a = document.createElement("optgroup");
-    a.label = `Fits ${slot}`;
-    a.append(...fits.map((p) => new Option(label(p), p.id)));
-    const b = document.createElement("optgroup");
-    b.label = "Everyone else";
-    b.append(...others.map((p) => new Option(label(p), p.id)));
-    select.append(a, b);
-  } else {
-    select.append(...[...fits, ...others].map((p) => new Option(label(p), p.id)));
+  // Only positions the league allows here (see depthFits).
+  select.append(...fits.map((p) => new Option(label(p), p.id)));
+  const saved = chosen && roster.find((p) => p.id === chosen);
+  if (saved && fitRank(slot, saved.position) === 99) {
+    // Saved before the position rules (or his position changed): kept, but flagged.
+    select.append(new Option(`${label(saved)} — not allowed at ${slot}`, saved.id));
+    select.classList.add("is-stale");
   }
   if (chosen && !roster.some((p) => p.id === chosen)) {
     const found = findPlayerById(officeData, chosen);
