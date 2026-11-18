@@ -26,7 +26,7 @@ function extCard(o) {
     const comment = document.createElement("blockquote");
     comment.className = "ext-comment";
     const who = document.createElement("b");
-    who.textContent = "Commissioner's comments";
+    who.textContent = "Agent's comments";
     const text = document.createElement("p");
     text.textContent = o.adminComment;
     comment.append(who, text);
