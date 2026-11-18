@@ -131,9 +131,9 @@
       ["Off Pass Yards", (s) => s.passYds, "passYds"], ["Off First Downs", (s) => s.firstDowns, "firstDowns"],
       ["Punt Return Yards", (s) => s.puntReturnYds, "puntReturnYds"], ["Kick Return Yards", (s) => s.kickReturnYds, "kickReturnYds"],
       ["Total Yards Gained", (s) => s.totalYds, "totalYds"], ["Turnovers", (s) => s.turnovers, "turnovers"],
-      ["Third Down Conversions", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined), "thirdPct"],
-      ["Fourth Down Conversions", (s) => (s.fourthAtt != null ? `${num(s.fourthConv)}-${num(s.fourthAtt)}` : undefined), "fourthPct"],
-      ["Two Point Conversions", (s) => (s.twoPtAtt != null ? `${num(s.twoPtConv)}-${num(s.twoPtAtt)}` : undefined), "twoPtPct"],
+      ["Third Down Conversions", (s) => s.thirdConv, "thirdConv"],
+      ["Fourth Down Conversions", (s) => s.fourthConv, "fourthConv"],
+      ["Two Point Conversions", (s) => s.twoPtConv, "twoPtConv"],
       ["Red Zone Off Percentage", (s) => (s.redZonePct != null ? `${num(s.redZonePct)}%` : undefined), "redZonePct"],
       ["Red Zone Off TD", (s) => s.redZoneTd, "redZoneTd"], ["Red Zone Off FG", (s) => s.redZoneFg, "redZoneFg"],
       ["Penalty Yards", (s) => s.penaltyYds, "penaltyYds"], ["Time of Possession", (s) => s.possession, "possession"],
@@ -147,13 +147,10 @@
       const teamHead = (t, cls) => { const th = el("th", cls); const w = el("span", "bx-th-team"); w.append(logo(t.team), el("span", "", teamName(t.team))); th.append(w); return th; };
       hr.append(teamHead(away, "bx-ts-away"), el("th", "bx-ts-label", ""), teamHead(home, "bx-ts-home"));
       const tb = table.createTBody();
-      const rate = (st, a, b) => (st?.[b] ? st[a] / st[b] : null);
       for (const [label, get, key] of rows) {
         const tr = tb.insertRow();
         const values = [away, home].map((t) => get(ts[t.team] || {}));
-        const rateOf = { thirdPct: ["thirdConv", "thirdAtt"], fourthPct: ["fourthConv", "fourthAtt"], twoPtPct: ["twoPtConv", "twoPtAtt"] }[key];
-        const best = rateOf ? betterSide(key, rate(ts[away.team], ...rateOf), rate(ts[home.team], ...rateOf))
-          : betterSide(key, ts[away.team]?.[key], ts[home.team]?.[key]);
+        const best = betterSide(key, ts[away.team]?.[key], ts[home.team]?.[key]);
         const a = tr.insertCell(); a.className = "bx-ts-away";
         if (best === "away") a.append(edge("away"), " ");
         a.append(num(values[0]));
@@ -196,8 +193,7 @@
   // Same order as the Team Stats table.
   const teamFields = [["totalOffense", "Off Yards Gained"], ["rushYds", "Off Rush Yards"], ["passYds", "Off Pass Yards"], ["firstDowns", "Off First Downs"],
     ["puntReturnYds", "Punt Return Yards"], ["kickReturnYds", "Kick Return Yards"], ["totalYds", "Total Yards Gained"], ["turnovers", "Turnovers"],
-    ["thirdConv", "3rd down conversions"], ["thirdAtt", "3rd down attempts"], ["fourthConv", "4th down conversions"], ["fourthAtt", "4th down attempts"],
-    ["twoPtConv", "2-pt conversions"], ["twoPtAtt", "2-pt attempts"], ["redZonePct", "Red Zone Off %"], ["redZoneTd", "Red Zone Off TD"],
+    ["thirdConv", "Third Down Conversions"], ["fourthConv", "Fourth Down Conversions"], ["twoPtConv", "Two Point Conversions"], ["redZonePct", "Red Zone Off %"], ["redZoneTd", "Red Zone Off TD"],
     ["redZoneFg", "Red Zone Off FG"], ["penaltyYds", "Penalty Yards"], ["possession", "Time of Possession (MM:SS)"]];
 
   function numberInput(value, label, step = "1") {
