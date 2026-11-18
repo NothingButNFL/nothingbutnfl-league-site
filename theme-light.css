@@ -1161,3 +1161,5 @@ html[data-theme="light"] .dc-spec h4 { color: #121213; }
 html[data-theme="light"] .dc-spec-warn { border-left-color: #d6981f; }
 html[data-theme="light"] main .dc-spec-table :is(th, html[data-theme="light"] td) { border-bottom-color: rgba(18, 18, 19, 0.112); }
 html[data-theme="light"] .mdp-ovr { border-top-color: rgba(18, 18, 19, 1.000); border-right-color: rgba(18, 18, 19, 1.000); border-bottom-color: rgba(18, 18, 19, 1.000); border-left-color: rgba(18, 18, 19, 1.000); color: #121213; }
+html[data-theme="light"] .ext-comment { background-color: rgba(18, 18, 19, 0.070); }
+html[data-theme="light"] .exa-comment-box textarea { background-color: rgba(0, 0, 0, 0.063); }

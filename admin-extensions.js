@@ -89,8 +89,31 @@ function render() {
       const decline = el("button", "workspace-button", "Decline");
       decline.type = "button";
       decline.dataset.action = "decline";
-      actions.append(approve, decline);
+      const comment = el("button", "workspace-button", "Decline with Comments");
+      comment.type = "button";
+      comment.dataset.action = "comment";
+      actions.append(approve, comment, decline);
       card.append(actions);
+      // Opened by "Decline with Comments": the comment goes back to the team with the offer.
+      const box = el("div", "exa-comment-box");
+      box.hidden = true;
+      const label = el("label", "fa-offer-notes", "Comments for the team");
+      const area = document.createElement("textarea");
+      area.name = "adminComment";
+      area.maxLength = 1000;
+      area.rows = 3;
+      area.placeholder = "What should they change? For example: lower the guarantees or add a year.";
+      label.append(area);
+      const send = el("button", "button button-lime", "Send back to team →");
+      send.type = "button";
+      send.dataset.action = "send-comment";
+      const cancel = el("button", "workspace-button", "Cancel");
+      cancel.type = "button";
+      cancel.dataset.action = "cancel-comment";
+      const row = el("div", "fao-actions");
+      row.append(send, cancel);
+      box.append(label, row);
+      card.append(box);
     }
     return card;
   }));
@@ -120,7 +143,9 @@ function renderLog() {
     const last = o.startYear + o.yearsDetail.length - 1;
     tr.insertCell().textContent = `${o.startYear}${last > o.startYear ? `–${last}` : ""}`;
     tr.insertCell().append(el("span", `rsa-status is-${o.status}`, { approved: "Approved", declined: "Declined", withdrawn: "Withdrawn" }[o.status]));
-    tr.insertCell().textContent = o.decisionNote || "";
+    const noteCell = tr.insertCell();
+    noteCell.textContent = o.decisionNote || "";
+    if (o.adminComment) noteCell.append(el("span", "exa-log-comment", `“${o.adminComment}”${o.returned ? " · waiting for the team" : ""}`));
     const copyCell = tr.insertCell();
     if (o.status === "approved") {
       const copy = el("button", "workspace-button", "Copy announcement");
@@ -152,10 +177,25 @@ exaPending.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   const id = button?.closest("[data-offer-id]")?.dataset.offerId;
   if (!id || !canSave) return;
+  const card = button.closest("[data-offer-id]");
+  if (button.dataset.action === "comment" || button.dataset.action === "cancel-comment") {
+    const box = card.querySelector(".exa-comment-box");
+    box.hidden = button.dataset.action === "cancel-comment";
+    if (!box.hidden) box.querySelector("textarea").focus();
+    return;
+  }
   try { officeData = readStoredOffice() || officeData; } catch { exaStatus.textContent = "Saved data could not be read. No changes were made."; return; }
   const offer = pendingExtensions(officeData).find((o) => o.id === id);
   if (!offer) { exaStatus.textContent = "That offer was already decided or withdrawn."; render(); return; }
   const now = new Date().toISOString();
+  if (button.dataset.action === "send-comment") {
+    const text = card.querySelector("textarea").value.trim().slice(0, 1000);
+    if (!text) { exaStatus.textContent = "Write a comment for the team first."; card.querySelector("textarea").focus(); return; }
+    Object.assign(offer, { status: "declined", decidedAt: now, decisionNote: "Declined with comments by the commissioner", adminComment: text, returned: true });
+    save(`${offer.playerName}'s extension was sent back to the ${teamName(offer.teamId)} with your comments.`);
+    render();
+    return;
+  }
   if (button.dataset.action === "decline") {
     const ok = await confirmAction(`Decline the ${teamName(offer.teamId)} extension for ${offer.playerName}?`, { confirmLabel: "Decline", danger: true });
     if (!ok) return;

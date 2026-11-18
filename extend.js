@@ -22,6 +22,33 @@ function extCard(o) {
   card.querySelector(".fa-offer-status").textContent = label;
   card.querySelector(".fa-offer-terms").textContent = `${faOfferTerms(o)} · through ${o.startYear + o.yearsDetail.length - 1}`;
   card.querySelector(".fa-offer-meta").textContent = [`${o.status === "pending" ? "Sent" : "Decided"} ${when}`, o.decisionNote || ""].filter(Boolean).join(" · ");
+  if (o.adminComment) {
+    const comment = document.createElement("blockquote");
+    comment.className = "ext-comment";
+    const who = document.createElement("b");
+    who.textContent = "Commissioner's comments";
+    const text = document.createElement("p");
+    text.textContent = o.adminComment;
+    comment.append(who, text);
+    card.append(comment);
+  }
+  if (o.returned && o.status === "declined" && storageIsAvailable) {
+    const actions = document.createElement("div");
+    actions.className = "ext-returned-actions";
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "button button-lime";
+    edit.dataset.action = "edit-returned";
+    edit.textContent = "Edit offer";
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "workspace-button";
+    dismiss.dataset.action = "dismiss-returned";
+    dismiss.textContent = "Dismiss";
+    dismiss.title = "Take it off this list without sending a new offer.";
+    actions.append(edit, dismiss);
+    card.append(actions);
+  }
   if (o.status === "pending" && storageIsAvailable) {
     const button = document.createElement("button");
     button.type = "button";
@@ -38,7 +65,11 @@ function renderExtensions() {
   document.querySelector("#ext-cap-head").textContent = `${year} CAP HIT`;
   const mine = (officeData.extensionOffers || []).filter((o) => o.teamId === activeTeamId);
   const pending = mine.filter((o) => o.status === "pending").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const past = mine.filter((o) => o.status !== "pending").sort((a, b) => (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 20);
+  const returned = mine.filter((o) => o.returned && o.status === "declined").sort((a, b) => (b.decidedAt || "").localeCompare(a.decidedAt || ""));
+  document.querySelector("#ext-returned-box").hidden = !returned.length;
+  document.querySelector("#ext-returned-count").textContent = String(returned.length);
+  document.querySelector("#ext-returned").replaceChildren(...returned.map(extCard));
+  const past = mine.filter((o) => o.status !== "pending" && !(o.returned && o.status === "declined")).sort((a, b) => (b.decidedAt || b.createdAt).localeCompare(a.decidedAt || a.createdAt)).slice(0, 20);
   const note = (text) => { const p = document.createElement("p"); p.className = "empty-state"; p.textContent = text; return p; };
   document.querySelector("#ext-pending").replaceChildren(...(pending.length ? pending.map(extCard) : [note("No pending extensions.")]));
   document.querySelector("#ext-pending-count").textContent = String(pending.length);
@@ -105,22 +136,46 @@ function extPreview() {
 extForm.addEventListener("input", extPreview);
 extForm.addEventListener("contractchange", extPreview);
 
-extRows.addEventListener("click", (event) => {
-  const button = event.target.closest('[data-action="extend"]');
-  const player = button && extEligible().find((p) => p.id === button.closest("tr").dataset.playerId);
-  if (!player) return;
+// Opens the offer form for a player, filled from his pending offer or from an offer the commissioner sent back.
+function extOpenForm(player, sentBack = null) {
   extPlayerId = player.id;
   const existing = pendingExtensions(officeData).find((o) => o.playerId === player.id && o.teamId === activeTeamId);
-  document.querySelector("#ext-form-title").textContent = `Offer ${player.name} an extension`;
+  const from = existing || sentBack || returnedExtensions(officeData, activeTeamId).find((o) => o.playerId === player.id) || null;
+  document.querySelector("#ext-form-title").textContent = `${from && !existing ? "Edit the extension for" : "Offer"} ${player.name}${from && !existing ? "" : " an extension"}`;
   document.querySelector("#ext-form-note").textContent = existing
     ? `There's already a pending extension (${faOfferTerms(existing)}). Sending this replaces it.`
-    : `His deal ends after ${extYear()}. Rework his ${extYear()} salary if you like, then add the new years. The signing bonus spreads over ${extYear()} and the extension years, up to 5 seasons.`;
+    : from
+      ? `Sent back by the commissioner: “${from.adminComment || "no comment"}”. Make your changes and send it again.`
+      : `His deal ends after ${extYear()}. Rework his ${extYear()} salary if you like, then add the new years. The signing bonus spreads over ${extYear()} and the extension years, up to 5 seasons.`;
   extForm.reset();
   extEditor.reset(player);
-  if (existing) { extEditor.load(existing); if (existing.notes) extForm.elements.notes.value = existing.notes; }
+  if (from) { extEditor.load(from); if (from.notes) extForm.elements.notes.value = from.notes; }
   extPreview();
   extFormPanel.hidden = false;
   extFormPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+extRows.addEventListener("click", (event) => {
+  const button = event.target.closest('[data-action="extend"]');
+  const player = button && extEligible().find((p) => p.id === button.closest("tr").dataset.playerId);
+  if (player) extOpenForm(player);
+});
+
+document.querySelector("#ext-returned").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-action]");
+  const id = button?.closest("[data-offer-id]")?.dataset.offerId;
+  const offer = id && returnedExtensions(officeData, activeTeamId).find((o) => o.id === id);
+  if (!offer || !storageIsAvailable) return;
+  if (button.dataset.action === "dismiss-returned") {
+    offer.returned = false;
+    saveOfficeData(`${offer.playerName}'s sent-back extension was dismissed.`);
+    refreshTeamTabs();
+    renderExtensions();
+    return;
+  }
+  const player = extEligible().find((p) => p.id === offer.playerId);
+  if (!player) { workspaceStatus.textContent = `${offer.playerName} can't be extended any more (he's no longer in the last year of his deal on this sheet).`; return; }
+  extOpenForm(player, offer);
 });
 document.querySelector("#ext-cancel").addEventListener("click", () => { extFormPanel.hidden = true; extPlayerId = null; });
 
@@ -136,6 +191,7 @@ extForm.addEventListener("submit", (event) => {
   saveOfficeData(`${result.replaced ? "Updated extension" : "Extension"} for ${player.name} sent to the commissioner: ${faOfferTerms(result.offer)} in new money, through ${result.offer.startYear + result.offer.yearsDetail.length - 1}.`);
   if (!storageIsAvailable) { undoExtension(officeData, result); return; }
   refreshNavNotifications();
+  refreshTeamTabs();
   extFormPanel.hidden = true;
   extPlayerId = null;
   renderExtensions();
@@ -153,6 +209,9 @@ document.querySelector("#ext-pending").addEventListener("click", async (event) =
   refreshNavNotifications();
   renderExtensions();
 });
+
+// The red count on Team Actions and its Extensions item follows the sent-back list.
+function refreshTeamTabs() { if (typeof renderSeasonTabs === "function") renderSeasonTabs(); }
 
 globalThis.renderExtensions = renderExtensions;
 if (!document.querySelector("#extend-panel").hidden) renderExtensions();

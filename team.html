@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=3eee65ea">
-    <link rel="stylesheet" href="theme-light.css?v=4ef3cbe7">
+    <link rel="stylesheet" href="styles.css?v=7dda956d">
+    <link rel="stylesheet" href="theme-light.css?v=63163e9b">
     <link rel="stylesheet" href="theme-gray.css?v=b358244c">
-    <link rel="stylesheet" href="theme-espn.css?v=3dad90d9">
+    <link rel="stylesheet" href="theme-espn.css?v=3f01c643">
     <link rel="stylesheet" href="theme-team.css?v=d4f6704c">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
@@ -42,20 +42,20 @@
     </script>
     <script src="teams.js?v=ff01ebb6" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=f67984d0" defer></script>
+    <script src="league-core.js?v=e8a2998b" defer></script>
     <script src="sample-admin.js?v=ad68aa2c" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="front-office.js?v=5cdc8b99" defer></script>
+    <script src="front-office.js?v=8168e684" defer></script>
     <script src="specialist-config.js?v=baeef451" defer></script>
     <script src="position-formulas.js?v=03324e3e" defer></script>
     <script src="specialist-engine.js?v=99f9cde9" defer></script>
     <script src="depth-chart.js?v=36c2af8c" defer></script>
     <script src="multi-year.js?v=3438b053" defer></script>
-    <script src="contract-editor.js?v=dfcf2732" defer></script>
+    <script src="contract-editor.js?v=9f76b80f" defer></script>
     <script src="team-fa.js?v=4270513d" defer></script>
     <script src="restructure.js?v=6f6c0d49" defer></script>
     <script src="ratings.js?v=04f81a04" defer></script>
-    <script src="extend.js?v=6bb16ee3" defer></script>
+    <script src="extend.js?v=7702b78c" defer></script>
     <script src="stat-totals.js?v=2b4c4d39" defer></script>
     <script src="career-core.js?v=c46fd854" defer></script>
     <script src="player-hub.js?v=5074e3e3" defer></script>
@@ -391,6 +391,11 @@
               <div><span class="panel-index">CONTRACT MOVES</span><h3>Extensions</h3></div>
               <p>Players in the last year of their deal can be offered an extension that starts next season. Build it year by year like a free agent offer. It goes to the commissioner on Admin › Extension Offers; nothing changes until it's approved.</p>
             </div>
+            <section class="ext-returned" id="ext-returned-box" aria-labelledby="ext-returned-title" hidden>
+              <h4 class="team-fa-pending-title" id="ext-returned-title"><span class="nav-badge" id="ext-returned-count">0</span> Sent back by the commissioner</h4>
+              <p class="ext-returned-intro">The commissioner declined these with comments. Read the comments, then edit the offer and send it again.</p>
+              <div class="fa-offer-list" id="ext-returned"></div>
+            </section>
             <section class="team-fa-pending" id="ext-pending-box" aria-labelledby="ext-pending-title">
               <h4 class="team-fa-pending-title" id="ext-pending-title">Pending extensions <span class="fa-offer-count" id="ext-pending-count">0</span></h4>
               <div class="fa-offer-list" id="ext-pending"></div>

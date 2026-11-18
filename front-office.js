@@ -200,6 +200,22 @@ const teamActionItems = [
 const teamActionIds = teamActionItems.map((item) => item.id);
 const tabPanelFor = (id) => ({ "player-hub": "player-hub-panel", "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", ratings: "ratings-panel", "trade-block": "team-block-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
 
+function countBadge(count, label) {
+  if (!count) return null;
+  const badge = document.createElement("span");
+  badge.className = "nav-badge tab-badge";
+  badge.textContent = count > 99 ? "99+" : String(count);
+  badge.setAttribute("aria-label", label);
+  badge.title = label;
+  return badge;
+}
+const extensionsBadge = () => { const n = returnedExtensions(officeData, activeTeamId).length; return countBadge(n, `${n} ${n === 1 ? "extension was" : "extensions were"} sent back by the commissioner with comments`); };
+// The Team Actions tab adds up trades waiting on us and extensions sent back.
+function actionsBadge() {
+  const trades = tradesAwaitingTeam(officeData, activeTeamId).length;
+  const ext = returnedExtensions(officeData, activeTeamId).length;
+  return countBadge(trades + ext, [trades ? `${trades} pending ${trades === 1 ? "trade needs" : "trades need"} your response` : "", ext ? `${ext} ${ext === 1 ? "extension" : "extensions"} sent back with comments` : ""].filter(Boolean).join(", "));
+}
 function tradeBadge() {
   const waiting = tradesAwaitingTeam(officeData, activeTeamId).length;
   if (!waiting) return null;
@@ -272,7 +288,7 @@ function renderSeasonTabs() {
       chevron.setAttribute("aria-hidden", "true");
       chevron.textContent = "▾";
       tab.append(text, chevron);
-      const badge = tradeBadge();
+      const badge = actionsBadge();
       if (badge) tab.append(badge);
       tab.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -334,6 +350,7 @@ function renderSeasonTabs() {
     text.textContent = label;
     item.append(text);
     if (id === "trade") { const badge = tradeBadge(); if (badge) item.append(badge); }
+    if (id === "extend") { const badge = extensionsBadge(); if (badge) item.append(badge); }
     item.addEventListener("click", () => {
       closeActionsMenu();
       openTeamTab(id);

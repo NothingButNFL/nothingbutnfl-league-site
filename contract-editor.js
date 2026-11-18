@@ -229,10 +229,11 @@ function createContractEditor(container, { getData = () => null, startYear: star
       render();
     },
     load(offer) {
-      if (extension && !offer.includesCurrent) return;
+      // An older extension offer lists only the new years: keep this season's row from his sheet in front of them.
+      const current = extension && !offer.includesCurrent && rows[0] ? [{ ...rows[0] }] : [];
       years = offer.years; voidYears = offer.voidYears || 0; signingBonus = offer.signingBonus || 0;
       if (years > maxYears()) years = maxYears();
-      rows = Array.isArray(offer.yearsDetail) ? offer.yearsDetail.map((r) => ({ ...r }))
+      rows = Array.isArray(offer.yearsDetail) ? [...current, ...offer.yearsDetail.map((r) => ({ ...r }))]
         : contractSeasonBreakdown(offer, startYear()).map(({ baseSalary, rosterBonus, guaranteedSalary }) => ({ baseSalary, rosterBonus, guaranteedSalary }));
       bonusInput.value = signingBonus ? formatCurrency(signingBonus) : "";
       render();

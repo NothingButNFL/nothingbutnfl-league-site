@@ -2726,11 +2726,16 @@ function validExtensionOffers(list) {
         (o.currentProrated !== undefined && !isIntegerInRange(o.currentProrated, 0, 999999999)) ||
         o.yearsDetail.some((y) => !y || ["baseSalary", "rosterBonus", "guaranteedSalary"].some((k) => !isIntegerInRange(y[k], 0, 999999999))) ||
         !restructureStatuses.includes(o.status) || typeof o.createdAt !== "string" ||
-        ["decisionNote", "notes", "position"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > 300))) return false;
+        ["decisionNote", "notes", "position"].some((k) => o[k] !== undefined && (typeof o[k] !== "string" || o[k].length > 300)) ||
+        (o.adminComment !== undefined && (typeof o.adminComment !== "string" || o.adminComment.length > 1000)) ||
+        (o.returned !== undefined && typeof o.returned !== "boolean")) return false;
     ids.add(o.id);
   }
   return true;
 }
+// "Decline with Comments": the commissioner declines with a comment and the offer goes back to the team to edit
+// (returned: true until the team sends a new offer for that player or dismisses it).
+const returnedExtensions = (data, teamId) => (data.extensionOffers || []).filter((o) => o.returned && o.status === "declined" && (!teamId || o.teamId === teamId));
 const pendingExtensions = (data) => (data.extensionOffers || []).filter((o) => o.status === "pending");
 const extensionStartYear = () => (seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) + 1; // first new season
 
@@ -2745,6 +2750,8 @@ function submitExtension(data, teamId, player, terms) {
   const now = new Date().toISOString();
   const replaced = pendingExtensions(data).find((o) => o.teamId === teamId && o.playerId === player.id) || null;
   if (replaced) Object.assign(replaced, { status: "withdrawn", decidedAt: now, decisionNote: "Replaced by a newer offer" });
+  const sentBack = returnedExtensions(data, teamId).filter((o) => o.playerId === player.id);
+  sentBack.forEach((o) => { o.returned = false; });
   if (data.extensionOffers.length >= 3000) data.extensionOffers = data.extensionOffers.filter((o) => o.status === "pending").concat(data.extensionOffers.filter((o) => o.status !== "pending").slice(-2000));
   const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   const offer = { id: newRecordId("extension"), teamId, playerId: player.id, playerName: player.name.slice(0, 70),
@@ -2756,10 +2763,11 @@ function submitExtension(data, teamId, player, terms) {
   if (position) offer.position = String(position).slice(0, 8);
   if (terms.notes && terms.notes.trim()) offer.notes = terms.notes.trim().slice(0, 300);
   data.extensionOffers.push(offer);
-  return { offer, replaced };
+  return { offer, replaced, sentBack };
 }
-function undoExtension(data, { offer, replaced }) {
+function undoExtension(data, { offer, replaced, sentBack = [] }) {
   data.extensionOffers = data.extensionOffers.filter((o) => o !== offer);
+  sentBack.forEach((o) => { o.returned = true; });
   if (replaced) { replaced.status = "pending"; delete replaced.decidedAt; delete replaced.decisionNote; }
 }
 
