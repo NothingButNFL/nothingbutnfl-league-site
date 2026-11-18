@@ -3678,3 +3678,9 @@ main .bx-table th.bx-name-col { white-space: nowrap; }
 main .bx-table.bx-cat-rushing :is(th, td) { padding-left: 6px !important; padding-right: 6px !important; }
 main .bx-table.bx-cat-rushing td.bx-name { white-space: nowrap; }
 main .bx-table td.bx-name { white-space: nowrap; }
+
+/* Box score: Defense has 16 stat columns, so each team's table gets the full width */
+.bx-pair.bx-pair-defense { grid-template-columns: 1fr; }
+main .bx-table.bx-cat-defense :is(th, td) { padding-left: 6px !important; padding-right: 6px !important; }
+main .bx-table.bx-cat-defense th { white-space: nowrap; }
+main .bx-pair-defense .bx-edit-table .bx-edit-name { min-width: 170px; }

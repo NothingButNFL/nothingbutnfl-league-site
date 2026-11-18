@@ -76,8 +76,12 @@
         (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), rac: sumIf(ls, "rac"), racRec: sum(ls.filter((l) => l.rac != null), "rec"), long: maxOf(ls, "long") })], // team RAC AVG counts only catches with RAC entered
       ["blocking", "Blocking", [["PANCAKES", (l) => l.pancakes], ["SACKS", (l) => l.sacks]], // sacks = sacks allowed
         (ls) => ({ pancakes: sumIf(ls, "pancakes"), sacks: sumIf(ls, "sacks") })],
-      ["defense", "Defense", [["TOT", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
-        (ls) => ({ tackles: sum(ls, "tackles"), tfl: sum(ls, "tfl"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
+      ["defense", "Defense", [["SOLO", (l) => l.solo], ["ASSISTS", (l) => l.ast], ["TAK", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACK", (l) => l.sacks],
+        ["INT", (l) => l.int], ["INT YDS", (l) => l.intYds], ["INT AVG", (l) => (l.intYds == null ? undefined : avg(l.intYds, l.int))], ["INT LG", (l) => l.intLong],
+        ["DEFL", (l) => l.pd], ["FFUMB", (l) => l.ff], ["FUMB REC", (l) => l.fr], ["FUMB YDS", (l) => l.frYds], ["BLOCK", (l) => l.blk], ["SFTY", (l) => l.sfty], ["TD", (l) => l.td]],
+        (ls) => ({ solo: sumIf(ls, "solo"), ast: sumIf(ls, "ast"), tackles: sumIf(ls, "tackles"), tfl: sumIf(ls, "tfl"), sacks: sumIf(ls, "sacks"), int: sumIf(ls, "int"),
+          intYds: sumIf(ls, "intYds"), intLong: maxOf(ls, "intLong"), pd: sumIf(ls, "pd"), ff: sumIf(ls, "ff"), fr: sumIf(ls, "fr"), frYds: sumIf(ls, "frYds"),
+          blk: sumIf(ls, "blk"), sfty: sumIf(ls, "sfty"), td: sumIf(ls, "td") })],
       ["kicking", "Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["PCT", (l) => (l.fga ? ((l.fgm / l.fga) * 100).toFixed(1) : "0.0")], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`], ["PTS", (l) => (Number(l.fgm) || 0) * 3 + (Number(l.xpm) || 0)]],
         (ls) => ({ fgm: sum(ls, "fgm"), fga: sum(ls, "fga"), xpm: sum(ls, "xpm"), xpa: sum(ls, "xpa"), long: maxOf(ls, "long") })],
     ];
@@ -87,7 +91,7 @@
     for (const [key, title, cols, total] of cats) {
       const lines = game.players?.[key] || [];
       if (!lines.length) continue;
-      const pair = el("div", "bx-pair");
+      const pair = el("div", `bx-pair bx-pair-${key}`);
       for (const t of [away, home]) {
         const mine = lines.filter((l) => l.team === t.team);
         const block = el("div", "bx-block");
@@ -195,7 +199,8 @@
     rushing: [["att", "ATT"], ["yds", "YARDS"], ["td", "TD"], ["fumb", "FUMB"], ["btk", "BTK"], ["yac", "YAC"], ["long", "LONG"]],
     receiving: [["rec", "REC"], ["yds", "YARDS"], ["td", "TD"], ["rac", "RAC"], ["long", "LONG"]],
     blocking: [["pancakes", "PANCAKES"], ["sacks", "SACKS"]],
-    defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
+    defense: [["solo", "SOLO"], ["ast", "ASSISTS"], ["tackles", "TAK"], ["tfl", "TFL"], ["sacks", "SACK"], ["int", "INT"], ["intYds", "INT YDS"], ["intLong", "INT LG"],
+      ["pd", "DEFL"], ["ff", "FFUMB"], ["fr", "FUMB REC"], ["frYds", "FUMB YDS"], ["blk", "BLOCK"], ["sfty", "SFTY"], ["td", "TD"]],
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
   };
   const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", blocking: "Blocking", defense: "Defense", kicking: "Kicking" };
@@ -261,7 +266,7 @@
     const cats = el("div", "bx-card");
     cats.append(el("h3", "bx-card-title", "Player stats"));
     for (const cat of boxScoreCategories) {
-      const pair = el("div", "bx-pair");
+      const pair = el("div", `bx-pair bx-pair-${cat}`);
       for (const t of [away, home]) {
         const block = el("div", "bx-block");
         const head = el("div", "bx-block-head");
@@ -372,6 +377,7 @@
         const line = { ...(tr._line || {}), player: name, team: table.dataset.team };
         if (tr._line?.player && normalizePlayerName(tr._line.player) !== normalizePlayerName(name)) delete line.rawName;
         for (const [key, v] of values) { if (v === undefined) delete line[key]; else line[key] = v; }
+        if (cat === "defense" && line.tackles === undefined && (line.solo !== undefined || line.ast !== undefined)) line.tackles = (line.solo || 0) + (line.ast || 0); // TAK = solo + assists when left blank
         (players[cat] ||= []).push(line);
       }
     }
