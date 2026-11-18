@@ -576,3 +576,9 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rt
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .rt-table td.rt-cell.is-auto { background-color: rgb(var(--tm-3b74d6)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ovr-tip { background-color: rgb(var(--tm-0d2a4f)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .depth-ovr { background-color: rgb(var(--tm-1d3f68)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-card { background-color: rgb(var(--tm-0a2140)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-card-top { background-image: linear-gradient(160deg, rgb(var(--tm-56647a)), rgb(var(--tm-2a3647))); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line { background-color: rgb(var(--tm-12294a)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line.is-starter { background-color: rgb(var(--tm-1c3558)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line .depth-select option, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line .depth-select optgroup { background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line:focus-within { outline-color: rgb(var(--tm-8fd0ff)); }

@@ -439,3 +439,4 @@ html[data-theme="gray"] .record-name { color: #e2e3e6; }
 html[data-theme="gray"] .record-name small { color: #b6b9be; }
 html[data-theme="gray"] .record-empty { color: #b6b9be; }
 html[data-theme="gray"] main .bx-edit-team .bx-ts-label { color: #d5d7db; }
+html[data-theme="gray"] .dc-line .depth-select option, html[data-theme="gray"] .dc-line .depth-select optgroup { background-color: #18191b; }

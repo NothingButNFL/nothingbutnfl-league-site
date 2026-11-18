@@ -1128,3 +1128,20 @@ html[data-theme="light"] .ovr-legend span.is-madden::before { border-top-color: 
 html[data-theme="light"] .ea-missing summary { color: #121213; }
 html[data-theme="light"] .ea-review label { color: #121213; }
 html[data-theme="light"] .depth-ovr { color: #121213; }
+html[data-theme="light"] .dc-tab[aria-selected="true"] { color: #121213; }
+html[data-theme="light"] .dc-tab:hover { color: #121213; }
+html[data-theme="light"] .dc-field { background-image: linear-gradient(rgba(18, 18, 19, 0.042), rgba(0, 0, 0, 0.030)); }
+html[data-theme="light"] .dc-card { box-shadow: rgba(0, 0, 0, 0.087) 0px 6px 16px; }
+html[data-theme="light"] .dc-initials { color: rgba(18, 18, 19, 1.000); }
+html[data-theme="light"] .dc-ovr { border-top-color: rgba(18, 18, 19, 1.000); border-right-color: rgba(18, 18, 19, 1.000); border-bottom-color: rgba(18, 18, 19, 1.000); border-left-color: rgba(18, 18, 19, 1.000); background-color: rgba(0, 0, 0, 0.113); color: #121213; }
+html[data-theme="light"] .dc-line { border-top-color: rgba(18, 18, 19, 0.098); }
+html[data-theme="light"] .dc-line .depth-select { color: #121213; }
+html[data-theme="light"] .dc-line .depth-select.is-empty { color: rgba(18, 18, 19, 0.630); }
+html[data-theme="light"] .dc-line .depth-select.is-stale { color: #9a6600; }
+html[data-theme="light"] .dc-line .depth-select option, html[data-theme="light"] .dc-line .depth-select optgroup { background-color: #f1f2f4; color: #121213; }
+html[data-theme="light"] .dc-line-ovr { color: #121213; }
+html[data-theme="light"] .dc-pos { color: #121213; }
+html[data-theme="light"] .dc-name { color: #121213; }
+html[data-theme="light"] .dc-name.is-empty { color: rgba(18, 18, 19, 0.560); }
+html[data-theme="light"] .dc-name.is-stale { color: #9a6600; }
+html[data-theme="light"] .dc-line:focus-within { outline-color: #1a5fc1; }

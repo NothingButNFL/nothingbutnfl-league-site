@@ -55,7 +55,126 @@ function dcOverall(id) {
   return dcOverallCache.get(id);
 }
 
-function slotSelect(slot, index, chosen, roster) {
+// ---- Lineup view: the depth chart laid out like Madden's Lineup screen ----
+// A card per starter, placed in formation, with that spot's backups listed under it. A slot with several starters
+// (DT in a 4-3, MIKE in a 3-4, CB, WR) splits its depth: card 1 gets spots 1, k+1, 2k+1…, card 2 gets 2, k+2… (k = cards).
+// The defense's front follows the team's Defensive Scheme: 3-4 schemes show LE · DT · RE with two inside linebackers.
+let dcTab = "offense";
+const dcTabs = [["offense", "Offense"], ["defense", "Defense"], ["special", "Special Teams"], ["specialist", "Specialist"]];
+const isThreeFour = (scheme) => /3-4/.test(scheme || "");
+// [label, slot, card #, cards for this slot, column, row] on a 16-column grid (each card spans 2 columns).
+function dcFormation(tab, chart) {
+  if (tab === "offense") return { cols: 16, cards: [
+    ["WR1", "WR", 0, 3, 1, 1], ["LT", "LT", 0, 1, 3, 1], ["LG", "LG", 0, 1, 5, 1], ["C", "C", 0, 1, 7, 1], ["RG", "RG", 0, 1, 9, 1], ["RT", "RT", 0, 1, 11, 1],
+    ["TE", "TE", 0, 1, 13, 1], ["WR2", "WR", 1, 3, 15, 1], ["WR3", "WR", 2, 3, 13, 2], ["QB", "QB", 0, 1, 7, 2], ["FB", "FB", 0, 1, 5, 3], ["HB", "HB", 0, 1, 9, 3]] };
+  if (tab === "defense") return isThreeFour(chart.schemes.defense)
+    ? { cols: 16, cards: [
+      ["FS", "FS", 0, 1, 1, 1], ["ROLB", "SAM", 0, 1, 4, 1], ["MLB2", "MIKE", 1, 2, 7, 1], ["MLB1", "MIKE", 0, 2, 10, 1], ["LOLB", "WILL", 0, 1, 13, 1], ["SS", "SS", 0, 1, 15, 1],
+      ["CB1", "CB", 0, 2, 1, 2], ["RE", "RE", 0, 1, 5, 2], ["DT", "DT", 0, 1, 8, 2], ["LE", "LE", 0, 1, 11, 2], ["CB2", "CB", 1, 2, 15, 2]] }
+    : { cols: 16, cards: [
+      ["FS", "FS", 0, 1, 4, 1], ["SS", "SS", 0, 1, 12, 1],
+      ["ROLB", "SAM", 0, 1, 4, 2], ["MLB", "MIKE", 0, 1, 8, 2], ["LOLB", "WILL", 0, 1, 12, 2],
+      ["CB1", "CB", 0, 2, 1, 3], ["RE", "RE", 0, 1, 4, 3], ["DT2", "DT", 1, 2, 6, 3], ["DT1", "DT", 0, 2, 10, 3], ["LE", "LE", 0, 1, 12, 3], ["CB2", "CB", 1, 2, 15, 3]] };
+  const list = tab === "special" ? ["K", "P", "LS", "KR", "PR", "KOS"] : ["3DRB", "GAD", "PWHB", "SLWR", "SLCB", "RLE", "RRE", "RDT", "NT", "SUBLB"];
+  const perRow = tab === "special" ? 6 : 5;
+  return { cols: perRow * 2, cards: list.map((slot, i) => [slot, slot, 0, 1, (i % perRow) * 2 + 1, Math.floor(i / perRow) + 1]) };
+}
+
+function dcPhoto(id) {
+  const found = id ? findPlayerById(officeData, id) : null;
+  const src = found ? profilePhotoSrc(playerProfile(found.player)) : "";
+  const box = document.createElement("div");
+  box.className = "dc-photo";
+  if (src) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.addEventListener("error", () => img.remove());
+    box.append(img);
+  } else if (found) {
+    box.append(Object.assign(document.createElement("span"), { className: "dc-initials", textContent: found.player.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("") }));
+  }
+  return box;
+}
+const dcTier = (ovr) => (ovr === null ? "is-none" : ovr >= 90 ? "is-elite" : ovr >= 80 ? "is-good" : ovr >= 70 ? "is-mid" : "is-low");
+
+function formationView(chart, roster) {
+  const wrap = document.createElement("div");
+  wrap.className = "dc-lineup";
+  const tabs = document.createElement("div");
+  tabs.className = "dc-tabs";
+  tabs.setAttribute("role", "tablist");
+  for (const [id, label] of dcTabs) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "dc-tab";
+    b.dataset.dcTab = id;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(dcTab === id));
+    b.textContent = label;
+    tabs.append(b);
+  }
+  wrap.append(tabs);
+  if (dcTab === "defense") {
+    const note = document.createElement("p");
+    note.className = "dc-scheme-note";
+    note.textContent = chart.schemes.defense
+      ? `${chart.schemes.defense}: ${isThreeFour(chart.schemes.defense) ? "3-4 front (3 down linemen, 4 linebackers)" : "4-3 front (4 down linemen, 3 linebackers)"}.`
+      : "No Defensive Scheme chosen yet, so this shows a 4-3 front. Pick the scheme on the right.";
+    wrap.append(note);
+  }
+  const { cols, cards } = dcFormation(dcTab, chart);
+  const field = document.createElement("div");
+  field.className = `dc-field dc-field-${dcTab}`;
+  field.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  for (const [label, slot, card, count, col, row] of cards) {
+    const size = depthSlotSizes[slot];
+    const ids = chart.slots[slot] || [];
+    const spots = [];
+    for (let i = card; i < size; i += count) spots.push(i);
+    const starter = ids[spots[0]] || "";
+    const ovr = starter ? dcOverall(starter) : null;
+    const el = document.createElement("div");
+    el.className = `dc-card ${dcTier(ovr)}`;
+    el.style.gridColumn = `${col} / span 2`;
+    el.style.gridRow = String(row);
+    const top = document.createElement("div");
+    top.className = "dc-card-top";
+    top.append(dcPhoto(starter));
+    if (ovr !== null) top.append(Object.assign(document.createElement("span"), { className: "dc-ovr", textContent: String(ovr), title: "League overall" }));
+    el.append(top);
+    spots.forEach((index, n) => {
+      const line = document.createElement("label");
+      line.className = n === 0 ? "dc-line is-starter" : "dc-line";
+      const select = slotSelect(slot, index, ids[index], roster, true);
+      select.setAttribute("aria-label", `${label} ${n === 0 ? "starter" : `backup ${n}`}`);
+      // The card shows just "J.ALLEN"; the (invisible) dropdown on top of it lists everyone with position and overall.
+      const chosen = ids[index] ? findPlayerById(officeData, ids[index]) : null;
+      const shown = document.createElement("span");
+      shown.className = `dc-name${chosen ? "" : " is-empty"}${select.classList.contains("is-stale") ? " is-stale" : ""}`;
+      shown.textContent = chosen ? dcShortName(chosen.player.name) : ids[index] ? "Removed player" : "—";
+      line.append(shown, select);
+      const r = ids[index] ? dcOverall(ids[index]) : null;
+      if (n > 0 && r !== null) line.append(Object.assign(document.createElement("span"), { className: "dc-line-ovr", textContent: String(r) }));
+      el.append(line);
+    });
+    const tag = document.createElement("span");
+    tag.className = "dc-pos";
+    tag.textContent = label;
+    tag.title = { "3DRB": "Third-down back", GAD: "Gadget", PWHB: "Power back", SLWR: "Slot receiver", RLE: "Rush left end", RRE: "Rush right end", RDT: "Rush defensive tackle", NT: "Nose tackle", SUBLB: "Sub linebacker", SLCB: "Slot corner", KOS: "Kickoff specialist", ROLB: "SAM linebacker", LOLB: "WILL linebacker", MLB: "MIKE linebacker", MLB1: "MIKE linebacker", MLB2: "MIKE linebacker (2nd)" }[label] || slot;
+    el.append(tag);
+    field.append(el);
+  }
+  wrap.append(field);
+  return wrap;
+}
+
+// "Josh Allen" → "J.Allen" (Madden lineup style; "Jr."/"III" kept).
+const dcShortName = (name) => { const parts = String(name).trim().split(/\s+/); return parts.length < 2 ? name : `${parts[0][0]}.${parts.slice(1).join(" ")}`; };
+
+function slotSelect(slot, index, chosen, roster, short = false) {
   const select = document.createElement("select");
   select.className = "depth-select";
   select.dataset.slot = slot;
@@ -66,7 +185,7 @@ function slotSelect(slot, index, chosen, roster) {
   const ovr = (id) => dcOverall(id);
   const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const others = roster.filter((p) => fitRank(slot, p.position) === 99).sort((a, b) => a.name.localeCompare(b.name));
-  const label = (p) => `${p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
+  const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   if (fits.length && others.length) {
     const a = document.createElement("optgroup");
     a.label = `Fits ${slot}`;
@@ -124,48 +243,7 @@ function renderDepthChart() {
   layout.className = "depth-layout";
   const sections = document.createElement("div");
   sections.className = "depth-sections";
-  for (const [name, rows] of depthChartSections) {
-    const section = document.createElement("section");
-    section.className = "depth-section";
-    const h4 = document.createElement("h4");
-    h4.textContent = name;
-    section.append(h4);
-    const grid = document.createElement("div");
-    grid.className = "depth-grid";
-    for (const [slot, size] of rows) {
-      const label = document.createElement("span");
-      label.className = "depth-slot";
-      label.textContent = `${slot}:`;
-      label.title = { "3DRB": "Third-down back", GAD: "Gadget", PWHB: "Power back", SLWR: "Slot receiver", RLE: "Rush left end", RRE: "Rush right end", RDT: "Rush defensive tackle", NT: "Nose tackle", SUBLB: "Sub linebacker", SLCB: "Slot corner", KOS: "Kickoff specialist", SAM: "Strong-side LB", MIKE: "Middle LB", WILL: "Weak-side LB" }[slot] || slot;
-      grid.append(label);
-      const ids = chart.slots[slot] || [];
-      for (let i = 0; i < 6; i += 1) {
-        if (i < size) {
-          const cell = document.createElement("label");
-          cell.className = "depth-cell";
-          const n = document.createElement("span");
-          n.className = "depth-n";
-          n.textContent = String(i + 1);
-          cell.append(n, slotSelect(slot, i, ids[i], roster));
-          // His league overall beside the name (the list shows everyone's too).
-          const rating = ids[i] ? dcOverall(ids[i]) : null;
-          if (rating !== null) {
-            const badge = document.createElement("span");
-            badge.className = "depth-ovr";
-            badge.textContent = String(rating);
-            badge.title = "League overall (Madden changes count once the team updates him)";
-            cell.append(badge);
-          }
-          grid.append(cell);
-        } else {
-          grid.append(Object.assign(document.createElement("span"), { className: "depth-blank" }));
-        }
-      }
-    }
-    section.append(grid);
-    sections.append(section);
-  }
-
+  sections.append(formationView(chart, roster));
   const schemes = document.createElement("aside");
   schemes.className = "depth-schemes";
   const sh = document.createElement("h4");
@@ -326,7 +404,7 @@ depthPanel?.addEventListener("change", (event) => {
     ids[Number(select.dataset.index)] = select.value;
     while (ids.length && !ids[ids.length - 1]) ids.pop();
     if (ids.length) chart.slots[slot] = ids; else delete chart.slots[slot];
-    const player = select.value ? select.selectedOptions[0].textContent.replace(/ · \d+$/, "") : "empty";
+    const player = select.value ? (findPlayerById(officeData, select.value)?.player.name || select.selectedOptions[0].textContent.replace(/ · \d+$/, "")) : "empty";
     queueStream(slotChanges(before, chart.slots));
     saveOfficeData(`${slot} ${Number(select.dataset.index) + 1}: ${player}. Sent to the commissioner's stream updates.`);
     renderDepthChart();
@@ -360,10 +438,13 @@ depthPanel?.addEventListener("change", (event) => {
     if (value) chart.schemes[input.dataset.scheme] = value; else delete chart.schemes[input.dataset.scheme];
     if (previous !== value) queueStream([{ slot: `scheme:${input.dataset.scheme}`, index: -1, from: previous, to: value }]);
     saveOfficeData("Team schemes saved. Sent to the commissioner's stream updates.");
+    if (input.dataset.scheme === "defense") { if (value !== previous) dcTab = "defense"; renderDepthChart(); } // the front follows the scheme
   }
 });
 
 depthPanel?.addEventListener("click", async (event) => {
+  const tab = event.target.closest("[data-dc-tab]");
+  if (tab) { dcTab = tab.dataset.dcTab; renderDepthChart(); return; }
   const button = event.target.closest("[data-action]");
   if (!button || !storageIsAvailable) return;
   const chart = depthChartFor(activeTeamId);
