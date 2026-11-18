@@ -25,7 +25,7 @@ const depthFits = {
   RRE: uniq([...posEdge, ...posOLB]), RLE: uniq([...posEdge, ...posOLB]), RDT: uniq([...posDT, ...posEdge]),
   PWHB: uniq([...posRB, ...posFB]), "3DRB": uniq([...posRB, ...posFB]), GAD: posSkill, SLWR: uniq([...posWR, ...posTE, ...posRB])
 };
-// Allowed only as a last resort (no one else is available): a K or P at QB, a P at K, a K at P.
+// Allowed only by hand (never by Fill / Best lineup), listed last in the dropdown: a K or P at QB, a P at K, a K at P.
 const depthEmergency = { QB: [...posK, ...posP], K: posP, P: posK };
 const isEmergency = (slot, position) => {
   const list = depthEmergency[slot];
@@ -365,6 +365,7 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
     return option;
   }));
   const saved = chosen && roster.find((p) => p.id === chosen);
+  if (saved && isEmergency(slot, saved.position)) select.classList.add("is-stale"); // e.g. a kicker at QB: shown in yellow
   if (saved && fitRank(slot, saved.position) === 99) {
     // Saved before the position rules (or his position changed): kept, but flagged.
     select.append(new Option(`${label(saved)} — not allowed at ${slot}`, saved.id));
@@ -659,7 +660,8 @@ depthPanel?.addEventListener("click", async (event) => {
   // Best fit = highest overall; ties go to the more natural position, then the bigger cap hit.
   const score = (slot, p) => (isEmergency(slot, p.position) ? -1e9 : 0)
     + (best ? ovr(p, slot) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
-  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99).sort((x, y) => score(slot, y) - score(slot, x));
+  // Kickers/punters are never put at QB (or a P at K, a K at P) automatically; pick them by hand if you need to.
+  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99 && !isEmergency(slot, p.position)).sort((x, y) => score(slot, y) - score(slot, x));
   let added = 0;
   // Starters: the best player/spot pairs first, across every starting spot at once.
   const pairs = [];
