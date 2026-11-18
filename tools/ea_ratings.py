@@ -56,8 +56,9 @@ def compact(snapshot):
                 changes.append((abs(diff), f"{'+' if diff > 0 else ''}{diff} {stat_label(key)}"))
         changes.sort(key=lambda c: -c[0])
         ratings[str(p['id'])] = [p['overallRating'], ', '.join(c[1] for c in changes[:6])]
+        # [name, position, team, college, birthdate] - college/birthdate let the site tell same-named players apart.
         people[str(p['id'])] = [f"{p['firstName']} {p['lastName']}", (p.get('position') or {}).get('shortLabel') or '',
-                                (p.get('team') or {}).get('label') or '']
+                                (p.get('team') or {}).get('label') or '', p.get('college') or '', str(p.get('birthdate') or '')[:10]]
     return ratings, people
 
 
@@ -83,7 +84,7 @@ def run(args):
         except (ValueError, OSError):
             old = {}
     kept = {r['id']: r for r in old.get('releases', [])}
-    people = dict(old.get('players', {}))
+    people = {k: v for k, v in old.get('players', {}).items() if len(v) >= 5}  # older files lack college/birthdate
     releases = []
     for it in sorted(meta['iterations'], key=lambda r: (slot_for(r['label']) is None, slot_for(r['label']) or 0)):
         slot = slot_for(it['label'])

@@ -18,20 +18,54 @@
     p.className = "ea-summary-line";
     p.textContent = `Last updated ${when}: ${info.labels.join(", ")}. ${info.matched} players matched.`;
     summary.append(p);
-    for (const [list, title] of [[info.unmatched, "Not found in EA's ratings"], [info.ambiguous, "More than one EA player with this name"]]) {
-      if (!list?.length) continue;
+    // Players it couldn't match on its own: pick the right EA player (or "not in Madden") from a list.
+    const review = info.review || [];
+    for (const [kind, title, help] of [["ambiguous", "Same name in Madden", "More than one Madden player has this name. Pick the right one."],
+      ["unmatched", "Not found in Madden", "No Madden player with this name. If he's listed under another spelling, pick him; otherwise mark him not in Madden."]]) {
+      const rows = review.filter((r) => r.kind === kind);
+      if (!rows.length) continue;
       const details = document.createElement("details");
       details.className = "ea-missing";
+      details.open = kind === "ambiguous";
       const sum = document.createElement("summary");
-      sum.textContent = `${title} (${list.length})`;
-      const body = document.createElement("p");
-      body.textContent = list.join(" · ");
-      details.append(sum, body);
+      sum.textContent = `${title} (${rows.length})`;
+      const note = document.createElement("p");
+      note.textContent = help;
+      const list = document.createElement("div");
+      list.className = "ea-review";
+      for (const r of rows) {
+        const label = document.createElement("label");
+        label.textContent = r.label;
+        const select = document.createElement("select");
+        select.dataset.playerId = r.playerId;
+        select.append(new Option(r.options.length ? "Choose the Madden player…" : "No Madden player with that last name", ""));
+        for (const [id, text] of r.options) select.append(new Option(text, id));
+        select.append(new Option("Not in Madden (skip him)", "__none"));
+        label.append(select);
+        list.append(label);
+      }
+      details.append(sum, note, list);
       summary.append(details);
+    }
+    const linked = Object.keys(data.ratings?.[season()]?.links || {}).length;
+    if (linked) {
+      const p2 = document.createElement("p");
+      p2.className = "ea-summary-line";
+      p2.innerHTML = `${linked} player${linked === 1 ? "" : "s"} matched by hand. `;
+      const clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "workspace-button";
+      clear.id = "ea-clear-links";
+      clear.textContent = "Clear hand matches";
+      p2.append(clear);
+      summary.append(p2);
     }
   }
 
+  let lastEa = null; // the EA file loaded on this visit, so a hand match applies right away
+
   function apply(ea) {
+    lastEa = ea;
     let data;
     try { data = readStoredOffice() || emptyOfficeData(); } catch { data = emptyOfficeData(); }
     const result = applyEaRatings(data, ea, season());
@@ -61,6 +95,30 @@
     event.target.value = "";
     if (!file) return;
     try { apply(JSON.parse(await file.text())); } catch { status.textContent = "That file isn't valid JSON."; }
+  });
+
+  // Hand matches: save the link, then re-apply the loaded EA file (or ask for it).
+  summary.addEventListener("change", (event) => {
+    const select = event.target.closest("select[data-player-id]");
+    if (!select || !select.value) return;
+    let data;
+    try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }
+    const s = ratingsSeason(data, season(), true);
+    s.links ||= {};
+    s.links[select.dataset.playerId] = select.value === "__none" ? "" : select.value;
+    try { writeStoredOffice(data); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
+    if (typeof officeData !== "undefined") officeData = data;
+    if (lastEa) apply(lastEa);
+    else { status.textContent = "Match saved. Press \"Update ratings from EA\" to fill in his ratings."; showSummary(); }
+  });
+  summary.addEventListener("click", (event) => {
+    if (event.target.id !== "ea-clear-links") return;
+    let data;
+    try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }
+    if (data.ratings?.[season()]) data.ratings[season()].links = {};
+    try { writeStoredOffice(data); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
+    if (typeof officeData !== "undefined") officeData = data;
+    if (lastEa) apply(lastEa); else { status.textContent = "Hand matches cleared."; showSummary(); }
   });
 
   showSummary();

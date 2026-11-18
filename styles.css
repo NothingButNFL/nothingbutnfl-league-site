@@ -3760,3 +3760,6 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .ea-summary-line { margin: 6px 0; color: var(--muted); font-size: 14px; }
 .ea-missing { margin: 6px 0; font-size: 13px; color: var(--muted); }
 .ea-missing summary { cursor: pointer; color: #fff; }
+.ea-review { display: grid; gap: 8px; margin: 8px 0 4px; }
+.ea-review label { display: grid; grid-template-columns: minmax(180px, 260px) 1fr; gap: 12px; align-items: center; color: #fff; font-size: 13px; }
+.ea-review select { max-width: 640px; }

@@ -838,8 +838,9 @@ function samePositionGroup(a, b) {
 // break ties between players who share a name.
 // Broad position families: a player is never matched to an NFL player from a different one (an LS named Aaron
 // Brewer must not get the OL Aaron Brewer's details). DL and LB count as one family (EDGE/OLB are listed either way).
+// Madden's own labels are included (LEDG/REDG, MIKE/WILL/SAM, LE/RE, LOLB/ROLB).
 const positionFamilies = [["QB"], ["RB", "HB", "FB"], ["WR"], ["TE"], ["OT", "T", "LT", "RT", "OG", "G", "LG", "RG", "C", "OL", "IOL"],
-  ["DE", "DT", "NT", "DL", "IDL", "EDGE", "LB", "ILB", "OLB", "MLB"], ["CB", "S", "FS", "SS", "DB", "SAF", "NB"], ["K", "PK"], ["P"], ["LS"]];
+  ["DE", "DT", "NT", "DL", "IDL", "EDGE", "LB", "ILB", "OLB", "MLB", "LEDG", "REDG", "LE", "RE", "MIKE", "WILL", "SAM", "LOLB", "ROLB"], ["CB", "S", "FS", "SS", "DB", "SAF", "NB"], ["K", "PK"], ["P"], ["LS"]];
 const positionFamily = (pos) => positionFamilies.findIndex((f) => f.includes(String(pos || "").toUpperCase().trim()));
 function matchNflExperience(name, position, teamId) {
   const index = experienceIndex();
@@ -3563,6 +3564,8 @@ function validRatings(ratings) {
         (r.base === undefined || r.base === null || isIntegerInRange(r.base, 0, 99)) &&
         (r.d === undefined || (r.d && typeof r.d === "object" && Object.entries(r.d).every(([k, v]) => weekKey(k) && isIntegerInRange(v, -99, 99)))) &&
         (r.n === undefined || (r.n && typeof r.n === "object" && Object.entries(r.n).every(([k, v]) => weekKey(k) && typeof v === "string" && v.length <= 300)))))) &&
+    (season.links === undefined || (season.links && typeof season.links === "object" && Object.keys(season.links).length <= 6000 &&
+      Object.values(season.links).every((v) => typeof v === "string" && v.length <= 20))) &&
     (season.upgrades === undefined || (season.upgrades && typeof season.upgrades === "object" &&
       Object.entries(season.upgrades).every(([team, weeks]) => nflTeams.some(({ id }) => id === team) && weeks && typeof weeks === "object" &&
         Object.entries(weeks).every(([k, ids]) => weekKey(k) && Array.isArray(ids) && ids.length <= 60 && ids.every((id) => typeof id === "string" && id.length <= 80))))));
@@ -3649,6 +3652,7 @@ function toggleRatingUpgrade(data, season, teamId, playerId, week) {
   return "";
 }
 
+// Players the commissioner matched by hand: data.ratings[season].links = { playerId: eaId, or "" for "not in Madden" }.
 // ---- EA ratings import (Admin › Madden Ratings; data from tools/ea_ratings.py → ea-ratings.json) ----
 // ea = { edition, releases: [{ id, label, week, ratings: { eaId: [overall, notes] } }], players: { eaId: [name, pos, team] } }
 // Week 0 (Launch Ratings) becomes each player's starting overall; every later release becomes that week's change
@@ -3667,26 +3671,62 @@ function validEaRatingsFile(ea) {
 function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) {
   if (!validEaRatingsFile(ea)) return { error: "That isn't an EA ratings file from tools/ea_ratings.py (it needs Launch Ratings and the weekly releases)." };
   const releases = [...ea.releases].sort((a, b) => a.week - b.week);
-  const byName = new Map();
-  for (const [id, [name, pos]] of Object.entries(ea.players)) {
+  const byName = new Map(), byLast = new Map();
+  for (const [id, [name, pos, team = "", college = "", birth = ""]] of Object.entries(ea.players)) {
     const key = eaNormalizeName(name);
+    const entry = { id, name, pos, team, college, birth };
     if (!byName.has(key)) byName.set(key, []);
-    byName.get(key).push({ id, pos });
+    byName.get(key).push(entry);
+    const last = key.split(" ").pop();
+    if (!byLast.has(last)) byLast.set(last, []);
+    byLast.get(last).push(entry);
   }
   const s = ratingsSeason(data, season, true);
+  s.links ||= {};
+  const launch = releases.find((r) => r.week === 0)?.ratings || {};
+  const optionLabel = (o) => `${o.name} · ${o.pos || "?"} · ${o.team || "Free agent"}${o.college ? ` · ${o.college}` : ""}${launch[o.id] ? ` · ${launch[o.id][0]} OVR` : ""}`;
+  const school = (c) => String(c || "").toLowerCase().replace(/[^a-z]/g, "");
+  const teamName = (id) => nflTeams.find((t) => t.id === id)?.name || "";
+  // Same-name players: narrow by position group, then the player's real NFL team, birth date and college
+  // (from his profile or the NFL data snapshot when this page has it). Returns the one EA entry, or the leftovers.
+  function pick(player, options) {
+    const position = seasonEntry(player, season).position;
+    const nfl = typeof matchNflExperience === "function" ? matchNflExperience(player.name, position, null) : null;
+    const record = nfl?.record || (nfl?.candidates?.length === 1 ? nfl.candidates[0] : null);
+    const birth = player.birthDate || record?.birthDate || "";
+    const college = playerProfile(player).college || record?.college || "";
+    const nflTeam = record?.team ? teamName(record.team) : "";
+    for (const narrow of [
+      (c) => c.filter((o) => positionFamily(o.pos) === positionFamily(position)),
+      (c) => birth ? c.filter((o) => o.birth === birth) : [],
+      (c) => nflTeam ? c.filter((o) => o.team === nflTeam) : [],
+      (c) => college ? c.filter((o) => school(o.college) === school(college)) : []
+    ]) {
+      if (options.length === 1) break;
+      const narrowed = narrow(options);
+      if (narrowed.length) options = narrowed;
+    }
+    return options;
+  }
+  const review = [];
   const weeksCovered = new Set(releases.filter((r) => r.week > 0).map((r) => r.week));
   let matched = 0;
   const unmatched = [], ambiguous = [];
   for (const [teamId, team] of Object.entries(data.teams || {})) {
     for (const player of team.roster) {
       if (!isPlayerOnSeason(player, season) || isRetiredPlayer(player)) continue;
-      let options = byName.get(eaNormalizeName(player.name)) || [];
-      if (options.length > 1) {
-        const family = positionFamily(seasonEntry(player, season).position);
-        const same = options.filter((o) => positionFamily(o.pos) === family);
-        if (same.length) options = same;
+      const linked = s.links[player.id];
+      if (linked === "") continue; // marked "not in Madden" by the commissioner
+      let options = linked && ea.players[linked] ? [{ id: linked }] : pick(player, byName.get(eaNormalizeName(player.name)) || []);
+      if (options.length !== 1) {
+        const label = `${player.name} (${teamId})`;
+        const kind = options.length ? "ambiguous" : "unmatched";
+        (options.length ? ambiguous : unmatched).push(label);
+        const choices = options.length ? options : (byLast.get(eaNormalizeName(player.name).split(" ").pop()) || [])
+          .filter((o) => positionFamily(o.pos) === positionFamily(seasonEntry(player, season).position)).slice(0, 12);
+        review.push({ playerId: player.id, label: label.slice(0, 90), kind, options: choices.slice(0, 12).map((o) => [o.id, optionLabel(o).slice(0, 120)]) });
+        continue;
       }
-      if (options.length !== 1) { (options.length ? ambiguous : unmatched).push(`${player.name} (${teamId})`); continue; }
       const eaId = options[0].id;
       const r = (s.players[player.id] ||= {});
       let prev = null;
@@ -3709,6 +3749,7 @@ function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear())
   }
   s.ea = { updatedAt: new Date().toISOString(), edition: String(ea.edition || "").slice(0, 8),
     labels: releases.map((r) => String(r.label || ratingWeekLabel(r.week)).slice(0, 40)).slice(0, 30), matched,
-    unmatched: unmatched.slice(0, 300).map((n) => n.slice(0, 90)), ambiguous: ambiguous.slice(0, 100).map((n) => n.slice(0, 90)) };
+    unmatched: unmatched.slice(0, 300).map((n) => n.slice(0, 90)), ambiguous: ambiguous.slice(0, 100).map((n) => n.slice(0, 90)),
+    review: review.slice(0, 400) };
   return { matched, unmatched, ambiguous, releases: releases.map((r) => r.label || ratingWeekLabel(r.week)) };
 }
