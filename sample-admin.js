@@ -42,7 +42,7 @@ function sampleLoadFiles() {
     document.head.append(script);
   });
   return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js?v=5f19e253"))
-    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=8f27eb8e")));
+    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=45ed502a")));
 }
 
 // The page was drawn from the old data, so reload it (keeping the message for the toast).
@@ -133,6 +133,19 @@ if (location.hash === "#sample-league") history.replaceState(null, "", location.
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey || event.key === sampleBackupKey) renderSampleNav();
 });
+
+// A sample loaded before box scores had a Blocking section gets blocking lines added in place.
+(function addBlockingToOldSample() {
+  if (!sampleIsLoaded()) return;
+  let data;
+  try { data = readStoredOffice(); } catch { return; }
+  if (!data?.sampleLeague || data.sampleVersion !== 2 || !(data.games || []).length || data.games.some((g) => g.players?.blocking?.length)) return;
+  sampleLoadFiles().then(() => {
+    if (!sampleAddBlocking(data, sampleLeague.depthCharts)) return;
+    writeStoredOffice(data);
+    sampleReload("The sample league's box scores now include blocking stats (pancakes and sacks allowed).");
+  }).catch(() => {});
+})();
 
 // A sample loaded before the 8-week version (the full 18-week season) is rebuilt in place. Your own data stays safe in
 // the backup store, so Remove Sample League still puts it back exactly.

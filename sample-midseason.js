@@ -19,6 +19,7 @@ function buildMidseasonSample(copy, data) {
 
   // ---------- Games, standings, schedule ----------
   data.games = copy.games.filter((g) => g.week <= sampleWeeksPlayed);
+  sampleAddBlocking(data, copy.depthCharts, copy.teams);
   const records = Object.fromEntries(teamIds.map((id) => [id, { w: 0, l: 0, t: 0, pf: 0, pa: 0, results: [] }]));
   for (const g of [...data.games].sort((a, b) => a.week - b.week)) {
     const [a, b] = g.teams;
@@ -286,4 +287,39 @@ function buildMidseasonSample(copy, data) {
   data.awards.sort((a, b) => awardPresets.indexOf(a.award) - awardPresets.indexOf(b.award));
 
   return { games: data.games.length, lastPlayed };
+}
+
+// Blocking lines (pancakes, sacks allowed) for every sample box score: each team's starting LT, LG, C, RG and RT.
+// Sacks allowed add up to the sacks the other team's defense recorded in that game. Has its own seeded random
+// numbers so the rest of the sample comes out the same as before. Returns how many games got blocking lines.
+function sampleAddBlocking(data, depthCharts = data.depthCharts, teams = data.teams) {
+  let seed = 4242;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  const nameOf = new Map(Object.values(teams || {}).flatMap((t) => t.roster || []).map((p) => [p.id, p.name]));
+  const linemen = (team) => {
+    const slots = depthCharts?.[team]?.slots || {};
+    const names = [];
+    for (const slot of ["LT", "LG", "C", "RG", "RT"]) {
+      const name = (slots[slot] || []).map((id) => nameOf.get(id)).find((n) => n && !names.includes(n));
+      if (name) names.push(name);
+    }
+    return names;
+  };
+  let added = 0;
+  for (const game of data.games || []) {
+    if (!game.players || game.players.blocking?.length) continue;
+    const lines = [];
+    for (const side of game.teams) {
+      const ol = linemen(side.team);
+      if (!ol.length) continue;
+      const other = game.teams.find((t) => t !== side)?.team;
+      const sacked = (game.players.defense || []).filter((l) => l.team === other).reduce((t, l) => t + (Number(l.sacks) || 0), 0);
+      const rushYds = Number(game.teamStats?.[side.team]?.rushYds) || 90;
+      const rows = ol.map((player) => ({ player, team: side.team, pancakes: Math.floor(rand() * (rushYds >= 120 ? 5 : 4)), sacks: 0 }));
+      for (let half = 0; half < Math.round(sacked * 2); half += 1) rows[Math.floor(rand() * rows.length)].sacks += 0.5;
+      lines.push(...rows);
+    }
+    if (lines.length) { game.players.blocking = lines; added += 1; }
+  }
+  return added;
 }
