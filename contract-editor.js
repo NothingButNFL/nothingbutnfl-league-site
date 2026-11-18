@@ -115,7 +115,8 @@ function createContractEditor(container, { getData = () => null, startYear: star
     if (extension) { total -= current.baseSalary + current.rosterBonus; gtd -= current.guaranteedSalary; }
     return { shares, total: Math.max(0, total), gtd: Math.max(0, gtd) };
   }
-  const existingBonus = (i) => extension && i === 0 ? current.proratedBonus : 0;
+  // Extensions: his current signing-bonus proration is re-spread over this season + the next (extension years − 1) seasons.
+  const existingBonus = (i) => extension ? (extensionOriginalShares(current.proratedBonus, years)[i] || 0) : 0;
 
   function renderOriginal() {
     const box = $(".ce-original");
@@ -170,14 +171,17 @@ function createContractEditor(container, { getData = () => null, startYear: star
       hint.closest("td").classList.toggle("is-below", Boolean(min) && rows[i].baseSalary < min.amount);
     }
     out("tBase", money(rows.reduce((s, r) => s + r.baseSalary, 0)));
-    out("tBonus", money(shares.reduce((s, v) => s + v, 0) + existingBonus(0)));
+    out("tBonus", money(shares.reduce((s, v) => s + v, 0) + (extension ? current.proratedBonus : 0)));
     out("tRoster", money(rows.reduce((s, r) => s + r.rosterBonus, 0)));
     out("tGtd", money(rows.reduce((s, r) => s + r.guaranteedSalary, 0)));
     out("tCap", money(tCap));
     const seasonsSpread = Math.min(rowCount() + voidYears, maxProrationSeasons);
-    $(".ce-proration").textContent = signingBonus
+    const origSpread = Math.min(years, maxProrationSeasons);
+    const origNote = extension && current.proratedBonus
+      ? ` His original ${money(current.proratedBonus)} of ${refYear()} signing bonus is spread over ${origSpread} season${origSpread === 1 ? "" : "s"} (${refYear()}${origSpread > 1 ? `–${refYear() + origSpread - 1}` : ""}).` : "";
+    $(".ce-proration").textContent = (signingBonus
       ? `Signing bonus spread over ${seasonsSpread} season${seasonsSpread === 1 ? "" : "s"}${extension ? ` (this season and the extension)` : ""}${rowCount() > maxProrationSeasons ? ` (the most allowed); later years carry none` : ""}.`
-      : rowCount() < maxProrationSeasons ? "Void years only matter when there's a signing bonus." : "";
+      : rowCount() < maxProrationSeasons ? "Void years only matter when there's a signing bonus." : "") + origNote;
     const voidAmount = shares.slice(rowCount()).reduce((s, v) => s + v, 0);
     const voidSeason = startYear() + rowCount();
     $(".ce-void-note").textContent = voidYears && voidAmount

@@ -2220,6 +2220,11 @@ function prorationShares(bonus, seasonCount) {
   return Array.from({ length: count }, (_, i) => each + (i === count - 1 ? bonus - each * count : 0));
 }
 
+// Extensions: the original deal's signing bonus still on this season is re-spread evenly over this season and the
+// following ones, as many seasons as the extension adds (3-year extension → this season and the next 2), up to 5.
+// The extension's own signing bonus is spread over this season plus every extension year, also up to 5.
+const extensionOriginalShares = (currentProrated, extensionYears) => prorationShares(currentProrated || 0, Math.max(1, extensionYears || 1));
+
 // Contract → salary-sheet seasons starting with startYear: [{ year, baseSalary, proratedBonus, rosterBonus, guaranteedSalary }].
 // Offers built year by year (yearsDetail) use their own numbers; older offers split evenly. Years past the last salary sheet are left off.
 function contractSeasonBreakdown(contract, startYear = contract.startYear ?? currentLeagueYear()) {
@@ -2229,7 +2234,8 @@ function contractSeasonBreakdown(contract, startYear = contract.startYear ?? cur
     // Extensions that rework the current season list it first (includesCurrent) and keep its existing proration.
     const realCount = contract.yearsDetail.length;
     const shares = prorationShares(bonus, realCount + (contract.voidYears || 0));
-    const existing = (i) => contract.includesCurrent && i === 0 ? (contract.currentProrated || 0) : 0;
+    const original = contract.includesCurrent ? extensionOriginalShares(contract.currentProrated, contract.years) : [];
+    const existing = (i) => original[i] || 0;
     // Veteran Minimum Benefit: the salary sheet charges the 2-year minimum as base salary; the player is paid his own minimum.
     const vmb = contract.vmbCapBase !== undefined;
     return contract.yearsDetail.map((y, i) => ({ year: startYear + i, baseSalary: y.baseSalary, capBase: vmb ? contract.vmbCapBase : y.baseSalary,
