@@ -1113,3 +1113,5 @@ html[data-theme="espn"] .record-name { color: #2b2c2d; }
 html[data-theme="espn"] .record-name small { color: #6c6d6f; }
 html[data-theme="espn"] .record-num { color: #121213; }
 html[data-theme="espn"] .record-empty { color: #6c6d6f; }
+html[data-theme="espn"] .bx-edge { color: #1e7f3a; }
+html[data-theme="espn"] main .bx-edit-team .bx-ts-label { color: #48494a; }

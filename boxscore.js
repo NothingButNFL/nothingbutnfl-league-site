@@ -125,13 +125,14 @@
     // ---- team stats: label, then each team's number (like ESPN's Team Stats) ----
     const ts = game.teamStats || {};
     const box = document.querySelector("#bx-team-stats");
+    // [label, value, key for the better-side marker (3rd down efficiency compares the conversion rate)]
     const rows = [
-      ["1st Downs", (s) => s.firstDowns], ["3rd down efficiency", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined)],
-      ["Total Plays", (s) => s.totalPlays], ["Total Yards", (s) => s.totalOffense],
-      ["Passing", (s) => s.passYds], ["Comp/Att", (s) => (s.att != null ? `${num(s.cmp)}/${num(s.att)}` : undefined)], ["Passing TDs", (s) => s.passTd],
-      ["Rushing", (s) => s.rushYds], ["Rushing Attempts", (s) => s.rushAtt], ["Rushing TDs", (s) => s.rushTd],
-      ["Penalties", (s) => s.penalties], ["Turnovers", (s) => s.turnovers], ["Fumbles lost", (s) => s.fumblesLost], ["Interceptions thrown", (s) => s.interceptions],
-      ["Possession", (s) => s.possession],
+      ["1st Downs", (s) => s.firstDowns, "firstDowns"], ["3rd down efficiency", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined), "thirdPct"],
+      ["Total Plays", (s) => s.totalPlays, "totalPlays"], ["Total Yards", (s) => s.totalOffense, "totalOffense"],
+      ["Passing", (s) => s.passYds, "passYds"], ["Comp/Att", (s) => (s.att != null ? `${num(s.cmp)}/${num(s.att)}` : undefined), "cmpPct"], ["Passing TDs", (s) => s.passTd, "passTd"],
+      ["Rushing", (s) => s.rushYds, "rushYds"], ["Rushing Attempts", (s) => s.rushAtt, "rushAtt"], ["Rushing TDs", (s) => s.rushTd, "rushTd"],
+      ["Penalties", (s) => s.penalties, "penalties"], ["Turnovers", (s) => s.turnovers, "turnovers"], ["Fumbles lost", (s) => s.fumblesLost, "fumblesLost"], ["Interceptions thrown", (s) => s.interceptions, "interceptions"],
+      ["Possession", (s) => s.possession, "possession"],
     ].filter(([, get]) => [away, home].some((t) => get(ts[t.team] || {}) !== undefined));
     if (!rows.length) {
       box.replaceChildren(el("p", "empty-state", "Only the final score was entered for this game, so there are no team stats."));
@@ -142,16 +143,37 @@
       const teamHead = (t, cls) => { const th = el("th", cls); const w = el("span", "bx-th-team"); w.append(logo(t.team), el("span", "", teamName(t.team))); th.append(w); return th; };
       hr.append(teamHead(away, "bx-ts-away"), el("th", "bx-ts-label", ""), teamHead(home, "bx-ts-home"));
       const tb = table.createTBody();
-      for (const [label, get] of rows) {
+      const rate = (st, a, b) => (st?.[b] ? st[a] / st[b] : null);
+      for (const [label, get, key] of rows) {
         const tr = tb.insertRow();
         const values = [away, home].map((t) => get(ts[t.team] || {}));
-        const a = tr.insertCell(); a.className = "bx-ts-away"; a.textContent = num(values[0]);
+        const best = key === "thirdPct" ? betterSide(key, rate(ts[away.team], "thirdConv", "thirdAtt"), rate(ts[home.team], "thirdConv", "thirdAtt"))
+          : key === "cmpPct" ? betterSide(key, rate(ts[away.team], "cmp", "att"), rate(ts[home.team], "cmp", "att"))
+          : betterSide(key, values[0], values[1]);
+        const a = tr.insertCell(); a.className = "bx-ts-away";
+        if (best === "away") a.append(edge("away"), " ");
+        a.append(num(values[0]));
         const l = tr.insertCell(); l.className = "bx-ts-label"; l.textContent = label;
-        const h = tr.insertCell(); h.className = "bx-ts-home"; h.textContent = num(values[1]);
+        const h = tr.insertCell(); h.className = "bx-ts-home"; h.append(num(values[1]));
+        if (best === "home") h.append(" ", edge("home"));
       }
       box.replaceChildren(table);
     }
   }
+
+  // Which side has the better number for a team stat: "away", "home" or "" (tied, missing, or not a "better" stat).
+  const lowerIsBetter = new Set(["penalties", "penaltyYds", "turnovers", "fumblesLost", "interceptions"]);
+  const noBest = new Set(["thirdAtt"]);
+  const toSec = (v) => { const m = String(v ?? "").match(/^(\d{1,2}):(\d{2})$/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+  function betterSide(key, a, b) {
+    if (noBest.has(key)) return "";
+    const x = key === "possession" ? toSec(a) : (a === "" || a == null ? null : Number(a));
+    const y = key === "possession" ? toSec(b) : (b === "" || b == null ? null : Number(b));
+    if (x === null || y === null || !Number.isFinite(x) || !Number.isFinite(y) || x === y) return "";
+    return (lowerIsBetter.has(key) ? x < y : x > y) ? "away" : "home";
+  }
+  // The edge marker: ">" left of the away number, "<" right of the home number.
+  const edge = (side) => el("span", `bx-edge is-${side}`, side === "away" ? ">" : "<");
 
   // ---------- Editing: score, week, date, every player line and the team stats ----------
   // Player lines feed Season Stats, Career Stats, leaders and the Player Hub straight away (they're added up from the
@@ -251,22 +273,35 @@
     // Team stats
     const tsCard = el("div", "bx-card");
     tsCard.append(el("h3", "bx-card-title", "Team stats"));
+    // Away number on the left, the stat in the middle, home number on the right; > or < marks the better side.
     const tsTable = el("table", "bx-table bx-edit-team");
     const th = tsTable.createTHead().insertRow();
-    th.append(el("th", "", ""), el("th", "", away.team), el("th", "", home.team));
+    th.append(el("th", "bx-ts-away", teamName(away.team)), el("th", "bx-ts-label", ""), el("th", "bx-ts-home", teamName(home.team)));
     const tsb = tsTable.createTBody();
     for (const [key, label] of teamFields) {
       const tr = tsb.insertRow();
       tr.dataset.key = key;
-      tr.insertCell().textContent = label;
-      for (const t of [away, home]) {
+      const inputs = [away, home].map((t) => {
         const v = game.teamStats?.[t.team]?.[key];
         let input;
         if (key === "possession") { input = el("input"); input.type = "text"; input.maxLength = 5; input.placeholder = "30:00"; input.value = v ?? ""; input.setAttribute("aria-label", `${t.team} ${label}`); }
         else input = numberInput(v, `${t.team} ${label}`);
         input.dataset.team = t.team;
-        tr.insertCell().append(input);
-      }
+        return input;
+      });
+      const awayCell = tr.insertCell(); awayCell.className = "bx-ts-away";
+      const labelCell = tr.insertCell(); labelCell.className = "bx-ts-label"; labelCell.textContent = label;
+      const homeCell = tr.insertCell(); homeCell.className = "bx-ts-home";
+      const awayWrap = el("span", "bx-edge-wrap"), homeWrap = el("span", "bx-edge-wrap");
+      const mark = () => {
+        const side = betterSide(key, inputs[0].value.trim(), inputs[1].value.trim());
+        awayWrap.replaceChildren(...(side === "away" ? [edge("away")] : [el("span", "bx-edge is-blank", ">")]), inputs[0]);
+        homeWrap.replaceChildren(inputs[1], ...(side === "home" ? [edge("home")] : [el("span", "bx-edge is-blank", "<")]));
+      };
+      inputs.forEach((i) => i.addEventListener("input", mark));
+      mark();
+      awayCell.append(awayWrap);
+      homeCell.append(homeWrap);
     }
     tsCard.append(tsTable);
     form.append(tsCard);

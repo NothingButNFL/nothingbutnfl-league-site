@@ -3645,3 +3645,16 @@ a.record-value:hover, a.record-num:hover { text-decoration: underline; text-unde
 .record-name small { color: #a7bdd7; font-size: 11px; }
 .record-num { float: right; color: #fff; font-weight: 800; text-decoration: none; }
 .record-empty { margin: 0 0 6px; color: #a7bdd7; font-size: 13px; }
+/* Box score team stats: > / < marks the team with the better number */
+.bx-edge { color: #75e28b; font: 800 13px var(--mono); }
+.bx-edge.is-blank { visibility: hidden; }
+.bx-edge-wrap { display: inline-flex; align-items: center; gap: 6px; }
+.bx-edit-team { width: 100%; max-width: 640px; margin: 0 auto 14px; }
+main .bx-edit-team .bx-ts-away { text-align: right !important; }
+main .bx-edit-team .bx-ts-home { text-align: left !important; }
+main .bx-edit-team .bx-ts-label { color: #c5d5e8; text-align: center !important; white-space: nowrap; }
+main .bx-edit-team th { text-align: inherit; }
+main .bx-edit-team { table-layout: fixed; }
+main .bx-table.bx-edit-team :is(th, td).bx-ts-away { width: 38% !important; text-align: right !important; }
+main .bx-table.bx-edit-team :is(th, td).bx-ts-label { width: 24% !important; text-align: center !important; }
+main .bx-table.bx-edit-team :is(th, td).bx-ts-home { width: 38% !important; text-align: left !important; }

@@ -438,3 +438,4 @@ html[data-theme="gray"] .record-list li::marker { color: #8f9298; }
 html[data-theme="gray"] .record-name { color: #e2e3e6; }
 html[data-theme="gray"] .record-name small { color: #b6b9be; }
 html[data-theme="gray"] .record-empty { color: #b6b9be; }
+html[data-theme="gray"] main .bx-edit-team .bx-ts-label { color: #d5d7db; }
