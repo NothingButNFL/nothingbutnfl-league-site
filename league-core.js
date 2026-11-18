@@ -813,8 +813,8 @@ let nflExperienceIndex = null;
 function experienceIndex() {
   if (nflExperienceIndex || typeof nflExperienceSnapshot === "undefined") return nflExperienceIndex;
   nflExperienceIndex = new Map();
-  for (const [fullName, altName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear] of nflExperienceSnapshot.players) {
-    const record = { fullName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear };
+  for (const [fullName, altName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear, espnId = "", nflPhoto = ""] of nflExperienceSnapshot.players) {
+    const record = { fullName, team, position, experience, status, birthDate, college, height, weight, draftYear, draftRound, draftPick, entryYear, espnId, nflPhoto };
     for (const key of new Set([normalizePlayerName(fullName), altName && normalizePlayerName(altName)].filter(Boolean))) {
       if (!nflExperienceIndex.has(key)) nflExperienceIndex.set(key, []);
       nflExperienceIndex.get(key).push(record);
@@ -866,6 +866,10 @@ function matchNflExperience(name, position, teamId) {
   if (new Set(candidates.map((p) => `${p.experience}|${p.birthDate}`)).size > 1) return { error: "ambiguous", candidates };
   return { experience: candidates[0].experience, record: candidates[0] };
 }
+
+// His headshot from the snapshot: ESPN's when he has an ESPN id, else NFL.com's; "" when neither.
+const nflHeadshotUrl = (record) => (record?.espnId ? `https://a.espncdn.com/i/headshots/nfl/players/full/${record.espnId}.png`
+  : record?.nflPhoto ? `https://static.www.nfl.com/image/upload/f_auto,q_auto/league/${record.nflPhoto}` : "");
 
 // A Draft Pool prospect in the NFL roster snapshot: players who entered the league in his draft year, narrowed by
 // college and position. Only an unambiguous match counts.

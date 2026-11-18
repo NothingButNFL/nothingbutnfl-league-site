@@ -10,7 +10,7 @@ const hash = (file) => crypto.createHash("sha1").update(fs.readFileSync(path.joi
 // sample-admin.js downloads the sample files itself; stamp those links first (this changes sample-admin.js's hash).
 const adminPath = path.join(site, "sample-admin.js");
 let admin = fs.readFileSync(adminPath, "utf8");
-admin = admin.replace(/load\("(sample-league|sample-midseason)\.js(\?v=\w+)?"\)/g, (_, name) => `load("${name}.js?v=${hash(`${name}.js`)}")`);
+admin = admin.replace(/load\("(sample-league|sample-midseason|nfl-experience)\.js(\?v=\w+)?"\)/g, (_, name) => `load("${name}.js?v=${hash(`${name}.js`)}")`);
 fs.writeFileSync(adminPath, admin);
 
 let pages = 0;

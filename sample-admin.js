@@ -42,7 +42,51 @@ function sampleLoadFiles() {
     document.head.append(script);
   });
   return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js?v=5f19e253"))
-    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=6a882d0a")));
+    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=6a882d0a")))
+    .then(() => (typeof nflExperienceSnapshot !== "undefined" ? undefined : load("nfl-experience.js?v=fa36c2d5").catch(() => undefined)));
+}
+
+// The sample's players are real NFL players, so give them their real bios and headshots (nfl-experience.js) and
+// their real Madden ratings (ea-ratings.json, the site's EA import, up to the sample's week). Whatever can't be
+// reached is skipped and the made-up values stay. Returns a summary line for the toast.
+async function sampleImportRealDetails(data) {
+  const bits = [];
+  if (typeof nflExperienceSnapshot !== "undefined") {
+    const year = currentLeagueYear();
+    let bios = 0, photos = 0;
+    const everyone = [
+      ...nflTeams.flatMap(({ id }) => data.teams[id].roster.map((player) => ({ player, teamId: id, position: seasonEntry(player, year)?.position || "" }))),
+      ...(data.contractPlayers || []).map((player) => ({ player, teamId: player.team, position: player.position || "" }))
+    ];
+    for (const { player, teamId, position } of everyone) {
+      const record = matchNflExperience(player.name, position, teamId && teamId !== freeAgentTeamId ? teamId : null).record;
+      if (!record) continue;
+      const profile = { ...(player.profile || {}) };
+      if (!player.birthDate && record.birthDate) { player.birthDate = record.birthDate; player.age = null; }
+      if (!profile.college && record.college) profile.college = String(record.college).slice(0, profileTextLimits.college);
+      if (!profile.height && record.height) profile.height = formatHeight(record.height);
+      if (!profile.weight && record.weight) profile.weight = record.weight;
+      if (!profile.draftYear && record.draftYear) { profile.draftYear = record.draftYear; profile.draftRound = record.draftRound || null; profile.draftPick = record.draftPick || null; }
+      if (player.experience == null && record.experience != null) player.experience = record.experience;
+      bios += 1;
+      const photo = nflHeadshotUrl(record);
+      if (photo && !profile.photoData && (!profile.photoUrl || profile.photoSource === "import")) { profile.photoUrl = photo; profile.photoSource = "import"; photos += 1; }
+      player.profile = profile;
+    }
+    bits.push(`real bios for ${bios.toLocaleString("en-US")} players and ${photos.toLocaleString("en-US")} headshots`);
+  }
+  try {
+    const response = await fetch(`ea-ratings.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(String(response.status));
+    const ea = await response.json();
+    ea.releases = (ea.releases || []).filter((r) => r && r.week <= sampleWeeksPlayed);
+    const result = applyEaRatings(data, ea);
+    if (result.error) throw new Error(result.error);
+    bits.push(`real Madden ratings for ${result.matched.toLocaleString("en-US")} players`);
+  } catch {
+    bits.push(location.protocol === "file:" ? "made-up Madden ratings (open the site from GitHub Pages to get EA's)" : "made-up Madden ratings (EA's file couldn't be loaded)");
+  }
+  return bits.join(", ");
 }
 
 // The page was drawn from the old data, so reload it (keeping the message for the toast).
@@ -52,7 +96,7 @@ function sampleReload(message) {
 }
 
 async function loadSampleLeague() {
-  const ok = await confirmAction("Load the sample league? It's a season 8 weeks in, with 53-man salary sheets and practice squads for all 32 teams. Salary sheets, Player Contracts, caps, draft picks, the trade block, pending trades, waivers, games, stats, standings, schedule, awards, transactions, injuries, key dates, members, news and admin queues are replaced with made-up ones until you remove it. Your current data is saved and comes back exactly when you remove the sample.", { confirmLabel: "Load sample league" });
+  const ok = await confirmAction("Load the sample league? It's a season 8 weeks in, with 53-man salary sheets and practice squads for all 32 teams. Salary sheets, Player Contracts, caps, draft picks, the trade block, pending trades, waivers, games, stats, standings, schedule, awards, transactions, injuries, key dates, members, news and admin queues are replaced with made-up ones until you remove it. The players get their real bios, headshots and Madden ratings. Your current data is saved and comes back exactly when you remove the sample.", { confirmLabel: "Load sample league" });
   if (!ok) return;
   sampleToast("Loading the sample league…");
   try { await sampleLoadFiles(); } catch (error) { sampleToast(`Could not load the sample: ${error.message}. Nothing was changed.`); return; }
@@ -74,12 +118,14 @@ async function loadSampleLeague() {
   try {
     const copy = JSON.parse(JSON.stringify(sampleLeague));
     const built = buildMidseasonSample(copy, data); // sample-midseason.js: 8 weeks played, every feature filled in
+    sampleToast("Adding real bios, headshots and Madden ratings…");
+    const real = await sampleImportRealDetails(data);
     data.sampleVersion = sampleVersion;
     data.sampleLeague = true;
     localStorage.removeItem(officeStorageKey); // make room: the copy is safe in the backup store
     writeStoredOffice(data);
     const players = nflTeams.reduce((sum, { id }) => sum + data.teams[id].roster.length, 0);
-    sampleReload(`Sample league loaded: ${built.games} games through Week ${sampleWeeksPlayed} and ${players.toLocaleString("en-US")} players on 32 salary sheets (practice squads included). Week ${sampleWeeksPlayed + 1} is up next.`);
+    sampleReload(`Sample league loaded: ${built.games} games through Week ${sampleWeeksPlayed} and ${players.toLocaleString("en-US")} players on 32 salary sheets (practice squads included). Week ${sampleWeeksPlayed + 1} is up next. Added ${real}.`);
   } catch (error) {
     // Put the user's data back if the sample didn't fit.
     try { if (raw !== null) localStorage.setItem(officeStorageKey, raw); localStorage.removeItem(sampleBackupKey); } catch { /* the backup store still has it */ }
