@@ -71,10 +71,10 @@ function dcFormation(tab, chart) {
   if (tab === "defense") return isThreeFour(chart.schemes.defense)
     ? { cols: 16, cards: [
       // Madden's 3-4: the edges stand up at linebacker (REDG, LEDG) beside MIKE and WILL; three DTs on the line.
-      ["FS", "FS", 0, 1, 2, 1], ["REDG", "RE", 0, 1, 5, 1], ["MIKE", "MIKE", 0, 1, 7, 1, "is-dropped"], ["WILL", "WILL", 0, 1, 9, 1], ["LEDG", "LE", 0, 1, 11, 1], ["SS", "SS", 0, 1, 14, 1],
+      ["FS", "FS", 0, 1, 2, 1], ["REDG", "RE", 0, 1, 5, 1], ["MIKE", "MIKE", 0, 1, 7, 1], ["WILL", "WILL", 0, 1, 9, 1], ["LEDG", "LE", 0, 1, 11, 1], ["SS", "SS", 0, 1, 14, 1],
       ["CB1", "CB", 0, 2, 1, 2], ["DT3", "DT", 2, 3, 6, 2], ["DT1", "DT", 0, 3, 8, 2], ["DT2", "DT", 1, 3, 10, 2], ["CB2", "CB", 1, 2, 15, 2]] }
     : { cols: 16, cards: [
-      ["FS", "FS", 0, 1, 2, 1], ["WILL", "WILL", 0, 1, 6, 1], ["MIKE", "MIKE", 0, 1, 8, 1, "is-dropped"], ["SAM", "SAM", 0, 1, 10, 1], ["SS", "SS", 0, 1, 14, 1],
+      ["FS", "FS", 0, 1, 2, 1], ["WILL", "WILL", 0, 1, 6, 1], ["MIKE", "MIKE", 0, 1, 8, 1], ["SAM", "SAM", 0, 1, 10, 1], ["SS", "SS", 0, 1, 14, 1],
       ["CB1", "CB", 0, 2, 1, 2], ["REDG", "RE", 0, 1, 5, 2], ["DT1", "DT", 0, 2, 7, 2], ["DT2", "DT", 1, 2, 9, 2], ["LEDG", "LE", 0, 1, 11, 2], ["CB2", "CB", 1, 2, 15, 2]] };
   if (tab === "special") return { cols: 16, cards: [
     ["P", "P", 0, 1, 4, 1], ["K", "K", 0, 1, 6, 1], ["LS", "LS", 0, 1, 9, 1, "is-dropped"], ["KR", "KR", 0, 1, 11, 1, "is-dropped"],
