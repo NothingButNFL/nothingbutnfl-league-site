@@ -3835,3 +3835,34 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .ovr-attr em { font-style: normal; font-size: 12px; text-align: right; }
 .ovr-attr.is-up { background: rgba(63, 154, 92, 0.18); } .ovr-attr.is-up em { color: #7fd19b; }
 .ovr-attr.is-down { background: rgba(194, 71, 74, 0.18); } .ovr-attr.is-down em { color: #f08a8c; }
+
+/* Attribute popout styled like EA's ratings page */
+.ovr-attr-dialog { position: fixed; width: min(1120px, 96vw) !important; padding: 26px 28px !important; background: radial-gradient(circle at 0% 100%, rgba(30, 90, 255, 0.35), transparent 45%), #0b0d14 !important; border: 1px solid #2a2e3a !important; }
+.ovr-attr-close { position: absolute; top: 10px; right: 14px; border: 0; background: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+.ea-card-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: start; }
+.ea-card { position: relative; height: 230px; border-radius: 4px; overflow: hidden; background: linear-gradient(160deg, #1d4fd8, #0a1a52); display: flex; align-items: flex-end; justify-content: center; }
+.ea-card img { width: 82%; height: auto; margin-bottom: 18px; background: #e9ecef; }
+.ea-card-initials { margin: auto; color: #fff; font: 800 44px var(--body); }
+.ea-card-ovr { position: absolute; top: 10px; right: 12px; display: grid; justify-items: center; color: #fff; font: 800 26px/1 var(--body); }
+.ea-card-ovr small { font-size: 10px; letter-spacing: 0.08em; }
+.ea-facts { display: grid; gap: 14px; margin: 16px 0 0; padding: 16px; border: 1px solid #333846; border-radius: 10px; background: #1b1d24; }
+.ea-facts dt { color: #a8adb8; font-size: 11px; }
+.ea-facts dd { margin: 2px 0 0; color: #fff; font-weight: 700; font-size: 14px; }
+.ea-week { margin: 0; color: #c7cbd3; font-size: 14px; }
+.ea-name { margin: 2px 0 10px; color: #fff; font: 800 38px/1.02 var(--body); }
+.ea-name span { display: block; font-size: 20px; font-weight: 700; }
+.ea-tools { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-bottom: 10px; }
+.ea-tools .ovr-attr-toggle { margin: 0; }
+.ea-panel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 22px; padding: 16px 18px 20px; border: 1px solid #333846; border-radius: 10px; background: #1f2026; }
+.ea-group { margin-bottom: 18px; }
+.ea-group h4 { margin: 0 0 6px; color: #fff; font: 800 16px var(--body); }
+.ea-row { position: relative; display: grid; grid-template-columns: 1fr auto auto; align-items: baseline; gap: 6px; padding: 7px 0 8px; border-bottom: 1px solid #3a3d47; color: #c9ccd4; font-size: 13px; }
+.ea-row strong { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ea-row em { font-style: normal; font-size: 10px; }
+.ea-row em.is-up { color: #6fe38f; } .ea-row em.is-down { color: #ff7b7b; }
+.ea-row i { position: absolute; left: 0; bottom: -1px; height: 2px; }
+.ea-row i.is-high { background: #3ddc84; } .ea-row i.is-mid { background: #f5c242; } .ea-row i.is-low { background: #f0605d; }
+.ea-row.is-changed span { color: #fff; }
+.ea-panel.only-changed .ea-row:not(.is-changed) { display: none; }
+.ea-panel.only-changed .ea-group:not(:has(.is-changed)) { display: none; }
+@media (max-width: 900px) { .ea-card-layout { grid-template-columns: 1fr; } .ea-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

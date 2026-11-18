@@ -709,27 +709,53 @@ async function openAttributes(entry, week) {
   // Compare with the release before this one that has him.
   const earlier = Object.keys(data.weeks).map(Number).filter((w) => w < week).sort((a, b) => b - a)[0];
   const before = earlier === undefined ? null : data.weeks[String(earlier)];
-  const rows = data.keys.map((k, i) => ({ label: data.labels[i] || k, value: now[i], change: before && now[i] !== null && before[i] !== null && before[i] !== undefined ? now[i] - before[i] : 0 }))
-    .filter((r) => r.value !== null && r.value !== undefined);
-  const changed = rows.filter((r) => r.change).length;
-  body.textContent = before
-    ? `${changed ? `${changed} attribute${changed === 1 ? "" : "s"} changed` : "No attributes changed"} since ${earlier === 0 ? "Launch" : ratingWeekLabel(earlier)}.`
-    : "Launch ratings (nothing earlier to compare).";
-  const toggle = document.createElement("label");
-  toggle.className = "ovr-attr-toggle";
-  toggle.innerHTML = '<input type="checkbox"> Only show changes';
-  const grid = document.createElement("div");
-  grid.className = "ovr-attr-grid";
-  const draw = (onlyChanged) => {
-    grid.replaceChildren(...rows.filter((r) => !onlyChanged || r.change).map((r) => {
-      const item = document.createElement("div");
-      item.className = `ovr-attr${r.change > 0 ? " is-up" : r.change < 0 ? " is-down" : ""}`;
-      const sign = r.change > 0 ? `▲ ${r.change}` : r.change < 0 ? `▼ ${-r.change}` : "";
-      item.innerHTML = `<span>${escapeHtml(r.label)}</span><strong>${r.value}</strong><em>${sign}</em>`;
-      return item;
-    }));
-  };
-  toggle.querySelector("input").addEventListener("change", (e) => draw(e.target.checked));
-  draw(false);
-  body.after(toggle, grid);
+  const at = (key) => { const i = data.keys.indexOf(key); return i < 0 ? null : { value: now[i], change: before && now[i] != null && before[i] != null ? now[i] - before[i] : 0 }; };
+  const changed = data.keys.filter((k) => !["overall", "runningStyle"].includes(k) && at(k)?.change).length;
+  const weekName = week === 0 ? "Launch Ratings" : `${ratingWeekLabel(week)} Ratings`;
+  const [first, ...rest] = entry.player.name.split(" ");
+  const profile = playerProfile(entry.player);
+  const season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const position = entry.player.seasons?.[season]?.position || profile.positions || "";
+  const team = entry.teamId && entry.teamId !== freeAgentTeamId ? nflTeams.find((t) => t.id === entry.teamId)?.name : "Free agent";
+  const ovr = at("overall")?.value ?? ratingTimeline(officeData, season, entry.player.id)[week]?.madden;
+  const photo = profilePhotoSrc(profile);
+  // EA's own groups and order (Madden ratings page).
+  const groups = [
+    [["General", ["speed", "acceleration", "strength", "agility", "awareness", "jumping", "injury", "stamina", "toughness"]],
+     ["Defense", ["tackle", "powerMoves", "finesseMoves", "blockShedding", "pursuit", "playRecognition", "manCoverage", "zoneCoverage", "hitPower", "press"]]],
+    [["Ballcarrier", ["carrying", "breakTackle", "trucking", "changeOfDirection", "bCVision", "stiffArm", "spinMove", "jukeMove", "breakSack"]],
+     ["Receiving", ["catching", "spectacularCatch", "catchInTraffic", "shortRouteRunning", "mediumRouteRunning", "deepRouteRunning", "release"]]],
+    [["Blocking", ["runBlock", "passBlock", "impactBlocking", "runBlockPower", "runBlockFinesse", "passBlockPower", "passBlockFinesse", "leadBlock"]],
+     ["Kicking", ["kickPower", "kickAccuracy", "kickReturn"]]],
+    [["Passing", ["throwPower", "throwUnderPressure", "throwAccuracyShort", "throwAccuracyMid", "throwAccuracyDeep", "throwOnTheRun", "playAction"]]]
+  ];
+  const labelOf = (k) => ({ bCVision: "BC Vision", throwOnTheRun: "Throw on the Run" })[k] || data.labels[data.keys.indexOf(k)] || k;
+  const tone = (v) => (v >= 70 ? "is-high" : v >= 50 ? "is-mid" : "is-low");
+  dialog.innerHTML = `<button type="button" class="ovr-attr-close" data-close aria-label="Close">×</button>
+    <div class="ea-card-layout">
+      <aside class="ea-side">
+        <div class="ea-card">${photo ? `<img src="${escapeHtml(photo)}" alt="" referrerpolicy="no-referrer">` : `<span class="ea-card-initials">${escapeHtml(entry.player.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join(""))}</span>`}
+          <span class="ea-card-ovr">${ovr ?? "—"}<small>OVR</small></span></div>
+        <dl class="ea-facts">
+          ${position ? `<div><dt>Position</dt><dd>${escapeHtml(position)}</dd></div>` : ""}
+          <div><dt>Team</dt><dd>${escapeHtml(team || "—")}</dd></div>
+          ${profile.height ? `<div><dt>Height</dt><dd>${escapeHtml(profile.height)}</dd></div>` : ""}
+          ${profile.weight ? `<div><dt>Weight</dt><dd>${profile.weight} lb</dd></div>` : ""}
+        </dl>
+      </aside>
+      <div class="ea-main">
+        <p class="ea-week">${escapeHtml(weekName)}</p>
+        <h3 class="ea-name"><span>${escapeHtml(first)}</span>${escapeHtml(rest.join(" ") || "")}</h3>
+        <div class="ea-tools"><p class="ovr-attr-note">${before ? `${changed ? `${changed} attribute${changed === 1 ? "" : "s"} changed` : "No attributes changed"} since ${earlier === 0 ? "Launch" : ratingWeekLabel(earlier)}.` : "Launch ratings (nothing earlier to compare)."}</p>
+          <label class="ovr-attr-toggle"><input type="checkbox"> Only show changes</label></div>
+        <div class="ea-panel">${groups.map((col) => `<div class="ea-col">${col.map(([title, keys]) => `<section class="ea-group"><h4>${title}</h4>${keys.map((k) => {
+          const r = at(k);
+          if (!r || r.value == null) return "";
+          const delta = r.change ? `<em class="${r.change > 0 ? "is-up" : "is-down"}">${r.change > 0 ? "+" : "−"}${Math.abs(r.change)}</em>` : "";
+          return `<div class="ea-row${r.change ? " is-changed" : ""}"><span>${escapeHtml(labelOf(k))}</span>${delta}<strong>${r.value}</strong><i class="${tone(r.value)}" style="width:${Math.max(2, Math.min(100, r.value))}%"></i></div>`;
+        }).join("")}</section>`).join("")}</div>`).join("")}</div>
+      </div>
+    </div>`;
+  dialog.querySelector("[data-close]").addEventListener("click", () => dialog.close());
+  dialog.querySelector(".ovr-attr-toggle input").addEventListener("change", (e) => dialog.querySelector(".ea-panel").classList.toggle("only-changed", e.target.checked));
 }

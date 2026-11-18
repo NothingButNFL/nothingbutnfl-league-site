@@ -584,3 +584,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line:focus-within { outline-color: rgb(var(--tm-8fd0ff)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-group { background-color: rgb(var(--tm-e8edf3)); color: rgb(var(--tm-0a2140)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ovr-attr-dialog { background-color: rgb(var(--tm-0b2342)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ea-card img { background-color: rgb(var(--tm-e9ecef)); }

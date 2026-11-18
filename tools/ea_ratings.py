@@ -45,7 +45,12 @@ def slot_for(label):
     return None
 
 
+LABELS = {'bCVision': 'BC Vision', 'throwOnTheRun': 'Throw on the Run'}
+
+
 def stat_label(key):
+    if key in LABELS:
+        return LABELS[key]
     return re.sub(r'(?<!^)(?=[A-Z])', ' ', key).replace('_', ' ').title()
 
 
