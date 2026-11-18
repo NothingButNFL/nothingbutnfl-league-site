@@ -1306,7 +1306,7 @@ function lookupTeamId(text) {
 
 // ---- Stats (pasted tables, one per category) ----
 const statCategories = {
-  passing: "Passing", rushing: "Rushing", receiving: "Receiving", defense: "Defense", kicking: "Kicking", team: "Team"
+  passing: "Passing", rushing: "Rushing", receiving: "Receiving", blocking: "Blocking", defense: "Defense", kicking: "Kicking", team: "Team"
 };
 
 function validStats(stats) {

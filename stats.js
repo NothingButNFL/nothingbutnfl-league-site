@@ -29,6 +29,7 @@ const leaderSpecs = {
   passing: [[/^(PASS)?(YDS|YARDS)$/, "Passing yards"], [/^(PASS)?TDS?$/, "Passing touchdowns"], [/^(RATE|RTG|RATING|PASSERRATING|QBR)$/, "Passer rating"]],
   rushing: [[/^(RUSH)?(YDS|YARDS)$/, "Rushing yards"], [/^(RUSH)?TDS?$/, "Rushing touchdowns"], [/^(ATT|CAR|CARRIES|RUSHATT)$/, "Carries"]],
   receiving: [[/^(REC|RECEPTIONS)$/, "Receptions"], [/^(REC)?(YDS|YARDS)$/, "Receiving yards"], [/^(REC)?TDS?$/, "Receiving touchdowns"]],
+  blocking: [[/^(PANCAKES?|PNK)$/, "Pancakes"], [/^(SACKSALLOWED|SACKS?ALLOWED|SA)$/, "Fewest sacks allowed", true]],
   defense: [[/^(TKL|TACKLES|COMB|TOT|TOTAL|TOTALTACKLES)$/, "Tackles"], [/^(SACKS?|SCK|SK)$/, "Sacks"], [/^(INT|INTS|INTERCEPTIONS)$/, "Interceptions"]],
   kicking: [[/^(FGM|FG)$/, "Field goals made"], [/^(PTS|POINTS)$/, "Points"], [/^(LNG|LONG)$/, "Longest kick"]],
   team: [[/^(PF|PTS|POINTS|PTSFOR|POINTSFOR)$/, "Points scored"], [/^(YDS|TOTYDS|YARDS|TOTALYARDS|TOTALYDS)$/, "Total yards"], [/^(PA|PTSAGAINST|POINTSAGAINST|POINTSALLOWED)$/, "Fewest points allowed", true]]
