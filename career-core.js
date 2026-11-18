@@ -36,6 +36,7 @@ const crSpec = {
   defense: [
     { key: "gp", label: "GP", re: /^(GP|G|GAMES)$/ },
     { key: "tkl", label: "Tkl", re: /^(TKL|TACKLES|COMB|TOT|TOTAL|TOTALTACKLES)$/, lead: "Tackles" },
+    { key: "tfl", label: "TFL", re: /^(TFL|TFLS|TACKLESFORLOSS|TKLLOSS)$/, fmt: "half" },
     { key: "sacks", label: "Sacks", re: /^(SACKS?|SCK|SK)$/, fmt: "half", lead: "Sacks" },
     { key: "int", label: "Int", re: /^(INT|INTS|INTERCEPTIONS)$/, lead: "Interceptions" },
     { key: "ff", label: "FF", re: /^(FF|FUMFORCED|FORCEDFUMBLES)$/ },

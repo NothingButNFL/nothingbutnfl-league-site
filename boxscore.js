@@ -71,8 +71,8 @@
         (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
       ["receiving", "Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
         (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
-      ["defense", "Defense", [["TOT", (l) => l.tackles], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
-        (ls) => ({ tackles: sum(ls, "tackles"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
+      ["defense", "Defense", [["TOT", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
+        (ls) => ({ tackles: sum(ls, "tackles"), tfl: sum(ls, "tfl"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
       ["kicking", "Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["PCT", (l) => (l.fga ? ((l.fgm / l.fga) * 100).toFixed(1) : "0.0")], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`], ["PTS", (l) => (Number(l.fgm) || 0) * 3 + (Number(l.xpm) || 0)]],
         (ls) => ({ fgm: sum(ls, "fgm"), fga: sum(ls, "fga"), xpm: sum(ls, "xpm"), xpa: sum(ls, "xpa"), long: maxOf(ls, "long") })],
     ];
@@ -163,7 +163,7 @@
     passing: [["cmp", "CMP"], ["att", "ATT"], ["yds", "YDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"]],
     rushing: [["att", "CAR"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
     receiving: [["rec", "REC"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
-    defense: [["tackles", "TOT"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
+    defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
   };
   const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", defense: "Defense", kicking: "Kicking" };
@@ -198,7 +198,7 @@
     name.setAttribute("list", rosterList(teamId));
     name.setAttribute("aria-label", `${catTitles[cat]} player`);
     tr.insertCell().append(name);
-    for (const [key, label] of editFields[cat]) tr.insertCell().append(numberInput(line[key], `${label} for ${line.player || "new player"}`, key === "sacks" ? "0.5" : "1"));
+    for (const [key, label] of editFields[cat]) tr.insertCell().append(numberInput(line[key], `${label} for ${line.player || "new player"}`, key === "sacks" || key === "tfl" ? "0.5" : "1"));
     const rm = el("button", "row-delete", "×");
     rm.type = "button";
     rm.setAttribute("aria-label", "Remove this line");

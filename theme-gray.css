@@ -429,3 +429,12 @@ html[data-theme="gray"] .md-tick-rec { color: #b6b9be; }
 html[data-theme="gray"] .bx-edit-meta label { color: #d5d7db; }
 html[data-theme="gray"] .bx-edit-meta input, html[data-theme="gray"] .bx-edit-table input, html[data-theme="gray"] .bx-edit-team input { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #18191b; }
 html[data-theme="gray"] .bx-edit-team td:first-child { color: #d5d7db; }
+html[data-theme="gray"] .record-card { border-top-color: #47494f; border-right-color: #47494f; border-bottom-color: #47494f; border-left-color: #47494f; background-color: #1e1f22; }
+html[data-theme="gray"] .record-card h3 { color: #b6b9be; }
+html[data-theme="gray"] .record-top { border-bottom-color: #47494f; }
+html[data-theme="gray"] .record-who small { color: #b6b9be; }
+html[data-theme="gray"] .record-list { color: #b6b9be; }
+html[data-theme="gray"] .record-list li::marker { color: #8f9298; }
+html[data-theme="gray"] .record-name { color: #e2e3e6; }
+html[data-theme="gray"] .record-name small { color: #b6b9be; }
+html[data-theme="gray"] .record-empty { color: #b6b9be; }

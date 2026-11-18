@@ -43,7 +43,7 @@
     gp: { label: "GP" }, cmp: { label: "CMP" }, att: { label: "ATT" }, car: { label: "CAR", from: "att" }, pct: { label: "CMP%", fmt: 1 },
     yds: { label: "YDS" }, ypa: { label: "AVG", fmt: 1 }, avg: { label: "AVG", fmt: 1 }, ydsg: { label: "YDS/G", fmt: 1, calc: (t) => (t.gp ? t.yds / t.gp : null) },
     lng: { label: "LNG", max: true }, td: { label: "TD" }, int: { label: "INT" }, rate: { label: "RTG", fmt: 1 }, rec: { label: "REC" },
-    tkl: { label: "TOT" }, sacks: { label: "SACK", fmt: "half" }, pd: { label: "PD" }, ff: { label: "FF" }, fr: { label: "FR" },
+    tkl: { label: "TOT" }, tfl: { label: "TFL", fmt: "half" }, sacks: { label: "SACK", fmt: "half" }, pd: { label: "PD" }, ff: { label: "FF" }, fr: { label: "FR" },
     fgm: { label: "FGM" }, fga: { label: "FGA" }, fgpct: { label: "FG%", fmt: 1 }, xpm: { label: "XPM" }, xpa: { label: "XPA" },
     xppct: { label: "XP%", fmt: 1, calc: (t) => (t.xpa ? (t.xpm / t.xpa) * 100 : null) }, pts: { label: "PTS" },
     rushTd: { label: "RUSH" }, recTd: { label: "REC" }, allTd: { label: "TD" }, fg: { label: "FG" }, pat: { label: "PAT" }, tpg: { label: "TP/G", fmt: 1, calc: (t) => (t.gp ? t.pts / t.gp : null) },
@@ -52,7 +52,7 @@
     { key: "passing", title: "Passing", sort: "yds", groups: [["", ["gp", "cmp", "att", "pct", "yds", "ypa", "ydsg", "lng", "td", "int", "rate"]]] },
     { key: "rushing", title: "Rushing", sort: "yds", groups: [["", ["gp", "car", "yds", "avg", "lng", "td", "ydsg"]]] },
     { key: "receiving", title: "Receiving", sort: "yds", groups: [["", ["gp", "rec", "yds", "avg", "td", "lng", "ydsg"]]] },
-    { key: "defense", title: "Defense", sort: "tkl", groups: [["", ["gp"]], ["TACKLES", ["tkl"]], ["SACKS", ["sacks"]], ["INTERCEPTIONS", ["pd", "int", "td"]], ["FUMBLES", ["ff", "fr"]]] },
+    { key: "defense", title: "Defense", sort: "tkl", groups: [["", ["gp"]], ["TACKLES", ["tkl", "tfl"]], ["SACKS", ["sacks"]], ["INTERCEPTIONS", ["pd", "int", "td"]], ["FUMBLES", ["ff", "fr"]]] },
     { key: "scoring", title: "Scoring", sort: "pts", groups: [["", ["gp"]], ["TOUCHDOWNS", ["rushTd", "recTd", "allTd"]], ["SCORING", ["fg", "pat", "pts", "tpg"]]] },
     { key: "kicking", title: "Kicking", sort: "fgm", groups: [["", ["gp"]], ["FIELD GOALS", ["fgm", "fga", "fgpct", "lng"]], ["EXTRA POINTS", ["xpm", "xpa", "xppct"]]] },
   ];

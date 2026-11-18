@@ -96,8 +96,8 @@ function gameTables(data = officeData) {
         return [e.player, e.team, int(e.gp), int(rec), int(yds), rec ? one(yds / rec) : "", int(total(e, "td")), int(longest(e))];
       }) };
     } else if (categoryKey === "defense") {
-      tables.defense = { headers: ["Player", "Team", "GP", "Tkl", "Sacks", "Int", "FF", "FR", "PD", "TD"], rows: list.map((e) =>
-        [e.player, e.team, int(e.gp), int(total(e, "tackles")), one(total(e, "sacks")).replace(/\.0$/, ""), int(total(e, "int")), int(total(e, "ff")), int(total(e, "fr")), int(total(e, "pd")), int(total(e, "td"))]) };
+      tables.defense = { headers: ["Player", "Team", "GP", "Tkl", "TFL", "Sacks", "Int", "FF", "FR", "PD", "TD"], rows: list.map((e) =>
+        [e.player, e.team, int(e.gp), int(total(e, "tackles")), one(total(e, "tfl")).replace(/\.0$/, ""), one(total(e, "sacks")).replace(/\.0$/, ""), int(total(e, "int")), int(total(e, "ff")), int(total(e, "fr")), int(total(e, "pd")), int(total(e, "td"))]) };
     } else if (categoryKey === "kicking") {
       tables.kicking = { headers: ["Player", "Team", "GP", "FGM", "FGA", "FG%", "XPM", "XPA", "Lng", "Pts"], rows: list.map((e) => {
         const [fgm, fga, xpm, xpa] = ["fgm", "fga", "xpm", "xpa"].map((k) => total(e, k));
