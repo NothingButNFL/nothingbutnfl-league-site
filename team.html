@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=5bf144c8">
+    <link rel="stylesheet" href="styles.css?v=d4e9fbed">
     <link rel="stylesheet" href="theme-light.css?v=91fb32c9">
     <link rel="stylesheet" href="theme-gray.css?v=b358244c">
     <link rel="stylesheet" href="theme-espn.css?v=bf9d5bb2">
@@ -45,7 +45,7 @@
     <script src="league-core.js?v=886da17b" defer></script>
     <script src="sample-admin.js?v=87c8a996" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="front-office.js?v=84948553" defer></script>
+    <script src="front-office.js?v=5cdc8b99" defer></script>
     <script src="depth-chart.js?v=f4940ea0" defer></script>
     <script src="multi-year.js?v=3438b053" defer></script>
     <script src="contract-editor.js?v=dfcf2732" defer></script>
@@ -152,22 +152,6 @@
     </header>
 
     <main id="main">
-      <section class="team-page-intro">
-        <div class="section-wrap">
-          <a class="team-back-link" href="index.html#top"><span aria-hidden="true">←</span> LEAGUE HOME</a>
-          <div class="team-page-title">
-            <span class="team-page-brand">
-              <img id="team-page-logo" class="team-page-logo" src="" alt="" width="68" height="68">
-              <span id="team-page-fallback" class="team-page-fallback" aria-hidden="true" hidden></span>
-            </span>
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot"></span> NFL TEAM FRONT OFFICE</p>
-              <h1 id="team-page-name">Team salary sheet</h1>
-              <p class="team-page-subtitle" id="team-page-subtitle">A local working sheet for your franchise.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section class="front-office-section" id="front-office" aria-labelledby="front-office-title">
         <div class="section-wrap">
@@ -182,8 +166,15 @@
 
           <div class="workspace-toolbar">
             <div class="franchise-picker">
-              <span>TEAM SALARY SHEET</span>
-              <strong class="selected-team-name" id="selected-team-name"></strong>
+              <span class="team-page-brand franchise-brand">
+                <img id="team-page-logo" class="team-page-logo" src="" alt="" width="44" height="44">
+                <span id="team-page-fallback" class="team-page-fallback" aria-hidden="true" hidden></span>
+              </span>
+              <div class="franchise-picker-text">
+                <span>TEAM SALARY SHEET</span>
+                <strong class="selected-team-name" id="selected-team-name"></strong>
+                <span class="franchise-gm" id="team-page-gm"></span>
+              </div>
             </div>
             <div class="data-actions">
               <button class="workspace-button" id="export-data" type="button">Export backup <span aria-hidden="true">↓</span></button>

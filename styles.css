@@ -3808,3 +3808,11 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .dc-line:focus-within { outline: 2px solid #8fd0ff; outline-offset: -2px; }
 .dc-card.is-dropped { margin-top: 34px; }
 .dc-group { justify-self: start; align-self: end; margin: 0 0 -14px; padding: 5px 14px; background: #e8edf3; color: #0a2140; font: 700 13px var(--body); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Team page: logo, name and GM in the Team Salary Sheet card (no page header) */
+.franchise-picker { display: flex !important; align-items: center; gap: 14px; }
+.franchise-picker-text { display: grid; gap: 2px; }
+.franchise-brand .team-page-logo { width: 44px; height: 44px; }
+.franchise-brand .team-page-fallback { width: 44px; height: 44px; font-size: 13px; }
+.franchise-gm .team-gm-link { font-size: 13px; }
+#front-office { padding-top: 28px; }

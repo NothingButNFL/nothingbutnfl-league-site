@@ -1676,17 +1676,16 @@ try {
 
 const currentTeam = selectedTeam();
 document.title = `${currentTeam.name} Salary Sheet — Nothing But NFL`;
-document.querySelector("#team-page-name").textContent = currentTeam.name;
 {
+  // GM(s) sit in the Team Salary Sheet card (the old page header was removed).
   const managers = teamManagers(officeData, currentTeam.id);
-  const subtitle = document.querySelector("#team-page-subtitle");
-  subtitle.textContent = `${currentTeam.id} franchise salary sheet and draft-pick ledger.`;
-  if (managers.length) {
+  const gmBox = document.querySelector("#team-page-gm");
+  if (gmBox && managers.length) {
     const gm = document.createElement("a");
     gm.className = "team-gm-link";
     gm.href = "members.html";
     gm.textContent = `${managers.length > 1 ? "GMs" : "GM"}: ${managers.map((m) => m.name).join(" & ")}`;
-    subtitle.append(" ", gm);
+    gmBox.append(gm);
   }
 }
 document.querySelector("#team-heading-name").textContent = currentTeam.name;
