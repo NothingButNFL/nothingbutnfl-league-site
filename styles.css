@@ -3658,3 +3658,9 @@ main .bx-edit-team { table-layout: fixed; }
 main .bx-table.bx-edit-team :is(th, td).bx-ts-away { width: 38% !important; text-align: right !important; }
 main .bx-table.bx-edit-team :is(th, td).bx-ts-label { width: 24% !important; text-align: center !important; }
 main .bx-table.bx-edit-team :is(th, td).bx-ts-home { width: 38% !important; text-align: left !important; }
+/* Box score page: larger stat text */
+main .bx-table td, main .bx-table td :is(a, span, strong, b, input) { font-size: 14px !important; }
+main .bx-table th, main .bx-table th :is(span, button) { font-size: 12px !important; }
+main .bx-table td { padding-top: 8px !important; padding-bottom: 8px !important; }
+main .bx-block-head span { font-size: 15px; }
+main .bx-edge { font-size: 14px !important; }
