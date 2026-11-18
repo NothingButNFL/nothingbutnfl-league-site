@@ -3763,3 +3763,4 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .ea-review { display: grid; gap: 8px; margin: 8px 0 4px; }
 .ea-review label { display: grid; grid-template-columns: minmax(180px, 260px) 1fr; gap: 12px; align-items: center; color: #fff; font-size: 13px; }
 .ea-review select { max-width: 640px; }
+.ovr-chart .ovr-axis.is-future { opacity: 0.45; }

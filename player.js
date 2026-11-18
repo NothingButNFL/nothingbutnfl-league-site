@@ -592,7 +592,10 @@ function renderOverall(entry) {
   const values = rows.flatMap((r) => [r.overall, r.madden]);
   const lo = Math.max(0, Math.min(...values) - 2), hi = Math.min(99, Math.max(...values) + 2);
   const W = 720, H = 220, L = 34, R = 12, T = 12, B = 26;
-  const x = (i) => L + (rows.length === 1 ? 0 : (i * (W - L - R)) / (rows.length - 1));
+  // The axis always runs Launch → W18 (and on into the playoffs once those releases are in); the line stops at the latest release.
+  const slots = Math.max(regularSeasonWeeks, last);
+  const axisLabel = (w) => (w === 0 ? "Launch" : ratingWeekLabel(w, true));
+  const x = (i) => L + (i * (W - L - R)) / slots;
   const y = (v) => T + ((hi - v) * (H - T - B)) / Math.max(1, hi - lo);
   const step = hi - lo > 12 ? 4 : 2;
   const ticks = [];
@@ -600,12 +603,12 @@ function renderOverall(entry) {
   const path = (key) => rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join("");
   const showMadden = rows.some((r) => r.madden !== r.overall);
   const net = now.overall - rows[0].overall;
-  box.innerHTML = `<p class="ovr-summary"><span><strong>${now.overall}</strong>league overall after ${last ? ratingWeekLabel(last) : "the start"}</span>
-      <span><strong>${net > 0 ? "+" : ""}${net}</strong>since the start (${rows[0].overall})</span>
+  box.innerHTML = `<p class="ovr-summary"><span><strong>${now.overall}</strong>league overall after ${last ? ratingWeekLabel(last) : "launch"}</span>
+      <span><strong>${net > 0 ? "+" : ""}${net}</strong>since launch (${rows[0].overall})</span>
       ${now.pending ? `<span><strong>${now.pending > 0 ? "+" : ""}${now.pending}</strong>waiting (Madden ${now.madden})</span>` : ""}</p>
     <div class="ovr-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(entry.player.name)} overall by week: ${rows.map((r) => `${ratingWeekLabel(r.week)} ${r.overall}`).join(", ")}">
       ${ticks.map((v) => `<line class="ovr-grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ovr-axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
-      ${rows.map((r, i) => `<text class="ovr-axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${ratingWeekLabel(r.week, true)}</text>`).join("")}
+      ${Array.from({ length: slots + 1 }, (_, i) => `<text class="ovr-axis${i > last ? " is-future" : ""}" x="${x(i)}" y="${H - 6}" text-anchor="middle">${axisLabel(i)}</text>`).join("")}
       ${showMadden ? `<path class="ovr-madden" d="${path("madden")}"/>` : ""}
       <path class="ovr-line" d="${path("overall")}"/>
       <line class="ovr-cross" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>
@@ -616,11 +619,18 @@ function renderOverall(entry) {
   svg.addEventListener("pointermove", (event) => {
     const rect = svg.getBoundingClientRect();
     const px = ((event.clientX - rect.left) / rect.width) * W;
-    const i = Math.max(0, Math.min(rows.length - 1, Math.round(((px - L) / (W - L - R)) * (rows.length - 1))));
+    const i = Math.max(0, Math.min(slots, Math.round(((px - L) / (W - L - R)) * slots)));
     const r = rows[i];
+    if (!r) { // a week EA hasn't released yet
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      tip.innerHTML = `<strong>${ratingWeekLabel(i)}</strong><br>Not released yet`;
+      tip.hidden = false;
+      tip.style.left = `${(x(i) / W) * 100}%`;
+      return;
+    }
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
     const sign = (v) => (v > 0 ? `+${v}` : String(v));
-    tip.innerHTML = `<strong>${r.week ? ratingWeekLabel(r.week) : "Start of season"}</strong><br>League overall ${r.overall}` +
+    tip.innerHTML = `<strong>${r.week ? ratingWeekLabel(r.week) : "Launch ratings"}</strong><br>League overall ${r.overall}` +
       (r.madden !== r.overall ? `<br>Madden ${r.madden} (${sign(r.madden - r.overall)} waiting)` : "") +
       (r.change ? `<br>Change ${sign(r.change)}${r.state === "auto" ? " · updated automatically" : r.state === "elected" ? " · updated" : " · waiting"}` : "") +
       (r.note ? `<br>${escapeHtml(r.note)}` : "");
