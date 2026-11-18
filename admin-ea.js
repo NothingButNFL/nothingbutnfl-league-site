@@ -47,16 +47,17 @@
       details.append(sum, note, list);
       summary.append(details);
     }
-    const linked = Object.keys(data.ratings?.[season()]?.links || {}).length;
-    if (linked) {
+    const withId = Object.values(data.teams || {}).flatMap((t) => t.roster).filter((p) => p.profile?.maddenId).length;
+    const skipped = Object.values(data.ratings?.[season()]?.links || {}).filter((v) => v === "").length;
+    if (withId || skipped) {
       const p2 = document.createElement("p");
       p2.className = "ea-summary-line";
-      p2.innerHTML = `${linked} player${linked === 1 ? "" : "s"} matched by hand. `;
+      p2.textContent = `${withId} players on salary sheets have a Madden ID saved on their profile${skipped ? `; ${skipped} marked not in Madden` : ""}. `;
       const clear = document.createElement("button");
       clear.type = "button";
       clear.className = "workspace-button";
       clear.id = "ea-clear-links";
-      clear.textContent = "Clear hand matches";
+      clear.textContent = "Clear Madden IDs";
       p2.append(clear);
       summary.append(p2);
     }
@@ -105,20 +106,23 @@
     try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }
     const s = ratingsSeason(data, season(), true);
     s.links ||= {};
-    s.links[select.dataset.playerId] = select.value === "__none" ? "" : select.value;
+    const found = findPlayerById(data, select.dataset.playerId);
+    if (select.value === "__none") { s.links[select.dataset.playerId] = ""; if (found?.player.profile) delete found.player.profile.maddenId; }
+    else if (found) { found.player.profile = { ...(found.player.profile || {}), maddenId: select.value }; delete s.links[select.dataset.playerId]; }
     try { writeStoredOffice(data); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
     if (typeof officeData !== "undefined") officeData = data;
     if (lastEa) apply(lastEa);
-    else { status.textContent = "Match saved. Press \"Update ratings from EA\" to fill in his ratings."; showSummary(); }
+    else { status.textContent = "Madden ID saved on his profile. Press \"Update ratings from EA\" to fill in his ratings."; showSummary(); }
   });
   summary.addEventListener("click", (event) => {
     if (event.target.id !== "ea-clear-links") return;
     let data;
     try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }
     if (data.ratings?.[season()]) data.ratings[season()].links = {};
+    for (const p of [...Object.values(data.teams || {}).flatMap((t) => t.roster), ...(data.contractPlayers || [])]) if (p.profile?.maddenId) delete p.profile.maddenId;
     try { writeStoredOffice(data); } catch (error) { status.textContent = `Could not save: ${error.message}.`; return; }
     if (typeof officeData !== "undefined") officeData = data;
-    if (lastEa) apply(lastEa); else { status.textContent = "Hand matches cleared."; showSummary(); }
+    if (lastEa) apply(lastEa); else { status.textContent = "Madden IDs cleared; the next update matches everyone by name again."; showSummary(); }
   });
 
   showSummary();

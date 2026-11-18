@@ -178,6 +178,7 @@ function fillBioForm(entry) {
   f.positions.placeholder = currentPosition(entry) ? `${currentPosition(entry)} (from ${entry.source === "sheet" ? "the salary sheet" : entry.source === "prospect" ? "the Draft Pool" : "Player Contracts"})` : "e.g. QB or CB / S";
   f.birthDate.value = shownBirthDate(entry);
   f.college.value = profile.college;
+  f.maddenId.value = profile.maddenId || "";
   f.draftYear.value = profile.draftYear ?? "";
   f.draftRound.value = profile.draftRound ?? "";
   f.draftPick.value = profile.draftPick ?? "";
@@ -238,6 +239,10 @@ bioForm.addEventListener("change", (event) => {
       profile.retired = value === "1";
       if (profile.retired && !profile.retiredYear) profile.retiredYear = currentLeagueYear();
       if (!profile.retired) delete profile.retiredYear;
+      break;
+    case "maddenId":
+      if (value && !/^\d{1,20}$/.test(value)) return fail("A Madden ID is the number in the player's EA ratings page.");
+      if (value) profile.maddenId = value; else delete profile.maddenId;
       break;
     case "positions": case "college": case "notes":
       profile[input.name] = value.slice(0, profileTextLimits[input.name]);

@@ -1349,8 +1349,9 @@ function validGames(games) {
 }
 
 // ---- Player profiles ----
-// player.profile = { positions, college, draftYear, draftRound, draftPick, height, weight, photoUrl, retired, retiredYear, notes }
-const profileTextLimits = { positions: 40, college: 80, height: 10, photoUrl: 500, notes: 1000 };
+// player.profile = { positions, college, draftYear, draftRound, draftPick, height, weight, photoUrl, retired, retiredYear, notes, maddenId }
+// maddenId: the player's id on EA's Madden ratings site (filled in by Admin › Player Details › Madden ratings, or by hand).
+const profileTextLimits = { positions: 40, college: 80, height: 10, photoUrl: 500, notes: 1000, maddenId: 20 };
 
 function validPlayerProfile(profile) {
   if (!profile || typeof profile !== "object") return false;
@@ -1359,6 +1360,7 @@ function validPlayerProfile(profile) {
     if (value !== undefined && value !== null && (typeof value !== "string" || value.length > max)) return false;
   }
   if (profile.photoUrl && !/^https?:\/\//i.test(profile.photoUrl)) return false;
+  if (profile.maddenId && !/^\d{1,20}$/.test(profile.maddenId)) return false;
   if (profile.photoData !== undefined && profile.photoData !== null && profile.photoData !== ""
     && (typeof profile.photoData !== "string" || profile.photoData.length > 400000 || !/^data:image\/(jpeg|png|webp);base64,/.test(profile.photoData))) return false;
   for (const [field, min, max] of [["draftYear", 1936, 2100], ["draftRound", 1, 20], ["draftPick", 1, 400], ["weight", 100, 500], ["retiredYear", 1936, 2100]]) {
@@ -3690,7 +3692,7 @@ function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear())
   // Same-name players: narrow by position group, then the player's real NFL team, birth date and college
   // (from his profile or the NFL data snapshot when this page has it). Returns the one EA entry, or the leftovers.
   function pick(player, options) {
-    const position = seasonEntry(player, season).position;
+    const position = player.seasons?.[season]?.position || player.position || "";
     const nfl = typeof matchNflExperience === "function" ? matchNflExperience(player.name, position, null) : null;
     const record = nfl?.record || (nfl?.candidates?.length === 1 ? nfl.candidates[0] : null);
     const birth = player.birthDate || record?.birthDate || "";
@@ -3717,7 +3719,10 @@ function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear())
       if (!isPlayerOnSeason(player, season) || isRetiredPlayer(player)) continue;
       const linked = s.links[player.id];
       if (linked === "") continue; // marked "not in Madden" by the commissioner
-      let options = linked && ea.players[linked] ? [{ id: linked }] : pick(player, byName.get(eaNormalizeName(player.name)) || []);
+      // His stored Madden ID wins; then an older hand match; then matching by name.
+      const stored = player.profile?.maddenId;
+      let options = stored && ea.players[stored] ? [{ id: stored }] : linked && ea.players[linked] ? [{ id: linked }]
+        : pick(player, byName.get(eaNormalizeName(player.name)) || []);
       if (options.length !== 1) {
         const label = `${player.name} (${teamId})`;
         const kind = options.length ? "ambiguous" : "unmatched";
@@ -3728,6 +3733,8 @@ function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear())
         continue;
       }
       const eaId = options[0].id;
+      if (player.profile?.maddenId !== eaId) player.profile = { ...(player.profile || {}), maddenId: eaId };
+      if (s.links[player.id]) delete s.links[player.id]; // now kept on his profile
       const r = (s.players[player.id] ||= {});
       let prev = null;
       for (const release of releases) {
@@ -3746,6 +3753,12 @@ function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear())
       for (const w of weeksCovered) if (!releases.some((rel) => rel.week === w && rel.ratings[eaId])) { delete r.d?.[w]; delete r.n?.[w]; }
       matched += 1;
     }
+  }
+  // Player Contracts (players not on a salary sheet) get their Madden ID too, when the name is a clear match.
+  for (const player of data.contractPlayers || []) {
+    if (player.profile?.maddenId && ea.players[player.profile.maddenId]) continue;
+    const options = pick(player, byName.get(eaNormalizeName(player.name)) || []);
+    if (options.length === 1) player.profile = { ...(player.profile || {}), maddenId: options[0].id };
   }
   s.ea = { updatedAt: new Date().toISOString(), edition: String(ea.edition || "").slice(0, 8),
     labels: releases.map((r) => String(r.label || ratingWeekLabel(r.week)).slice(0, 40)).slice(0, 30), matched,
