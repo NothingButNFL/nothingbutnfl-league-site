@@ -18,7 +18,7 @@ const teamStatFields = [
   ["rushAtt", "Rushes"], ["rushYds", "Rushing yards"], ["rushTd", "Rushing TDs"],
   ["cmp", "Completions"], ["att", "Pass attempts"], ["passTd", "Passing TDs"], ["passYds", "Passing yards"],
   ["thirdConv", "3rd down conv."], ["thirdAtt", "3rd down att."], ["fourthConv", "4th down conv."], ["fourthAtt", "4th down att."],
-  ["twoPtConv", "2-pt conv."], ["twoPtAtt", "2-pt att."], ["redZoneTd", "Red zone TDs"], ["redZoneFg", "Red zone FGs"],
+  ["twoPtConv", "2-pt conv."], ["twoPtAtt", "2-pt att."], ["redZoneTd", "Red zone TDs"], ["redZoneFg", "Red zone FGs"], ["redZonePct", "Red zone %"],
   ["turnovers", "Turnovers"], ["fumblesLost", "Fumbles lost"], ["interceptions", "Interceptions thrown"],
   ["puntReturnYds", "Punt return yards"], ["kickReturnYds", "Kick return yards"], ["totalYds", "Total yards"],
   ["puntAvg", "Punt average"], ["penalties", "Penalties"], ["penaltyYds", "Penalty yards"], ["possession", "Possession (mm:ss)"]
@@ -63,7 +63,7 @@ function boxScorePrompt(count) {
     `The attached ${count === 1 ? "image is a screenshot" : `${count} images are screenshots`} of ONE American football game's post-game box score from a football video game (for example Madden): team stats pages and/or player stats pages for the same game.`,
     "Read every number shown and reply with only this JSON (no commentary):",
     '{"teams":[{"team":"BUF","score":23},{"team":"LAR","score":20}],',
-    ' "teamStats":{"BUF":{"firstDowns":22,"totalOffense":392,"totalPlays":75,"rushAtt":23,"rushYds":86,"rushTd":0,"cmp":35,"att":52,"passTd":2,"passYds":306,"thirdConv":6,"thirdAtt":17,"fourthConv":0,"fourthAtt":0,"twoPtConv":0,"twoPtAtt":0,"redZoneTd":2,"redZoneFg":0,"turnovers":0,"fumblesLost":0,"interceptions":0,"puntReturnYds":17,"kickReturnYds":105,"totalYds":514,"puntAvg":41.6,"penalties":3,"penaltyYds":30,"possession":"29:47"}},',
+    ' "teamStats":{"BUF":{"firstDowns":22,"totalOffense":392,"totalPlays":75,"rushAtt":23,"rushYds":86,"rushTd":0,"cmp":35,"att":52,"passTd":2,"passYds":306,"thirdConv":6,"thirdAtt":17,"fourthConv":0,"fourthAtt":0,"twoPtConv":0,"twoPtAtt":0,"redZoneTd":2,"redZoneFg":0,"redZonePct":100,"turnovers":0,"fumblesLost":0,"interceptions":0,"puntReturnYds":17,"kickReturnYds":105,"totalYds":514,"puntAvg":41.6,"penalties":3,"penaltyYds":30,"possession":"29:47"}},',
     ' "players":{"passing":[{"player":"J.Allen","team":"BUF","cmp":34,"att":52,"yds":313,"td":2,"int":0,"long":27}],',
     '  "rushing":[{"player":"...","team":"...","att":0,"yds":0,"td":0,"long":0}],',
     '  "receiving":[{"player":"...","team":"...","rec":0,"yds":0,"td":0,"long":0}],',
@@ -71,7 +71,7 @@ function boxScorePrompt(count) {
     '  "kicking":[{"player":"...","team":"...","fgm":0,"fga":0,"xpm":0,"xpa":0,"long":0}]}}',
     "Rules:",
     "- teams: the two teams with their FINAL scores, left/first team first. Use standard NFL abbreviations (BUF, LAR, KC, NYJ, ...).",
-    "- teamStats: keyed by the same abbreviations. \"23 | 86 | 0\" under RUSHES | YARDS | TDS means rushAtt 23, rushYds 86, rushTd 0. \"35 | 52 | 2\" under COMP | ATT | TDS means cmp, att, passTd. \"6 | 17 (35%)\" under 3RD DOWN CONV. means thirdConv 6, thirdAtt 17. \"2 | 0 | 100%\" under RED ZONE TD | FG | % means redZoneTd 2, redZoneFg 0. \"0 (0)\" under TURNOVERS means 0. \"3 | 30\" under PENALTIES means penalties 3, penaltyYds 30. interceptions = interceptions THROWN by that team.",
+    "- teamStats: keyed by the same abbreviations. \"23 | 86 | 0\" under RUSHES | YARDS | TDS means rushAtt 23, rushYds 86, rushTd 0. \"35 | 52 | 2\" under COMP | ATT | TDS means cmp, att, passTd. \"6 | 17 (35%)\" under 3RD DOWN CONV. means thirdConv 6, thirdAtt 17. \"2 | 0 | 100%\" under RED ZONE TD | FG | % means redZoneTd 2, redZoneFg 0, redZonePct 100. \"0 (0)\" under TURNOVERS means 0. \"3 | 30\" under PENALTIES means penalties 3, penaltyYds 30. interceptions = interceptions THROWN by that team.",
     "- players: one entry per player row shown, under the category of the page it appears on, with that row's team. Write names exactly as shown (e.g. J.Allen).",
     "- Use plain numbers (no commas). Use null for any value not shown in these screenshots, and leave out categories that aren't shown. Never invent players or numbers, and list each player once per category."
   ].join("\n");

@@ -127,12 +127,16 @@
     const box = document.querySelector("#bx-team-stats");
     // [label, value, key for the better-side marker (3rd down efficiency compares the conversion rate)]
     const rows = [
-      ["1st Downs", (s) => s.firstDowns, "firstDowns"], ["3rd down efficiency", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined), "thirdPct"],
-      ["Total Plays", (s) => s.totalPlays, "totalPlays"], ["Total Yards", (s) => s.totalOffense, "totalOffense"],
-      ["Passing", (s) => s.passYds, "passYds"], ["Comp/Att", (s) => (s.att != null ? `${num(s.cmp)}/${num(s.att)}` : undefined), "cmpPct"], ["Passing TDs", (s) => s.passTd, "passTd"],
-      ["Rushing", (s) => s.rushYds, "rushYds"], ["Rushing Attempts", (s) => s.rushAtt, "rushAtt"], ["Rushing TDs", (s) => s.rushTd, "rushTd"],
-      ["Penalties", (s) => s.penalties, "penalties"], ["Turnovers", (s) => s.turnovers, "turnovers"], ["Fumbles lost", (s) => s.fumblesLost, "fumblesLost"], ["Interceptions thrown", (s) => s.interceptions, "interceptions"],
-      ["Possession", (s) => s.possession, "possession"],
+      ["Off Yards Gained", (s) => s.totalOffense, "totalOffense"], ["Off Rush Yards", (s) => s.rushYds, "rushYds"],
+      ["Off Pass Yards", (s) => s.passYds, "passYds"], ["Off First Downs", (s) => s.firstDowns, "firstDowns"],
+      ["Punt Return Yards", (s) => s.puntReturnYds, "puntReturnYds"], ["Kick Return Yards", (s) => s.kickReturnYds, "kickReturnYds"],
+      ["Total Yards Gained", (s) => s.totalYds, "totalYds"], ["Turnovers", (s) => s.turnovers, "turnovers"],
+      ["Third Down Conversions", (s) => (s.thirdAtt != null ? `${num(s.thirdConv)}-${num(s.thirdAtt)}` : undefined), "thirdPct"],
+      ["Fourth Down Conversions", (s) => (s.fourthAtt != null ? `${num(s.fourthConv)}-${num(s.fourthAtt)}` : undefined), "fourthPct"],
+      ["Two Point Conversions", (s) => (s.twoPtAtt != null ? `${num(s.twoPtConv)}-${num(s.twoPtAtt)}` : undefined), "twoPtPct"],
+      ["Red Zone Off Percentage", (s) => (s.redZonePct != null ? `${num(s.redZonePct)}%` : undefined), "redZonePct"],
+      ["Red Zone Off TD", (s) => s.redZoneTd, "redZoneTd"], ["Red Zone Off FG", (s) => s.redZoneFg, "redZoneFg"],
+      ["Penalty Yards", (s) => s.penaltyYds, "penaltyYds"], ["Time of Possession", (s) => s.possession, "possession"],
     ].filter(([, get]) => [away, home].some((t) => get(ts[t.team] || {}) !== undefined));
     if (!rows.length) {
       box.replaceChildren(el("p", "empty-state", "Only the final score was entered for this game, so there are no team stats."));
@@ -147,9 +151,9 @@
       for (const [label, get, key] of rows) {
         const tr = tb.insertRow();
         const values = [away, home].map((t) => get(ts[t.team] || {}));
-        const best = key === "thirdPct" ? betterSide(key, rate(ts[away.team], "thirdConv", "thirdAtt"), rate(ts[home.team], "thirdConv", "thirdAtt"))
-          : key === "cmpPct" ? betterSide(key, rate(ts[away.team], "cmp", "att"), rate(ts[home.team], "cmp", "att"))
-          : betterSide(key, values[0], values[1]);
+        const rateOf = { thirdPct: ["thirdConv", "thirdAtt"], fourthPct: ["fourthConv", "fourthAtt"], twoPtPct: ["twoPtConv", "twoPtAtt"] }[key];
+        const best = rateOf ? betterSide(key, rate(ts[away.team], ...rateOf), rate(ts[home.team], ...rateOf))
+          : betterSide(key, ts[away.team]?.[key], ts[home.team]?.[key]);
         const a = tr.insertCell(); a.className = "bx-ts-away";
         if (best === "away") a.append(edge("away"), " ");
         a.append(num(values[0]));
@@ -163,7 +167,7 @@
 
   // Which side has the better number for a team stat: "away", "home" or "" (tied, missing, or not a "better" stat).
   const lowerIsBetter = new Set(["penalties", "penaltyYds", "turnovers", "fumblesLost", "interceptions"]);
-  const noBest = new Set(["thirdAtt"]);
+  const noBest = new Set(["thirdAtt", "fourthAtt", "twoPtAtt", "redZoneFg"]);
   const toSec = (v) => { const m = String(v ?? "").match(/^(\d{1,2}):(\d{2})$/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
   function betterSide(key, a, b) {
     if (noBest.has(key)) return "";
@@ -189,10 +193,12 @@
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
   };
   const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", defense: "Defense", kicking: "Kicking" };
-  const teamFields = [["firstDowns", "1st Downs"], ["thirdConv", "3rd down conversions"], ["thirdAtt", "3rd down attempts"], ["totalPlays", "Total Plays"],
-    ["totalOffense", "Total Yards"], ["passYds", "Passing yards"], ["cmp", "Completions"], ["att", "Pass attempts"], ["passTd", "Passing TDs"],
-    ["rushYds", "Rushing yards"], ["rushAtt", "Rushing attempts"], ["rushTd", "Rushing TDs"], ["penalties", "Penalties"], ["penaltyYds", "Penalty yards"],
-    ["turnovers", "Turnovers"], ["fumblesLost", "Fumbles lost"], ["interceptions", "Interceptions thrown"], ["possession", "Possession (MM:SS)"]];
+  // Same order as the Team Stats table.
+  const teamFields = [["totalOffense", "Off Yards Gained"], ["rushYds", "Off Rush Yards"], ["passYds", "Off Pass Yards"], ["firstDowns", "Off First Downs"],
+    ["puntReturnYds", "Punt Return Yards"], ["kickReturnYds", "Kick Return Yards"], ["totalYds", "Total Yards Gained"], ["turnovers", "Turnovers"],
+    ["thirdConv", "3rd down conversions"], ["thirdAtt", "3rd down attempts"], ["fourthConv", "4th down conversions"], ["fourthAtt", "4th down attempts"],
+    ["twoPtConv", "2-pt conversions"], ["twoPtAtt", "2-pt attempts"], ["redZonePct", "Red Zone Off %"], ["redZoneTd", "Red Zone Off TD"],
+    ["redZoneFg", "Red Zone Off FG"], ["penaltyYds", "Penalty Yards"], ["possession", "Time of Possession (MM:SS)"]];
 
   function numberInput(value, label, step = "1") {
     const i = el("input");
@@ -285,7 +291,7 @@
         const v = game.teamStats?.[t.team]?.[key];
         let input;
         if (key === "possession") { input = el("input"); input.type = "text"; input.maxLength = 5; input.placeholder = "30:00"; input.value = v ?? ""; input.setAttribute("aria-label", `${t.team} ${label}`); }
-        else input = numberInput(v, `${t.team} ${label}`);
+        else input = numberInput(v, `${t.team} ${label}`, key === "redZonePct" ? "any" : "1");
         input.dataset.team = t.team;
         return input;
       });
