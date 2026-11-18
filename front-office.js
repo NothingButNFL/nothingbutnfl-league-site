@@ -1358,11 +1358,13 @@ function updateTradeSummary() {
 
 function renderDeadCapRows() {
   const year = activeSeason;
-  // Only the first two salary sheets have a dead-cap table; later years show none.
-  const tracked = deadCapSeasons.includes(year);
+  // The first two salary sheets always have a dead-cap table; a later year shows one when it has dead cap
+  // (void-year bonus from a free agent deal or restructure lands on the season after the player's last real year).
+  const ledgerRecords = selectedTeamData().deadCap[year] || [];
+  const tracked = deadCapSeasons.includes(year) || ledgerRecords.length > 0;
   document.querySelector("#dead-cap-panel").hidden = !tracked;
   document.querySelector("#dead-cap-card").hidden = !tracked;
-  const records = deadCapSeasons.includes(year) ? selectedTeamData().deadCap[year] : [];
+  const records = tracked ? ledgerRecords : [];
   const body = deadCapRows;
   body.replaceChildren();
   const emptyMessage = document.querySelector("#dead-cap-empty");
@@ -1643,7 +1645,7 @@ document.querySelector("#import-dead-cap-paste").addEventListener("click", impor
 deadCapRows.addEventListener("click", (event) => {
   const button = event.target.closest(".row-delete");
   const row = button?.closest("[data-dead-cap-id]");
-  if (!row || !deadCapSeasons.includes(activeSeason)) return;
+  if (!row) return;
   const ledger = selectedTeamData().deadCap[activeSeason];
   const recordIndex = ledger.findIndex(({ id }) => id === row.dataset.deadCapId);
   if (recordIndex === -1) return;
