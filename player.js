@@ -638,4 +638,98 @@ function renderOverall(entry) {
     tip.style.left = `${(x(i) / W) * 100}%`;
   });
   svg.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+  // Click a week on the chart to see his attributes that week.
+  svg.style.cursor = "pointer";
+  svg.addEventListener("click", (event) => {
+    const rect = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(slots, Math.round(((((event.clientX - rect.left) / rect.width) * W - L) / (W - L - R)) * slots)));
+    if (i <= last) openAttributes(entry, i);
+  });
+  renderAttributesBar(entry, box, rows.map((r) => r.week));
+}
+
+// ---- Madden attributes by week (ea-attributes/<id % 64>.json, written by tools/ea_ratings.py) ----
+const attrShards = new Map();
+async function attributesFor(maddenId) {
+  const n = Number(maddenId) % 64;
+  if (!attrShards.has(n)) attrShards.set(n, fetch(`ea-attributes/${n}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+  const shard = await attrShards.get(n);
+  if (!shard) return null;
+  return { keys: shard.keys, labels: shard.labels, weeks: shard.players?.[String(maddenId)] || {} };
+}
+
+function renderAttributesBar(entry, box, weeks) {
+  const id = entry.player.profile?.maddenId;
+  const bar = document.createElement("div");
+  bar.className = "ovr-attr-bar";
+  if (!id) {
+    bar.innerHTML = '<p class="ovr-attr-note">No Madden ID on his profile yet, so his attributes can\'t be looked up. It\'s filled in by Admin › Player Details › Madden ratings, or type it in his bio.</p>';
+    box.append(bar);
+    return;
+  }
+  const label = document.createElement("label");
+  label.textContent = "Attributes for ";
+  const select = document.createElement("select");
+  select.id = "ovr-attr-week";
+  for (const w of [...weeks].reverse()) select.append(new Option(w === 0 ? "Launch" : ratingWeekLabel(w), String(w)));
+  label.append(select);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "workspace-button";
+  button.textContent = "View attributes";
+  button.addEventListener("click", () => openAttributes(entry, Number(select.value)));
+  const hint = document.createElement("span");
+  hint.className = "ovr-attr-note";
+  hint.textContent = "or click a week on the chart";
+  bar.append(label, button, hint);
+  box.append(bar);
+}
+
+async function openAttributes(entry, week) {
+  let dialog = document.querySelector("#ovr-attr-dialog");
+  if (!dialog) {
+    dialog = document.createElement("dialog");
+    dialog.id = "ovr-attr-dialog";
+    dialog.className = "ovr-attr-dialog";
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    document.body.append(dialog);
+  }
+  const title = `${entry.player.name} · ${week === 0 ? "Launch" : ratingWeekLabel(week)} attributes`;
+  dialog.innerHTML = `<div class="ovr-attr-head"><h3>${escapeHtml(title)}</h3><button type="button" class="workspace-button" data-close>Close</button></div><p class="ovr-attr-note">Loading…</p>`;
+  dialog.querySelector("[data-close]").addEventListener("click", () => dialog.close());
+  if (!dialog.open) dialog.showModal();
+  const data = await attributesFor(entry.player.profile?.maddenId);
+  const now = data?.weeks?.[String(week)];
+  const body = dialog.querySelector(".ovr-attr-note");
+  if (!now) {
+    body.textContent = location.protocol === "file:" ? "Attributes can't be read when the site is opened from files on your computer; open it from the GitHub Pages site."
+      : data ? "EA has no attributes for him in that release." : "The attribute files aren't on the site yet. Run the EA Madden ratings fetch (Admin › Player Details).";
+    return;
+  }
+  // Compare with the release before this one that has him.
+  const earlier = Object.keys(data.weeks).map(Number).filter((w) => w < week).sort((a, b) => b - a)[0];
+  const before = earlier === undefined ? null : data.weeks[String(earlier)];
+  const rows = data.keys.map((k, i) => ({ label: data.labels[i] || k, value: now[i], change: before && now[i] !== null && before[i] !== null && before[i] !== undefined ? now[i] - before[i] : 0 }))
+    .filter((r) => r.value !== null && r.value !== undefined);
+  const changed = rows.filter((r) => r.change).length;
+  body.textContent = before
+    ? `${changed ? `${changed} attribute${changed === 1 ? "" : "s"} changed` : "No attributes changed"} since ${earlier === 0 ? "Launch" : ratingWeekLabel(earlier)}.`
+    : "Launch ratings (nothing earlier to compare).";
+  const toggle = document.createElement("label");
+  toggle.className = "ovr-attr-toggle";
+  toggle.innerHTML = '<input type="checkbox"> Only show changes';
+  const grid = document.createElement("div");
+  grid.className = "ovr-attr-grid";
+  const draw = (onlyChanged) => {
+    grid.replaceChildren(...rows.filter((r) => !onlyChanged || r.change).map((r) => {
+      const item = document.createElement("div");
+      item.className = `ovr-attr${r.change > 0 ? " is-up" : r.change < 0 ? " is-down" : ""}`;
+      const sign = r.change > 0 ? `▲ ${r.change}` : r.change < 0 ? `▼ ${-r.change}` : "";
+      item.innerHTML = `<span>${escapeHtml(r.label)}</span><strong>${r.value}</strong><em>${sign}</em>`;
+      return item;
+    }));
+  };
+  toggle.querySelector("input").addEventListener("change", (e) => draw(e.target.checked));
+  draw(false);
+  body.after(toggle, grid);
 }

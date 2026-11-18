@@ -29,13 +29,13 @@ jobs:
         run: python tools/ea_ratings.py
       - name: Commit if changed
         run: |
-          if git diff --quiet -- ea-ratings.json && git ls-files --error-unmatch ea-ratings.json >/dev/null 2>&1; then
+          git add ea-ratings.json ea-attributes
+          if git diff --cached --quiet; then
             echo "No new ratings."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898+github-actions[bot]@users.noreply.github.com"
-          git add ea-ratings.json
           git commit -m "EA Madden ratings update"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"

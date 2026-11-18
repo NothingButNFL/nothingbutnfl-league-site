@@ -1147,3 +1147,6 @@ html[data-theme="espn"] .dc-name { color: #121213; }
 html[data-theme="espn"] .dc-name.is-empty { color: rgba(18, 18, 19, 0.560); }
 html[data-theme="espn"] .dc-name.is-stale { color: #9a6600; }
 html[data-theme="espn"] .dc-line:focus-within { outline-color: #d00; }
+html[data-theme="espn"] .ovr-attr-dialog { color: #121213; }
+html[data-theme="espn"] .ovr-attr-dialog::backdrop { background-color: rgba(0, 0, 0, 0.150); }
+html[data-theme="espn"] .ovr-attr { border-bottom-color: rgba(18, 18, 19, 0.098); }

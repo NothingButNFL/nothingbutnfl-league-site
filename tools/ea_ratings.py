@@ -23,6 +23,10 @@ from ea_page_client import (RatingsError, RATINGS_URL, download, fetch_snapshot,
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'ea-ratings.json'
+# Every player's full attribute list per release, split into SHARDS files by EA id (id % SHARDS) so a player
+# page only loads one small file: ea-attributes/<n>.json = {"keys": [...], "labels": [...], "players": {id: {week: [values]}}}
+ATTR_DIR = ROOT / 'ea-attributes'
+SHARDS = 64
 PLAYOFFS = [('wild', 'Wild Card'), ('divisional', 'Divisional'), ('conference|championship', 'Conference Championship'), ('super', 'Super Bowl')]
 REGULAR_WEEKS = 18
 
@@ -43,6 +47,55 @@ def slot_for(label):
 
 def stat_label(key):
     return re.sub(r'(?<!^)(?=[A-Z])', ' ', key).replace('_', ' ').title()
+
+
+def load_attributes():
+    keys, players = [], {}
+    for n in range(SHARDS):
+        path = ATTR_DIR / f'{n}.json'
+        if not path.exists():
+            continue
+        try:
+            shard = json.loads(path.read_text(encoding='utf-8'))
+        except ValueError:
+            continue
+        for k in shard.get('keys', []):
+            if k not in keys:
+                keys.append(k)
+        index = [keys.index(k) for k in shard.get('keys', [])]
+        for pid, weeks in shard.get('players', {}).items():
+            for week, values in weeks.items():
+                row = [None] * len(keys)
+                for i, v in zip(index, values):
+                    row[i] = v
+                players.setdefault(pid, {})[week] = row
+    return keys, players
+
+
+def add_attributes(snapshot, week, keys, players):
+    for p in snapshot['items']:
+        stats = p.get('stats') or {}
+        for k in stats:
+            if k not in keys:
+                keys.append(k)
+        players.setdefault(str(p['id']), {})[str(week)] = [
+            (stats.get(k) or {}).get('value') if isinstance(stats.get(k), dict) else None for k in keys]
+
+
+def write_attributes(keys, players):
+    """Write the shards; returns how many files changed."""
+    ATTR_DIR.mkdir(exist_ok=True)
+    labels = [stat_label(k) for k in keys]
+    changed = 0
+    for n in range(SHARDS):
+        mine = {pid: {w: (v + [None] * (len(keys) - len(v)))[:len(keys)] for w, v in sorted(weeks.items(), key=lambda x: int(x[0]))}
+                for pid, weeks in sorted(players.items()) if int(pid) % SHARDS == n}
+        text = json.dumps({'keys': keys, 'labels': labels, 'players': mine}, separators=(',', ':')) + '\n'
+        path = ATTR_DIR / f'{n}.json'
+        if not path.exists() or path.read_text(encoding='utf-8') != text:
+            path.write_text(text, encoding='utf-8')
+            changed += 1
+    return changed
 
 
 def compact(snapshot):
@@ -87,17 +140,21 @@ def run(args):
         old = {}  # written by an older version without college/birthdate: fetch everything again
     kept = {r['id']: r for r in old.get('releases', [])}
     people = dict(old.get('players', {}))
+    attr_keys, attrs = ({}, {}) if args.refresh else load_attributes()
+    attr_keys = list(attr_keys) if attr_keys else []
+    have_attr_weeks = {w for weeks in attrs.values() for w in weeks}
     releases = []
     for it in sorted(meta['iterations'], key=lambda r: (slot_for(r['label']) is None, slot_for(r['label']) or 0)):
         slot = slot_for(it['label'])
         if slot is None:
             print(f"Skipping {it['label']} ({it['id']}): not a launch, weekly or playoff release", file=sys.stderr)
             continue
-        if it['id'] in kept and it['id'] != meta['current_iteration']:
+        if it['id'] in kept and it['id'] != meta['current_iteration'] and str(slot) in have_attr_weeks:
             releases.append(kept[it['id']])
             continue
         print(f"Fetching {it['label']} …", file=sys.stderr)
         snap = fetch_snapshot(edition, it['id'])
+        add_attributes(snap, slot, attr_keys, attrs)
         ratings, who = compact(snap)
         people.update(who)
         releases.append({'id': it['id'], 'label': it['label'], 'week': slot, 'fetchedAt': snap['fetched_at'],
@@ -111,6 +168,9 @@ def run(args):
     def same(a, b):  # ignore fetch times so an unchanged release doesn't cause a new commit
         strip = lambda d: {**d, 'updatedAt': None, 'releases': [{**r, 'fetchedAt': None} for r in d.get('releases', [])]}
         return json.dumps(strip(a), sort_keys=True) == json.dumps(strip(b), sort_keys=True)
+    shards = write_attributes(attr_keys, attrs)
+    if shards:
+        print(f'Updated {shards} attribute file(s) in {ATTR_DIR.name}/.', file=sys.stderr)
     if old and same(old, data):
         print('No new EA ratings.', file=sys.stderr)
         return 0

@@ -1145,3 +1145,6 @@ html[data-theme="light"] .dc-name { color: #121213; }
 html[data-theme="light"] .dc-name.is-empty { color: rgba(18, 18, 19, 0.560); }
 html[data-theme="light"] .dc-name.is-stale { color: #9a6600; }
 html[data-theme="light"] .dc-line:focus-within { outline-color: #1a5fc1; }
+html[data-theme="light"] .ovr-attr-dialog { color: #121213; }
+html[data-theme="light"] .ovr-attr-dialog::backdrop { background-color: rgba(0, 0, 0, 0.150); }
+html[data-theme="light"] .ovr-attr { border-bottom-color: rgba(18, 18, 19, 0.098); }
