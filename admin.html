@@ -45,8 +45,6 @@
     <script src="league-core.js?v=de3718d5" defer></script>
     <script src="sample-admin.js?v=87c8a996" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="nfl-experience.js?v=9b87d7f4" defer></script>
-    <script src="admin-ea.js?v=4ff06f3c" defer></script>
     <script src="admin.js?v=7b05ee0d" defer></script>
   </head>
   <body class="admin-page">
@@ -136,7 +134,7 @@
             <a class="admin-menu-link" href="draft-picks.html" role="menuitem"><span>Draft Pick Manager</span></a>
             <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
             <a class="admin-menu-link" href="admin-schedule.html" role="menuitem"><span>Schedule Import</span></a>
-            <a class="admin-menu-link" href="admin-headshots.html" role="menuitem"><span>Player Headshots</span></a>
+            <a class="admin-menu-link" href="admin-headshots.html" role="menuitem"><span>Player Details</span></a>
           </div>
         </div>
       </nav>
@@ -245,20 +243,6 @@
               </table>
             </div>
             <p class="workspace-status" id="admin-cel-status" role="status" aria-live="polite"></p>
-          </div>
-
-          <div class="management-panel admin-ea-panel" id="admin-ea-panel">
-            <div class="panel-heading">
-              <div><span class="panel-index">MADDEN OVERALLS</span><h3>Madden ratings from EA</h3></div>
-              <p>Fills in every team's Player Ratings from EA's ratings site: Launch Ratings become each player's starting overall, and each weekly and playoff release becomes that week's change (with EA's attribute changes as the note). Press it after EA drops a new update. Updates teams already picked are kept.</p>
-            </div>
-            <div class="ea-actions">
-              <button class="button button-lime" id="ea-update" type="button">Update ratings from EA <span aria-hidden="true">→</span></button>
-              <label class="workspace-button ea-file">Load ea-ratings.json…<input id="ea-file" type="file" accept=".json,application/json" hidden></label>
-              <a class="workspace-button" href="https://github.com/NothingButNFL/nothingbutnfl-league-site/actions/workflows/ea-ratings.yml" target="_blank" rel="noopener">Fetch from EA now (GitHub) ↗</a>
-            </div>
-            <p class="workspace-status" id="ea-status" role="status" aria-live="polite"></p>
-            <div id="ea-summary"></div>
           </div>
 
         </div>

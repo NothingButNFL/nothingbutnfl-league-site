@@ -450,7 +450,7 @@
     // Not found on ESPN
     const missing = list.filter((p) => p.espnId === "" || p.error);
     const miss = el("p", "hub-missing");
-    if (missing.length) miss.textContent = `Not found on ESPN (${missing.length}): ${missing.map((p) => p.r.player.name).join(", ")}. Importing headshots (Admin › Player Headshots) links players to ESPN by id.`;
+    if (missing.length) miss.textContent = `Not found on ESPN (${missing.length}): ${missing.map((p) => p.r.player.name).join(", ")}. Importing headshots (Admin › Player Details) links players to ESPN by id.`;
     box.replaceChildren(inj, updates, ...(missing.length ? [miss] : []));
   }
 
