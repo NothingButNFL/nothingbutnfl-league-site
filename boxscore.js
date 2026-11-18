@@ -65,8 +65,9 @@
       return r.toFixed(1);
     };
     const cats = [
-      ["passing", "Passing", [["C/ATT", (l) => `${num(l.cmp)}/${num(l.att)}`], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["INT", (l) => l.int], ["LONG", (l) => l.long], ["RTG", rating]],
-        (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long") })],
+      ["passing", "Passing", [["RATING", rating], ["YARDS", (l) => l.yds], ["TD", (l) => l.td], ["INT", (l) => l.int], ["LONG", (l) => l.long], ["SACKS", (l) => l.sacks],
+        ["COMP", (l) => l.cmp], ["ATT", (l) => l.att], ["COMP%", (l) => (Number(l.att) ? ((l.cmp / l.att) * 100).toFixed(1) : "0.0")], ["YPA", (l) => avg(l.yds, l.att)]],
+        (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long"), sacks: maxOf(ls, "sacks") === undefined ? undefined : sum(ls, "sacks") })],
       ["rushing", "Rushing", [["CAR", (l) => l.att], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
         (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
       ["receiving", "Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
@@ -89,9 +90,9 @@
         const head = el("div", "bx-block-head");
         head.append(logo(t.team), el("span", "", `${place(t.team)} ${title}`));
         block.append(head);
-        const table = el("table", "bx-table");
+        const table = el("table", `bx-table bx-cat-${key}`);
         const hr = table.createTHead().insertRow();
-        hr.append(el("th", "bx-name-col", ""), ...cols.map(([h]) => el("th", "", h)));
+        hr.append(el("th", "bx-name-col", "PLAYER NAME"), ...cols.map(([h]) => el("th", "", h)));
         const tb = table.createTBody();
         if (!mine.length) {
           const tr = tb.insertRow();
@@ -113,7 +114,7 @@
           const name = tr.insertCell();
           name.className = "bx-name";
           name.textContent = "TEAM";
-          for (const [h, get] of cols) tr.insertCell().textContent = h === "RTG" ? "" : num(get(totals));
+          for (const [h, get] of cols) tr.insertCell().textContent = h === "RATING" ? "" : num(get(totals));
         }
         block.append(table);
         pair.append(block);
@@ -183,7 +184,7 @@
   const editor = document.querySelector("#bx-editor");
   const status = document.querySelector("#bx-status");
   const editFields = {
-    passing: [["cmp", "CMP"], ["att", "ATT"], ["yds", "YDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"]],
+    passing: [["yds", "YARDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"], ["sacks", "SACKS"], ["cmp", "COMP"], ["att", "ATT"]],
     rushing: [["att", "CAR"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
     receiving: [["rec", "REC"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
     defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
@@ -260,7 +261,7 @@
         table.dataset.cat = cat;
         table.dataset.team = t.team;
         const hr = table.createTHead().insertRow();
-        hr.append(el("th", "bx-name-col", "PLAYER"), ...editFields[cat].map(([, l]) => el("th", "", l)), el("th", "", ""));
+        hr.append(el("th", "bx-name-col", "PLAYER NAME"), ...editFields[cat].map(([, l]) => el("th", "", l)), el("th", "", ""));
         const tb = table.createTBody();
         for (const line of (game.players?.[cat] || []).filter((l) => l.team === t.team)) tb.append(lineRow(cat, t.team, line));
         const add = el("button", "workspace-button bx-add-line", "+ Add player");
