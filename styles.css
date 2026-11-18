@@ -3878,3 +3878,7 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 main .dc-spec-table { width: 100%; border-collapse: collapse; }
 main .dc-spec-table :is(th, td) { padding: 7px 10px !important; text-align: left !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 main .dc-spec-table td.is-up { color: #7fd19b; font-weight: 700; } main .dc-spec-table td.is-down { color: #f08a8c; font-weight: 700; }
+
+/* Game preview: starter overalls */
+.mdp-starter-list li { position: relative; grid-template-columns: 48px 26px minmax(0, 1fr) auto !important; }
+.mdp-ovr { margin-left: auto; display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 4px; border: 2px solid rgba(255, 255, 255, 0.85); border-radius: 50%; color: #fff; font: 800 12px var(--mono); flex: none; }

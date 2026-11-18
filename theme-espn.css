@@ -1162,3 +1162,4 @@ html[data-theme="espn"] .dc-spec { background-color: rgba(0, 0, 0, 0.037); }
 html[data-theme="espn"] .dc-spec h4 { color: #121213; }
 html[data-theme="espn"] .dc-spec-warn { border-left-color: #d6981f; }
 html[data-theme="espn"] main .dc-spec-table :is(th, html[data-theme="espn"] td) { border-bottom-color: rgba(18, 18, 19, 0.112); }
+html[data-theme="espn"] .mdp-ovr { border-top-color: rgba(18, 18, 19, 1.000); border-right-color: rgba(18, 18, 19, 1.000); border-bottom-color: rgba(18, 18, 19, 1.000); border-left-color: rgba(18, 18, 19, 1.000); color: #121213; }

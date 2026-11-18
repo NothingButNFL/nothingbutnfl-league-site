@@ -860,6 +860,14 @@ function mdStarterColumn(teamId, side) {
       if (lines.length) stats.title = `${lines.join(" · ")}${totals.games ? ` (${totals.games} game${totals.games === 1 ? "" : "s"})` : ""}`;
       who.append(a, stats);
       li.append(typeof playerPortrait === "function" ? playerPortrait(r.player) : "", who);
+      // His league overall (Player Ratings: Madden changes count once his team has updated him).
+      const season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+      const ovr = typeof ratingCurrent === "function" ? ratingCurrent(mdData, season, r.player.id) : null;
+      if (ovr !== null && ovr !== undefined) {
+        const badge = mdEl("span", "mdp-ovr", String(ovr));
+        badge.title = "League overall";
+        li.append(badge);
+      }
     } else li.append(mdEl("span"), mdEl("span", "mdp-muted", "—"));
     list.append(li);
   }
