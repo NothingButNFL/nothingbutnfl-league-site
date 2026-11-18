@@ -3818,3 +3818,4 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 #front-office { padding-top: 28px; }
 .front-office-kicker-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
 .front-office-kicker-row .team-back-link { margin: 0; }
+.front-office-kicker-row { margin-bottom: 12px; } .front-office-kicker-row .section-kicker, .front-office-kicker-row .team-back-link { margin: 0 !important; line-height: 1.2; }
