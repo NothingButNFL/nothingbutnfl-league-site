@@ -1158,3 +1158,7 @@ html[data-theme="espn"] .ea-name { color: #121213; }
 html[data-theme="espn"] .ea-group h4 { color: #121213; }
 html[data-theme="espn"] .ea-row strong { color: #121213; }
 html[data-theme="espn"] .ea-row.is-changed span { color: #121213; }
+html[data-theme="espn"] .dc-spec { background-color: rgba(0, 0, 0, 0.037); }
+html[data-theme="espn"] .dc-spec h4 { color: #121213; }
+html[data-theme="espn"] .dc-spec-warn { border-left-color: #d6981f; }
+html[data-theme="espn"] main .dc-spec-table :is(th, html[data-theme="espn"] td) { border-bottom-color: rgba(18, 18, 19, 0.112); }

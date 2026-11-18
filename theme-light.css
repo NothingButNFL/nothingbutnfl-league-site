@@ -1156,3 +1156,7 @@ html[data-theme="light"] .ea-name { color: #121213; }
 html[data-theme="light"] .ea-group h4 { color: #121213; }
 html[data-theme="light"] .ea-row strong { color: #121213; }
 html[data-theme="light"] .ea-row.is-changed span { color: #121213; }
+html[data-theme="light"] .dc-spec { background-color: rgba(0, 0, 0, 0.037); }
+html[data-theme="light"] .dc-spec h4 { color: #121213; }
+html[data-theme="light"] .dc-spec-warn { border-left-color: #d6981f; }
+html[data-theme="light"] main .dc-spec-table :is(th, html[data-theme="light"] td) { border-bottom-color: rgba(18, 18, 19, 0.112); }

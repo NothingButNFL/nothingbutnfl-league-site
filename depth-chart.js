@@ -25,6 +25,44 @@ const depthFits = {
   RRE: uniq([...posEdge, ...posOLB]), RLE: uniq([...posEdge, ...posOLB]), RDT: uniq([...posDT, ...posEdge]),
   PWHB: uniq([...posRB, ...posFB]), "3DRB": uniq([...posRB, ...posFB]), GAD: posSkill, SLWR: uniq([...posWR, ...posTE, ...posRB])
 };
+// Specialist slots (RLE, RRE, RDT, SUBLB, SLCB, SLWR, 3DRB, PWHB, KR, PR, LS) take their eligible positions from
+// specialist-config.js, so the formulas and the dropdowns always agree.
+if (typeof specialistFormulaConfig !== "undefined") {
+  for (const [slot, cfg] of Object.entries(specialistFormulaConfig.slots)) depthFits[slot] = cfg.eligible_positions;
+}
+
+// ---- Specialist overalls (specialist-engine.js): EA attributes are loaded once, rankings rebuilt each render ----
+const dcSpec = { state: "idle", ratings: new Map(), rankings: {}, bySlot: {} };
+function dcSpecPlayers() {
+  const season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  return depthRoster().map((p) => {
+    const found = findPlayerById(officeData, p.id);
+    const maddenId = found?.player.profile?.maddenId;
+    return { player_id: p.id, name: p.name, base_position: p.position || found?.player.seasons?.[season]?.position || "",
+      base_ovr: dcOverall(p.id), ratings: maddenId ? dcSpec.ratings.get(String(maddenId)) : undefined };
+  }).filter((p) => p.ratings);
+}
+function dcSpecRefresh() {
+  if (typeof rankAllSpecialistSlots !== "function" || dcSpec.state !== "ready") return;
+  dcSpec.rankings = rankAllSpecialistSlots(dcSpecPlayers());
+  dcSpec.bySlot = Object.fromEntries(Object.entries(dcSpec.rankings).map(([slot, list]) => [slot, new Map(list.map((r) => [r.player.player_id, r]))]));
+}
+function dcSpecEnsure() {
+  if (typeof loadSpecialistRatings !== "function" || dcSpec.state !== "idle") return;
+  dcSpec.state = "loading";
+  const ids = depthRoster().map((p) => findPlayerById(officeData, p.id)?.player.profile?.maddenId).filter(Boolean);
+  loadSpecialistRatings(ids).then((map) => {
+    dcSpec.ratings = map;
+    dcSpec.state = map.size ? "ready" : "none";
+    renderDepthChart();
+  }).catch(() => { dcSpec.state = "none"; renderDepthChart(); });
+}
+// The overall to show/sort by in a slot: the specialist overall where there's a formula, else league overall.
+function slotOvr(slot, id) {
+  const r = dcSpec.bySlot[slot]?.get(id);
+  return r ? r.specialist_ovr : dcOverall(id);
+}
+
 // The league's Madden scheme lists.
 const offenseSchemes = ["Multiple Power Run", "Multiple Zone Run", "Vertical Zone Run", "Vertical Power Run", "Spread", "Run And Shoot", "Air Raid", "Pistol", "West Coast Spread", "West Coast Zone Run", "West Coast Power Run"];
 const defenseSchemes = ["3-4 Under", "Tampa 2", "4-3 Quarters", "Disguise 3-4", "3-4 Storm", "4-3 Cover 3", "46 Defense", "Base 4-3", "4-3 Under", "Base 3-4"];
@@ -134,6 +172,72 @@ function dcPhoto(id) {
 }
 const dcTier = (ovr) => (ovr === null ? "is-none" : ovr >= 90 ? "is-elite" : ovr >= 80 ? "is-good" : ovr >= 70 ? "is-mid" : "is-low");
 
+// Specialist ratings table for the tab's specialist slots: Rank, Player, Base Pos, Base OVR, Specialist OVR, OVR Delta.
+let dcSpecSlot = "";
+function dcSpecialistTable(tabSlots) {
+  const box = document.createElement("section");
+  box.className = "dc-spec";
+  const slots = tabSlots.filter((slot) => typeof specialistFormulaConfig !== "undefined" && specialistFormulaConfig.slots[slot]);
+  if (!slots.length) return box;
+  dcSpecEnsure();
+  const h = document.createElement("h4");
+  h.textContent = "Specialist overalls";
+  box.append(h);
+  if (dcSpec.state !== "ready") {
+    const p = document.createElement("p");
+    p.className = "dc-spec-note";
+    p.textContent = dcSpec.state === "loading" ? "Loading Madden attributes…"
+      : location.protocol === "file:" ? "Specialist overalls need the EA attribute files, which can't be read when the site is opened from files on your computer. Open it from the GitHub Pages site."
+      : "No Madden attributes found for this roster yet. Players need a Madden ID (Admin › Player Details › Madden ratings).";
+    box.append(p);
+    return box;
+  }
+  const conflicts = specialistConflicts(Object.fromEntries(slots.map((s) => [s, dcSpec.rankings[s] || []])));
+  if (conflicts.length) {
+    const warn = document.createElement("p");
+    warn.className = "dc-spec-warn";
+    warn.textContent = `⚠ Ranked #1 in more than one spot: ${conflicts.map((c) => `${c.player.name} (${c.slots.join(", ")})`).join(" · ")}. Using him in all of them can wear him down in sub packages.`;
+    box.append(warn);
+  }
+  if (!slots.includes(dcSpecSlot)) dcSpecSlot = slots[0];
+  const pick = document.createElement("div");
+  pick.className = "dc-spec-slots";
+  for (const slot of slots) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.specSlot = slot;
+    b.className = "dc-spec-slot";
+    b.setAttribute("aria-pressed", String(slot === dcSpecSlot));
+    b.textContent = slot;
+    b.title = specialistFormulaConfig.slots[slot].label;
+    pick.append(b);
+  }
+  box.append(pick);
+  const cfg = specialistSlotConfig(dcSpecSlot);
+  const note = document.createElement("p");
+  note.className = "dc-spec-note";
+  note.textContent = `${cfg.label}: ${Object.entries(cfg.weights).sort((a, b) => b[1] - a[1]).map(([k, w]) => `${k} ${Math.round(w * 100)}%`).join(" · ")}`;
+  box.append(note);
+  const table = document.createElement("table");
+  table.className = "dc-spec-table";
+  table.innerHTML = "<thead><tr><th>Rank</th><th>Player</th><th>Base Pos</th><th>Base OVR</th><th>Specialist OVR</th><th>OVR Delta</th></tr></thead>";
+  const body = table.createTBody();
+  const list = dcSpec.rankings[dcSpecSlot] || [];
+  list.slice(0, 15).forEach((r, i) => {
+    const tr = body.insertRow();
+    const d = r.ovr_delta;
+    tr.innerHTML = `<td>${i + 1}</td><td></td><td>${r.player.base_position || "—"}</td><td>${r.player.base_ovr ?? "—"}</td><td><strong>${r.specialist_ovr}</strong></td><td class="${d > 0 ? "is-up" : d < 0 ? "is-down" : ""}">${d == null ? "—" : d > 0 ? `+${d}` : d}</td>`;
+    const a = document.createElement("a");
+    a.className = "player-name-link";
+    a.href = profileUrl(r.player.player_id);
+    a.textContent = r.player.name;
+    tr.cells[1].append(a);
+  });
+  if (!list.length) body.innerHTML = '<tr><td colspan="6" class="empty-state">No eligible players with Madden attributes.</td></tr>';
+  box.append(table);
+  return box;
+}
+
 function formationView(chart, roster) {
   const wrap = document.createElement("div");
   wrap.className = "dc-lineup";
@@ -179,7 +283,7 @@ function formationView(chart, roster) {
     const spots = [];
     for (let i = card; i < size; i += count) spots.push(i);
     const starter = ids[spots[0]] || "";
-    const ovr = starter ? dcOverall(starter) : null;
+    const ovr = starter ? slotOvr(slot, starter) : null;
     const el = document.createElement("div");
     el.className = `dc-card ${dcTier(ovr)} ${extra}`.trim();
     el.style.gridColumn = `${col} / span 2`;
@@ -202,7 +306,7 @@ function formationView(chart, roster) {
       shown.className = `dc-name${chosen ? "" : " is-empty"}${select.classList.contains("is-stale") ? " is-stale" : ""}`;
       shown.textContent = chosen ? dcShortName(chosen.player.name) : ids[index] ? "Removed player" : "—";
       line.append(shown, select);
-      const r = ids[index] ? dcOverall(ids[index]) : null;
+      const r = ids[index] ? slotOvr(slot, ids[index]) : null;
       if (n > 0 && r !== null) line.append(Object.assign(document.createElement("span"), { className: "dc-line-ovr", textContent: String(r) }));
       el.append(line);
     });
@@ -214,6 +318,7 @@ function formationView(chart, roster) {
     field.append(el);
   }
   wrap.append(field);
+  if (dcTab === "specialist" || dcTab === "special") wrap.append(dcSpecialistTable(cards.map((c) => c[1])));
   return wrap;
 }
 
@@ -228,8 +333,9 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
   select.setAttribute("aria-label", `${slot} ${index + 1}`);
   select.append(new Option("—", ""));
   // Each name shows his league overall (Player Ratings: Madden changes count only once the team has updated him).
-  const ovr = (id) => dcOverall(id);
-  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
+  const ovr = (id) => slotOvr(slot, id);
+  const spec = dcSpec.bySlot[slot];
+  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => (spec ? 0 : fitRank(slot, a.position) - fitRank(slot, b.position)) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || (dcOverall(b.id) ?? -1) - (dcOverall(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   // Only positions the league allows here (see depthFits).
   select.append(...fits.map((p) => {
@@ -258,6 +364,7 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
 function renderDepthChart() {
   if (!depthPanel) return;
   dcOverallCache = new Map(); // picks or rating changes since the last render show up
+  dcSpecRefresh();
   const chart = depthChartFor(activeTeamId);
   const roster = depthRoster();
   const team = nflTeams.find(({ id }) => id === activeTeamId);
@@ -495,6 +602,8 @@ depthPanel?.addEventListener("change", (event) => {
 });
 
 depthPanel?.addEventListener("click", async (event) => {
+  const specBtn = event.target.closest("[data-spec-slot]");
+  if (specBtn) { dcSpecSlot = specBtn.dataset.specSlot; renderDepthChart(); return; }
   const tab = event.target.closest("[data-dc-tab]");
   if (tab) { dcTab = tab.dataset.dcTab; renderDepthChart(); return; }
   const button = event.target.closest("[data-action]");
@@ -515,7 +624,7 @@ depthPanel?.addEventListener("click", async (event) => {
   if (best && !await confirmAction("Replace this whole depth chart with the best available player at every spot (by league overall)? Team schemes and auto subs are kept.", { confirmLabel: "Set best lineup" })) return;
   const roster = depthRoster();
   const beforeFill = copySlots(chart);
-  const ovr = (p) => dcOverall(p.id) ?? -1;
+  const ovr = (p, slot) => (slot ? slotOvr(slot, p.id) : dcOverall(p.id)) ?? -1;
   const slotList = depthChartSections.flatMap(([, rows]) => rows.map(([slot, size]) => ({ slot, size })));
   const ids = Object.fromEntries(slotList.map(({ slot, size }) => {
     const list = best ? [] : [...(chart.slots[slot] || [])];
@@ -526,7 +635,7 @@ depthPanel?.addEventListener("click", async (event) => {
   const isStarterSpot = new Set(starterSpots.map(({ slot, index }) => `${slot}:${index}`));
   const starters = new Set(starterSpots.map(({ slot, index }) => ids[slot][index]).filter(Boolean));
   // Best fit = highest overall; ties go to the more natural position, then the bigger cap hit.
-  const score = (slot, p) => (best ? ovr(p) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
+  const score = (slot, p) => (best ? ovr(p, slot) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
   const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99).sort((x, y) => score(slot, y) - score(slot, x));
   let added = 0;
   // Starters: the best player/spot pairs first, across every starting spot at once.

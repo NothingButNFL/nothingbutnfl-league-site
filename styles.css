@@ -3866,3 +3866,15 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .ea-panel.only-changed .ea-row:not(.is-changed) { display: none; }
 .ea-panel.only-changed .ea-group:not(:has(.is-changed)) { display: none; }
 @media (max-width: 900px) { .ea-card-layout { grid-template-columns: 1fr; } .ea-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Depth chart › specialist overalls */
+.dc-spec { margin-top: 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.15); }
+.dc-spec h4 { margin: 0 0 10px; color: #fff; font: 800 16px var(--body); }
+.dc-spec-note { margin: 6px 0 10px; color: var(--muted); font-size: 13px; }
+.dc-spec-warn { margin: 0 0 12px; padding: 8px 12px; border-left: 3px solid #f2b950; background: rgba(242, 185, 80, 0.12); color: #ffe2a8; font-size: 13px; }
+.dc-spec-slots { display: flex; flex-wrap: wrap; gap: 6px; }
+.dc-spec-slot { padding: 6px 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 700 12px var(--body); cursor: pointer; }
+.dc-spec-slot[aria-pressed="true"] { background: #c8f25a; border-color: #c8f25a; color: #0a2140; }
+main .dc-spec-table { width: 100%; border-collapse: collapse; }
+main .dc-spec-table :is(th, td) { padding: 7px 10px !important; text-align: left !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+main .dc-spec-table td.is-up { color: #7fd19b; font-weight: 700; } main .dc-spec-table td.is-down { color: #f08a8c; font-weight: 700; }
