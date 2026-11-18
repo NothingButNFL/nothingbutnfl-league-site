@@ -1129,3 +1129,4 @@ html[data-theme="espn"] .ovr-summary strong { color: #121213; }
 html[data-theme="espn"] .ovr-legend span.is-madden::before { border-top-color: rgba(18, 18, 19, 0.840); }
 html[data-theme="espn"] .ea-missing summary { color: #121213; }
 html[data-theme="espn"] .ea-review label { color: #121213; }
+html[data-theme="espn"] .depth-ovr { color: #121213; }

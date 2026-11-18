@@ -575,3 +575,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) mai
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rt-key.is-auto::before { background-color: rgb(var(--tm-3b74d6)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .rt-table td.rt-cell.is-auto { background-color: rgb(var(--tm-3b74d6)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ovr-tip { background-color: rgb(var(--tm-0d2a4f)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .depth-ovr { background-color: rgb(var(--tm-1d3f68)); }

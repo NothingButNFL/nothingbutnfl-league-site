@@ -45,6 +45,16 @@ const fitRank = (slot, position) => {
   return i === -1 ? 99 : i;
 };
 
+// League overall right now, cached per render (null when he has no starting overall yet).
+let dcOverallCache = new Map();
+function dcOverall(id) {
+  if (!dcOverallCache.has(id)) {
+    const season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+    dcOverallCache.set(id, typeof ratingCurrent === "function" ? ratingCurrent(officeData, season, id) : null);
+  }
+  return dcOverallCache.get(id);
+}
+
 function slotSelect(slot, index, chosen, roster) {
   const select = document.createElement("select");
   select.className = "depth-select";
@@ -52,9 +62,11 @@ function slotSelect(slot, index, chosen, roster) {
   select.dataset.index = String(index);
   select.setAttribute("aria-label", `${slot} ${index + 1}`);
   select.append(new Option("—", ""));
-  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || b.cap - a.cap || a.name.localeCompare(b.name));
+  // Each name shows his league overall (Player Ratings: Madden changes count only once the team has updated him).
+  const ovr = (id) => dcOverall(id);
+  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const others = roster.filter((p) => fitRank(slot, p.position) === 99).sort((a, b) => a.name.localeCompare(b.name));
-  const label = (p) => `${p.name}${p.position ? ` (${p.position})` : ""}`;
+  const label = (p) => `${p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   if (fits.length && others.length) {
     const a = document.createElement("optgroup");
     a.label = `Fits ${slot}`;
@@ -69,7 +81,7 @@ function slotSelect(slot, index, chosen, roster) {
   if (chosen && !roster.some((p) => p.id === chosen)) {
     const found = findPlayerById(officeData, chosen);
     const onPs = found && isPracticeSquad(found.player.seasons?.[currentLeagueYear()]);
-    select.append(new Option(`${found ? found.player.name : "Removed player"} (${onPs ? "practice squad, not elevated" : "not on roster"})`, chosen));
+    select.append(new Option(`${found ? found.player.name : "Removed player"} (${onPs ? "practice squad, not elevated" : "not on roster"})${dcOverall(chosen) !== null ? ` · ${dcOverall(chosen)}` : ""}`, chosen));
     select.classList.add("is-stale");
   }
   select.value = chosen || "";
@@ -80,6 +92,7 @@ function slotSelect(slot, index, chosen, roster) {
 
 function renderDepthChart() {
   if (!depthPanel) return;
+  dcOverallCache = new Map(); // picks or rating changes since the last render show up
   const chart = depthChartFor(activeTeamId);
   const roster = depthRoster();
   const team = nflTeams.find(({ id }) => id === activeTeamId);
@@ -134,6 +147,15 @@ function renderDepthChart() {
           n.className = "depth-n";
           n.textContent = String(i + 1);
           cell.append(n, slotSelect(slot, i, ids[i], roster));
+          // His league overall beside the name (the list shows everyone's too).
+          const rating = ids[i] ? dcOverall(ids[i]) : null;
+          if (rating !== null) {
+            const badge = document.createElement("span");
+            badge.className = "depth-ovr";
+            badge.textContent = String(rating);
+            badge.title = "League overall (Madden changes count once the team updates him)";
+            cell.append(badge);
+          }
           grid.append(cell);
         } else {
           grid.append(Object.assign(document.createElement("span"), { className: "depth-blank" }));
@@ -304,7 +326,7 @@ depthPanel?.addEventListener("change", (event) => {
     ids[Number(select.dataset.index)] = select.value;
     while (ids.length && !ids[ids.length - 1]) ids.pop();
     if (ids.length) chart.slots[slot] = ids; else delete chart.slots[slot];
-    const player = select.value ? select.selectedOptions[0].textContent : "empty";
+    const player = select.value ? select.selectedOptions[0].textContent.replace(/ · \d+$/, "") : "empty";
     queueStream(slotChanges(before, chart.slots));
     saveOfficeData(`${slot} ${Number(select.dataset.index) + 1}: ${player}. Sent to the commissioner's stream updates.`);
     renderDepthChart();
