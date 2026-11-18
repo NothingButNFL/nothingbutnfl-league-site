@@ -11,34 +11,35 @@ const posCB = ["CB", "NB"], posS = ["FS", "SS", "S", "SAF"], posDB = [...posCB, 
 const posK = ["K", "PK"], posP = ["P"];
 const posSkill = [...posRB, ...posFB, ...posWR, ...posTE, ...posDB]; // ball-handling / return positions (no QBs)
 const uniq = (list) => [...new Set(list)];
-const depthFits = {
-  QB: uniq([...posQB, ...posK, ...posP]), HB: uniq([...posRB, ...posFB]), FB: uniq([...posFB, ...posRB, ...posTE]),
-  WR: uniq([...posWR, ...posRB, ...posTE]), TE: posTE,
-  LT: uniq([...posOT, ...posOL]), RT: uniq([...posOT, ...posOL]), LG: uniq([...posIOL, ...posOL]), RG: uniq([...posIOL, ...posOL]), C: uniq(["C", ...posIOL, ...posOL]),
-  DT: uniq([...posDT, ...posEdge]), LE: uniq([...posEdge, ...posDT, ...posOLB]), RE: uniq([...posEdge, ...posDT, ...posOLB]),
-  SAM: uniq([...posOLB, ...posLB, ...posEdge]), WILL: uniq([...posOLB, ...posLB, ...posEdge]), MIKE: uniq([...posILB, ...posLB]),
-  CB: uniq([...posCB, ...posDB]), FS: uniq(["FS", ...posS, ...posDB]), SS: uniq(["SS", ...posS, ...posDB]),
-  K: uniq([...posK, ...posP]), P: uniq([...posP, ...posK]), KOS: uniq([...posK, ...posP, ...posSkill]),
-  PR: uniq([...posWR, ...posRB, ...posCB, ...posSkill]), KR: uniq([...posWR, ...posRB, ...posCB, ...posSkill]).filter((p) => p !== "SS"),
-  LS: uniq(["LS", ...posTE, ...posIOL]),
-  NT: uniq(["NT", ...posDT]), SUBLB: uniq([...posLB, "SS"]), SLCB: uniq([...posCB, ...posDB]),
-  RRE: uniq([...posEdge, ...posOLB]), RLE: uniq([...posEdge, ...posOLB]), RDT: uniq([...posDT, ...posEdge]),
-  PWHB: uniq([...posRB, ...posFB]), "3DRB": uniq([...posRB, ...posFB]), GAD: posSkill, SLWR: uniq([...posWR, ...posTE, ...posRB])
+// League rules, in priority tiers: primary positions first, then the secondary positions allowed at that slot.
+// Fill / Best lineup and the dropdowns use the best primary-position players until there are none left, then secondary.
+const posOLB2 = posOLB, posLBall = posLB;
+const depthTiers = {
+  QB: [posQB, [...posK, ...posP]], HB: [posRB, posFB], FB: [posFB, [...posRB, ...posTE]],
+  WR: [posWR, [...posTE, ...posRB]], TE: [posTE],
+  LT: [posOT, [...posIOL, "OL"]], RT: [posOT, [...posIOL, "OL"]], LG: [["LG", "RG", "OG", "G", "IOL"], ["C", ...posOT, "OL"]],
+  RG: [["LG", "RG", "OG", "G", "IOL"], ["C", ...posOT, "OL"]], C: [["C"], [...posIOL, ...posOT, "OL"]],
+  DT: [posDT, posEdge], LE: [posEdge, [...posDT, ...posOLB2]], RE: [posEdge, [...posDT, ...posOLB2]],
+  SAM: [posOLB2, [...posLBall, ...posEdge]], WILL: [posOLB2, [...posLBall, ...posEdge]], MIKE: [[...posILB, "LB"], posLBall],
+  CB: [posCB, [...posS, "DB"]], FS: [posS, [...posCB, "DB"]], SS: [posS, [...posCB, "DB"]],
+  K: [posK, posP], P: [posP, posK], KOS: [[...posK, ...posP], posSkill],
+  PR: [posSkill], KR: [posSkill.filter((p) => p !== "SS")], LS: [["LS"], [...posTE, ...posIOL]],
+  NT: [["NT", ...posDT]], SUBLB: [posLBall, ["SS"]], SLCB: [posCB, [...posS, "DB"]],
+  RRE: [posEdge, posOLB2], RLE: [posEdge, posOLB2], RDT: [posDT, posEdge],
+  PWHB: [posRB, posFB], "3DRB": [posRB, posFB], GAD: [posSkill], SLWR: [posWR, [...posTE, ...posRB]]
 };
-// Allowed only by hand (never by Fill / Best lineup), listed last in the dropdown: a K or P at QB, a P at K, a K at P.
-const depthEmergency = { QB: [...posK, ...posP], K: posP, P: posK };
-const isEmergency = (slot, position) => {
-  const list = depthEmergency[slot];
-  if (!list) return false;
-  const tokens = String(position || "").toUpperCase().split(/[\s/,-]+/).filter(Boolean);
-  return tokens.length > 0 && tokens.every((t) => list.includes(t));
-};
-
-// Specialist slots (RLE, RRE, RDT, SUBLB, SLCB, SLWR, 3DRB, PWHB, KR, PR, LS) take their eligible positions from
-// specialist-config.js, so the formulas and the dropdowns always agree.
+// Specialist slots (RLE, RRE, RDT, SUBLB, SLCB, SLWR, 3DRB, PWHB, KR, PR, LS): only positions specialist-config.js
+// lists as eligible, so the formulas and the dropdowns agree (tiers keep their order).
 if (typeof specialistFormulaConfig !== "undefined") {
-  for (const [slot, cfg] of Object.entries(specialistFormulaConfig.slots)) depthFits[slot] = cfg.eligible_positions;
+  for (const [slot, cfg] of Object.entries(specialistFormulaConfig.slots)) {
+    const allowed = new Set(cfg.eligible_positions);
+    const tiers = (depthTiers[slot] || [cfg.eligible_positions]).map((t) => t.filter((p) => allowed.has(p)));
+    const covered = new Set(tiers.flat());
+    const rest = cfg.eligible_positions.filter((p) => !covered.has(p));
+    depthTiers[slot] = [...tiers, ...(rest.length ? [rest] : [])].filter((t) => t.length);
+  }
 }
+const depthFits = Object.fromEntries(Object.entries(depthTiers).map(([slot, tiers]) => [slot, uniq(tiers.flat())]));
 
 // ---- Specialist overalls (specialist-engine.js): EA attributes are loaded once, rankings rebuilt each render ----
 const dcSpec = { state: "idle", ratings: new Map(), rankings: {}, bySlot: {} };
@@ -111,9 +112,10 @@ function depthRoster() {
 
 // Best rank among the player's listed positions ("CB / S" counts as either); 99 = not allowed in this slot.
 const fitRank = (slot, position) => {
-  const fits = depthFits[slot] || [];
-  const ranks = String(position || "").toUpperCase().split(/[\s/,-]+/).filter(Boolean).map((p) => fits.indexOf(p)).filter((r) => r >= 0);
-  return ranks.length ? Math.min(...ranks) : 99;
+  const tiers = depthTiers[slot] || [];
+  const tokens = String(position || "").toUpperCase().split(/[\s/,-]+/).filter(Boolean);
+  const ranks = tokens.map((p) => tiers.findIndex((t) => t.includes(p))).filter((r) => r >= 0);
+  return ranks.length ? Math.min(...ranks) : 99; // 0 = primary, 1 = secondary, 99 = not allowed
 };
 
 // League overall right now, cached per render (null when he has no starting overall yet).
@@ -356,7 +358,7 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
   // Each name shows his league overall (Player Ratings: Madden changes count only once the team has updated him).
   const ovr = (id) => slotOvr(slot, id);
   const spec = dcSpec.bySlot[slot];
-  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => (isEmergency(slot, a.position) - isEmergency(slot, b.position)) || (spec ? 0 : fitRank(slot, a.position) - fitRank(slot, b.position)) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || (dcOverall(b.id) ?? -1) - (dcOverall(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
+  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || (dcOverall(b.id) ?? -1) - (dcOverall(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   // Only positions the league allows here (see depthFits).
   select.append(...fits.map((p) => {
@@ -365,7 +367,6 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
     return option;
   }));
   const saved = chosen && roster.find((p) => p.id === chosen);
-  if (saved && isEmergency(slot, saved.position)) select.classList.add("is-stale"); // e.g. a kicker at QB: shown in yellow
   if (saved && fitRank(slot, saved.position) === 99) {
     // Saved before the position rules (or his position changed): kept, but flagged.
     select.append(new Option(`${label(saved)} — not allowed at ${slot}`, saved.id));
@@ -657,11 +658,10 @@ depthPanel?.addEventListener("click", async (event) => {
   const starterSpots = [...dcStarterSpots(chart).keys()].map((key) => { const [slot, index] = key.split(":"); return { slot, index: Number(index) }; });
   const isStarterSpot = new Set(starterSpots.map(({ slot, index }) => `${slot}:${index}`));
   const starters = new Set(starterSpots.map(({ slot, index }) => ids[slot][index]).filter(Boolean));
-  // Best fit = highest overall; ties go to the more natural position, then the bigger cap hit.
-  const score = (slot, p) => (isEmergency(slot, p.position) ? -1e9 : 0)
-    + (best ? ovr(p, slot) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
-  // Kickers/punters are never put at QB (or a P at K, a K at P) automatically; pick them by hand if you need to.
-  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99 && !isEmergency(slot, p.position)).sort((x, y) => score(slot, y) - score(slot, x));
+  // Primary position beats secondary; then the higher overall; then the bigger cap hit.
+  const score = (slot, p) => (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000 + Math.min(9, p.cap / 5e6);
+  // Primary positions first (best overall), then secondary positions (best overall).
+  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99).sort((x, y) => score(slot, y) - score(slot, x));
   let added = 0;
   // Starters: the best player/spot pairs first, across every starting spot at once.
   const pairs = [];
