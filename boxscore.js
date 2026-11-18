@@ -299,10 +299,14 @@
       const labelCell = tr.insertCell(); labelCell.className = "bx-ts-label"; labelCell.textContent = label;
       const homeCell = tr.insertCell(); homeCell.className = "bx-ts-home";
       const awayWrap = el("span", "bx-edge-wrap"), homeWrap = el("span", "bx-edge-wrap");
+      // The inputs are placed once; typing only flips the markers, so the box you're typing in keeps focus.
+      const awayEdge = edge("away"), homeEdge = edge("home");
+      awayWrap.append(awayEdge, inputs[0]);
+      homeWrap.append(inputs[1], homeEdge);
       const mark = () => {
         const side = betterSide(key, inputs[0].value.trim(), inputs[1].value.trim());
-        awayWrap.replaceChildren(...(side === "away" ? [edge("away")] : [el("span", "bx-edge is-blank", ">")]), inputs[0]);
-        homeWrap.replaceChildren(inputs[1], ...(side === "home" ? [edge("home")] : [el("span", "bx-edge is-blank", "<")]));
+        awayEdge.classList.toggle("is-blank", side !== "away");
+        homeEdge.classList.toggle("is-blank", side !== "home");
       };
       inputs.forEach((i) => i.addEventListener("input", mark));
       mark();
