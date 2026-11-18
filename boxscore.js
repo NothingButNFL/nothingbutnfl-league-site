@@ -71,8 +71,9 @@
         (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long"), sacks: sumIf(ls, "sacks") })],
       ["rushing", "Rushing", [["ATT", (l) => l.att], ["YARDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["FUMB", (l) => l.fumb], ["BTK", (l) => l.btk], ["YAC", (l) => l.yac], ["LONG", (l) => l.long]],
         (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), fumb: sumIf(ls, "fumb"), btk: sumIf(ls, "btk"), yac: sumIf(ls, "yac"), long: maxOf(ls, "long") })],
-      ["receiving", "Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
-        (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
+      ["receiving", "Receiving", [["REC", (l) => l.rec], ["YARDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["RAC", (l) => l.rac],
+        ["RAC AVG", (l) => (l.rac == null ? undefined : avg(l.rac, l.racRec ?? l.rec))], ["LONG", (l) => l.long]],
+        (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), rac: sumIf(ls, "rac"), racRec: sum(ls.filter((l) => l.rac != null), "rec"), long: maxOf(ls, "long") })], // team RAC AVG counts only catches with RAC entered
       ["defense", "Defense", [["TOT", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
         (ls) => ({ tackles: sum(ls, "tackles"), tfl: sum(ls, "tfl"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
       ["kicking", "Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["PCT", (l) => (l.fga ? ((l.fgm / l.fga) * 100).toFixed(1) : "0.0")], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`], ["PTS", (l) => (Number(l.fgm) || 0) * 3 + (Number(l.xpm) || 0)]],
@@ -190,7 +191,7 @@
   const editFields = {
     passing: [["yds", "YARDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"], ["sacks", "SACKS"], ["cmp", "COMP"], ["att", "ATT"]],
     rushing: [["att", "ATT"], ["yds", "YARDS"], ["td", "TD"], ["fumb", "FUMB"], ["btk", "BTK"], ["yac", "YAC"], ["long", "LONG"]],
-    receiving: [["rec", "REC"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
+    receiving: [["rec", "REC"], ["yds", "YARDS"], ["td", "TD"], ["rac", "RAC"], ["long", "LONG"]],
     defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
   };
