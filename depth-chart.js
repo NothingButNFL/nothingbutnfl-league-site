@@ -58,7 +58,7 @@ function dcOverall(id) {
 // ---- Lineup view: the depth chart laid out like Madden's Lineup screen ----
 // A card per starter, placed in formation, with that spot's backups listed under it. A slot with several starters
 // (DT in a 4-3, MIKE in a 3-4, CB, WR) splits its depth: card 1 gets spots 1, k+1, 2k+1…, card 2 gets 2, k+2… (k = cards).
-// The defense's front follows the team's Defensive Scheme: 3-4 schemes show LE · DT · RE with two inside linebackers.
+// The defense's front follows the team's Defensive Scheme: 3-4 schemes show three DTs with the edges at linebacker.
 let dcTab = "offense";
 const dcTabs = [["offense", "Offense"], ["defense", "Defense"], ["special", "Special Teams"], ["specialist", "Specialist"]];
 const isThreeFour = (scheme) => /3-4/.test(scheme || "");
@@ -70,9 +70,10 @@ function dcFormation(tab, chart) {
     ["WR1", "WR", 0, 2, 1, 2], ["HB", "HB", 0, 1, 5, 2], ["QB", "QB", 0, 1, 7, 2], ["FB", "FB", 0, 1, 9, 2], ["WR2", "WR", 1, 2, 14, 2]] };
   if (tab === "defense") return isThreeFour(chart.schemes.defense)
     ? { cols: 16, cards: [
+      // Madden's 3-4: the edges stand up at linebacker (REDG, LEDG) beside MIKE and WILL; three DTs on the line.
       ["FS", "FS", 0, 1, 3, 1], ["SS", "SS", 0, 1, 13, 1],
-      ["ROLB", "SAM", 0, 1, 5, 2], ["MLB2", "MIKE", 1, 2, 7, 2], ["MLB1", "MIKE", 0, 2, 9, 2], ["LOLB", "WILL", 0, 1, 11, 2],
-      ["CB1", "CB", 0, 2, 1, 3], ["RE", "RE", 0, 1, 6, 3], ["DT", "DT", 0, 1, 8, 3], ["LE", "LE", 0, 1, 10, 3], ["CB2", "CB", 1, 2, 15, 3]] }
+      ["REDG", "RE", 0, 1, 5, 2], ["MIKE", "MIKE", 0, 1, 7, 2], ["WILL", "WILL", 0, 1, 9, 2], ["LEDG", "LE", 0, 1, 11, 2],
+      ["CB1", "CB", 0, 2, 1, 3], ["DT3", "DT", 2, 3, 6, 3], ["DT1", "DT", 0, 3, 8, 3], ["DT2", "DT", 1, 3, 10, 3], ["CB2", "CB", 1, 2, 15, 3]] }
     : { cols: 16, cards: [
       ["FS", "FS", 0, 1, 3, 1], ["SS", "SS", 0, 1, 13, 1],
       ["WILL", "WILL", 0, 1, 6, 2], ["MIKE", "MIKE", 0, 1, 8, 2, "is-dropped"], ["SAM", "SAM", 0, 1, 10, 2],
@@ -126,7 +127,7 @@ function formationView(chart, roster) {
     const note = document.createElement("p");
     note.className = "dc-scheme-note";
     note.textContent = chart.schemes.defense
-      ? `${chart.schemes.defense}: ${isThreeFour(chart.schemes.defense) ? "3-4 front (3 down linemen, 4 linebackers)" : "4-3 front (4 down linemen, 3 linebackers)"}.`
+      ? `${chart.schemes.defense}: ${isThreeFour(chart.schemes.defense) ? "3-4 front (DT1-DT3 on the line; REDG, MIKE, WILL, LEDG at linebacker)" : "4-3 front (4 down linemen, 3 linebackers)"}.`
       : "No Defensive Scheme chosen yet, so this shows a 4-3 front. Pick the scheme on the right.";
     wrap.append(note);
   }
