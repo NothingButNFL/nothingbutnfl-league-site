@@ -1,0 +1,41 @@
+# Pulls Madden ratings from EA's ratings website into ea-ratings.json (tools/ea_ratings.py) and commits it when
+# EA has published something new. Admin › Madden Ratings › "Update ratings from EA" then applies it to the league.
+# Runs a few times a day Tuesday–Friday (when EA's weekly roster updates come out) and whenever you press
+# "Run workflow" on the Actions tab.
+name: EA Madden ratings
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */4 * * 2-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ea-ratings
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch EA ratings
+        run: python tools/ea_ratings.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- ea-ratings.json && git ls-files --error-unmatch ea-ratings.json >/dev/null 2>&1; then
+            echo "No new ratings."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git add ea-ratings.json
+          git commit -m "EA Madden ratings update"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

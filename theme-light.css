@@ -1125,3 +1125,4 @@ html[data-theme="light"] .ovr-chart .ovr-madden { stroke: rgba(18, 18, 19, 0.630
 html[data-theme="light"] .ovr-chart .ovr-cross { stroke: rgba(18, 18, 19, 0.490); }
 html[data-theme="light"] .ovr-summary strong { color: #121213; }
 html[data-theme="light"] .ovr-legend span.is-madden::before { border-top-color: rgba(18, 18, 19, 0.840); }
+html[data-theme="light"] .ea-missing summary { color: #121213; }

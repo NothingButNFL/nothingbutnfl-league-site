@@ -23,12 +23,12 @@ function rtSave(message) {
 
 function rtCellTitle(player, row, picked) {
   const bits = [];
-  if (row.change) bits.push(`Week ${row.week}: ${rtSigned(row.change)}${row.note ? ` (${row.note})` : ""}`);
+  if (row.change) bits.push(`${ratingWeekLabel(row.week)}: ${rtSigned(row.change)}${row.note ? ` (${row.note})` : ""}`);
   if (row.state === "elected") bits.push("Applied by an update the team picked.");
   else if (row.state === "auto") bits.push("Applied automatically (a change of 3 or more).");
   else if (row.state === "pending") bits.push("Waiting to be applied.");
-  if (picked) bits.push(`Picked to update in Week ${row.week}.`);
-  if (row.overall !== null) bits.push(`League overall after Week ${row.week}: ${row.overall}${row.pending ? ` (Madden ${row.madden}, ${rtSigned(row.pending)} waiting)` : ""}`);
+  if (picked) bits.push(`Picked to update in ${ratingWeekLabel(row.week)}.`);
+  if (row.overall !== null) bits.push(`League overall after ${ratingWeekLabel(row.week)}: ${row.overall}${row.pending ? ` (Madden ${row.madden}, ${rtSigned(row.pending)} waiting)` : ""}`);
   return bits.join("\n");
 }
 
@@ -42,7 +42,7 @@ function renderRatings() {
   document.querySelector("#rt-paste").hidden = !rtEditing;
   const pasteCol = document.querySelector("#rt-paste-col");
   if (pasteCol.options.length !== ratingWeeks + 1) {
-    pasteCol.replaceChildren(new Option("Starting overall", "0"), ...Array.from({ length: ratingWeeks }, (_, i) => new Option(`Week ${i + 1} change`, String(i + 1))));
+    pasteCol.replaceChildren(new Option("Starting overall", "0"), ...Array.from({ length: ratingWeeks }, (_, i) => new Option(`${ratingWeekLabel(i + 1)} change`, String(i + 1))));
     pasteCol.value = String(Math.min(ratingWeeks, latest));
   }
 
@@ -56,12 +56,12 @@ function renderRatings() {
   const th = (text, cls = "") => { const c = document.createElement("th"); c.scope = "col"; c.textContent = text; if (cls) c.className = cls; hr.append(c); return c; };
   th("POS", "rt-pos"); th("PLAYER", "rt-name"); th("START", "rt-num"); th("OVERALL", "rt-num rt-overall");
   for (let w = 1; w <= weeks; w += 1) {
-    const c = th(`WEEK ${w}`, "rt-week");
+    const c = th((w > regularSeasonWeeks ? ["WILD CARD", "DIVISIONAL", "CONF CHAMP", "SUPER BOWL"][w - regularSeasonWeeks - 1] : ratingWeekLabel(w)).toUpperCase(), "rt-week");
     const used = ratingTeamPicks(officeData, season, activeTeamId, w).length;
     const count = document.createElement("span");
     count.className = `rt-used${used >= ratingUpgradesPerWeek ? " is-full" : ""}`;
     count.textContent = `${used}/${ratingUpgradesPerWeek}`;
-    count.title = `${used} of ${ratingUpgradesPerWeek} updates used in Week ${w}`;
+    count.title = `${used} of ${ratingUpgradesPerWeek} updates used in ${ratingWeekLabel(w)}`;
     c.append(count);
   }
 
@@ -92,7 +92,7 @@ function renderRatings() {
       cell.className = "rt-cell";
       const picked = picksByWeek(w);
       if (rtEditing) {
-        cell.append(rtInput(row.change || "", `${p.name} Week ${w} change`, p.id, w));
+        cell.append(rtInput(row.change || "", `${p.name} ${ratingWeekLabel(w)} change`, p.id, w));
         continue;
       }
       const kind = !row.change ? "" : row.state === "pending" ? (row.change > 0 ? "is-pending" : "is-pending-down")
@@ -111,7 +111,7 @@ function renderRatings() {
         b.dataset.week = String(w);
         b.textContent = label;
         b.setAttribute("aria-pressed", String(picked));
-        b.setAttribute("aria-label", `${p.name} Week ${w}: ${label}. ${picked ? "Picked to update; click to undo." : "Click to update him this week."}`);
+        b.setAttribute("aria-label", `${p.name} ${ratingWeekLabel(w)}: ${label}. ${picked ? "Picked to update; click to undo." : "Click to update him this week."}`);
         cell.append(b);
       } else cell.textContent = label;
       if (row.note) cell.classList.add("has-note");
@@ -166,7 +166,7 @@ rtTable?.addEventListener("click", (event) => {
   const wasPicked = ratingTeamPicks(officeData, rtSeason(), activeTeamId, week).includes(playerId);
   const problem = toggleRatingUpgrade(officeData, rtSeason(), activeTeamId, playerId, week);
   if (problem) { rtStatus.textContent = `${player?.name}: ${problem}`; return; }
-  rtSave(`${player?.name} ${wasPicked ? "is no longer picked" : "will be updated"} in Week ${week}.`);
+  rtSave(`${player?.name} ${wasPicked ? "is no longer picked" : "will be updated"} in ${ratingWeekLabel(week)}.`);
 });
 
 rtTable?.addEventListener("change", (event) => {

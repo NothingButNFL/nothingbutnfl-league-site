@@ -3753,3 +3753,10 @@ main .rt-table td.rt-cell.has-note { background-image: linear-gradient(225deg, r
 .ovr-legend span.is-madden::before { border-top: 1.5px dashed rgba(255, 255, 255, 0.6); }
 main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted; text-underline-offset: 3px; }
 .rt-paste[hidden] { display: none; }
+
+/* Admin › Madden ratings from EA */
+.ea-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+.ea-file { cursor: pointer; }
+.ea-summary-line { margin: 6px 0; color: var(--muted); font-size: 14px; }
+.ea-missing { margin: 6px 0; font-size: 13px; color: var(--muted); }
+.ea-missing summary { cursor: pointer; color: #fff; }

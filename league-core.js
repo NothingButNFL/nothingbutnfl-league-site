@@ -3544,7 +3544,11 @@ function validInsiderCustom(data) {
 // to 3 players a week to update (a change from an earlier week can be picked up later), and any player whose change
 // that week is +3/-3 or more is updated automatically (that doesn't use one of the 3). An update applies everything
 // still waiting, so a player who's updated after +1 and +1 goes up 2.
-const ratingWeeks = regularSeasonWeeks;
+// Weeks 1-18 are the regular season; 19-22 are the playoff rounds.
+const ratingPlayoffRounds = [["Wild Card", "WC"], ["Divisional", "DIV"], ["Conference Championship", "CONF"], ["Super Bowl", "SB"]];
+const ratingWeeks = regularSeasonWeeks + ratingPlayoffRounds.length;
+const ratingWeekLabel = (w, short = false) => w === 0 ? "Start" : w <= regularSeasonWeeks ? (short ? `W${w}` : `Week ${w}`)
+  : ratingPlayoffRounds[w - regularSeasonWeeks - 1][short ? 1 : 0];
 const ratingUpgradesPerWeek = 3;
 const ratingAutoThreshold = 3;
 const ratingClamp = (v) => Math.max(0, Math.min(99, v));
@@ -3639,8 +3643,72 @@ function toggleRatingUpgrade(data, season, teamId, playerId, week) {
   const waitingUp = row.pending > 0 || (row.change > 0 && row.state === "pending");
   if (!waitingUp) return "He has no upgrade waiting this week.";
   if (Math.abs(row.change) >= ratingAutoThreshold) return "He's updated automatically this week (a change of 3 or more).";
-  if (picks.length >= ratingUpgradesPerWeek) return `You've already picked ${ratingUpgradesPerWeek} players to update in Week ${week}.`;
+  if (picks.length >= ratingUpgradesPerWeek) return `You've already picked ${ratingUpgradesPerWeek} players to update in ${ratingWeekLabel(week)}.`;
   const s = ratingsSeason(data, season, true);
   (s.upgrades[teamId] ||= {})[week] = [...picks, playerId];
   return "";
+}
+
+// ---- EA ratings import (Admin › Madden Ratings; data from tools/ea_ratings.py → ea-ratings.json) ----
+// ea = { edition, releases: [{ id, label, week, ratings: { eaId: [overall, notes] } }], players: { eaId: [name, pos, team] } }
+// Week 0 (Launch Ratings) becomes each player's starting overall; every later release becomes that week's change
+// (its overall minus the one before) with EA's attribute changes as the note. Picks already made are kept.
+const eaNameAliases = { "decobie durant": "cobie durant", "michael hall": "mike hall" };
+function eaNormalizeName(name) {
+  let n = String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.',’]/g, "").replace(/-/g, " ");
+  n = n.replace(/\s+(jr|sr|ii|iii|iv|v)$/, "").replace(/\s+/g, " ").trim();
+  return eaNameAliases[n] || n;
+}
+function validEaRatingsFile(ea) {
+  return ea && ea.schema === "nbf-ea-ratings" && Array.isArray(ea.releases) && ea.releases.length && ea.players && typeof ea.players === "object" &&
+    ea.releases.every((r) => r && Number.isInteger(r.week) && r.week >= 0 && r.week <= ratingWeeks && r.ratings && typeof r.ratings === "object") &&
+    ea.releases.some((r) => r.week === 0);
+}
+function applyEaRatings(data, ea, season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0]) {
+  if (!validEaRatingsFile(ea)) return { error: "That isn't an EA ratings file from tools/ea_ratings.py (it needs Launch Ratings and the weekly releases)." };
+  const releases = [...ea.releases].sort((a, b) => a.week - b.week);
+  const byName = new Map();
+  for (const [id, [name, pos]] of Object.entries(ea.players)) {
+    const key = eaNormalizeName(name);
+    if (!byName.has(key)) byName.set(key, []);
+    byName.get(key).push({ id, pos });
+  }
+  const s = ratingsSeason(data, season, true);
+  const weeksCovered = new Set(releases.filter((r) => r.week > 0).map((r) => r.week));
+  let matched = 0;
+  const unmatched = [], ambiguous = [];
+  for (const [teamId, team] of Object.entries(data.teams || {})) {
+    for (const player of team.roster) {
+      if (!isPlayerOnSeason(player, season) || isRetiredPlayer(player)) continue;
+      let options = byName.get(eaNormalizeName(player.name)) || [];
+      if (options.length > 1) {
+        const family = positionFamily(seasonEntry(player, season).position);
+        const same = options.filter((o) => positionFamily(o.pos) === family);
+        if (same.length) options = same;
+      }
+      if (options.length !== 1) { (options.length ? ambiguous : unmatched).push(`${player.name} (${teamId})`); continue; }
+      const eaId = options[0].id;
+      const r = (s.players[player.id] ||= {});
+      let prev = null;
+      for (const release of releases) {
+        const row = release.ratings[eaId];
+        if (!row) continue;
+        const [overall, note] = row;
+        if (release.week === 0) { r.base = overall; prev = overall; continue; }
+        if (prev === null) { prev = overall; continue; }
+        const change = overall - prev;
+        prev = overall;
+        r.d ||= {}; r.n ||= {};
+        if (change) { r.d[release.week] = change; if (note) r.n[release.week] = String(note).slice(0, 300); else delete r.n[release.week]; }
+        else { delete r.d[release.week]; delete r.n[release.week]; }
+      }
+      // A week EA has a release for but this player wasn't in keeps no stale change.
+      for (const w of weeksCovered) if (!releases.some((rel) => rel.week === w && rel.ratings[eaId])) { delete r.d?.[w]; delete r.n?.[w]; }
+      matched += 1;
+    }
+  }
+  s.ea = { updatedAt: new Date().toISOString(), edition: String(ea.edition || "").slice(0, 8),
+    labels: releases.map((r) => String(r.label || ratingWeekLabel(r.week)).slice(0, 40)).slice(0, 30), matched,
+    unmatched: unmatched.slice(0, 300).map((n) => n.slice(0, 90)), ambiguous: ambiguous.slice(0, 100).map((n) => n.slice(0, 90)) };
+  return { matched, unmatched, ambiguous, releases: releases.map((r) => r.label || ratingWeekLabel(r.week)) };
 }

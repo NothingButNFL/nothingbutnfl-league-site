@@ -595,12 +595,12 @@ function renderOverall(entry) {
   const path = (key) => rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join("");
   const showMadden = rows.some((r) => r.madden !== r.overall);
   const net = now.overall - rows[0].overall;
-  box.innerHTML = `<p class="ovr-summary"><span><strong>${now.overall}</strong>league overall after ${last ? `Week ${last}` : "the start"}</span>
+  box.innerHTML = `<p class="ovr-summary"><span><strong>${now.overall}</strong>league overall after ${last ? ratingWeekLabel(last) : "the start"}</span>
       <span><strong>${net > 0 ? "+" : ""}${net}</strong>since the start (${rows[0].overall})</span>
       ${now.pending ? `<span><strong>${now.pending > 0 ? "+" : ""}${now.pending}</strong>waiting (Madden ${now.madden})</span>` : ""}</p>
-    <div class="ovr-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(entry.player.name)} overall by week: ${rows.map((r) => `${r.week ? `Week ${r.week}` : "Start"} ${r.overall}`).join(", ")}">
+    <div class="ovr-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(entry.player.name)} overall by week: ${rows.map((r) => `${ratingWeekLabel(r.week)} ${r.overall}`).join(", ")}">
       ${ticks.map((v) => `<line class="ovr-grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ovr-axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
-      ${rows.map((r, i) => `<text class="ovr-axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${r.week ? `W${r.week}` : "Start"}</text>`).join("")}
+      ${rows.map((r, i) => `<text class="ovr-axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${ratingWeekLabel(r.week, true)}</text>`).join("")}
       ${showMadden ? `<path class="ovr-madden" d="${path("madden")}"/>` : ""}
       <path class="ovr-line" d="${path("overall")}"/>
       <line class="ovr-cross" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>
@@ -615,7 +615,7 @@ function renderOverall(entry) {
     const r = rows[i];
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
     const sign = (v) => (v > 0 ? `+${v}` : String(v));
-    tip.innerHTML = `<strong>${r.week ? `Week ${r.week}` : "Start of season"}</strong><br>League overall ${r.overall}` +
+    tip.innerHTML = `<strong>${r.week ? ratingWeekLabel(r.week) : "Start of season"}</strong><br>League overall ${r.overall}` +
       (r.madden !== r.overall ? `<br>Madden ${r.madden} (${sign(r.madden - r.overall)} waiting)` : "") +
       (r.change ? `<br>Change ${sign(r.change)}${r.state === "auto" ? " · updated automatically" : r.state === "elected" ? " · updated" : " · waiting"}` : "") +
       (r.note ? `<br>${escapeHtml(r.note)}` : "");
