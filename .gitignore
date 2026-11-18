@@ -1,5 +1,6 @@
-.DS_Store
-Thumbs.db
 *.log
-node_modules/
+.DS_Store
 /*.png
+Thumbs.db
+__pycache__/
+node_modules/
