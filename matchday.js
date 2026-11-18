@@ -670,7 +670,8 @@ function renderMatchday() {
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games).filter((item) => !item.featured), pick, records); // the Game of the Week has its own panel
   renderScoreboard(data, pick, games, records);
-  renderWeeksBest(games);
+  // Top Players only covers finished weeks: a week in progress shows up once all its scores are in.
+  renderWeeksBest(games.filter((g) => g.week <= week), week + 1);
 }
 
 // Nothing scheduled or played yet: the same panels, with placeholders that say what fills them.
