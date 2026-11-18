@@ -25,6 +25,15 @@ const depthFits = {
   RRE: uniq([...posEdge, ...posOLB]), RLE: uniq([...posEdge, ...posOLB]), RDT: uniq([...posDT, ...posEdge]),
   PWHB: uniq([...posRB, ...posFB]), "3DRB": uniq([...posRB, ...posFB]), GAD: posSkill, SLWR: uniq([...posWR, ...posTE, ...posRB])
 };
+// Allowed only as a last resort (no one else is available): a K or P at QB, a P at K, a K at P.
+const depthEmergency = { QB: [...posK, ...posP], K: posP, P: posK };
+const isEmergency = (slot, position) => {
+  const list = depthEmergency[slot];
+  if (!list) return false;
+  const tokens = String(position || "").toUpperCase().split(/[\s/,-]+/).filter(Boolean);
+  return tokens.length > 0 && tokens.every((t) => list.includes(t));
+};
+
 // Specialist slots (RLE, RRE, RDT, SUBLB, SLCB, SLWR, 3DRB, PWHB, KR, PR, LS) take their eligible positions from
 // specialist-config.js, so the formulas and the dropdowns always agree.
 if (typeof specialistFormulaConfig !== "undefined") {
@@ -335,7 +344,7 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
   // Each name shows his league overall (Player Ratings: Madden changes count only once the team has updated him).
   const ovr = (id) => slotOvr(slot, id);
   const spec = dcSpec.bySlot[slot];
-  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => (spec ? 0 : fitRank(slot, a.position) - fitRank(slot, b.position)) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || (dcOverall(b.id) ?? -1) - (dcOverall(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
+  const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => (isEmergency(slot, a.position) - isEmergency(slot, b.position)) || (spec ? 0 : fitRank(slot, a.position) - fitRank(slot, b.position)) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || (dcOverall(b.id) ?? -1) - (dcOverall(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   // Only positions the league allows here (see depthFits).
   select.append(...fits.map((p) => {
@@ -635,7 +644,8 @@ depthPanel?.addEventListener("click", async (event) => {
   const isStarterSpot = new Set(starterSpots.map(({ slot, index }) => `${slot}:${index}`));
   const starters = new Set(starterSpots.map(({ slot, index }) => ids[slot][index]).filter(Boolean));
   // Best fit = highest overall; ties go to the more natural position, then the bigger cap hit.
-  const score = (slot, p) => (best ? ovr(p, slot) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
+  const score = (slot, p) => (isEmergency(slot, p.position) ? -1e9 : 0)
+    + (best ? ovr(p, slot) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p, slot) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
   const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99).sort((x, y) => score(slot, y) - score(slot, x));
   let added = 0;
   // Starters: the best player/spot pairs first, across every starting spot at once.
@@ -651,13 +661,12 @@ depthPanel?.addEventListener("click", async (event) => {
     starters.add(p.id);
     added += 1;
   }
-  // Everything else, spot by spot: best available not already listed in that slot (non-starters first for offense/defense backups).
-  const shareable = new Set(depthChartSections.filter(([section]) => section !== "Offense" && section !== "Defense").flatMap(([, rows]) => rows.map(([slot]) => slot)));
+  // Everything else, spot by spot: best available not already listed in that slot (a starter at one spot can back up another).
   for (const { slot, size } of slotList) {
     for (let i = 0; i < size; i += 1) {
       if (ids[slot][i] || isStarterSpot.has(`${slot}:${i}`)) continue;
       const pool = ranked(slot).filter((p) => !ids[slot].includes(p.id));
-      const pick = shareable.has(slot) ? pool[0] : (pool.find((p) => !starters.has(p.id)) || pool[0]);
+      const pick = pool[0]; // starters elsewhere can be 2nd string here
       if (!pick) continue;
       ids[slot][i] = pick.id;
       added += 1;
