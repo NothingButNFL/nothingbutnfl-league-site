@@ -10,7 +10,7 @@ const salaryEmpty = document.querySelector("#salary-empty");
 const requestedTeamId = new URLSearchParams(window.location.search).get("team")?.toUpperCase();
 let activeTeamId = nflTeams.some(({ id }) => id === requestedTeamId) ? requestedTeamId : nflTeams[0].id;
 let activeSeason = firstSeason;
-let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#player-hub" ? "player-hub" : location.hash === "#free-agents" ? "free-agents" : location.hash === "#restructure" ? "restructure" : location.hash === "#extend" ? "extend" : location.hash === "#trade-block" ? "trade-block" : location.hash === "#trade" ? "trade" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
+let activeTab = location.hash === "#depth-chart" ? "depth-chart" : location.hash === "#player-hub" ? "player-hub" : location.hash === "#free-agents" ? "free-agents" : location.hash === "#restructure" ? "restructure" : location.hash === "#extend" ? "extend" : location.hash === "#ratings" ? "ratings" : location.hash === "#trade-block" ? "trade-block" : location.hash === "#trade" ? "trade" : "salary"; // #depth-chart opens that tab (links from Stream Updates)
 let officeData = emptyOfficeData(activeTeamId);
 let storageIsAvailable = true;
 let tradePartnerIds = ["", ""];
@@ -194,10 +194,11 @@ const teamActionItems = [
   { id: "trade-block", label: "Trade Block" },
   { id: "restructure", label: "Restructure" },
   { id: "extend", label: "Extensions" },
-  { id: "free-agents", label: "Free Agents" }
+  { id: "free-agents", label: "Free Agents" },
+  { id: "ratings", label: "Player Ratings" }
 ];
 const teamActionIds = teamActionItems.map((item) => item.id);
-const tabPanelFor = (id) => ({ "player-hub": "player-hub-panel", "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", "trade-block": "team-block-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
+const tabPanelFor = (id) => ({ "player-hub": "player-hub-panel", "depth-chart": "depth-chart-panel", "multi-year": "multi-year-panel", "free-agents": "team-fa-panel", restructure: "restructure-panel", extend: "extend-panel", ratings: "ratings-panel", "trade-block": "team-block-panel", "draft-picks": "draft-picks-panel", trade: "trade-panel" })[id] || "salary-year-content";
 
 function tradeBadge() {
   const waiting = tradesAwaitingTeam(officeData, activeTeamId).length;
@@ -411,6 +412,11 @@ function updateCapOverview() {
   if (restructurePanel) {
     restructurePanel.hidden = activeTab !== "restructure";
     if (activeTab === "restructure") globalThis.renderRestructure?.();
+  }
+  const ratingsPanel = document.querySelector("#ratings-panel");
+  if (ratingsPanel) {
+    ratingsPanel.hidden = activeTab !== "ratings";
+    if (activeTab === "ratings") globalThis.renderRatings?.();
   }
   const extendPanel = document.querySelector("#extend-panel");
   if (extendPanel) {

@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=474f1848">
-    <link rel="stylesheet" href="theme-light.css?v=eaf2a13a">
+    <link rel="stylesheet" href="styles.css?v=5ca72726">
+    <link rel="stylesheet" href="theme-light.css?v=aa5c2b1f">
     <link rel="stylesheet" href="theme-gray.css?v=5d9c1ed1">
-    <link rel="stylesheet" href="theme-espn.css?v=4008f726">
-    <link rel="stylesheet" href="theme-team.css?v=abbff28a">
+    <link rel="stylesheet" href="theme-espn.css?v=caa549dd">
+    <link rel="stylesheet" href="theme-team.css?v=0c0908ca">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -40,15 +40,15 @@
         });
       })();
     </script>
-    <script src="teams.js?v=58b123fb" defer></script>
+    <script src="teams.js?v=b7ec2a77" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=4abf5039" defer></script>
-    <script src="sample-admin.js?v=e993fbb4" defer></script>
+    <script src="league-core.js?v=804cdda7" defer></script>
+    <script src="sample-admin.js?v=87c8a996" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
     <script src="nfl-experience.js?v=9b87d7f4" defer></script>
     <script src="stat-totals.js?v=2b4c4d39" defer></script>
     <script src="combine-data.js?v=a605b3cf" defer></script>
-    <script src="player.js?v=3995667b" defer></script>
+    <script src="player.js?v=4402670a" defer></script>
   </head>
   <body class="admin-page player-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -194,9 +194,17 @@
               <div id="player-contract"></div>
             </div>
 
+            <div class="management-panel" id="player-ovr-panel">
+              <div class="panel-heading">
+                <div><span class="panel-index">04 / OVERALL</span><h3>Madden overall</h3></div>
+                <p>Week by week this season. Changes are entered and updates picked on the team sheet's <a id="player-ovr-link" href="team.html">Player Ratings</a> tab.</p>
+              </div>
+              <div id="player-ovr"></div>
+            </div>
+
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">04 / STATS</span><h3>Season stats</h3></div>
+                <div><span class="panel-index">05 / STATS</span><h3>Season stats</h3></div>
                 <p>From the <a href="stats.html">Season Stats page</a>.</p>
               </div>
               <div id="player-stats"></div>
@@ -204,7 +212,7 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">05 / GAMES</span><h3>Game log</h3></div>
+                <div><span class="panel-index">06 / GAMES</span><h3>Game log</h3></div>
                 <p>Box scores added on the Season Stats page that include this player.</p>
               </div>
               <div id="player-games"></div>
@@ -212,7 +220,7 @@
 
             <div class="management-panel">
               <div class="panel-heading">
-                <div><span class="panel-index">06 / HISTORY</span><h3>Transactions</h3></div>
+                <div><span class="panel-index">07 / HISTORY</span><h3>Transactions</h3></div>
                 <p>From the <a href="transactions.html">Transaction Log</a>.</p>
               </div>
               <div id="player-transactions"></div>

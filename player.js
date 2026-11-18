@@ -117,8 +117,11 @@ function renderHero(entry) {
   const birth = shownBirthDate(entry);
   const age = birth ? ageFromBirthDate(birth) : playerAge(player);
   const position = profile.positions || currentPosition(entry);
+  const ovrSeason = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const ovr = entry.source === "prospect" ? null : ratingCurrent(officeData, ovrSeason, player.id);
   const bits = [
     position,
+    ovr !== null ? `${ovr} OVR` : "",
     age !== null ? `Age ${age}` : "",
     player.experience != null ? (player.experience === 0 ? "Rookie" : `${player.experience} accrued ${player.experience === 1 ? "season" : "seasons"}`) : "",
     profile.height, profile.weight ? `${profile.weight} lbs` : "", profile.college
@@ -544,6 +547,7 @@ function render() {
   renderContract(entry);
   const back = document.querySelector(".team-back-link");
   if (entry.source === "prospect") { back.href = "draft.html"; back.lastChild.textContent = " DRAFT"; }
+  renderOverall(entry);
   renderStatsPanel(entry);
   renderGames(entry);
   renderTransactions(entry);
@@ -560,3 +564,63 @@ window.addEventListener("storage", (event) => {
 });
 
 render();
+
+function escapeHtml(t) { return String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
+
+// Madden overall chart: league overall (solid) and Madden overall (dashed) from the start of the season to the latest week.
+function renderOverall(entry) {
+  const box = document.querySelector("#player-ovr");
+  const panel = document.querySelector("#player-ovr-panel");
+  panel.hidden = entry.source === "prospect";
+  if (panel.hidden) return;
+  const season = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  const link = document.querySelector("#player-ovr-link");
+  link.href = entry.teamId && entry.teamId !== freeAgentTeamId ? `team.html?team=${encodeURIComponent(entry.teamId)}#ratings` : "team.html#ratings";
+  const all = ratingTimeline(officeData, season, entry.player.id);
+  if (all[0].overall === null) {
+    box.innerHTML = '<p class="empty-state">No starting overall yet for this season.</p>';
+    return;
+  }
+  const last = Math.max(1, ratingLatestWeek(officeData, season));
+  const rows = all.slice(0, last + 1);
+  const now = rows[rows.length - 1];
+  const values = rows.flatMap((r) => [r.overall, r.madden]);
+  const lo = Math.max(0, Math.min(...values) - 2), hi = Math.min(99, Math.max(...values) + 2);
+  const W = 720, H = 220, L = 34, R = 12, T = 12, B = 26;
+  const x = (i) => L + (rows.length === 1 ? 0 : (i * (W - L - R)) / (rows.length - 1));
+  const y = (v) => T + ((hi - v) * (H - T - B)) / Math.max(1, hi - lo);
+  const step = hi - lo > 12 ? 4 : 2;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
+  const path = (key) => rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join("");
+  const showMadden = rows.some((r) => r.madden !== r.overall);
+  const net = now.overall - rows[0].overall;
+  box.innerHTML = `<p class="ovr-summary"><span><strong>${now.overall}</strong>league overall after ${last ? `Week ${last}` : "the start"}</span>
+      <span><strong>${net > 0 ? "+" : ""}${net}</strong>since the start (${rows[0].overall})</span>
+      ${now.pending ? `<span><strong>${now.pending > 0 ? "+" : ""}${now.pending}</strong>waiting (Madden ${now.madden})</span>` : ""}</p>
+    <div class="ovr-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(entry.player.name)} overall by week: ${rows.map((r) => `${r.week ? `Week ${r.week}` : "Start"} ${r.overall}`).join(", ")}">
+      ${ticks.map((v) => `<line class="ovr-grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ovr-axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
+      ${rows.map((r, i) => `<text class="ovr-axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${r.week ? `W${r.week}` : "Start"}</text>`).join("")}
+      ${showMadden ? `<path class="ovr-madden" d="${path("madden")}"/>` : ""}
+      <path class="ovr-line" d="${path("overall")}"/>
+      <line class="ovr-cross" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>
+      ${rows.map((r, i) => `<circle class="ovr-dot${r.state === "auto" ? " is-auto" : ""}" cx="${x(i)}" cy="${y(r.overall)}" r="4"/>`).join("")}
+    </svg><div class="ovr-tip" hidden></div></div>
+    ${showMadden ? '<div class="ovr-legend"><span>League overall</span><span class="is-madden">Madden overall</span></div>' : ""}`;
+  const svg = box.querySelector("svg"), tip = box.querySelector(".ovr-tip"), cross = box.querySelector(".ovr-cross");
+  svg.addEventListener("pointermove", (event) => {
+    const rect = svg.getBoundingClientRect();
+    const px = ((event.clientX - rect.left) / rect.width) * W;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.round(((px - L) / (W - L - R)) * (rows.length - 1))));
+    const r = rows[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    const sign = (v) => (v > 0 ? `+${v}` : String(v));
+    tip.innerHTML = `<strong>${r.week ? `Week ${r.week}` : "Start of season"}</strong><br>League overall ${r.overall}` +
+      (r.madden !== r.overall ? `<br>Madden ${r.madden} (${sign(r.madden - r.overall)} waiting)` : "") +
+      (r.change ? `<br>Change ${sign(r.change)}${r.state === "auto" ? " · updated automatically" : r.state === "elected" ? " · updated" : " · waiting"}` : "") +
+      (r.note ? `<br>${escapeHtml(r.note)}` : "");
+    tip.hidden = false;
+    tip.style.left = `${(x(i) / W) * 100}%`;
+  });
+  svg.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+}

@@ -1115,3 +1115,15 @@ html[data-theme="espn"] .record-num { color: #121213; }
 html[data-theme="espn"] .record-empty { color: #6c6d6f; }
 html[data-theme="espn"] .bx-edge { color: #1e7f3a; }
 html[data-theme="espn"] main .bx-edit-team .bx-ts-label { color: #48494a; }
+html[data-theme="espn"] main .rt-table :is(th, html[data-theme="espn"] td) { border-top-color: rgba(18, 18, 19, 0.112); border-right-color: rgba(18, 18, 19, 0.112); border-bottom-color: rgba(18, 18, 19, 0.112); border-left-color: rgba(18, 18, 19, 0.112); }
+html[data-theme="espn"] main .rt-table td.rt-cell.is-elected { color: #121213; }
+html[data-theme="espn"] main .rt-table td.rt-cell.is-auto { color: #121213; }
+html[data-theme="espn"] main .rt-table td.rt-cell.is-down { color: #121213; }
+html[data-theme="espn"] main .rt-table td.rt-cell.is-picked { box-shadow: #121213 0px 0px 0px 2px inset; }
+html[data-theme="espn"] main .rt-table td.rt-cell.has-note { background-image: linear-gradient(225deg, rgba(18, 18, 19, 1.000) 6px, transparent 6px); }
+html[data-theme="espn"] .rt-pick:focus-visible { outline-color: #121213; }
+html[data-theme="espn"] .ovr-chart .ovr-grid { stroke: rgba(18, 18, 19, 0.140); }
+html[data-theme="espn"] .ovr-chart .ovr-madden { stroke: rgba(18, 18, 19, 0.630); }
+html[data-theme="espn"] .ovr-chart .ovr-cross { stroke: rgba(18, 18, 19, 0.490); }
+html[data-theme="espn"] .ovr-summary strong { color: #121213; }
+html[data-theme="espn"] .ovr-legend span.is-madden::before { border-top-color: rgba(18, 18, 19, 0.840); }

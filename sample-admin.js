@@ -42,7 +42,7 @@ function sampleLoadFiles() {
     document.head.append(script);
   });
   return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js?v=5f19e253"))
-    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=45ed502a")));
+    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=6a882d0a")));
 }
 
 // The page was drawn from the old data, so reload it (keeping the message for the toast).
@@ -133,6 +133,20 @@ if (location.hash === "#sample-league") history.replaceState(null, "", location.
 window.addEventListener("storage", (event) => {
   if (event.key === officeStorageKey || event.key === sampleBackupKey) renderSampleNav();
 });
+
+// A sample loaded before Player Ratings gets its Madden overalls added in place.
+(function addRatingsToOldSample() {
+  if (!sampleIsLoaded()) return;
+  let data;
+  try { data = readStoredOffice(); } catch { return; }
+  if (!data?.sampleLeague || data.sampleVersion !== 2 || data.ratings) return;
+  sampleLoadFiles().then(() => {
+    const fresh = readStoredOffice(); // re-read: another upgrade may have saved in the meantime
+    if (!fresh || fresh.ratings || !sampleAddRatings(fresh)) return;
+    writeStoredOffice(fresh);
+    sampleReload("The sample league now has week-by-week Madden overalls (team sheet › Team Actions › Player Ratings).");
+  }).catch(() => {});
+})();
 
 // A sample loaded before box scores had a Blocking section gets blocking lines added in place.
 (function addBlockingToOldSample() {

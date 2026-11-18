@@ -285,6 +285,7 @@ function buildMidseasonSample(copy, data) {
   memberAward("General Manager Of The Year", ranked[1]);
   memberAward("Hershel Walker Award", ranked[6]);
   data.awards.sort((a, b) => awardPresets.indexOf(a.award) - awardPresets.indexOf(b.award));
+  sampleAddRatings(data);
 
   return { games: data.games.length, lastPlayed };
 }
@@ -322,4 +323,51 @@ function sampleAddBlocking(data, depthCharts = data.depthCharts, teams = data.te
     if (lines.length) { game.players.blocking = lines; added += 1; }
   }
   return added;
+}
+
+// Madden overalls for every player on a sample team: a starting overall, a weekly change for each week played (mostly 0,
+// sometimes ±1/±2, now and then ±3 or more), and each team using some of its 3 updates a week on players with an
+// upgrade waiting. Own seeded random numbers, so the rest of the sample is unchanged. Returns true if ratings were added.
+function sampleAddRatings(data) {
+  const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
+  if (data.ratings?.[year]) return false;
+  let seed = 9001;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  const season = ratingsSeason(data, year, true);
+  const notes = { QB: ["Throw Accuracy Short", "Throw Power", "Throw Under Pressure"], RB: ["Carrying", "Break Tackle", "Juke Move"], HB: ["Carrying", "Break Tackle", "Juke Move"],
+    WR: ["Route Running", "Catch In Traffic", "Release"], TE: ["Catching", "Run Block", "Route Running"], OL: ["Pass Block", "Run Block Power", "Pass Block Finesse"],
+    DL: ["Power Moves", "Block Shedding", "Finesse Moves"], LB: ["Pursuit", "Tackle", "Zone Coverage"], DB: ["Man Coverage", "Zone Coverage", "Play Recognition"], K: ["Kick Accuracy", "Kick Power"], P: ["Kick Accuracy", "Kick Power"] };
+  const group = (pos) => /^(QB)$/.test(pos) ? "QB" : /^(RB|HB|FB)$/.test(pos) ? "RB" : /^WR$/.test(pos) ? "WR" : /^TE$/.test(pos) ? "TE"
+    : /^(LT|LG|C|RG|RT|T|G|OT|OG|OL|LS)$/.test(pos) ? "OL" : /^(DE|DT|NT|DL|EDGE|LEDG|REDG|IDL)$/.test(pos) ? "DL"
+    : /^(LB|ILB|OLB|MLB|MIKE|WILL|SAM)$/.test(pos) ? "LB" : /^(CB|S|FS|SS|DB|NB)$/.test(pos) ? "DB" : /^K$/.test(pos) ? "K" : /^P$/.test(pos) ? "P" : "DB";
+  const changeRoll = () => {
+    const r = rand();
+    return r < 0.68 ? 0 : r < 0.81 ? 1 : r < 0.89 ? -1 : r < 0.93 ? 2 : r < 0.96 ? -2 : r < 0.98 ? 3 : r < 0.99 ? -3 : 4;
+  };
+  const sign = (v) => (v > 0 ? "+" : "-");
+  for (const [teamId, team] of Object.entries(data.teams)) {
+    const roster = team.roster.filter((p) => isPlayerOnSeason(p, year));
+    roster.forEach((p, i) => {
+      const pos = seasonEntry(p, year).position || "";
+      const cap = capHitFor(seasonEntry(p, year));
+      const r = (season.players[p.id] = { base: Math.max(55, Math.min(97, Math.round(62 + Math.min(28, cap / 1.2e6) + rand() * 8 - 4))), d: {}, n: {} });
+      for (let w = 1; w <= sampleWeeksPlayed; w += 1) {
+        const c = changeRoll();
+        if (!c) continue;
+        r.d[w] = c;
+        const pool = notes[group(pos)];
+        r.n[w] = Array.from({ length: Math.min(3, Math.abs(c)) }, (_, k) => `${sign(c)}1 ${pool[(i + w + k) % pool.length]}`).join(", ");
+      }
+    });
+    // Each week the team updates up to 3 players with the biggest upgrade waiting (sometimes fewer).
+    for (let w = 1; w <= sampleWeeksPlayed; w += 1) {
+      const waiting = roster.map((p) => {
+        const rows = ratingTimeline(data, year, p.id);
+        return { p, net: rows[w - 1].pending + rows[w].change, auto: Math.abs(rows[w].change) >= ratingAutoThreshold };
+      }).filter((x) => x.net > 0 && !x.auto).sort((a, b) => b.net - a.net || a.p.name.localeCompare(b.p.name));
+      const take = Math.min(waiting.length, rand() < 0.15 ? 2 : 3);
+      for (const { p } of waiting.slice(0, take)) toggleRatingUpgrade(data, year, teamId, p.id, w);
+    }
+  }
+  return true;
 }

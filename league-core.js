@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && validRatings(data.ratings) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -3533,4 +3533,114 @@ function validInsiderCustom(data) {
       Array.isArray(p.teams) && p.teams.length <= 3 && p.teams.every((t) => teamIds.has(t)) &&
       typeof p.createdAt === "string" && typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)))) return false;
   return true;
+}
+
+
+// ---- Madden overalls, week by week (team sheet › Team Actions › Player Ratings, player profile chart) ----
+// data.ratings = { [season]: { players: { [playerId]: { base, d: { [week]: change }, n: { [week]: note } } },
+//                                upgrades: { [teamId]: { [week]: [playerId, …] } } } }
+// base is the Madden overall at the start of the season. d holds each week's Madden roster-update change (+/-).
+// League rule: a player's league overall only catches up to his Madden overall when he's updated. Each team picks up
+// to 3 players a week to update (a change from an earlier week can be picked up later), and any player whose change
+// that week is +3/-3 or more is updated automatically (that doesn't use one of the 3). An update applies everything
+// still waiting, so a player who's updated after +1 and +1 goes up 2.
+const ratingWeeks = regularSeasonWeeks;
+const ratingUpgradesPerWeek = 3;
+const ratingAutoThreshold = 3;
+const ratingClamp = (v) => Math.max(0, Math.min(99, v));
+
+function validRatings(ratings) {
+  if (ratings === undefined) return true;
+  if (!ratings || typeof ratings !== "object" || Array.isArray(ratings) || Object.keys(ratings).length > 40) return false;
+  const weekKey = (k) => /^\d{1,2}$/.test(k) && Number(k) >= 1 && Number(k) <= ratingWeeks;
+  return Object.entries(ratings).every(([year, season]) => /^\d{4}$/.test(year) && season && typeof season === "object" &&
+    (season.players === undefined || (season.players && typeof season.players === "object" && Object.keys(season.players).length <= 6000 &&
+      Object.values(season.players).every((r) => r && typeof r === "object" &&
+        (r.base === undefined || r.base === null || isIntegerInRange(r.base, 0, 99)) &&
+        (r.d === undefined || (r.d && typeof r.d === "object" && Object.entries(r.d).every(([k, v]) => weekKey(k) && isIntegerInRange(v, -99, 99)))) &&
+        (r.n === undefined || (r.n && typeof r.n === "object" && Object.entries(r.n).every(([k, v]) => weekKey(k) && typeof v === "string" && v.length <= 300)))))) &&
+    (season.upgrades === undefined || (season.upgrades && typeof season.upgrades === "object" &&
+      Object.entries(season.upgrades).every(([team, weeks]) => nflTeams.some(({ id }) => id === team) && weeks && typeof weeks === "object" &&
+        Object.entries(weeks).every(([k, ids]) => weekKey(k) && Array.isArray(ids) && ids.length <= 60 && ids.every((id) => typeof id === "string" && id.length <= 80))))));
+}
+
+function ratingsSeason(data, season, create = false) {
+  if (!data.ratings) { if (!create) return null; data.ratings = {}; }
+  if (!data.ratings[season]) { if (!create) return null; data.ratings[season] = { players: {}, upgrades: {} }; }
+  const s = data.ratings[season];
+  if (create) { s.players ||= {}; s.upgrades ||= {}; }
+  return s;
+}
+function ratingRecord(data, season, playerId, create = false) {
+  const s = ratingsSeason(data, season, create);
+  if (!s) return null;
+  if (!s.players?.[playerId] && create) s.players[playerId] = {};
+  return s.players?.[playerId] || null;
+}
+// Weeks (numbers) in which any team picked this player to be updated.
+function ratingElectedWeeks(data, season, playerId) {
+  const ups = ratingsSeason(data, season)?.upgrades || {};
+  const weeks = new Set();
+  for (const byWeek of Object.values(ups)) for (const [w, ids] of Object.entries(byWeek)) if (ids.includes(playerId)) weeks.add(Number(w));
+  return weeks;
+}
+
+// The season, week by week: [{ week, change, note, madden, overall, pending, state, elected }] for weeks 0 (start) … ratingWeeks.
+// state for a week's change: "elected" / "auto" (applied by an update in that week or later), "pending" (still waiting), "" (no change).
+function ratingTimeline(data, season, playerId) {
+  const r = ratingRecord(data, season, playerId) || {};
+  const base = Number.isInteger(r.base) ? r.base : null;
+  const elected = ratingElectedWeeks(data, season, playerId);
+  const rows = [{ week: 0, change: 0, note: "", madden: base, overall: base, pending: 0, state: "", elected: false }];
+  let madden = base ?? 0, overall = base ?? 0, waiting = [];
+  for (let w = 1; w <= ratingWeeks; w += 1) {
+    const change = Number(r.d?.[w]) || 0;
+    madden += change;
+    const row = { week: w, change, note: r.n?.[w] || "", madden: base === null ? null : ratingClamp(madden), overall: null, pending: 0, state: change ? "pending" : "", elected: elected.has(w) };
+    rows.push(row);
+    if (change) waiting.push(row);
+    const auto = Math.abs(change) >= ratingAutoThreshold;
+    if ((auto || row.elected) && waiting.length) {
+      for (const done of waiting) done.state = done === row && auto ? "auto" : row.elected ? "elected" : "auto";
+      overall = madden;
+      waiting = [];
+    }
+    row.overall = base === null ? null : ratingClamp(overall);
+    row.pending = madden - overall;
+  }
+  return rows;
+}
+// League overall now (after the latest week with anything entered), or null when no starting overall is set.
+function ratingCurrent(data, season, playerId, week = ratingLatestWeek(data, season)) {
+  return ratingTimeline(data, season, playerId)[Math.max(0, Math.min(ratingWeeks, week))].overall;
+}
+// The latest week with a change or an update entered for anyone (0 before Week 1).
+function ratingLatestWeek(data, season) {
+  const s = ratingsSeason(data, season);
+  if (!s) return 0;
+  let latest = 0;
+  for (const r of Object.values(s.players || {})) for (const [w, v] of Object.entries(r.d || {})) if (v) latest = Math.max(latest, Number(w));
+  for (const byWeek of Object.values(s.upgrades || {})) for (const [w, ids] of Object.entries(byWeek)) if (ids.length) latest = Math.max(latest, Number(w));
+  return latest;
+}
+const ratingTeamPicks = (data, season, teamId, week) => ratingsSeason(data, season)?.upgrades?.[teamId]?.[week] || [];
+
+// Pick (or un-pick) a player to be updated in a week. Returns "" or a reason it can't be done.
+function toggleRatingUpgrade(data, season, teamId, playerId, week) {
+  const picks = ratingTeamPicks(data, season, teamId, week);
+  if (picks.includes(playerId)) {
+    const s = ratingsSeason(data, season, true);
+    s.upgrades[teamId][week] = picks.filter((id) => id !== playerId);
+    if (!s.upgrades[teamId][week].length) delete s.upgrades[teamId][week];
+    return "";
+  }
+  const row = ratingTimeline(data, season, playerId)[week];
+  if (row.overall === null) return "Enter his starting overall first.";
+  const waitingUp = row.pending > 0 || (row.change > 0 && row.state === "pending");
+  if (!waitingUp) return "He has no upgrade waiting this week.";
+  if (Math.abs(row.change) >= ratingAutoThreshold) return "He's updated automatically this week (a change of 3 or more).";
+  if (picks.length >= ratingUpgradesPerWeek) return `You've already picked ${ratingUpgradesPerWeek} players to update in Week ${week}.`;
+  const s = ratingsSeason(data, season, true);
+  (s.upgrades[teamId] ||= {})[week] = [...picks, playerId];
+  return "";
 }

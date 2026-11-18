@@ -572,3 +572,6 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .re
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .record-name small { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .record-empty { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .bx-edit-team .bx-ts-label { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .rt-key.is-auto::before { background-color: rgb(var(--tm-3b74d6)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) main .rt-table td.rt-cell.is-auto { background-color: rgb(var(--tm-3b74d6)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .ovr-tip { background-color: rgb(var(--tm-0d2a4f)); }

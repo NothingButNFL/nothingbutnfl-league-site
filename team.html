@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=474f1848">
-    <link rel="stylesheet" href="theme-light.css?v=eaf2a13a">
+    <link rel="stylesheet" href="styles.css?v=5ca72726">
+    <link rel="stylesheet" href="theme-light.css?v=aa5c2b1f">
     <link rel="stylesheet" href="theme-gray.css?v=5d9c1ed1">
-    <link rel="stylesheet" href="theme-espn.css?v=4008f726">
-    <link rel="stylesheet" href="theme-team.css?v=abbff28a">
+    <link rel="stylesheet" href="theme-espn.css?v=caa549dd">
+    <link rel="stylesheet" href="theme-team.css?v=0c0908ca">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
     <script>
@@ -40,17 +40,18 @@
         });
       })();
     </script>
-    <script src="teams.js?v=58b123fb" defer></script>
+    <script src="teams.js?v=b7ec2a77" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=4abf5039" defer></script>
-    <script src="sample-admin.js?v=e993fbb4" defer></script>
+    <script src="league-core.js?v=804cdda7" defer></script>
+    <script src="sample-admin.js?v=87c8a996" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="front-office.js?v=0da544f6" defer></script>
+    <script src="front-office.js?v=84948553" defer></script>
     <script src="depth-chart.js?v=5ca772f3" defer></script>
     <script src="multi-year.js?v=3438b053" defer></script>
     <script src="contract-editor.js?v=dfcf2732" defer></script>
     <script src="team-fa.js?v=4270513d" defer></script>
     <script src="restructure.js?v=6f6c0d49" defer></script>
+    <script src="ratings.js?v=676543d4" defer></script>
     <script src="extend.js?v=6bb16ee3" defer></script>
     <script src="stat-totals.js?v=2b4c4d39" defer></script>
     <script src="career-core.js?v=c46fd854" defer></script>
@@ -358,6 +359,32 @@
             </div>
             <h4 class="trade-offers-heading">Past restructure requests</h4>
             <div class="fa-offer-list" id="rs-past"></div>
+          </div>
+
+          <div class="management-panel ratings-panel" id="ratings-panel" role="tabpanel" aria-labelledby="season-tab-ratings" hidden>
+            <div class="panel-heading">
+              <div><span class="panel-index">MADDEN OVERALLS</span><h3>Player Ratings</h3></div>
+              <p>Each week's Madden roster update, player by player. A player's league overall only changes when he's updated: click his cell in a week (underlined when he has an upgrade waiting) to use one of that week's 3 updates on him. Changes of 3 or more (up or down) update on their own and don't use one. OVERALL is his league overall after the latest week.</p>
+            </div>
+            <div class="rt-toolbar">
+              <div class="rt-legend" aria-label="Key">
+                <span class="rt-key is-elected">Updated (picked)</span>
+                <span class="rt-key is-auto">Updated automatically (±3)</span>
+                <span class="rt-key is-down">Downgrade applied</span>
+                <span class="rt-key is-pending">Waiting</span>
+              </div>
+              <button class="workspace-button" id="rt-edit" type="button" aria-pressed="false">Enter rating changes</button>
+            </div>
+            <div class="rt-paste" id="rt-paste" hidden>
+              <label>Paste into<select id="rt-paste-col"></select></label>
+              <textarea id="rt-paste-text" rows="4" placeholder="One player per line: Name, number (and an optional note). e.g.&#10;Josh Jacobs, -1, -1 Carrying&#10;Tee Higgins	1	+1 Route Running"></textarea>
+              <button class="button button-lime" id="rt-paste-go" type="button">Apply</button>
+              <p class="rt-paste-note" id="rt-paste-note" aria-live="polite"></p>
+            </div>
+            <p class="workspace-status" id="rt-status" role="status" aria-live="polite"></p>
+            <div class="management-table-wrap rt-wrap">
+              <table class="management-table rt-table" id="rt-table"></table>
+            </div>
           </div>
 
           <div class="management-panel extend-panel" id="extend-panel" role="tabpanel" aria-labelledby="season-tab-extend" hidden>
