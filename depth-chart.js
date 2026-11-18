@@ -62,22 +62,25 @@ function dcOverall(id) {
 let dcTab = "offense";
 const dcTabs = [["offense", "Offense"], ["defense", "Defense"], ["special", "Special Teams"], ["specialist", "Specialist"]];
 const isThreeFour = (scheme) => /3-4/.test(scheme || "");
-// [label, slot, card #, cards for this slot, column, row] on a 16-column grid (each card spans 2 columns).
+// [label, slot, card #, cards for this slot, column, row] on a 16-column grid (each card spans 2 columns), laid out
+// like Madden's Lineup screens. headers: [text, column, row, span] group titles (Specialist tab).
 function dcFormation(tab, chart) {
   if (tab === "offense") return { cols: 16, cards: [
-    ["WR1", "WR", 0, 3, 1, 1], ["LT", "LT", 0, 1, 3, 1], ["LG", "LG", 0, 1, 5, 1], ["C", "C", 0, 1, 7, 1], ["RG", "RG", 0, 1, 9, 1], ["RT", "RT", 0, 1, 11, 1],
-    ["TE", "TE", 0, 1, 13, 1], ["WR2", "WR", 1, 3, 15, 1], ["WR3", "WR", 2, 3, 13, 2], ["QB", "QB", 0, 1, 7, 2], ["FB", "FB", 0, 1, 5, 3], ["HB", "HB", 0, 1, 9, 3]] };
+    ["LT", "LT", 0, 1, 3, 1], ["LG", "LG", 0, 1, 5, 1], ["C", "C", 0, 1, 7, 1], ["RG", "RG", 0, 1, 9, 1], ["RT", "RT", 0, 1, 11, 1], ["TE", "TE", 0, 1, 13, 1],
+    ["WR1", "WR", 0, 2, 1, 2], ["HB", "HB", 0, 1, 5, 2], ["QB", "QB", 0, 1, 7, 2], ["FB", "FB", 0, 1, 9, 2], ["WR2", "WR", 1, 2, 14, 2]] };
   if (tab === "defense") return isThreeFour(chart.schemes.defense)
     ? { cols: 16, cards: [
       ["FS", "FS", 0, 1, 1, 1], ["ROLB", "SAM", 0, 1, 4, 1], ["MLB2", "MIKE", 1, 2, 7, 1], ["MLB1", "MIKE", 0, 2, 10, 1], ["LOLB", "WILL", 0, 1, 13, 1], ["SS", "SS", 0, 1, 15, 1],
       ["CB1", "CB", 0, 2, 1, 2], ["RE", "RE", 0, 1, 5, 2], ["DT", "DT", 0, 1, 8, 2], ["LE", "LE", 0, 1, 11, 2], ["CB2", "CB", 1, 2, 15, 2]] }
     : { cols: 16, cards: [
-      ["FS", "FS", 0, 1, 4, 1], ["SS", "SS", 0, 1, 12, 1],
-      ["ROLB", "SAM", 0, 1, 4, 2], ["MLB", "MIKE", 0, 1, 8, 2], ["LOLB", "WILL", 0, 1, 12, 2],
-      ["CB1", "CB", 0, 2, 1, 3], ["RE", "RE", 0, 1, 4, 3], ["DT2", "DT", 1, 2, 6, 3], ["DT1", "DT", 0, 2, 10, 3], ["LE", "LE", 0, 1, 12, 3], ["CB2", "CB", 1, 2, 15, 3]] };
-  const list = tab === "special" ? ["K", "P", "LS", "KR", "PR", "KOS"] : ["3DRB", "GAD", "PWHB", "SLWR", "SLCB", "RLE", "RRE", "RDT", "NT", "SUBLB"];
-  const perRow = tab === "special" ? 6 : 5;
-  return { cols: perRow * 2, cards: list.map((slot, i) => [slot, slot, 0, 1, (i % perRow) * 2 + 1, Math.floor(i / perRow) + 1]) };
+      ["FS", "FS", 0, 1, 2, 1], ["WILL", "WILL", 0, 1, 6, 1], ["MIKE", "MIKE", 0, 1, 8, 1, "is-dropped"], ["SAM", "SAM", 0, 1, 10, 1], ["SS", "SS", 0, 1, 14, 1],
+      ["CB1", "CB", 0, 2, 1, 2], ["REDG", "RE", 0, 1, 5, 2], ["DT1", "DT", 0, 2, 7, 2], ["DT2", "DT", 1, 2, 9, 2], ["LEDG", "LE", 0, 1, 11, 2], ["CB2", "CB", 1, 2, 15, 2]] };
+  if (tab === "special") return { cols: 16, cards: [
+    ["P", "P", 0, 1, 4, 1], ["K", "K", 0, 1, 6, 1], ["LS", "LS", 0, 1, 9, 1, "is-dropped"], ["KR", "KR", 0, 1, 11, 1, "is-dropped"],
+    ["KOS", "KOS", 0, 1, 4, 2], ["PR", "PR", 0, 1, 6, 2]] };
+  return { cols: 16, headers: [["Nickel & Dime Defenses", 4, 1, 6], ["Offensive Specialist", 4, 3, 6]], cards: [
+    ["NT", "NT", 0, 1, 2, 2], ["SUBLB", "SUBLB", 0, 1, 4, 2], ["SLCB", "SLCB", 0, 1, 6, 2], ["RRE", "RRE", 0, 1, 8, 2], ["RLE", "RLE", 0, 1, 10, 2], ["RDT", "RDT", 0, 1, 12, 2],
+    ["PWHB", "PWHB", 0, 1, 4, 4], ["3DRB", "3DRB", 0, 1, 6, 4], ["GAD", "GAD", 0, 1, 8, 4], ["SLWR", "SLWR", 0, 1, 10, 4]] };
 }
 
 function dcPhoto(id) {
@@ -125,11 +128,19 @@ function formationView(chart, roster) {
       : "No Defensive Scheme chosen yet, so this shows a 4-3 front. Pick the scheme on the right.";
     wrap.append(note);
   }
-  const { cols, cards } = dcFormation(dcTab, chart);
+  const { cols, cards, headers = [] } = dcFormation(dcTab, chart);
   const field = document.createElement("div");
   field.className = `dc-field dc-field-${dcTab}`;
   field.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-  for (const [label, slot, card, count, col, row] of cards) {
+  for (const [text, col, row, span] of headers) {
+    const h = document.createElement("h5");
+    h.className = "dc-group";
+    h.textContent = text;
+    h.style.gridColumn = `${col} / span ${span}`;
+    h.style.gridRow = String(row);
+    field.append(h);
+  }
+  for (const [label, slot, card, count, col, row, extra = ""] of cards) {
     const size = depthSlotSizes[slot];
     const ids = chart.slots[slot] || [];
     const spots = [];
@@ -137,7 +148,7 @@ function formationView(chart, roster) {
     const starter = ids[spots[0]] || "";
     const ovr = starter ? dcOverall(starter) : null;
     const el = document.createElement("div");
-    el.className = `dc-card ${dcTier(ovr)}`;
+    el.className = `dc-card ${dcTier(ovr)} ${extra}`.trim();
     el.style.gridColumn = `${col} / span 2`;
     el.style.gridRow = String(row);
     const top = document.createElement("div");
@@ -163,7 +174,7 @@ function formationView(chart, roster) {
     const tag = document.createElement("span");
     tag.className = "dc-pos";
     tag.textContent = label;
-    tag.title = { "3DRB": "Third-down back", GAD: "Gadget", PWHB: "Power back", SLWR: "Slot receiver", RLE: "Rush left end", RRE: "Rush right end", RDT: "Rush defensive tackle", NT: "Nose tackle", SUBLB: "Sub linebacker", SLCB: "Slot corner", KOS: "Kickoff specialist", ROLB: "SAM linebacker", LOLB: "WILL linebacker", MLB: "MIKE linebacker", MLB1: "MIKE linebacker", MLB2: "MIKE linebacker (2nd)" }[label] || slot;
+    tag.title = { "3DRB": "Third-down back", GAD: "Gadget", PWHB: "Power back", SLWR: "Slot receiver", RLE: "Rush left end", RRE: "Rush right end", RDT: "Rush defensive tackle", NT: "Nose tackle", SUBLB: "Sub linebacker", SLCB: "Slot corner", KOS: "Kickoff specialist", ROLB: "SAM linebacker", LOLB: "WILL linebacker", MLB: "MIKE linebacker", MLB1: "MIKE linebacker", MLB2: "MIKE linebacker (2nd)", REDG: "Right edge (RE)", LEDG: "Left edge (LE)" }[label] || slot;
     el.append(tag);
     field.append(el);
   }

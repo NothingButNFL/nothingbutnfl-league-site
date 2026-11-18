@@ -3806,3 +3806,5 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .dc-line .depth-select { position: absolute; inset: 0; width: 100%; opacity: 0; }
 .dc-line:hover .dc-name, .dc-line:focus-within .dc-name { text-decoration: underline; }
 .dc-line:focus-within { outline: 2px solid #8fd0ff; outline-offset: -2px; }
+.dc-card.is-dropped { margin-top: 34px; }
+.dc-group { justify-self: start; align-self: end; margin: 0 0 -14px; padding: 5px 14px; background: #e8edf3; color: #0a2140; font: 700 13px var(--body); letter-spacing: 0.08em; text-transform: uppercase; }

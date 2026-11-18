@@ -582,3 +582,4 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line.is-starter { background-color: rgb(var(--tm-1c3558)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line .depth-select option, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line .depth-select optgroup { background-color: rgb(var(--tm-071a33)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-line:focus-within { outline-color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .dc-group { background-color: rgb(var(--tm-e8edf3)); color: rgb(var(--tm-0a2140)); }
