@@ -559,3 +559,6 @@ html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) mai
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .md-tick-rec { color: rgb(var(--tm-a7bdd7)); }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .contracts-spotrac { color: rgb(var(--tm-8fd0ff)) !important; }
 html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .score-open { color: rgb(var(--tm-8fd0ff)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-edit-meta label { color: rgb(var(--tm-c5d5e8)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-edit-meta input, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-edit-table input, html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-edit-team input { border-top-color: rgb(var(--tm-54749b)); border-right-color: rgb(var(--tm-54749b)); border-bottom-color: rgb(var(--tm-54749b)); border-left-color: rgb(var(--tm-54749b)); background-color: rgb(var(--tm-071a33)); }
+html:is([data-theme^="team-"], [data-theme^="season-"], [data-theme="neon"]) .bx-edit-team td:first-child { color: rgb(var(--tm-c5d5e8)); }

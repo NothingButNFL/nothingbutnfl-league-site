@@ -1099,3 +1099,6 @@ html[data-theme="espn"] .md-tick-rec { color: #6c6d6f; }
 html[data-theme="espn"] .contracts-blank-exp span { color: #d00; }
 html[data-theme="espn"] .contracts-spotrac { color: #0068d1 !important; }
 html[data-theme="espn"] .score-open { color: #0068d1; }
+html[data-theme="espn"] .bx-edit-meta label { color: #48494a; }
+html[data-theme="espn"] .bx-edit-meta input, html[data-theme="espn"] .bx-edit-table input, html[data-theme="espn"] .bx-edit-team input { border-top-color: #c8cacd; border-right-color: #c8cacd; border-bottom-color: #c8cacd; border-left-color: #c8cacd; background-color: #edeef0; color: #121213; }
+html[data-theme="espn"] .bx-edit-team td:first-child { color: #48494a; }

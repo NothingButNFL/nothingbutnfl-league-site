@@ -426,3 +426,6 @@ html[data-theme="gray"] main .hub-table .hub-pos { color: #b6b9be; }
 html[data-theme="gray"] main .hub-table .hub-group-start { border-left-color: #47494f; }
 html[data-theme="gray"] main .hub-table tfoot td { border-top-color: #6c6f76; }
 html[data-theme="gray"] .md-tick-rec { color: #b6b9be; }
+html[data-theme="gray"] .bx-edit-meta label { color: #d5d7db; }
+html[data-theme="gray"] .bx-edit-meta input, html[data-theme="gray"] .bx-edit-table input, html[data-theme="gray"] .bx-edit-team input { border-top-color: #6c6f76; border-right-color: #6c6f76; border-bottom-color: #6c6f76; border-left-color: #6c6f76; background-color: #18191b; }
+html[data-theme="gray"] .bx-edit-team td:first-child { color: #d5d7db; }

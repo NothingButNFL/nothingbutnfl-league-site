@@ -153,6 +153,231 @@
     }
   }
 
+  // ---------- Editing: score, week, date, every player line and the team stats ----------
+  // Player lines feed Season Stats, Career Stats, leaders and the Player Hub straight away (they're added up from the
+  // box scores); a changed score also updates both teams' records in the standings.
+  const editBtn = document.querySelector("#bx-edit-btn");
+  const editor = document.querySelector("#bx-editor");
+  const status = document.querySelector("#bx-status");
+  const editFields = {
+    passing: [["cmp", "CMP"], ["att", "ATT"], ["yds", "YDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"]],
+    rushing: [["att", "CAR"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
+    receiving: [["rec", "REC"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
+    defense: [["tackles", "TOT"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
+    kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
+  };
+  const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", defense: "Defense", kicking: "Kicking" };
+  const teamFields = [["firstDowns", "1st Downs"], ["thirdConv", "3rd down conversions"], ["thirdAtt", "3rd down attempts"], ["totalPlays", "Total Plays"],
+    ["totalOffense", "Total Yards"], ["passYds", "Passing yards"], ["cmp", "Completions"], ["att", "Pass attempts"], ["passTd", "Passing TDs"],
+    ["rushYds", "Rushing yards"], ["rushAtt", "Rushing attempts"], ["rushTd", "Rushing TDs"], ["penalties", "Penalties"], ["penaltyYds", "Penalty yards"],
+    ["turnovers", "Turnovers"], ["fumblesLost", "Fumbles lost"], ["interceptions", "Interceptions thrown"], ["possession", "Possession (MM:SS)"]];
+
+  function numberInput(value, label, step = "1") {
+    const i = el("input");
+    i.type = "number"; i.step = step; i.min = "-99"; i.max = "9999";
+    i.value = value ?? "";
+    i.setAttribute("aria-label", label);
+    return i;
+  }
+  // Names on the team's roster this season, for the name box's suggestions.
+  function rosterList(teamId) {
+    const id = `bx-roster-${teamId}`;
+    if (document.getElementById(id)) return id;
+    const list = el("datalist");
+    list.id = id;
+    for (const p of data.teams?.[teamId]?.roster || []) list.append(Object.assign(document.createElement("option"), { value: p.name }));
+    document.body.append(list);
+    return id;
+  }
+  function lineRow(cat, teamId, line = {}) {
+    const tr = el("tr");
+    tr.dataset.team = teamId;
+    tr._line = line;
+    const name = el("input", "bx-edit-name");
+    name.type = "text"; name.maxLength = 70; name.value = line.player || ""; name.placeholder = "Player name";
+    name.setAttribute("list", rosterList(teamId));
+    name.setAttribute("aria-label", `${catTitles[cat]} player`);
+    tr.insertCell().append(name);
+    for (const [key, label] of editFields[cat]) tr.insertCell().append(numberInput(line[key], `${label} for ${line.player || "new player"}`, key === "sacks" ? "0.5" : "1"));
+    const rm = el("button", "row-delete", "×");
+    rm.type = "button";
+    rm.setAttribute("aria-label", "Remove this line");
+    rm.addEventListener("click", () => tr.remove());
+    tr.insertCell().append(rm);
+    return tr;
+  }
+
+  function openEditor() {
+    const game = (data.games || []).find((g) => g.id === gameId);
+    if (!game) return;
+    const [away, home] = game.teams;
+    const form = el("form", "bx-editor-form");
+    form.noValidate = true;
+    // Score, week, date
+    const top = el("div", "bx-card bx-edit-top");
+    top.append(el("h3", "bx-card-title", "Edit box score"));
+    const row = el("div", "bx-edit-meta");
+    const scoreBox = (t, label) => { const l = el("label"); l.append(`${label} · ${teamName(t.team)}`, numberInput(t.score, `${t.team} score`)); l.querySelector("input").name = `score-${t.team}`; l.querySelector("input").min = "0"; l.querySelector("input").max = "200"; return l; };
+    const weekL = el("label"); weekL.append("Week", numberInput(game.week, "Week")); weekL.querySelector("input").name = "week"; weekL.querySelector("input").min = "0"; weekL.querySelector("input").max = "30";
+    const dateL = el("label"); const date = el("input"); date.type = "date"; date.name = "date"; date.value = String(game.date || "").slice(0, 10); dateL.append("Date", date);
+    row.append(scoreBox(away, "Away"), scoreBox(home, "Home"), weekL, dateL);
+    top.append(row, el("p", "hs-help", "Changes to player lines update Season Stats, Career Stats, leaders and team pages as soon as you save. Changing the score also updates both teams' records in the standings."));
+    form.append(top);
+    // Player lines, per category, per team
+    const cats = el("div", "bx-card");
+    cats.append(el("h3", "bx-card-title", "Player stats"));
+    for (const cat of boxScoreCategories) {
+      const pair = el("div", "bx-pair");
+      for (const t of [away, home]) {
+        const block = el("div", "bx-block");
+        const head = el("div", "bx-block-head");
+        head.append(logo(t.team), el("span", "", `${teamName(t.team).replace(/\s+\S+$/, "")} ${catTitles[cat]}`));
+        const table = el("table", "bx-table bx-edit-table");
+        table.dataset.cat = cat;
+        table.dataset.team = t.team;
+        const hr = table.createTHead().insertRow();
+        hr.append(el("th", "bx-name-col", "PLAYER"), ...editFields[cat].map(([, l]) => el("th", "", l)), el("th", "", ""));
+        const tb = table.createTBody();
+        for (const line of (game.players?.[cat] || []).filter((l) => l.team === t.team)) tb.append(lineRow(cat, t.team, line));
+        const add = el("button", "workspace-button bx-add-line", "+ Add player");
+        add.type = "button";
+        add.addEventListener("click", () => { const r = lineRow(cat, t.team); tb.append(r); r.querySelector("input").focus(); });
+        block.append(head, table, add);
+        pair.append(block);
+      }
+      cats.append(pair);
+    }
+    form.append(cats);
+    // Team stats
+    const tsCard = el("div", "bx-card");
+    tsCard.append(el("h3", "bx-card-title", "Team stats"));
+    const tsTable = el("table", "bx-table bx-edit-team");
+    const th = tsTable.createTHead().insertRow();
+    th.append(el("th", "", ""), el("th", "", away.team), el("th", "", home.team));
+    const tsb = tsTable.createTBody();
+    for (const [key, label] of teamFields) {
+      const tr = tsb.insertRow();
+      tr.dataset.key = key;
+      tr.insertCell().textContent = label;
+      for (const t of [away, home]) {
+        const v = game.teamStats?.[t.team]?.[key];
+        let input;
+        if (key === "possession") { input = el("input"); input.type = "text"; input.maxLength = 5; input.placeholder = "30:00"; input.value = v ?? ""; input.setAttribute("aria-label", `${t.team} ${label}`); }
+        else input = numberInput(v, `${t.team} ${label}`);
+        input.dataset.team = t.team;
+        tr.insertCell().append(input);
+      }
+    }
+    tsCard.append(tsTable);
+    form.append(tsCard);
+    const actions = el("div", "bx-edit-actions");
+    const save = el("button", "button button-lime", "Save box score"); save.type = "submit";
+    const cancel = el("button", "workspace-button", "Cancel"); cancel.type = "button";
+    cancel.addEventListener("click", closeEditor);
+    actions.append(save, cancel);
+    form.append(actions);
+    form.addEventListener("submit", (event) => { event.preventDefault(); saveEditor(form); });
+    editor.replaceChildren(form);
+    editor.hidden = false;
+    body.hidden = true;
+    editBtn.hidden = true;
+    status.textContent = "";
+    editor.scrollIntoView({ block: "start" });
+  }
+  function closeEditor() {
+    editor.hidden = true;
+    editor.replaceChildren();
+    body.hidden = false;
+    editBtn.hidden = false;
+  }
+  const readNum = (input) => { const t = input.value.trim(); if (t === "") return undefined; const n = Number(t); return Number.isFinite(n) ? n : NaN; };
+
+  function saveEditor(form) {
+    let fresh;
+    try { fresh = readStoredOffice() || data; } catch { status.textContent = "Saved league data couldn't be read, so nothing was changed."; return; }
+    const game = (fresh.games || []).find((g) => g.id === gameId);
+    if (!game) { status.textContent = "This game isn't in Season Stats any more."; return; }
+    const before = game.teams.map((t) => ({ ...t }));
+    // Score, week, date
+    const scores = game.teams.map((t) => readNum(form.querySelector(`[name="score-${t.team}"]`)));
+    if (scores.some((s) => !Number.isInteger(s) || s < 0 || s > 200)) { status.textContent = "Each score must be a whole number from 0 to 200."; return; }
+    const week = readNum(form.querySelector('[name="week"]'));
+    if (week !== undefined && (!Number.isInteger(week) || week < 0 || week > 30)) { status.textContent = "Week must be a whole number from 0 to 30 (or blank)."; return; }
+    const date = form.querySelector('[name="date"]').value;
+    // Player lines
+    const players = {};
+    for (const table of form.querySelectorAll(".bx-edit-table")) {
+      const cat = table.dataset.cat;
+      for (const tr of table.tBodies[0].rows) {
+        const inputs = [...tr.querySelectorAll("input")];
+        const name = inputs[0].value.trim();
+        const values = editFields[cat].map(([key], i) => [key, readNum(inputs[i + 1])]);
+        if (!name && values.every(([, v]) => v === undefined)) continue; // empty new row
+        if (!name) { status.textContent = `A ${catTitles[cat].toLowerCase()} line for ${table.dataset.team} has stats but no player name.`; inputs[0].focus(); return; }
+        const bad = values.find(([, v]) => Number.isNaN(v));
+        if (bad) { status.textContent = `${name}: ${bad[0]} isn't a number.`; return; }
+        const line = { ...(tr._line || {}), player: name, team: table.dataset.team };
+        if (tr._line?.player && normalizePlayerName(tr._line.player) !== normalizePlayerName(name)) delete line.rawName;
+        for (const [key, v] of values) { if (v === undefined) delete line[key]; else line[key] = v; }
+        (players[cat] ||= []).push(line);
+      }
+    }
+    // Team stats
+    const teamStats = {};
+    for (const tr of form.querySelectorAll(".bx-edit-team tbody tr")) {
+      for (const input of tr.querySelectorAll("input")) {
+        const team = input.dataset.team, key = tr.dataset.key;
+        teamStats[team] ||= { ...(game.teamStats?.[team] || {}) };
+        if (key === "possession") {
+          const v = input.value.trim();
+          if (v && !/^\d{1,2}:\d{2}$/.test(v)) { status.textContent = `${team} possession should look like 31:24.`; return; }
+          if (v) teamStats[team][key] = v; else delete teamStats[team][key];
+        } else {
+          const v = readNum(input);
+          if (Number.isNaN(v)) { status.textContent = `${team} ${key} isn't a number.`; return; }
+          if (v === undefined) delete teamStats[team][key]; else teamStats[team][key] = v;
+        }
+      }
+    }
+    for (const team of Object.keys(teamStats)) if (!Object.keys(teamStats[team]).length) delete teamStats[team];
+    const updated = { ...game, teams: game.teams.map((t, i) => ({ ...t, score: scores[i] })), players, teamStats };
+    if (week === undefined) delete updated.week; else updated.week = week;
+    if (date) updated.date = date;
+    if (!validGames([updated])) { status.textContent = "Some of those numbers are out of range (each stat must be under 100,000), so nothing was saved."; return; }
+    // Standings: take the old result back out and put the new one in.
+    const changed = before.some((t, i) => t.score !== scores[i]);
+    if (changed && fresh.standings?.teams) {
+      const res = (me, them) => (me > them ? "w" : me < them ? "l" : "t");
+      for (let i = 0; i < 2; i += 1) {
+        const team = before[i].team;
+        const rec = { ...teamRecord(fresh, team) };
+        const oldR = res(before[i].score, before[1 - i].score), newR = res(scores[i], scores[1 - i]);
+        rec[oldR] = Math.max(0, rec[oldR] - 1);
+        rec[newR] = Math.min(30, rec[newR] + 1);
+        rec.pf = Math.max(0, rec.pf - before[i].score + scores[i]);
+        rec.pa = Math.max(0, rec.pa - before[1 - i].score + scores[1 - i]);
+        // If this game set the team's current streak, redo it from the result.
+        if (oldR !== newR && rec.streak && rec.streak === game.streakAfter?.[team]) {
+          const prev = String(game.standingsBefore?.[team]?.streak || "").match(/^([WLT])(\d+)$/);
+          const R = newR.toUpperCase();
+          rec.streak = prev && prev[1] === R ? `${R}${Number(prev[2]) + 1}` : `${R}1`;
+          updated.streakAfter = { ...(updated.streakAfter || {}), [team]: rec.streak };
+        }
+        fresh.standings.teams[team] = rec;
+      }
+    }
+    fresh.games = fresh.games.map((g) => (g.id === gameId ? updated : g));
+    try { writeStoredOffice(fresh); }
+    catch (error) { status.textContent = /quota/i.test(`${error.name} ${error.message}`) ? "Browser storage is full, so the changes weren't saved." : `Couldn't save: ${error.message}.`; return; }
+    data = fresh;
+    closeEditor();
+    render();
+    const n = Object.values(players).reduce((t, l) => t + l.length, 0);
+    status.textContent = `Box score saved: ${n} player line${n === 1 ? "" : "s"}${changed ? "; the score change is in the standings" : ""}. Season Stats now include these numbers.`;
+  }
+  editBtn.addEventListener("click", openEditor);
+  editBtn.hidden = !(data.games || []).some((g) => g.id === gameId);
+
   window.addEventListener("storage", (event) => {
     if (event.key !== officeStorageKey) return;
     try { data = readStoredOffice() || emptyOfficeData(); } catch { return; }

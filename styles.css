@@ -3600,3 +3600,26 @@ tr:hover .contracts-spotrac, .contracts-spotrac:focus-visible, .contracts-spotra
 .contracts-spotrac:hover { text-decoration: underline !important; }
 .score-open { margin-left: auto; margin-right: 8px; color: #8fd0ff; font-size: 12px; font-weight: 700; text-decoration: none; }
 .score-open:hover { text-decoration: underline; }
+
+/* Box score editor */
+.bx-edit-bar { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-bottom: 12px; }
+.bx-edit-bar .workspace-status { flex: 1; margin: 0; }
+.bx-edit-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.bx-edit-meta label { display: grid; gap: 5px; color: #c5d5e8; font-size: 12px; font-weight: 700; }
+.bx-edit-meta input, .bx-edit-table input, .bx-edit-team input { min-height: 32px; padding: 4px 6px; border: 1px solid #54749b; background: #071a33; color: #fff; font: 13px var(--body); }
+.bx-edit-table input[type=number] { width: 56px; text-align: right; }
+.bx-edit-table .bx-edit-name { width: 100%; min-width: 150px; }
+.bx-edit-table td, .bx-edit-team td { padding: 3px 4px !important; }
+.bx-edit-team input { width: 90px; text-align: right; }
+.bx-edit-team td:first-child { color: #c5d5e8; }
+.bx-add-line { margin: 6px 0 14px; min-height: 0; padding: 6px 10px; font-size: 12px; }
+.bx-edit-actions { display: flex; gap: 10px; margin: 6px 0 24px; }
+.bx-edit-table .row-delete { min-width: 26px; }
+#bx-edit-btn[hidden], #bx-editor[hidden] { display: none !important; }
+.bx-edit-table { table-layout: auto; width: 100%; }
+.bx-edit-table input[type=number] { width: 46px; padding: 4px 3px; -moz-appearance: textfield; }
+.bx-edit-table input[type=number]::-webkit-inner-spin-button, .bx-edit-table input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.bx-edit-table .bx-edit-name { min-width: 110px; text-align: left; }
+main .bx-edit-table th { padding: 4px 2px !important; text-align: center; }
+main .bx-edit-table td { padding: 3px 2px !important; text-align: center; }
+.bx-editor-form .bx-block { min-width: 0; overflow-x: auto; }
