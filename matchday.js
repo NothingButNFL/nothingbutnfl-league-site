@@ -651,12 +651,22 @@ function renderMatchday() {
   // No box scores yet (start of a season): preview the first scheduled week. Scores and Top Players need box scores.
   const season = mdSeason(data);
   const scheduledWeeks = (data.schedule || []).filter((s) => !season || !s.season || s.season === season).map((s) => s.week);
-  const week = games.length ? Math.max(...games.map((g) => g.week)) : (scheduledWeeks.length ? Math.min(...scheduledWeeks) - 1 : 0);
+  // The last week whose games are ALL logged. A week that's only partly scored stays the current week, so its
+  // previews keep showing (with recaps for the games already played) until every scheduled game has a score.
+  let week = games.length ? Math.max(...games.map((g) => g.week)) : (scheduledWeeks.length ? Math.min(...scheduledWeeks) - 1 : 0);
+  const unplayedIn = (w) => {
+    const played = new Set(games.filter((g) => g.week === w).flatMap((g) => g.teams.map((t) => t.team)));
+    return (data.schedule || []).some((s) => s.week === w && (!season || !s.season || s.season === season) && !played.has(s.away) && !played.has(s.home));
+  };
+  while (games.length && week >= 1 && unplayedIn(week)) week -= 1;
   const lastWeek = games.filter((g) => g.week === week).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
   const pick = mdPickUpcoming(data, records, week + 1) || mdPickFinal(lastWeek, week);
   if (!pick) { renderMatchdayEmpty(games); return; }
   section.hidden = false;
-  renderTicker(lastWeek, week, pick.kind === "upcoming" ? { week: pick.week, slate: mdWeekSlate(data, pick, games) } : null, records);
+  // The ticker shows the newest scores, including a week that's still being filled in.
+  const scoreWeek = games.length ? Math.max(...games.map((g) => g.week)) : week;
+  const tickerGames = scoreWeek === week ? lastWeek : games.filter((g) => g.week === scoreWeek).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
+  renderTicker(tickerGames, scoreWeek, pick.kind === "upcoming" ? { week: pick.week, slate: mdWeekSlate(data, pick, games) } : null, records);
   renderGameOfWeek(pick, records);
   renderWeekSlate(mdWeekSlate(data, pick, games).filter((item) => !item.featured), pick, records); // the Game of the Week has its own panel
   renderScoreboard(data, pick, games, records);
