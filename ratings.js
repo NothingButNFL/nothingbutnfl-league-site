@@ -46,6 +46,7 @@ function renderRatings() {
     pasteCol.value = String(Math.min(ratingWeeks, latest));
   }
 
+  rtRenderLock(season, latest);
   const players = rtRoster().map((p) => ({ p, rows: ratingTimeline(officeData, season, p.id), pos: seasonEntry(p, season).position || "" }));
   const nowWeek = Math.max(0, latest);
   players.sort((a, b) => (b.rows[nowWeek].overall ?? -1) - (a.rows[nowWeek].overall ?? -1) || a.p.name.localeCompare(b.p.name));
@@ -62,6 +63,7 @@ function renderRatings() {
     count.className = `rt-used${used >= ratingUpgradesPerWeek ? " is-full" : ""}`;
     count.textContent = `${used}/${ratingUpgradesPerWeek}`;
     count.title = `${used} of ${ratingUpgradesPerWeek} updates used in ${ratingWeekLabel(w)}`;
+    if (upgradeLockFor(officeData, season, activeTeamId, w)) { count.textContent = `🔒 ${count.textContent}`; count.title += " · locked in"; count.classList.add("is-locked"); }
     c.append(count);
   }
 
@@ -101,7 +103,8 @@ function renderRatings() {
       if (picked) cell.classList.add("is-picked");
       // Pickable while he has a net upgrade waiting in that week (what's waiting from before + this week's change).
       const weekFull = ratingTeamPicks(officeData, season, activeTeamId, w).length >= ratingUpgradesPerWeek;
-      const canPick = picked || (!weekFull && row.overall !== null && rows[w - 1].pending + row.change > 0);
+      const locked = Boolean(upgradeLockFor(officeData, season, activeTeamId, w));
+      const canPick = !locked && (picked || (!weekFull && row.overall !== null && rows[w - 1].pending + row.change > 0));
       const label = row.change ? rtSigned(row.change) : "0";
       if (canPick && storageIsAvailable && Math.abs(row.change) < ratingAutoThreshold) {
         const b = document.createElement("button");
@@ -203,6 +206,33 @@ document.querySelector("#rt-paste-go")?.addEventListener("click", () => {
   document.querySelector("#rt-paste-note").textContent = `${done} player${done === 1 ? "" : "s"} updated${missed.length ? `; not matched: ${missed.slice(0, 8).join(", ")}${missed.length > 8 ? "…" : ""}` : ""}.`;
   if (done) document.querySelector("#rt-paste-text").value = "";
   renderRatings();
+});
+
+// "Lock in upgrades": freezes the team's picks for a week and sends them to Admin › Stream Updates › Player Upgrades.
+const rtLockWeek = document.querySelector("#rt-lock-week");
+const rtLockBtn = document.querySelector("#rt-lock");
+function rtRenderLock(season, latest) {
+  if (!rtLockWeek) return;
+  const keep = rtLockWeek.value;
+  const last = Math.min(ratingWeeks, Math.max(1, latest));
+  rtLockWeek.replaceChildren(...Array.from({ length: last }, (_, i) => last - i).map((w) => new Option(ratingWeekLabel(w), String(w))));
+  rtLockWeek.value = keep && Number(keep) <= last ? keep : String(last);
+  const week = Number(rtLockWeek.value);
+  const lock = upgradeLockFor(officeData, season, activeTeamId, week);
+  const picks = ratingTeamPicks(officeData, season, activeTeamId, week).length;
+  rtLockBtn.disabled = Boolean(lock) || !storageIsAvailable;
+  rtLockBtn.textContent = lock ? `🔒 ${ratingWeekLabel(week)} locked in` : `Lock in ${ratingWeekLabel(week)} upgrades (${picks}/${ratingUpgradesPerWeek})`;
+}
+rtLockWeek?.addEventListener("change", () => renderRatings());
+rtLockBtn?.addEventListener("click", async () => {
+  const season = rtSeason();
+  const week = Number(rtLockWeek.value);
+  const picks = ratingTeamPicks(officeData, season, activeTeamId, week).length;
+  const message = `Lock in ${picks ? `these ${picks} upgrade${picks === 1 ? "" : "s"}` : "no upgrades"} for ${ratingWeekLabel(week)}? The commissioner gets them for the stream, and they can't be changed unless the commissioner unlocks them.`;
+  if (!await confirmAction(message, { confirmLabel: "Lock in" })) return;
+  const result = lockRatingUpgrades(officeData, season, activeTeamId, week);
+  if (result.error) { rtStatus.textContent = result.error; return; }
+  rtSave(`${ratingWeekLabel(week)} upgrades locked in and sent to the commissioner's stream updates.`);
 });
 
 globalThis.renderRatings = renderRatings;

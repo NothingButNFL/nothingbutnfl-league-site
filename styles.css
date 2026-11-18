@@ -3882,3 +3882,14 @@ main .dc-spec-table td.is-up { color: #7fd19b; font-weight: 700; } main .dc-spec
 /* Game preview: starter overalls */
 .mdp-starter-list li { position: relative; grid-template-columns: 48px 26px minmax(0, 1fr) auto !important; }
 .mdp-ovr { margin-left: auto; display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 4px; border: 2px solid rgba(255, 255, 255, 0.85); border-radius: 50%; color: #fff; font: 800 12px var(--mono); flex: none; }
+.rt-lock { display: flex; align-items: center; gap: 10px; margin-left: auto; margin-right: 10px; }
+.rt-lock label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.rt-used.is-locked { color: #c8f25a; }
+.su-tabs { display: flex; gap: 6px; margin: 0 0 18px; border-bottom: 1px solid var(--line, rgba(255,255,255,.12)); }
+.su-tabs a { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; color: var(--muted); font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.su-tabs a[aria-current="page"] { color: inherit; border-bottom-color: #c8f25a; }
+.su-tabs a:hover { color: inherit; }
+.su-up-list li { display: grid !important; grid-template-columns: 56px minmax(160px, 1fr) 32px 20px 32px !important; align-items: center; gap: 8px; }
+.su-up-name { color: inherit; font-weight: 600; text-decoration: none; }
+.su-up-name:hover { text-decoration: underline; }
+.su-up-from { color: var(--muted); text-align: right; }

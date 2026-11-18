@@ -518,12 +518,14 @@ function refreshNavNotifications() {
   let fa = 0;
   let restructures = 0;
   let extensions = 0;
+  let upgrades = 0;
   try {
     const data = JSON.parse(localStorage.getItem(officeStorageKey) || "null");
     if (Array.isArray(data?.pendingTrades)) trades = data.pendingTrades.filter((trade) => trade?.status === "awaiting-admin").length;
     if (Array.isArray(data?.streamUpdates)) stream = data.streamUpdates.filter((update) => update && !update.done).length;
     if (Array.isArray(data?.faOffers)) fa = data.faOffers.filter((offer) => offer?.status === "pending").length;
     if (Array.isArray(data?.restructureRequests)) restructures = data.restructureRequests.filter((r) => r?.status === "pending").length;
+    if (Array.isArray(data?.upgradeLocks)) upgrades = data.upgradeLocks.filter((u) => u && !u.done).length;
     if (Array.isArray(data?.extensionOffers)) extensions = data.extensionOffers.filter((o) => o?.status === "pending").length;
   } catch {
     trades = 0;
@@ -531,6 +533,7 @@ function refreshNavNotifications() {
     fa = 0;
     restructures = 0;
     extensions = 0;
+    upgrades = 0;
   }
   const show = (key, count, label) => document.querySelectorAll(`[data-badge="${key}"]`).forEach((badge) => {
     badge.textContent = count > 99 ? "99+" : String(count);
@@ -543,8 +546,9 @@ function refreshNavNotifications() {
   show("admin-fa", fa, `${fa} free agent ${fa === 1 ? "offer" : "offers"} waiting`);
   show("admin-restructure", restructures, `${restructures} ${restructures === 1 ? "restructure" : "restructures"} waiting`);
   show("admin-extension", extensions, `${extensions} ${extensions === 1 ? "extension" : "extensions"} waiting`);
-  const total = trades + stream + fa + restructures + extensions;
-  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", fa ? `${fa} free agent ${fa === 1 ? "offer" : "offers"}` : "", restructures ? `${restructures} ${restructures === 1 ? "restructure" : "restructures"}` : "", extensions ? `${extensions} ${extensions === 1 ? "extension" : "extensions"}` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
+  show("admin-upgrades", upgrades, `${upgrades} player upgrade ${upgrades === 1 ? "lock-in" : "lock-ins"} for the stream`);
+  const total = trades + stream + fa + restructures + extensions + upgrades;
+  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", fa ? `${fa} free agent ${fa === 1 ? "offer" : "offers"}` : "", restructures ? `${restructures} ${restructures === 1 ? "restructure" : "restructures"}` : "", extensions ? `${extensions} ${extensions === 1 ? "extension" : "extensions"}` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : "", upgrades ? `${upgrades} player upgrade ${upgrades === 1 ? "lock-in" : "lock-ins"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
 }
 
 window.addEventListener("storage", (event) => {

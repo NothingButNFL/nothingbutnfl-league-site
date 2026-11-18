@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && validRatings(data.ratings) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validUpgradeLocks(data.upgradeLocks) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && validRatings(data.ratings) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -1950,6 +1950,42 @@ function validStreamUpdates(list) {
   return true;
 }
 
+// Player upgrades locked in by teams (team sheet › Player Ratings › "Lock in"), for the commissioner to make in Madden
+// (Admin › Stream Updates › Player Upgrades). A team's week stays locked while its entry exists; the commissioner
+// unlocks it by removing the entry.
+// data.upgradeLocks = [{ id, teamId, season, week, createdAt, done, doneAt?, players: [{ id, name, position, from, to }] }]
+function validUpgradeLocks(list) {
+  if (list === undefined) return true;
+  if (!Array.isArray(list) || list.length > 3000) return false;
+  const ids = new Set();
+  for (const u of list) {
+    if (!u || typeof u.id !== "string" || !u.id || ids.has(u.id) || !nflTeams.some(({ id }) => id === u.teamId) ||
+        !isIntegerInRange(u.season, 1936, 2100) || !isIntegerInRange(u.week, 1, ratingWeeks) || typeof u.createdAt !== "string" ||
+        typeof u.done !== "boolean" || !Array.isArray(u.players) || u.players.length > 10 ||
+        u.players.some((p) => !p || typeof p.id !== "string" || typeof p.name !== "string" || p.name.length > 80 ||
+          (p.position !== undefined && typeof p.position !== "string") || !(p.from === null || isIntegerInRange(p.from, 0, 99)) ||
+          !(p.to === null || isIntegerInRange(p.to, 0, 99)))) return false;
+    ids.add(u.id);
+  }
+  return true;
+}
+const upgradeLockFor = (data, season, teamId, week) => (data.upgradeLocks || []).find((u) => u.teamId === teamId && u.season === season && u.week === week) || null;
+// Lock a team's picks for a week and queue them for the stream. Returns the entry, or { error }.
+function lockRatingUpgrades(data, season, teamId, week) {
+  if (upgradeLockFor(data, season, teamId, week)) return { error: `${ratingWeekLabel(week)} is already locked in.` };
+  const picks = ratingTeamPicks(data, season, teamId, week);
+  const players = picks.map((id) => {
+    const found = findPlayerById(data, id);
+    const rows = ratingTimeline(data, season, id);
+    return { id, name: found?.player.name || "Unknown player", position: String(found?.player.seasons?.[season]?.position || "").slice(0, 12),
+      from: rows[week - 1]?.overall ?? null, to: rows[week]?.overall ?? null };
+  });
+  if (!Array.isArray(data.upgradeLocks)) data.upgradeLocks = [];
+  const entry = { id: newRecordId("upgrade"), teamId, season, week, createdAt: new Date().toISOString(), done: false, players };
+  data.upgradeLocks.push(entry);
+  return entry;
+}
+
 // Adds depth chart changes for a team to the stream queue. Changes made within 30 minutes of the team's last
 // open update are merged into it, keeping each spot's original "from"; a spot changed back is dropped.
 function recordStreamUpdate(data, teamId, changes) {
@@ -3636,6 +3672,7 @@ const ratingTeamPicks = (data, season, teamId, week) => ratingsSeason(data, seas
 
 // Pick (or un-pick) a player to be updated in a week. Returns "" or a reason it can't be done.
 function toggleRatingUpgrade(data, season, teamId, playerId, week) {
+  if (typeof upgradeLockFor === "function" && upgradeLockFor(data, season, teamId, week)) return `${ratingWeekLabel(week)} upgrades are locked in. Ask the commissioner to unlock them (Admin › Stream Updates › Player Upgrades).`;
   const picks = ratingTeamPicks(data, season, teamId, week);
   if (picks.includes(playerId)) {
     const s = ratingsSeason(data, season, true);
