@@ -96,6 +96,24 @@ function dcFormation(tab, chart) {
     ["PWHB", "PWHB", 0, 1, 4, 4], ["3DRB", "3DRB", 0, 1, 6, 4], ["GAD", "GAD", 0, 1, 8, 4], ["SLWR", "SLWR", 0, 1, 10, 4]] };
 }
 
+// Starting spots on the Offense and Defense tabs (the first spot on each card), as "SLOT:index" → card label.
+// The defense's starters depend on the scheme (a 3-4 starts three DTs, a 4-3 starts SAM).
+function dcStarterSpots(chart) {
+  const spots = new Map();
+  for (const tab of ["offense", "defense"]) for (const [label, slot, card] of dcFormation(tab, chart).cards) spots.set(`${slot}:${card}`, label);
+  return spots;
+}
+// Who starts where on offense/defense: playerId → card label (a player may start at only one of these).
+function dcStartersById(chart) {
+  const byId = new Map();
+  for (const [key, label] of dcStarterSpots(chart)) {
+    const [slot, index] = key.split(":");
+    const id = (chart.slots[slot] || [])[Number(index)];
+    if (id && !byId.has(id)) byId.set(id, label);
+  }
+  return byId;
+}
+
 function dcPhoto(id) {
   const found = id ? findPlayerById(officeData, id) : null;
   const src = found ? profilePhotoSrc(playerProfile(found.player)) : "";
@@ -142,6 +160,8 @@ function formationView(chart, roster) {
     wrap.append(note);
   }
   const { cols, cards, headers = [] } = dcFormation(dcTab, chart);
+  const startingAt = dcStartersById(chart);
+  const starterSpots = dcStarterSpots(chart);
   const field = document.createElement("div");
   field.className = `dc-field dc-field-${dcTab}`;
   field.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
@@ -172,7 +192,9 @@ function formationView(chart, roster) {
     spots.forEach((index, n) => {
       const line = document.createElement("label");
       line.className = n === 0 ? "dc-line is-starter" : "dc-line";
-      const select = slotSelect(slot, index, ids[index], roster, true);
+      // A starting spot on Offense/Defense can't take someone already starting at another position there.
+      const taken = starterSpots.has(`${slot}:${index}`) ? new Map([...startingAt].filter(([id]) => id !== ids[index])) : null;
+      const select = slotSelect(slot, index, ids[index], roster, true, taken);
       select.setAttribute("aria-label", `${label} ${n === 0 ? "starter" : `backup ${n}`}`);
       // The card shows just "J.ALLEN"; the (invisible) dropdown on top of it lists everyone with position and overall.
       const chosen = ids[index] ? findPlayerById(officeData, ids[index]) : null;
@@ -198,7 +220,7 @@ function formationView(chart, roster) {
 // "Josh Allen" → "J.Allen" (Madden lineup style; "Jr."/"III" kept).
 const dcShortName = (name) => { const parts = String(name).trim().split(/\s+/); return parts.length < 2 ? name : `${parts[0][0]}.${parts.slice(1).join(" ")}`; };
 
-function slotSelect(slot, index, chosen, roster, short = false) {
+function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
   const select = document.createElement("select");
   select.className = "depth-select";
   select.dataset.slot = slot;
@@ -210,7 +232,11 @@ function slotSelect(slot, index, chosen, roster, short = false) {
   const fits = roster.filter((p) => fitRank(slot, p.position) < 99).sort((a, b) => fitRank(slot, a.position) - fitRank(slot, b.position) || (ovr(b.id) ?? -1) - (ovr(a.id) ?? -1) || b.cap - a.cap || a.name.localeCompare(b.name));
   const label = (p) => `${short ? dcShortName(p.name) : p.name}${p.position ? ` (${p.position})` : ""}${ovr(p.id) !== null ? ` · ${ovr(p.id)}` : ""}`;
   // Only positions the league allows here (see depthFits).
-  select.append(...fits.map((p) => new Option(label(p), p.id)));
+  select.append(...fits.map((p) => {
+    const option = new Option(label(p), p.id);
+    if (taken?.has(p.id)) { option.disabled = true; option.textContent += ` — starts at ${taken.get(p.id)}`; }
+    return option;
+  }));
   const saved = chosen && roster.find((p) => p.id === chosen);
   if (saved && fitRank(slot, saved.position) === 99) {
     // Saved before the position rules (or his position changed): kept, but flagged.
@@ -250,13 +276,19 @@ function renderDepthChart() {
   auto.className = "workspace-button";
   auto.dataset.action = "autofill";
   auto.textContent = "Fill empty spots by position";
-  auto.title = "Fills empty spots with the best-fitting players by position, highest cap hit first";
+  auto.title = "Fills only the empty spots: best-fitting positions first, then highest overall";
   const clear = document.createElement("button");
   clear.type = "button";
   clear.className = "workspace-button";
   clear.dataset.action = "clear";
   clear.textContent = "Clear depth chart";
-  actions.append(auto, clear);
+  const bestBtn = document.createElement("button");
+  bestBtn.type = "button";
+  bestBtn.className = "button button-lime";
+  bestBtn.dataset.action = "best";
+  bestBtn.textContent = "Generate best lineup";
+  bestBtn.title = "Puts the best available player (highest league overall) at every spot; no one starts at two offensive/defensive positions";
+  actions.append(bestBtn, auto, clear);
   head.append(title, actions);
 
   const layout = document.createElement("div");
@@ -477,36 +509,46 @@ depthPanel?.addEventListener("click", async (event) => {
     renderDepthChart();
     return;
   }
-  // Autofill. Starters first: exact position matches, then close fits, each player starting at one spot where possible.
-  // Then backups, which may repeat a player listed elsewhere (as Madden allows).
+  // "Fill empty spots" keeps what's there; "Best lineup" starts over. Both: starters on Offense/Defense first (each
+  // player starts at one spot only), then backups and Special Teams/Specialists (which may repeat players, as Madden allows).
+  const best = button.dataset.action === "best";
+  if (best && !await confirmAction("Replace this whole depth chart with the best available player at every spot (by league overall)? Team schemes and auto subs are kept.", { confirmLabel: "Set best lineup" })) return;
   const roster = depthRoster();
   const beforeFill = copySlots(chart);
-  const starters = new Set();
-  const slotList = depthChartSections.flatMap(([section, rows]) => rows.map(([slot, size]) => ({ slot, size, shareable: section !== "Offense" && section !== "Defense" })));
-  for (const { slot } of slotList) { const first = (chart.slots[slot] || [])[0]; if (first) starters.add(first); }
+  const ovr = (p) => dcOverall(p.id) ?? -1;
+  const slotList = depthChartSections.flatMap(([, rows]) => rows.map(([slot, size]) => ({ slot, size })));
   const ids = Object.fromEntries(slotList.map(({ slot, size }) => {
-    const list = [...(chart.slots[slot] || [])];
+    const list = best ? [] : [...(chart.slots[slot] || [])];
     while (list.length < size) list.push("");
     return [slot, list];
   }));
-  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99)
-    .sort((x, y) => fitRank(slot, x.position) - fitRank(slot, y.position) || y.cap - x.cap);
+  const starterSpots = [...dcStarterSpots(chart).keys()].map((key) => { const [slot, index] = key.split(":"); return { slot, index: Number(index) }; });
+  const isStarterSpot = new Set(starterSpots.map(({ slot, index }) => `${slot}:${index}`));
+  const starters = new Set(starterSpots.map(({ slot, index }) => ids[slot][index]).filter(Boolean));
+  // Best fit = highest overall; ties go to the more natural position, then the bigger cap hit.
+  const score = (slot, p) => (best ? ovr(p) * 1000 : (99 - fitRank(slot, p.position)) * 100000 + ovr(p) * 1000) - fitRank(slot, p.position) * 10 + Math.min(9, p.cap / 5e6);
+  const ranked = (slot) => roster.filter((p) => fitRank(slot, p.position) < 99).sort((x, y) => score(slot, y) - score(slot, x));
   let added = 0;
-  for (const exactOnly of [true, false]) {
-    for (const { slot, shareable } of slotList) {
-      if (ids[slot][0]) continue;
-      const pick = ranked(slot).find((p) => (!exactOnly || fitRank(slot, p.position) === 0) && (shareable || !starters.has(p.id)));
-      if (!pick) continue;
-      ids[slot][0] = pick.id;
-      if (!shareable) starters.add(pick.id);
-      added += 1;
-    }
+  // Starters: the best player/spot pairs first, across every starting spot at once.
+  const pairs = [];
+  for (const { slot, index } of starterSpots) {
+    if (ids[slot][index]) continue;
+    for (const p of ranked(slot)) pairs.push({ slot, index, p, value: score(slot, p) });
   }
+  pairs.sort((a, b) => b.value - a.value);
+  for (const { slot, index, p } of pairs) {
+    if (ids[slot][index] || starters.has(p.id)) continue;
+    ids[slot][index] = p.id;
+    starters.add(p.id);
+    added += 1;
+  }
+  // Everything else, spot by spot: best available not already listed in that slot (non-starters first for offense/defense backups).
+  const shareable = new Set(depthChartSections.filter(([section]) => section !== "Offense" && section !== "Defense").flatMap(([, rows]) => rows.map(([slot]) => slot)));
   for (const { slot, size } of slotList) {
-    for (let i = 1; i < size; i += 1) {
-      if (ids[slot][i]) continue;
+    for (let i = 0; i < size; i += 1) {
+      if (ids[slot][i] || isStarterSpot.has(`${slot}:${i}`)) continue;
       const pool = ranked(slot).filter((p) => !ids[slot].includes(p.id));
-      const pick = pool.find((p) => !starters.has(p.id)) || pool[0];
+      const pick = shareable.has(slot) ? pool[0] : (pool.find((p) => !starters.has(p.id)) || pool[0]);
       if (!pick) continue;
       ids[slot][i] = pick.id;
       added += 1;
@@ -518,7 +560,8 @@ depthPanel?.addEventListener("click", async (event) => {
     if (list.length) chart.slots[slot] = list; else delete chart.slots[slot];
   }
   queueStream(slotChanges(beforeFill, chart.slots));
-  saveOfficeData(added ? `Filled ${added} empty ${added === 1 ? "spot" : "spots"} by position. Change any of them with the dropdowns.` : "No empty spots could be filled: no more players fit those positions.");
+  saveOfficeData(best ? `Best lineup set: ${added} spots filled by league overall. Change any of them with the dropdowns.`
+    : added ? `Filled ${added} empty ${added === 1 ? "spot" : "spots"} by position. Change any of them with the dropdowns.` : "No empty spots could be filled: no more players fit those positions.");
   renderDepthChart();
 });
 
