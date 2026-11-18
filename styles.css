@@ -3816,3 +3816,5 @@ main .rt-table td.rt-cell.can-pick .rt-pick { text-decoration: underline dotted;
 .franchise-brand .team-page-fallback { width: 44px; height: 44px; font-size: 13px; }
 .franchise-gm .team-gm-link { font-size: 13px; }
 #front-office { padding-top: 28px; }
+.front-office-kicker-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+.front-office-kicker-row .team-back-link { margin: 0; }
