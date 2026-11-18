@@ -53,7 +53,10 @@ function dcSpecPlayers() {
 }
 function dcSpecRefresh() {
   if (typeof rankAllSpecialistSlots !== "function" || dcSpec.state !== "ready") return;
-  dcSpec.rankings = rankAllSpecialistSlots(dcSpecPlayers());
+  const players = dcSpecPlayers();
+  dcSpec.byPlayer = new Map(players.map((p) => [p.player_id, p]));
+  dcSpec.posCache = new Map();
+  dcSpec.rankings = rankAllSpecialistSlots(players);
   dcSpec.bySlot = Object.fromEntries(Object.entries(dcSpec.rankings).map(([slot, list]) => [slot, new Map(list.map((r) => [r.player.player_id, r]))]));
 }
 function dcSpecEnsure() {
@@ -69,7 +72,16 @@ function dcSpecEnsure() {
 // The overall to show/sort by in a slot: the specialist overall where there's a formula, else league overall.
 function slotOvr(slot, id) {
   const r = dcSpec.bySlot[slot]?.get(id);
-  return r ? r.specialist_ovr : dcOverall(id);
+  if (r) return r.specialist_ovr;
+  // Base positions: out-of-position players rate by position-formulas.js (in position: his league overall).
+  const player = dcSpec.byPlayer?.get(id);
+  if (player && typeof slotPositionOverall === "function") {
+    const key = `${slot}:${id}`;
+    if (!dcSpec.posCache.has(key)) dcSpec.posCache.set(key, slotPositionOverall(player, slot)?.ovr ?? null);
+    const v = dcSpec.posCache.get(key);
+    if (v != null) return v;
+  }
+  return dcOverall(id);
 }
 
 // The league's Madden scheme lists.
@@ -373,6 +385,7 @@ function slotSelect(slot, index, chosen, roster, short = false, taken = null) {
 function renderDepthChart() {
   if (!depthPanel) return;
   dcOverallCache = new Map(); // picks or rating changes since the last render show up
+  dcSpecEnsure();
   dcSpecRefresh();
   const chart = depthChartFor(activeTeamId);
   const roster = depthRoster();

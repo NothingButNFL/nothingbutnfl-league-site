@@ -49,7 +49,23 @@ const specialistFormulaConfig = {
     "JKM": "jukeMove",
     "SPM": "spinMove",
     "RET": "kickReturn",
-    "STA": "stamina"
+    "STA": "stamina",
+    "SAC": "throwAccuracyShort",
+    "MAC": "throwAccuracyMid",
+    "DAC": "throwAccuracyDeep",
+    "THP": "throwPower",
+    "TUP": "throwUnderPressure",
+    "PAC": "playAction",
+    "TOR": "throwOnTheRun",
+    "BSK": "breakSack",
+    "SPC": "spectacularCatch",
+    "JMP": "jumping",
+    "IBL": "impactBlocking",
+    "LBK": "leadBlock",
+    "RBP": "runBlockPower",
+    "RBF": "runBlockFinesse",
+    "PBP": "passBlockPower",
+    "PBF": "passBlockFinesse"
   },
   "slots": {
     "RLE": {

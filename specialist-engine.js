@@ -98,3 +98,37 @@ async function loadSpecialistRatings(maddenIds) {
   }));
   return out;
 }
+
+// ---- Base positions (position-formulas.js) ----
+// Which formula a depth-chart slot uses, and which formula is a player's "own" (from his listed position).
+const slotFormula = { QB: "QB", HB: "HB", FB: "FB", WR: "WR", TE: "TE", LT: "OT", RT: "OT", LG: "OG", RG: "OG", C: "C",
+  LE: "LE", RE: "RE", DT: "DT", NT: "DT", WILL: "LOLB", SAM: "ROLB", MIKE: "MLB", CB: "CB", FS: "FS", SS: "SS" };
+const positionToFormula = { QB: "QB", RB: "HB", HB: "HB", FB: "FB", WR: "WR", TE: "TE", LT: "OT", RT: "OT", OT: "OT", T: "OT",
+  LG: "OG", RG: "OG", OG: "OG", G: "OG", IOL: "OG", OL: "OG", C: "C", LE: "LE", LEDG: "LE", DE: "LE", EDGE: "LE", ED: "LE", DL: "DT",
+  RE: "RE", REDG: "RE", DT: "DT", NT: "DT", IDL: "DT", WILL: "LOLB", LOLB: "LOLB", OLB: "LOLB", WLB: "LOLB", SAM: "ROLB", ROLB: "ROLB",
+  SLB: "ROLB", MIKE: "MLB", MLB: "MLB", ILB: "MLB", LB: "MLB", CB: "CB", NB: "CB", DB: "CB", FS: "FS", S: "FS", SAF: "FS", SS: "SS" };
+
+// Best archetype at a formula position: { ovr, archetype } or null when an attribute is missing.
+function positionOverall(ratings, formulaKey) {
+  const pos = typeof positionFormulaConfig !== "undefined" ? positionFormulaConfig.positions[formulaKey] : null;
+  if (!pos || !ratings) return null;
+  let best = null;
+  for (const [archetype, weights] of Object.entries(pos.archetypes)) {
+    const r = specialistOverall({ ratings }, { weights, desired_low: pos.desired_low, desired_high: pos.desired_high, min_ovr_floor: 40, max_ovr_cap: 99 });
+    if (r && (!best || r.specialist_ovr > best.ovr)) best = { ovr: r.specialist_ovr, archetype };
+  }
+  return best;
+}
+// His overall at a depth-chart slot: league overall shifted by (formula at the slot − formula at his own position).
+// Returns null when there's no formula for the slot or no attributes for him (callers fall back to league overall).
+function slotPositionOverall(player, slot) {
+  const target = slotFormula[slot];
+  if (!target || !player.ratings) return null;
+  const own = String(player.base_position || "").toUpperCase().split(/[\s/,-]+/).map((p) => positionToFormula[p]).find(Boolean);
+  const at = positionOverall(player.ratings, target);
+  if (!at) return null;
+  if (own === target && player.base_ovr != null) return { ovr: player.base_ovr, archetype: at.archetype, natural: true };
+  const home = own ? positionOverall(player.ratings, own) : null;
+  const shift = home && player.base_ovr != null ? player.base_ovr - home.ovr : 0;
+  return { ovr: Math.max(40, Math.min(99, at.ovr + shift)), archetype: at.archetype, natural: false };
+}
