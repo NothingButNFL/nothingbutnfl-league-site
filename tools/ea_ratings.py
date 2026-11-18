@@ -83,8 +83,10 @@ def run(args):
                 old = {}
         except (ValueError, OSError):
             old = {}
+    if any(len(v) < 5 for v in old.get('players', {}).values()):
+        old = {}  # written by an older version without college/birthdate: fetch everything again
     kept = {r['id']: r for r in old.get('releases', [])}
-    people = {k: v for k, v in old.get('players', {}).items() if len(v) >= 5}  # older files lack college/birthdate
+    people = dict(old.get('players', {}))
     releases = []
     for it in sorted(meta['iterations'], key=lambda r: (slot_for(r['label']) is None, slot_for(r['label']) or 0)):
         slot = slot_for(it['label'])
