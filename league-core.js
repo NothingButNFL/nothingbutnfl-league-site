@@ -835,11 +835,23 @@ function samePositionGroup(a, b) {
 
 // Finds a player's NFL experience by name, using position and team only to
 // break ties between players who share a name.
+// Broad position families: a player is never matched to an NFL player from a different one (an LS named Aaron
+// Brewer must not get the OL Aaron Brewer's details). DL and LB count as one family (EDGE/OLB are listed either way).
+const positionFamilies = [["QB"], ["RB", "HB", "FB"], ["WR"], ["TE"], ["OT", "T", "LT", "RT", "OG", "G", "LG", "RG", "C", "OL", "IOL"],
+  ["DE", "DT", "NT", "DL", "IDL", "EDGE", "LB", "ILB", "OLB", "MLB"], ["CB", "S", "FS", "SS", "DB", "SAF", "NB"], ["K", "PK"], ["P"], ["LS"]];
+const positionFamily = (pos) => positionFamilies.findIndex((f) => f.includes(String(pos || "").toUpperCase().trim()));
 function matchNflExperience(name, position, teamId) {
   const index = experienceIndex();
   if (!index) return { error: "unavailable" };
   let candidates = index.get(normalizePlayerName(name)) || [];
   if (!candidates.length) return { error: "not-found" };
+  // Same name, different kind of player: no match.
+  const family = positionFamily(position);
+  if (family !== -1) {
+    const fits = candidates.filter((p) => positionFamily(p.position) === -1 || positionFamily(p.position) === family);
+    if (!fits.length) return { error: "position-mismatch", candidates };
+    candidates = fits;
+  }
   for (const narrow of [
     (c) => c.filter((p) => samePositionGroup(p.position, position)),
     (c) => c.filter((p) => p.team === teamId),

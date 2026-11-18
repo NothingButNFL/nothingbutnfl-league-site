@@ -239,7 +239,7 @@ function renderContracts() {
     spotrac.target = "_blank";
     spotrac.rel = "noopener";
     spotrac.textContent = "Spotrac ↗";
-    spotrac.title = `Search Spotrac for ${row.name}`;
+    spotrac.title = `Search Spotrac for ${row.name}${row.position ? ` (pick the ${row.position} in the results)` : ""}`;
     nameCell.append(spotrac);
 
     const teamCell = tr.insertCell();
@@ -552,7 +552,8 @@ document.querySelector("#fill-ages").addEventListener("click", () => {
     const position = sheet ? playerDisplayPosition(player, year) : player.position;
     const match = matchNflExperience(player.name, position, team || null);
     if (!match.record) {
-      missed.push(player.name);
+      // Same name but a different kind of player (an LS vs the OL Aaron Brewer): say so, so it can be checked.
+      missed.push(match.error === "position-mismatch" ? `${player.name} (${position || "?"}; NFL has ${[...new Set(match.candidates.map((c) => c.position))].join("/")})` : player.name);
       continue;
     }
     if (match.record.birthDate) {
