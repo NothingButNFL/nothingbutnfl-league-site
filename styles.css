@@ -3675,3 +3675,6 @@ main .bx-table th.bx-name-col { white-space: nowrap; }
 .bx-top-actions { display: inline-flex; gap: 10px; align-items: center; flex-shrink: 0; }
 .bx-top-actions[hidden] { display: none; }
 .bx-top-actions .workspace-button { font-size: 13px !important; font-weight: 700; padding: 0 18px !important; align-self: stretch; }
+main .bx-table.bx-cat-rushing :is(th, td) { padding-left: 6px !important; padding-right: 6px !important; }
+main .bx-table.bx-cat-rushing td.bx-name { white-space: nowrap; }
+main .bx-table td.bx-name { white-space: nowrap; }

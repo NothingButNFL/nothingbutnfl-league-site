@@ -57,6 +57,7 @@
     // ---- player stats: one section per category, the two teams side by side, each with a TEAM row ----
     const sum = (lines, k) => lines.reduce((t, l) => t + (Number(l[k]) || 0), 0);
     const maxOf = (lines, k) => (lines.some((l) => l[k] != null) ? Math.max(...lines.map((l) => Number(l[k]) || 0)) : undefined);
+    const sumIf = (lines, k) => (lines.some((l) => l[k] != null) ? sum(lines, k) : undefined); // "—" when nobody has it
     const avg = (a, b) => (b ? (a / b).toFixed(1) : "0.0");
     const rating = (l) => { // NFL passer rating
       const att = Number(l.att) || 0; if (!att) return undefined;
@@ -67,9 +68,9 @@
     const cats = [
       ["passing", "Passing", [["RATING", rating], ["YARDS", (l) => l.yds], ["TD", (l) => l.td], ["INT", (l) => l.int], ["LONG", (l) => l.long], ["SACKS", (l) => l.sacks],
         ["COMP", (l) => l.cmp], ["ATT", (l) => l.att], ["COMP%", (l) => (Number(l.att) ? ((l.cmp / l.att) * 100).toFixed(1) : "0.0")], ["YPA", (l) => avg(l.yds, l.att)]],
-        (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long"), sacks: maxOf(ls, "sacks") === undefined ? undefined : sum(ls, "sacks") })],
-      ["rushing", "Rushing", [["CAR", (l) => l.att], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
-        (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
+        (ls) => ({ cmp: sum(ls, "cmp"), att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), int: sum(ls, "int"), long: maxOf(ls, "long"), sacks: sumIf(ls, "sacks") })],
+      ["rushing", "Rushing", [["ATT", (l) => l.att], ["YARDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.att)], ["TD", (l) => l.td], ["FUMB", (l) => l.fumb], ["BTK", (l) => l.btk], ["YAC", (l) => l.yac], ["LONG", (l) => l.long]],
+        (ls) => ({ att: sum(ls, "att"), yds: sum(ls, "yds"), td: sum(ls, "td"), fumb: sumIf(ls, "fumb"), btk: sumIf(ls, "btk"), yac: sumIf(ls, "yac"), long: maxOf(ls, "long") })],
       ["receiving", "Receiving", [["REC", (l) => l.rec], ["YDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["LONG", (l) => l.long]],
         (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), long: maxOf(ls, "long") })],
       ["defense", "Defense", [["TOT", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
@@ -188,7 +189,7 @@
   const status = document.querySelector("#bx-status");
   const editFields = {
     passing: [["yds", "YARDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"], ["sacks", "SACKS"], ["cmp", "COMP"], ["att", "ATT"]],
-    rushing: [["att", "CAR"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
+    rushing: [["att", "ATT"], ["yds", "YARDS"], ["td", "TD"], ["fumb", "FUMB"], ["btk", "BTK"], ["yac", "YAC"], ["long", "LONG"]],
     receiving: [["rec", "REC"], ["yds", "YDS"], ["td", "TD"], ["long", "LONG"]],
     defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
