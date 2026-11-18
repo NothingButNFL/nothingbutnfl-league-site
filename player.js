@@ -460,6 +460,7 @@ function renderGames(entry) {
     passing: (l) => `${l.cmp ?? 0}/${l.att ?? 0}, ${l.yds ?? 0} yds, ${l.td ?? 0} TD, ${l.int ?? 0} INT`,
     rushing: (l) => `${l.att ?? 0} car, ${l.yds ?? 0} yds, ${l.td ?? 0} TD`,
     receiving: (l) => `${l.rec ?? 0} rec, ${l.yds ?? 0} yds, ${l.td ?? 0} TD`,
+    blocking: (l) => `${l.pancakes ?? 0} pancakes, ${l.sacks ?? 0} sacks allowed`,
     defense: (l) => [l.tackles ? `${l.tackles} tkl` : "", l.sacks ? `${l.sacks} sk` : "", l.int ? `${l.int} INT` : "", l.ff ? `${l.ff} FF` : "", l.pd ? `${l.pd} PD` : ""].filter(Boolean).join(", ") || "0 tkl",
     kicking: (l) => `${l.fgm ?? 0}/${l.fga ?? 0} FG, ${l.xpm ?? 0}/${l.xpa ?? 0} XP`
   };
@@ -483,7 +484,7 @@ function renderGames(entry) {
     row.insertCell().textContent = game.date;
     row.insertCell().textContent = theirs.team;
     row.insertCell().textContent = `${mine.score > theirs.score ? "W" : mine.score < theirs.score ? "L" : "T"} ${mine.score}-${theirs.score}`;
-    row.insertCell().textContent = lines.map(({ category, line }) => summaries[category](line)).join(" · ");
+    row.insertCell().textContent = lines.map(({ category, line }) => summaries[category]?.(line) || "").join(" · ");
   }
   const wrap = document.createElement("div");
   wrap.className = "management-table-wrap";

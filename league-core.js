@@ -1321,7 +1321,7 @@ function validStats(stats) {
 }
 
 // ---- Game log (box scores read on the Stats page) ----
-const boxScoreCategories = ["passing", "rushing", "receiving", "defense", "kicking"];
+const boxScoreCategories = ["passing", "rushing", "receiving", "blocking", "defense", "kicking"];
 
 function validGames(games) {
   if (games === undefined) return true;

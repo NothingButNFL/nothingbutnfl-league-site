@@ -27,6 +27,7 @@ const playerFields = {
   passing: [["cmp", "Cmp"], ["att", "Att"], ["yds", "Yds"], ["td", "TD"], ["int", "Int"], ["long", "Lng"], ["sacks", "Sacked"]],
   rushing: [["att", "Att"], ["yds", "Yds"], ["td", "TD"], ["fumb", "Fumb"], ["btk", "BTK"], ["yac", "YAC"], ["long", "Lng"]],
   receiving: [["rec", "Rec"], ["yds", "Yds"], ["td", "TD"], ["rac", "RAC"], ["long", "Lng"]],
+  blocking: [["pancakes", "Pancakes"], ["sacks", "Sacks allowed"]],
   defense: [["tackles", "Tkl"], ["sacks", "Sacks"], ["int", "Int"], ["ff", "FF"], ["fr", "FR"], ["pd", "PD"], ["td", "TD"]],
   kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "Lng"]]
 };
@@ -67,12 +68,13 @@ function boxScorePrompt(count) {
     ' "players":{"passing":[{"player":"J.Allen","team":"BUF","cmp":34,"att":52,"yds":313,"td":2,"int":0,"long":27,"sacks":1}],',
     '  "rushing":[{"player":"...","team":"...","att":0,"yds":0,"td":0,"fumb":0,"btk":0,"yac":0,"long":0}],',
     '  "receiving":[{"player":"...","team":"...","rec":0,"yds":0,"td":0,"rac":0,"long":0}],',
+    '  "blocking":[{"player":"...","team":"...","pancakes":0,"sacks":0}],',
     '  "defense":[{"player":"...","team":"...","tackles":0,"sacks":0,"int":0,"ff":0,"fr":0,"pd":0,"td":0}],',
     '  "kicking":[{"player":"...","team":"...","fgm":0,"fga":0,"xpm":0,"xpa":0,"long":0}]}}',
     "Rules:",
     "- teams: the two teams with their FINAL scores, left/first team first. Use standard NFL abbreviations (BUF, LAR, KC, NYJ, ...).",
     "- teamStats: keyed by the same abbreviations. \"23 | 86 | 0\" under RUSHES | YARDS | TDS means rushAtt 23, rushYds 86, rushTd 0. \"35 | 52 | 2\" under COMP | ATT | TDS means cmp, att, passTd. \"6 | 17 (35%)\" under 3RD DOWN CONV. means thirdConv 6, thirdAtt 17. \"2 | 0 | 100%\" under RED ZONE TD | FG | % means redZoneTd 2, redZoneFg 0, redZonePct 100. \"0 (0)\" under TURNOVERS means 0. \"3 | 30\" under PENALTIES means penalties 3, penaltyYds 30. interceptions = interceptions THROWN by that team.",
-    "- players: one entry per player row shown, under the category of the page it appears on, with that row's team. Write names exactly as shown (e.g. J.Allen). For passing, sacks = times that QB was sacked. For rushing, fumb = fumbles, btk = broken tackles, yac = yards after contact. For receiving, rac = run-after-catch yards.",
+    "- players: one entry per player row shown, under the category of the page it appears on, with that row's team. Write names exactly as shown (e.g. J.Allen). For passing, sacks = times that QB was sacked. For rushing, fumb = fumbles, btk = broken tackles, yac = yards after contact. For receiving, rac = run-after-catch yards. For blocking, sacks = sacks ALLOWED by that blocker.",
     "- Use plain numbers (no commas). Use null for any value not shown in these screenshots, and leave out categories that aren't shown. Never invent players or numbers, and list each player once per category."
   ].join("\n");
 }
@@ -265,7 +267,7 @@ function renderGameReview() {
     const lines = pendingGame.players[categoryKey] || [];
     if (!lines.length) continue;
     const heading = document.createElement("h5");
-    heading.textContent = `${statCategories[categoryKey]} (${lines.length})`;
+    heading.textContent = `${statCategories[categoryKey] || "Blocking"} (${lines.length})`;
     const table = document.createElement("table");
     const headRow = table.createTHead().insertRow();
     for (const label of ["Player", "Team", ...playerFields[categoryKey].map(([, l]) => l)]) {

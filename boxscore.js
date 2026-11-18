@@ -74,6 +74,8 @@
       ["receiving", "Receiving", [["REC", (l) => l.rec], ["YARDS", (l) => l.yds], ["AVG", (l) => avg(l.yds, l.rec)], ["TD", (l) => l.td], ["RAC", (l) => l.rac],
         ["RAC AVG", (l) => (l.rac == null ? undefined : avg(l.rac, l.racRec ?? l.rec))], ["LONG", (l) => l.long]],
         (ls) => ({ rec: sum(ls, "rec"), yds: sum(ls, "yds"), td: sum(ls, "td"), rac: sumIf(ls, "rac"), racRec: sum(ls.filter((l) => l.rac != null), "rec"), long: maxOf(ls, "long") })], // team RAC AVG counts only catches with RAC entered
+      ["blocking", "Blocking", [["PANCAKES", (l) => l.pancakes], ["SACKS", (l) => l.sacks]], // sacks = sacks allowed
+        (ls) => ({ pancakes: sumIf(ls, "pancakes"), sacks: sumIf(ls, "sacks") })],
       ["defense", "Defense", [["TOT", (l) => l.tackles], ["TFL", (l) => l.tfl], ["SACKS", (l) => l.sacks], ["INT", (l) => l.int], ["PD", (l) => l.pd], ["FF", (l) => l.ff], ["FR", (l) => l.fr], ["TD", (l) => l.td]],
         (ls) => ({ tackles: sum(ls, "tackles"), tfl: sum(ls, "tfl"), sacks: sum(ls, "sacks"), int: sum(ls, "int"), pd: sum(ls, "pd"), ff: sum(ls, "ff"), fr: sum(ls, "fr"), td: sum(ls, "td") })],
       ["kicking", "Kicking", [["FG", (l) => `${num(l.fgm)}/${num(l.fga)}`], ["PCT", (l) => (l.fga ? ((l.fgm / l.fga) * 100).toFixed(1) : "0.0")], ["LONG", (l) => l.long], ["XP", (l) => `${num(l.xpm)}/${num(l.xpa)}`], ["PTS", (l) => (Number(l.fgm) || 0) * 3 + (Number(l.xpm) || 0)]],
@@ -192,10 +194,11 @@
     passing: [["yds", "YARDS"], ["td", "TD"], ["int", "INT"], ["long", "LONG"], ["sacks", "SACKS"], ["cmp", "COMP"], ["att", "ATT"]],
     rushing: [["att", "ATT"], ["yds", "YARDS"], ["td", "TD"], ["fumb", "FUMB"], ["btk", "BTK"], ["yac", "YAC"], ["long", "LONG"]],
     receiving: [["rec", "REC"], ["yds", "YARDS"], ["td", "TD"], ["rac", "RAC"], ["long", "LONG"]],
+    blocking: [["pancakes", "PANCAKES"], ["sacks", "SACKS"]],
     defense: [["tackles", "TOT"], ["tfl", "TFL"], ["sacks", "SACKS"], ["int", "INT"], ["pd", "PD"], ["ff", "FF"], ["fr", "FR"], ["td", "TD"]],
     kicking: [["fgm", "FGM"], ["fga", "FGA"], ["xpm", "XPM"], ["xpa", "XPA"], ["long", "LONG"]],
   };
-  const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", defense: "Defense", kicking: "Kicking" };
+  const catTitles = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", blocking: "Blocking", defense: "Defense", kicking: "Kicking" };
   // Same order as the Team Stats table.
   const teamFields = [["totalOffense", "Off Yards Gained"], ["rushYds", "Off Rush Yards"], ["passYds", "Off Pass Yards"], ["firstDowns", "Off First Downs"],
     ["puntReturnYds", "Punt Return Yards"], ["kickReturnYds", "Kick Return Yards"], ["totalYds", "Total Yards Gained"], ["turnovers", "Turnovers"],
