@@ -87,6 +87,8 @@ function slotOvr(slot, id) {
 
 // The league's Madden scheme lists.
 const offenseSchemes = ["Multiple Power Run", "Multiple Zone Run", "Vertical Zone Run", "Vertical Power Run", "Spread", "Run And Shoot", "Air Raid", "Pistol", "West Coast Spread", "West Coast Zone Run", "West Coast Power Run"];
+// Playbooks are the NFL teams' own (Madden names each playbook after its team), A to Z.
+const teamPlaybooks = () => nflTeams.map(({ name }) => name).sort((a, b) => a.localeCompare(b));
 const defenseSchemes = ["3-4 Under", "Tampa 2", "4-3 Quarters", "Disguise 3-4", "3-4 Storm", "4-3 Cover 3", "46 Defense", "Base 4-3", "4-3 Under", "Base 3-4"];
 
 function depthChartFor(teamId) {
@@ -432,7 +434,7 @@ function renderDepthChart() {
   const sh = document.createElement("h4");
   sh.textContent = "Team Schemes:";
   schemes.append(sh);
-  for (const [field, label, list] of [["offense", "Offensive Scheme:", offenseSchemes], ["defense", "Defensive Scheme:", defenseSchemes], ["offPlaybook", "Offensive Playbook:", null], ["defPlaybook", "Defensive Playbook:", null]]) {
+  for (const [field, label, list] of [["offense", "Offensive Scheme:", offenseSchemes], ["defense", "Defensive Scheme:", defenseSchemes], ["offPlaybook", "Offensive Playbook:", teamPlaybooks()], ["defPlaybook", "Defensive Playbook:", teamPlaybooks()]]) {
     const row = document.createElement("label");
     row.className = "depth-scheme-row";
     const span = document.createElement("span");
@@ -443,7 +445,7 @@ function renderDepthChart() {
       input = document.createElement("select");
       input.className = "depth-scheme-select";
       const current = chart.schemes[field] || "";
-      input.append(new Option("Choose a scheme", ""), ...list.map((v) => new Option(v, v)));
+      input.append(new Option(field.endsWith("Playbook") ? "Choose a playbook" : "Choose a scheme", ""), ...list.map((v) => new Option(v, v)));
       if (current && !list.includes(current)) input.append(new Option(`${current} (not in list)`, current));
       input.value = current;
       input.classList.toggle("is-empty", !current);
@@ -619,6 +621,7 @@ depthPanel?.addEventListener("change", (event) => {
     const value = input.value.trim().slice(0, depthSchemeFields[input.dataset.scheme]);
     const previous = chart.schemes[input.dataset.scheme] || "";
     if (value) chart.schemes[input.dataset.scheme] = value; else delete chart.schemes[input.dataset.scheme];
+    input.classList.toggle("is-empty", !value);
     if (previous !== value) queueStream([{ slot: `scheme:${input.dataset.scheme}`, index: -1, from: previous, to: value }]);
     saveOfficeData("Team schemes saved. Sent to the commissioner's stream updates.");
     if (input.dataset.scheme === "defense") { if (value !== previous) dcTab = "defense"; renderDepthChart(); } // the front follows the scheme
