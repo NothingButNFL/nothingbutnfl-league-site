@@ -10,7 +10,7 @@ const tbkRoster = () => officeData.teams[activeTeamId].roster
   .filter((p) => !p.activeSeasons.length || p.activeSeasons.some((s) => s >= tbkYear()))
   .sort((a, b) => capHitFor(seasonEntry(b, tbkYear())) - capHitFor(seasonEntry(a, tbkYear())) || a.name.localeCompare(b.name));
 const tbkInjury = (player) => injuryForPlayer(officeData, player, activeTeamId);
-const tbkInjuryText = (injury) => [injury.ir ? "Injured Reserve" : "Injured", injury.injury, injury.duration].filter(Boolean).join(" · ");
+const tbkInjuryText = (injury) => [injury.ir ? "Injured Reserve" : "Injured", injury.injury, injuryDurationText(officeData, injury)].filter(Boolean).join(" · ");
 const tbkDate = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
 
 function tbkListedCard(entry) {

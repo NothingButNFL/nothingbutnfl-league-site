@@ -154,7 +154,7 @@ function renderHero(entry) {
     tag.href = "injuries.html";
     const status = document.createElement("strong");
     status.textContent = injury.ir ? "Injured Reserve" : "Injured";
-    tag.append(status, [injury.injury, injury.duration].filter(Boolean).map((bit) => ` · ${bit}`).join(""));
+    tag.append(status, [injury.injury, injuryDurationText(officeData, injury)].filter(Boolean).map((bit) => ` · ${bit}`).join(""));
     text.append(tag);
   }
   if (profile.retired && entry.source !== "prospect") {

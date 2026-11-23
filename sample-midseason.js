@@ -92,6 +92,7 @@ function buildMidseasonSample(copy, data) {
   });
   data.tradeNumberNext = copy.tradeNumberNext;
   data.injuries = copy.injuries.map((inj, i) => ({ ...inj, date: `2026-11-0${2 + (i % 4)}`, updatedAt: `2026-11-0${2 + (i % 4)}T20:00:00.000Z` }));
+  sampleAddInjuryClocks(data);
   data.keyDates = [
     { id: "sample-date-deadline", date: "2026-11-17", label: "Trade deadline", note: "4:00 PM ET · trades must be approved by then" },
     { id: "sample-date-thanksgiving", date: "2026-11-26", label: "Thanksgiving games", note: "Week 12" },
@@ -328,6 +329,38 @@ function sampleAddBlocking(data, depthCharts = data.depthCharts, teams = data.te
 // Madden overalls for every player on a sample team: a starting overall, a weekly change for each week played (mostly 0,
 // sometimes ±1/±2, now and then ±3 or more), and each team using some of its 3 updates a week on players with an
 // upgrade waiting. Own seeded random numbers, so the rest of the sample is unchanged. Returns true if ratings were added.
+// Injury clocks and an injury log for the sample: a few players' clocks have run out (Injury Reviews), the rest
+// count down, and the log has when each got hurt plus some players who are already back.
+function sampleAddInjuryClocks(data) {
+  const now = sampleWeeksPlayed + 1;
+  const year = currentLeagueYear();
+  data.injuryLog = [];
+  const stamp = (week, hour) => new Date(Date.UTC(2026, 8, 10 + (week - 1) * 7, hour)).toISOString();
+  (data.injuries || []).forEach((inj, i) => {
+    const typed = Number((String(inj.duration || "").match(/(\d{1,2})/) || [])[1]);
+    if (/season/i.test(inj.duration || "")) { inj.weeks = 12; inj.clockWeek = now - 1; }
+    else if (i % 5 === 0) { inj.weeks = 2; inj.clockWeek = now - 2; }
+    else { inj.weeks = typed || 2 + (i % 5); inj.clockWeek = now - (i % 3); }
+    inj.weeks = Math.min(52, inj.weeks);
+    inj.clockWeek = Math.max(1, inj.clockWeek);
+    data.injuryLog.push({ id: `sample-injlog-${i}`, at: stamp(inj.clockWeek, 18), season: year, week: inj.clockWeek, type: "injured",
+      player: inj.player, teamId: inj.teamId, ...(inj.playerId ? { playerId: inj.playerId } : {}), ...(inj.position ? { position: inj.position } : {}),
+      ...(inj.injury ? { injury: inj.injury } : {}), weeks: inj.weeks, ir: Boolean(inj.ir) });
+  });
+  // A few players who were hurt earlier and are already back.
+  const backups = nflTeams.slice(0, 6).map(({ id }, i) => {
+    const player = data.teams[id].roster[(i * 7) % Math.max(1, data.teams[id].roster.length)];
+    return player && { player, teamId: id, position: seasonEntry(player, year)?.position || "", injury: ["Hamstring", "Ankle", "Concussion", "Shoulder", "Knee sprain", "Groin"][i] };
+  }).filter(Boolean);
+  backups.forEach(({ player, teamId, position, injury }, i) => {
+    const hurt = 2 + (i % 4);
+    const weeks = 1 + (i % 3);
+    const base = { player: player.name, playerId: player.id, teamId, ...(position ? { position } : {}), injury, ir: false };
+    data.injuryLog.push({ id: `sample-injlog-b${i}a`, at: stamp(hurt, 17), season: year, week: hurt, type: "injured", ...base, weeks });
+    data.injuryLog.push({ id: `sample-injlog-b${i}b`, at: stamp(hurt + weeks, 15), season: year, week: hurt + weeks, type: "healthy", ...base, note: "Return approved by the commissioner" });
+  });
+}
+
 function sampleAddRatings(data) {
   const year = seasons.includes(currentLeagueYear()) ? currentLeagueYear() : seasons[0];
   if (data.ratings?.[year]) return false;

@@ -42,7 +42,7 @@ function sampleLoadFiles() {
     document.head.append(script);
   });
   return (typeof sampleLeague !== "undefined" ? Promise.resolve() : load("sample-league.js?v=5f19e253"))
-    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=6a882d0a")))
+    .then(() => (typeof buildMidseasonSample === "function" ? undefined : load("sample-midseason.js?v=a46ecca3")))
     .then(() => (typeof nflExperienceSnapshot !== "undefined" ? undefined : load("nfl-experience.js?v=fa36c2d5").catch(() => undefined)));
 }
 

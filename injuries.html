@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&family=Roboto+Condensed:ital,wght@0,700;0,800;1,800&display=swap">
-    <link rel="stylesheet" href="styles.css?v=7dda956d">
-    <link rel="stylesheet" href="theme-light.css?v=63163e9b">
+    <link rel="stylesheet" href="styles.css?v=c90b96f1">
+    <link rel="stylesheet" href="theme-light.css?v=5330a6ca">
     <link rel="stylesheet" href="theme-gray.css?v=b358244c">
-    <link rel="stylesheet" href="theme-espn.css?v=3f01c643">
+    <link rel="stylesheet" href="theme-espn.css?v=e0c96bac">
     <link rel="stylesheet" href="theme-team.css?v=d4f6704c">
     <link rel="stylesheet" href="theme-neon.css?v=55e20d45">
     <link rel="stylesheet" href="theme-seasonal.css?v=cbe84b56">
@@ -40,12 +40,12 @@
         });
       })();
     </script>
-    <script src="teams.js?v=ff01ebb6" defer></script>
+    <script src="teams.js?v=adce48ca" defer></script>
     <script src="help-bubbles.js?v=dea35bf7" defer></script>
-    <script src="league-core.js?v=e8a2998b" defer></script>
-    <script src="sample-admin.js?v=ad68aa2c" defer></script>
+    <script src="league-core.js?v=a52f586f" defer></script>
+    <script src="sample-admin.js?v=0078610e" defer></script>
     <script src="draft-ticker.js?v=dabde0a3" defer></script>
-    <script src="injuries.js?v=2c7312b5" defer></script>
+    <script src="injuries.js?v=cf4904f6" defer></script>
   </head>
   <body class="admin-page injuries-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -135,7 +135,7 @@
             <a class="admin-menu-link" href="stream-updates.html" role="menuitem"><span>Stream Updates</span><span class="nav-badge" data-badge="admin-stream" hidden></span></a>
             <a class="admin-menu-link" href="upgrade-updates.html" role="menuitem"><span>Player Upgrades</span><span class="nav-badge" data-badge="admin-upgrades" hidden></span></a>
             <a class="admin-menu-link" href="admin-schedule.html" role="menuitem"><span>Schedule Import</span></a>
-            <a class="admin-menu-link" href="admin-headshots.html" role="menuitem"><span>Player Details</span></a>
+            <a class="admin-menu-link" href="admin-headshots.html" role="menuitem"><span>Player Details</span><span class="nav-badge" data-badge="admin-injuries" hidden></span></a>
           </div>
         </div>
       </nav>
@@ -161,7 +161,7 @@
             <div>
               <div class="section-kicker"><span>01</span> AVAILABILITY</div>
               <h2 id="injuries-title">Injury <span>report.</span></h2>
-              <p class="section-subtitle">Add a player when they get hurt, update the duration as the weeks go by, and mark them healthy when they're back.</p>
+              <p class="section-subtitle">Add a player when they get hurt, set how many weeks they're out, and the injury clock counts down one week each time the league week moves on. At 0 the commissioner approves their return in Admin › Player Details › Injury Reviews.</p>
             </div>
             <span class="data-mode"><i aria-hidden="true"></i> LOCAL TO THIS BROWSER</span>
           </div>
@@ -180,7 +180,7 @@
               <label>Team<select name="team" id="inj-team" required></select></label>
               <label>Position<input name="position" id="inj-position" maxlength="10" placeholder="e.g. WR"></label>
               <label>Injury<input name="injury" maxlength="80" placeholder="e.g. Hamstring" required></label>
-              <label>Duration<input name="duration" maxlength="40" placeholder="e.g. 3 weeks"></label>
+              <label>Weeks out<input name="weeks" type="number" min="0" max="52" step="1" inputmode="numeric" placeholder="TBD"></label>
               <label class="inj-ir-field"><input name="ir" type="checkbox"> Injured Reserve</label>
               <label>Date reported<input name="date" type="date" required></label>
               <label class="inj-notes-field">Notes<input name="notes" maxlength="300" placeholder="Optional"></label>
@@ -198,7 +198,7 @@
           <div class="management-panel">
             <div class="panel-heading">
               <div><span class="panel-index">02 / REPORT</span><h3>Current injuries</h3></div>
-              <p>Sorted by team, Injured Reserve first. Change the duration, IR or notes right in the table.</p>
+              <p>Sorted by team, Injured Reserve first. Change the weeks left, IR or notes right in the table. Changing the weeks restarts the clock from this week.</p>
             </div>
             <div class="contracts-toolbar">
               <label>Search<input id="inj-search" type="search" placeholder="Player or injury" maxlength="70"></label>
@@ -209,7 +209,7 @@
             <div class="txn-type-summary" id="inj-status-summary"></div>
             <div class="management-table-wrap">
               <table class="management-table inj-table">
-                <thead><tr><th scope="col">TEAM</th><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">INJURY</th><th scope="col">DURATION</th><th scope="col">IR</th><th scope="col">REPORTED</th><th scope="col">NOTES</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">TEAM</th><th scope="col">PLAYER</th><th scope="col">POS</th><th scope="col">INJURY</th><th scope="col">WEEKS LEFT</th><th scope="col">IR</th><th scope="col">REPORTED</th><th scope="col">NOTES</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody id="inj-rows"></tbody>
               </table>
             </div>

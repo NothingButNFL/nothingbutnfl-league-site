@@ -125,7 +125,7 @@ function validateOfficeData(data) {
     pickIds.add(pick.id);
   }
   return validPendingTrades(data.pendingTrades) && validFreeAgents(data.freeAgents) &&
-    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validUpgradeLocks(data.upgradeLocks) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && validRatings(data.ratings) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
+    validContractPlayers(data.contractPlayers) && validTransactions(data.transactions) && validStandings(data.standings) && validStats(data.stats) && validGames(data.games) && validInjuries(data.injuries) && validInjuryLog(data.injuryLog) && validKeyDates(data.keyDates) && validMembers(data.members) && validMedia(data.media) && validAwards(data.awards) && validChampionships(data.championships) && validSchedule(data.schedule) && validTradeBlock(data.tradeBlock) && validDepthCharts(data.depthCharts) && validStreamUpdates(data.streamUpdates) && validUpgradeLocks(data.upgradeLocks) && validFaOffers(data.faOffers) && validGameArchive(data.gameArchive) && validMinimumSalaries(data.minimumSalaries) && validVmbLimits(data.vmbBonusLimits) && validRestructureRequests(data.restructureRequests) && validExtensionOffers(data.extensionOffers) && validWaivers(data.waivers) && validPsOffers(data.psOffers) && validInsiderCustom(data) && validDraftHistory(data.draftHistory) && validDraftOrder(data.draftOrder) && validDraftPool(data.draftPool) && validDraftTrades(data.draftTrades) && validDraftCombine(data.draftCombine) && validYoutubeChannel(data.youtubeChannel) && validSpendingHistory(data.spendingHistory) && validSeasonRecords(data.seasonRecords) && validBetting(data) && validLineups(data.lineups) && validDraftQueues(data.draftQueues) && validCareerSeasons(data.careerSeasons) && validRatings(data.ratings) && (data.draftLive === undefined || data.draftLive === null || isIntegerInRange(data.draftLive, 1936, 2100)) && validPsWeeklySalaries(data.psWeeklySalaries) && (data.currentWeek === undefined || data.currentWeek === null || isIntegerInRange(data.currentWeek, 1, regularSeasonWeeks + 1));
 }
 
 function migrateLegacyData(data) {
@@ -1475,7 +1475,11 @@ function formatHeight(inches) {
 
 
 // ---- Injury report ----
-// data.injuries = [{ id, player, playerId?, teamId, position, injury, duration, ir (Injured Reserve), date, notes, updatedAt }]
+// data.injuries = [{ id, player, playerId?, teamId, position, injury, duration, ir (Injured Reserve), date, notes, updatedAt,
+//   weeks?, clockWeek? }]
+// Injury clock: weeks = weeks out counted from league week clockWeek. Each time the league week moves on
+// (leagueCurrentWeek), one week comes off. At 0 the player waits in Admin › Player Details › Injury Reviews for the
+// commissioner to approve his return. No weeks = no clock (the free-text duration is shown instead).
 const injuryTextLimits = { player: 70, position: 10, injury: 80, duration: 40, notes: 300 };
 // Older saves had a status (Questionable … IR) and an estimated return; IR becomes the checkbox, the return becomes the duration.
 const legacyInjuryStatuses = ["questionable", "doubtful", "out", "ir", "pup", "dtd"];
@@ -1510,9 +1514,80 @@ function validInjuries(injuries) {
         : (value !== undefined && (typeof value !== "string" || value.length > max))) return false;
     }
     if (entry.playerId !== undefined && typeof entry.playerId !== "string") return false;
+    if ((entry.weeks !== undefined && !isIntegerInRange(entry.weeks, 0, 52)) ||
+        (entry.clockWeek !== undefined && !isIntegerInRange(entry.clockWeek, 1, regularSeasonWeeks + 1))) return false;
     ids.add(entry.id);
   }
   return true;
+}
+
+// Weeks still to sit out on the injury clock (0 = ready to return), or null when the injury has no clock.
+function injuryWeeksLeft(data, entry) {
+  if (!Number.isInteger(entry?.weeks)) return null;
+  const passed = Math.max(0, leagueCurrentWeek(data).week - (entry.clockWeek || leagueCurrentWeek(data).week));
+  return Math.max(0, entry.weeks - passed);
+}
+// Starts (or restarts) the clock: the player sits out `weeks` more weeks from this league week.
+function setInjuryClock(data, entry, weeks) {
+  if (weeks === null || weeks === undefined || weeks === "") { delete entry.weeks; delete entry.clockWeek; return; }
+  entry.weeks = Math.max(0, Math.min(52, Math.round(Number(weeks))));
+  entry.clockWeek = leagueCurrentWeek(data).week;
+  entry.duration = `${entry.weeks} ${entry.weeks === 1 ? "week" : "weeks"}`;
+}
+// Text for the duration everywhere the injury shows: the clock when there is one, else the typed duration.
+function injuryDurationText(data, entry) {
+  const left = injuryWeeksLeft(data, entry);
+  if (left === null) return entry.duration || "";
+  return left === 0 ? "Ready to return (awaiting approval)" : `${left} ${left === 1 ? "week" : "weeks"} left`;
+}
+const injuriesReadyToReturn = (data) => (data.injuries || []).filter((entry) => injuryWeeksLeft(data, entry) === 0);
+// Gives an injury typed before the clock existed ("3 weeks", "2-4 wks", "4") a clock from this week. Returns how many.
+function startLegacyInjuryClocks(data) {
+  let started = 0;
+  for (const entry of data.injuries || []) {
+    if (Number.isInteger(entry.weeks)) continue;
+    const match = String(entry.duration || "").match(/^\s*(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:w|wk|wks|week|weeks)?\s*$/i);
+    if (!match) continue;
+    const text = entry.duration;
+    setInjuryClock(data, entry, Number(match[2] || match[1]));
+    entry.duration = text;
+    started += 1;
+  }
+  return started;
+}
+
+// ---- Injury log ----
+// data.injuryLog = [{ id, at, season, week, type, player, playerId?, teamId, position?, injury?, weeks?, ir?, note? }]
+// type: injured (added to the report) · healthy (back from injury) · extended (kept out longer) · updated (weeks/IR changed)
+const injuryLogTypes = ["injured", "healthy", "extended", "updated"];
+function validInjuryLog(log) {
+  if (log === undefined) return true;
+  if (!Array.isArray(log) || log.length > 5000) return false;
+  const ids = new Set();
+  for (const e of log) {
+    if (!e || typeof e.id !== "string" || !e.id || ids.has(e.id) || typeof e.at !== "string" || !injuryLogTypes.includes(e.type) ||
+        !nflTeams.some(({ id }) => id === e.teamId) || typeof e.player !== "string" || !e.player || e.player.length > 70 ||
+        !isIntegerInRange(e.season, 1936, 2100) || !isIntegerInRange(e.week, 1, regularSeasonWeeks + 1) ||
+        (e.weeks !== undefined && e.weeks !== null && !isIntegerInRange(e.weeks, 0, 52)) || (e.ir !== undefined && typeof e.ir !== "boolean") ||
+        ["playerId", "position", "injury", "note"].some((k) => e[k] !== undefined && (typeof e[k] !== "string" || e[k].length > 300))) return false;
+    ids.add(e.id);
+  }
+  return true;
+}
+function logInjury(data, type, entry, note = "") {
+  if (!Array.isArray(data.injuryLog)) data.injuryLog = [];
+  const row = { id: newRecordId("injlog"), at: new Date().toISOString(), season: currentLeagueYear(), week: leagueCurrentWeek(data).week, type,
+    player: entry.player, teamId: entry.teamId };
+  if (entry.playerId) row.playerId = entry.playerId;
+  if (entry.position) row.position = entry.position;
+  if (entry.injury) row.injury = entry.injury;
+  const left = injuryWeeksLeft(data, entry);
+  if (left !== null && type !== "healthy") row.weeks = left;
+  if (entry.ir !== undefined) row.ir = Boolean(entry.ir);
+  if (note) row.note = String(note).slice(0, 300);
+  data.injuryLog.push(row);
+  if (data.injuryLog.length > 5000) data.injuryLog.splice(0, data.injuryLog.length - 5000);
+  return row;
 }
 
 // The current injury for a player (by id, else by name + team), or null.

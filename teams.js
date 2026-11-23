@@ -519,12 +519,19 @@ function refreshNavNotifications() {
   let restructures = 0;
   let extensions = 0;
   let upgrades = 0;
+  let injuries = 0;
   try {
     const data = JSON.parse(localStorage.getItem(officeStorageKey) || "null");
     if (Array.isArray(data?.pendingTrades)) trades = data.pendingTrades.filter((trade) => trade?.status === "awaiting-admin").length;
     if (Array.isArray(data?.streamUpdates)) stream = data.streamUpdates.filter((update) => update && !update.done).length;
     if (Array.isArray(data?.faOffers)) fa = data.faOffers.filter((offer) => offer?.status === "pending").length;
     if (Array.isArray(data?.restructureRequests)) restructures = data.restructureRequests.filter((r) => r?.status === "pending").length;
+    if (Array.isArray(data?.injuries)) {
+      // Injury clock (same as league-core.js injuryWeeksLeft): players whose weeks have run out wait for approval.
+      const played = (data.games || []).map((g) => g?.week).filter((w) => Number.isInteger(w) && w >= 1 && w <= 18);
+      const week = Number.isInteger(data.currentWeek) && data.currentWeek >= 1 && data.currentWeek <= 19 ? data.currentWeek : played.length ? Math.min(19, Math.max(...played) + 1) : 1;
+      injuries = data.injuries.filter((e) => e && Number.isInteger(e.weeks) && e.weeks - Math.max(0, week - (e.clockWeek || week)) <= 0).length;
+    }
     if (Array.isArray(data?.upgradeLocks)) upgrades = data.upgradeLocks.filter((u) => u && !u.done).length;
     if (Array.isArray(data?.extensionOffers)) extensions = data.extensionOffers.filter((o) => o?.status === "pending").length;
   } catch {
@@ -534,6 +541,7 @@ function refreshNavNotifications() {
     restructures = 0;
     extensions = 0;
     upgrades = 0;
+    injuries = 0;
   }
   const show = (key, count, label) => document.querySelectorAll(`[data-badge="${key}"]`).forEach((badge) => {
     badge.textContent = count > 99 ? "99+" : String(count);
@@ -547,8 +555,9 @@ function refreshNavNotifications() {
   show("admin-restructure", restructures, `${restructures} ${restructures === 1 ? "restructure" : "restructures"} waiting`);
   show("admin-extension", extensions, `${extensions} ${extensions === 1 ? "extension" : "extensions"} waiting`);
   show("admin-upgrades", upgrades, `${upgrades} player upgrade ${upgrades === 1 ? "lock-in" : "lock-ins"} for the stream`);
-  const total = trades + stream + fa + restructures + extensions + upgrades;
-  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", fa ? `${fa} free agent ${fa === 1 ? "offer" : "offers"}` : "", restructures ? `${restructures} ${restructures === 1 ? "restructure" : "restructures"}` : "", extensions ? `${extensions} ${extensions === 1 ? "extension" : "extensions"}` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : "", upgrades ? `${upgrades} player upgrade ${upgrades === 1 ? "lock-in" : "lock-ins"}` : ""].filter(Boolean).join(", ") || "Nothing waiting");
+  show("admin-injuries", injuries, `${injuries} injured ${injuries === 1 ? "player is" : "players are"} ready to return and waiting for approval`);
+  const total = trades + stream + fa + restructures + extensions + upgrades + injuries;
+  show("admin-total", total, [trades ? `${trades} ${trades === 1 ? "trade" : "trades"} awaiting approval` : "", fa ? `${fa} free agent ${fa === 1 ? "offer" : "offers"}` : "", restructures ? `${restructures} ${restructures === 1 ? "restructure" : "restructures"}` : "", extensions ? `${extensions} ${extensions === 1 ? "extension" : "extensions"}` : "", stream ? `${stream} stream ${stream === 1 ? "update" : "updates"}` : "", upgrades ? `${upgrades} player upgrade ${upgrades === 1 ? "lock-in" : "lock-ins"}` : "", injuries ? `${injuries} injury ${injuries === 1 ? "return" : "returns"} to approve` : ""].filter(Boolean).join(", ") || "Nothing waiting");
 }
 
 window.addEventListener("storage", (event) => {

@@ -138,7 +138,30 @@ function renderReport() {
     tr.insertCell().append(editableText(entry, "position", "Position", "—"));
     tr.insertCell().append(editableText(entry, "injury", "Injury", "—"));
 
-    tr.insertCell().append(editableText(entry, "duration", "Duration", "TBD"));
+    // Injury clock: weeks left (counts down as the league week moves on); typed duration shows when there's no clock.
+    const clockCell = tr.insertCell();
+    clockCell.className = "inj-clock";
+    const left = injuryWeeksLeft(officeData, entry);
+    const weeks = document.createElement("input");
+    weeks.type = "number";
+    weeks.min = "0";
+    weeks.max = "52";
+    weeks.step = "1";
+    weeks.inputMode = "numeric";
+    weeks.dataset.field = "weeks";
+    weeks.value = left === null ? "" : String(left);
+    weeks.placeholder = entry.duration && left === null ? entry.duration.slice(0, 12) : "TBD";
+    weeks.title = left === null ? (entry.duration ? `Typed duration: ${entry.duration}. Enter a number of weeks to start the clock.` : "Enter weeks out to start the clock") : "Weeks left. Changing it restarts the clock from this week.";
+    weeks.setAttribute("aria-label", `Weeks left for ${entry.player}`);
+    weeks.disabled = !canSave;
+    clockCell.append(weeks);
+    if (left === 0) {
+      const ready = document.createElement("span");
+      ready.className = "inj-ready";
+      ready.textContent = "Ready · awaiting approval";
+      clockCell.append(ready);
+      tr.classList.add("is-ready");
+    }
     const irCell = tr.insertCell();
     irCell.className = "inj-ir";
     const ir = document.createElement("input");
@@ -205,6 +228,16 @@ injRows.addEventListener("change", (event) => {
   const entry = tr && officeData.injuries.find(({ id }) => id === tr.dataset.injId);
   if (!entry || !canSave) return;
   const field = input.dataset.field;
+  if (field === "weeks") {
+    const raw = input.value.trim();
+    if (raw !== "" && !(Number.isInteger(Number(raw)) && Number(raw) >= 0 && Number(raw) <= 52)) { injStatus.textContent = "Weeks left must be a whole number from 0 to 52."; return; }
+    setInjuryClock(officeData, entry, raw === "" ? null : Number(raw));
+    entry.updatedAt = new Date().toISOString();
+    logInjury(officeData, "updated", entry, raw === "" ? "Injury clock cleared (TBD)" : `Weeks left set to ${raw}`);
+    save(`${entry.player}: ${raw === "" ? "weeks out cleared" : `${raw} ${raw === "1" ? "week" : "weeks"} left on the clock`}.`);
+    renderReport();
+    return;
+  }
   if (field === "ir") {
     entry.ir = input.checked;
     tr.classList.toggle("is-ir", entry.ir);
@@ -213,6 +246,7 @@ injRows.addEventListener("change", (event) => {
     if (value) entry[field] = value; else delete entry[field];
   }
   entry.updatedAt = new Date().toISOString();
+  if (field === "ir") logInjury(officeData, "updated", entry, entry.ir ? "Placed on Injured Reserve" : "Taken off Injured Reserve");
   save(`${entry.player}: ${field === "ir" ? (entry.ir ? "placed on Injured Reserve" : "taken off Injured Reserve") : `${field} updated`}.`);
   if (field === "ir") renderReport();
 });
@@ -225,6 +259,7 @@ injRows.addEventListener("click", async (event) => {
   const ok = await confirmAction(`Mark ${entry.player} (${entry.teamId}) healthy? They'll be removed from the injury report.`, { confirmLabel: "Mark healthy" });
   if (!ok) return;
   officeData.injuries = officeData.injuries.filter(({ id }) => id !== entry.id);
+  logInjury(officeData, "healthy", entry, "Marked healthy on the injury report");
   save(`${entry.player} marked healthy and removed from the report.`);
   renderReport();
 });
@@ -259,8 +294,12 @@ function upsertInjury(fields) {
     else if (!existing) delete record[field];
   }
   if (!record.position && known?.position) record.position = known.position;
+  const weeksText = fields.weeks === undefined || fields.weeks === null ? "" : String(fields.weeks).trim();
+  if (weeksText !== "" && /^\d{1,2}$/.test(weeksText)) setInjuryClock(officeData, record, Number(weeksText));
+  else if (!existing && !Number.isInteger(record.weeks)) startLegacyInjuryClocks({ injuries: [record], games: officeData.games, currentWeek: officeData.currentWeek });
   record.updatedAt = new Date().toISOString();
   if (!existing) officeData.injuries.push(record);
+  logInjury(officeData, existing ? "updated" : "injured", record, existing ? "Injury report entry updated" : "");
   return { record, updated: Boolean(existing) };
 }
 
@@ -274,9 +313,9 @@ injForm.addEventListener("submit", (event) => {
   const f = injForm.elements;
   const { record, updated } = upsertInjury({
     player: f.player.value.trim(), teamId: f.team.value, position: f.position.value, injury: f.injury.value,
-    duration: f.duration.value, ir: f.ir.checked, date: f.date.value, notes: f.notes.value
+    weeks: f.weeks.value, ir: f.ir.checked, date: f.date.value, notes: f.notes.value
   });
-  for (const name of ["player", "position", "injury", "duration", "notes"]) f[name].value = "";
+  for (const name of ["player", "position", "injury", "weeks", "notes"]) f[name].value = "";
   f.team.value = "";
   f.ir.checked = false;
   save(`${record.player} ${updated ? "updated on" : "added to"} the injury report${record.ir ? " on Injured Reserve" : ""}.`);
@@ -348,7 +387,7 @@ document.querySelector("#inj-paste-import").addEventListener("click", () => {
     const date = cell("date") ? injDateFromText(cell("date")) : localDateString();
     if (!date) { problems.push(`${row}: date "${cell("date")}"`); continue; }
     if (officeData.injuries.length >= 5000) { problems.push(`${row}: the report is full`); continue; }
-    const result = upsertInjury({ player, teamId, date, ir: columns.has("ir") ? injIrFromText(cell("ir")) : undefined, position: cell("position"), injury: cell("injury"), duration: cell("duration"), notes: cell("notes") });
+    const result = upsertInjury({ player, teamId, date, ir: columns.has("ir") ? injIrFromText(cell("ir")) : undefined, position: cell("position"), injury: cell("injury"), duration: cell("duration"), weeks: (cell("duration").match(/^\s*(?:\d{1,2}\s*[-–]\s*)?(\d{1,2})\s*(?:w|wk|wks|week|weeks)?\s*$/i) || [])[1], notes: cell("notes") });
     if (result.updated) updated += 1; else added += 1;
   }
   const parts = [`Added ${added} and updated ${updated} ${added + updated === 1 ? "player" : "players"}.`];
@@ -376,5 +415,7 @@ window.addEventListener("storage", (event) => {
 });
 
 if (!canSave) for (const element of injForm.elements) element.disabled = true;
+// Injuries typed before the clock existed ("3 weeks") get a clock from this week, once.
+if (canSave && startLegacyInjuryClocks(officeData)) save("Injury clocks started for injuries with a number of weeks.");
 fillPlayerList();
 renderReport();

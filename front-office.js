@@ -870,7 +870,7 @@ function renderSalaryRows() {
       mark.className = "injury-mark";
       mark.href = "injuries.html";
       mark.innerHTML = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><rect width="16" height="16" rx="4" fill="#e5383b"/><path d="M6.4 3.2h3.2v3.2h3.2v3.2H9.6v3.2H6.4V9.6H3.2V6.4h3.2z" fill="#fff"/></svg>';
-      const summary = [injury.ir ? "Injured Reserve" : "Injured", injury.injury, injury.duration].filter(Boolean).join(" · ");
+      const summary = [injury.ir ? "Injured Reserve" : "Injured", injury.injury, injuryDurationText(officeData, injury)].filter(Boolean).join(" · ");
       mark.title = `On the injury report: ${summary}`;
       mark.setAttribute("aria-label", `${player.name} is on the injury report: ${summary}`);
       nameCell.append(mark);
