@@ -158,7 +158,7 @@ function renderReport() {
     if (left === 0) {
       const ready = document.createElement("span");
       ready.className = "inj-ready";
-      ready.textContent = "Ready · awaiting approval";
+      ready.textContent = "Pending - Needs Verification";
       clockCell.append(ready);
       tr.classList.add("is-ready");
     }

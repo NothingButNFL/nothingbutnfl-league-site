@@ -1538,7 +1538,7 @@ function setInjuryClock(data, entry, weeks) {
 function injuryDurationText(data, entry) {
   const left = injuryWeeksLeft(data, entry);
   if (left === null) return entry.duration || "";
-  return left === 0 ? "Ready to return (awaiting approval)" : `${left} ${left === 1 ? "week" : "weeks"} left`;
+  return left === 0 ? "Pending - Needs Verification" : `${left} ${left === 1 ? "week" : "weeks"} left`;
 }
 const injuriesReadyToReturn = (data) => (data.injuries || []).filter((entry) => injuryWeeksLeft(data, entry) === 0);
 // Gives an injury typed before the clock existed ("3 weeks", "2-4 wks", "4") a clock from this week. Returns how many.
