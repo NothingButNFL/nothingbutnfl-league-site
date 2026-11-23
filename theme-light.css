@@ -1164,3 +1164,4 @@ html[data-theme="light"] .mdp-ovr { border-top-color: rgba(18, 18, 19, 1.000); b
 html[data-theme="light"] .ext-comment { background-color: rgba(18, 18, 19, 0.070); }
 html[data-theme="light"] .exa-comment-box textarea { background-color: rgba(0, 0, 0, 0.063); }
 html[data-theme="light"] .ir-type-updated { background-color: rgba(18, 18, 19, 0.112); }
+html[data-theme="light"] .injury-ir { color: #d0021b; }

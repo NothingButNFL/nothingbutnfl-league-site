@@ -873,6 +873,14 @@ function renderSalaryRows() {
       const summary = [injury.ir ? "Injured Reserve" : "Injured", injury.injury, injuryDurationText(officeData, injury)].filter(Boolean).join(" · ");
       mark.title = `On the injury report: ${summary}`;
       mark.setAttribute("aria-label", `${player.name} is on the injury report: ${summary}`);
+      if (injury.ir) {
+        mark.classList.add("is-ir");
+        const ir = document.createElement("span");
+        ir.className = "injury-ir";
+        ir.setAttribute("aria-hidden", "true");
+        ir.textContent = "IR";
+        mark.append(ir);
+      }
       nameCell.append(mark);
     }
     const positionCell = row.insertCell();

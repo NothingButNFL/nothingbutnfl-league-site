@@ -3922,3 +3922,7 @@ main .dc-spec-table td.is-up { color: #7fd19b; font-weight: 700; } main .dc-spec
 .ir-type-healthy { background: rgba(200, 242, 90, .16); color: #c8f25a; }
 .ir-type-extended { background: rgba(255, 184, 77, .16); color: #ffb84d; }
 .ir-type-updated { background: rgba(255, 255, 255, .08); color: var(--muted); }
+.injury-mark.is-ir { display: inline-flex !important; align-items: center; gap: 2px; margin-left: 3px !important; }
+.salary-table td:has(> .injury-mark.is-ir) .player-name-link { max-width: calc(100% - 94px); overflow: hidden; text-overflow: ellipsis; }
+.injury-ir { color: #ff4d5e; font-size: 10px; font-weight: 900; letter-spacing: .04em; line-height: 1; }
+.injury-ir { padding-right: 1px; }
